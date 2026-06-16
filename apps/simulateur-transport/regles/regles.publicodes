@@ -1,0 +1,117 @@
+situation:
+  titre: Situation médicale
+
+situation . hospitalisation ou séance:
+  question: Le patient est-il hospitalisé ou suit-il une séance assimilée (chimiothérapie, radiothérapie, dialyse) ?
+  type: booléen
+  par défaut: non
+
+situation . accident du travail:
+  question: Le transport est-il lié à un accident du travail ou une maladie professionnelle reconnue ?
+  type: booléen
+  par défaut: non
+
+situation . ALD:
+  titre: Affection longue durée (ALD)
+
+situation . ALD . reconnue:
+  question: Le patient bénéficie-t-il d'une ALD (affection longue durée) reconnue ?
+  type: booléen
+  par défaut: non
+
+situation . ALD . exonérante:
+  question: Cette ALD est-elle exonérante ?
+  description: |
+    Information non utilisée pour le calcul de l'éligibilité en V1, mais
+    réservée pour une V2 sur les taux de remboursement.
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . ALD . lien avec le transport:
+  question: Le transport est-il en lien avec cette ALD ?
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . ALD . déficience ou incapacité:
+  question: Le patient présente-t-il une déficience ou une incapacité justifiant le transport ?
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . distance aller:
+  question: Quelle est la distance aller du trajet (en km) ?
+  type: nombre
+  unité: km
+  par défaut: 0
+
+situation . nombre de trajets sur 2 mois:
+  question: Combien de trajets de plus de 50 km sont prévus sur 2 mois pour ce traitement ?
+  applicable si: situation . distance aller > 50
+  type: nombre
+  par défaut: 0
+
+autonomie:
+  titre: Autonomie du patient
+
+autonomie . déplacement autonome:
+  question: Le patient peut-il se déplacer de manière autonome ?
+  type: booléen
+  par défaut: oui
+
+autonomie . aide technique ou tierce personne:
+  question: Le patient nécessite-t-il une aide technique ou une tierce personne pendant le trajet ?
+  type: booléen
+  par défaut: non
+
+autonomie . risque d'effets secondaires pendant le trajet:
+  question: Existe-t-il un risque d'effets secondaires importants pendant le trajet ?
+  type: booléen
+  par défaut: non
+
+autonomie . position allongée, surveillance ou conditions stériles:
+  question: Le patient doit-il voyager en position allongée, sous surveillance médicale ou dans des conditions stériles ?
+  type: booléen
+  par défaut: non
+
+éligible:
+  titre: Éligibilité à la prise en charge du transport
+  type: booléen
+  formule:
+    une de ces conditions:
+      - situation . hospitalisation ou séance
+      - situation . accident du travail
+      - toutes ces conditions:
+          - situation . ALD . reconnue
+          - situation . ALD . lien avec le transport
+          - situation . ALD . déficience ou incapacité
+      - situation . distance aller > 150
+      - toutes ces conditions:
+          - situation . distance aller > 50
+          - situation . nombre de trajets sur 2 mois >= 4
+
+mode de transport:
+  titre: Mode de transport prescriptible
+  applicable si: éligible
+  formule:
+    variations:
+      - si: autonomie . position allongée, surveillance ou conditions stériles
+        alors: "'ambulance'"
+      - si:
+          une de ces conditions:
+            - autonomie . aide technique ou tierce personne
+            - autonomie . risque d'effets secondaires pendant le trajet
+        alors: "'TAP (taxi/VSL)'"
+      - sinon: "'véhicule personnel / transports en commun'"
+
+accord préalable requis:
+  titre: Accord préalable requis
+  applicable si: éligible
+  type: booléen
+  formule:
+    une de ces conditions:
+      - situation . distance aller > 150
+      - toutes ces conditions:
+          - situation . distance aller > 50
+          - situation . nombre de trajets sur 2 mois >= 4
