@@ -1,0 +1,13 @@
+mode de transport:
+  titre: Mode de transport prescriptible
+  applicable si: éligible
+  formule:
+    variations:
+      - si: autonomie . position allongée, surveillance ou conditions stériles
+        alors: "'ambulance'"
+      - si:
+          une de ces conditions:
+            - autonomie . aide technique ou tierce personne
+            - autonomie . risque d'effets secondaires pendant le trajet
+        alors: "'TAP (taxi/VSL)'"
+      - sinon: "'véhicule personnel / transports en commun'"
