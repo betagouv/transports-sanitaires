@@ -1,0 +1,10 @@
+accord préalable requis:
+  titre: Accord préalable requis
+  applicable si: éligible
+  type: booléen
+  formule:
+    une de ces conditions:
+      - situation . distance aller > 150
+      - toutes ces conditions:
+          - situation . distance aller > 50
+          - situation . nombre de trajets sur 2 mois >= 4

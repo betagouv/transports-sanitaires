@@ -1,0 +1,53 @@
+situation:
+  titre: Situation médicale
+
+situation . hospitalisation ou séance:
+  question: Le patient est-il hospitalisé ou suit-il une séance assimilée (chimiothérapie, radiothérapie, dialyse) ?
+  type: booléen
+  par défaut: non
+
+situation . accident du travail:
+  question: Le transport est-il lié à un accident du travail ou une maladie professionnelle reconnue ?
+  type: booléen
+  par défaut: non
+
+situation . ALD:
+  titre: Affection longue durée (ALD)
+
+situation . ALD . reconnue:
+  question: Le patient bénéficie-t-il d'une ALD (affection longue durée) reconnue ?
+  type: booléen
+  par défaut: non
+
+situation . ALD . exonérante:
+  question: Cette ALD est-elle exonérante ?
+  description: |
+    Information non utilisée pour le calcul de l'éligibilité en V1, mais
+    réservée pour une V2 sur les taux de remboursement.
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . ALD . lien avec le transport:
+  question: Le transport est-il en lien avec cette ALD ?
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . ALD . déficience ou incapacité:
+  question: Le patient présente-t-il une déficience ou une incapacité justifiant le transport ?
+  applicable si: situation . ALD . reconnue
+  type: booléen
+  par défaut: non
+
+situation . distance aller:
+  question: Quelle est la distance aller du trajet (en km) ?
+  type: nombre
+  unité: km
+  par défaut: 0
+
+situation . nombre de trajets sur 2 mois:
+  question: Combien de trajets de plus de 50 km sont prévus sur 2 mois pour ce traitement ?
+  applicable si: situation . distance aller > 50
+  type: nombre
+  par défaut: 0
