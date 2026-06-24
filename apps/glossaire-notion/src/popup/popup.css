@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.popup {
+  width: 360px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.popup-header h1 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.popup-header button {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+input[type="search"] {
+  margin: 8px 0;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.popup-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.popup-results li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.entry-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 11px;
+  background: #eef;
+  color: #224;
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.entry-source {
+  font-size: 11px;
+  color: #777;
+  margin: 2px 0 0;
+}
+
+.popup-message {
+  color: #555;
+}
+
+.popup-error {
+  color: #b00020;
+}
+
+.popup-footer {
+  font-size: 11px;
+  color: #999;
+  text-align: right;
+  margin-top: 6px;
+}
