@@ -14,6 +14,12 @@ const cache: CachedGlossary = {
   entries: [
     { id: "1", terme: "ALD", definition: "Affection de Longue Durée", categorie: "Réglementation" },
     { id: "2", terme: "Ambulance", definition: "Transport adapté pour patient allongé" },
+    {
+      id: "3",
+      terme: "CABDDGOS",
+      definition: "Cabinet de la DDGOS",
+      structureParente: "DDGOS",
+    },
   ],
 };
 
@@ -23,6 +29,12 @@ beforeEach(() => {
 });
 
 describe("Popup", () => {
+  it("focuses the search input on mount", () => {
+    render(<Popup />);
+
+    expect(screen.getByPlaceholderText(/rechercher/i)).toHaveFocus();
+  });
+
   it("shows a loading message then the glossary entries", async () => {
     render(<Popup />);
 
@@ -30,6 +42,13 @@ describe("Popup", () => {
 
     expect(await screen.findByText("ALD")).toBeInTheDocument();
     expect(screen.getByText("Ambulance")).toBeInTheDocument();
+  });
+
+  it("shows the structure parente when an entry has one", async () => {
+    render(<Popup />);
+
+    expect(await screen.findByText("CABDDGOS")).toBeInTheDocument();
+    expect(screen.getByText(/structure parente : ddgos/i)).toBeInTheDocument();
   });
 
   it("filters entries as the user types in the search field", async () => {
@@ -40,6 +59,18 @@ describe("Popup", () => {
 
     expect(screen.queryByText("ALD")).not.toBeInTheDocument();
     expect(screen.getByText("Ambulance")).toBeInTheDocument();
+  });
+
+  it("offers to add the missing term in Notion when the search has no match", async () => {
+    render(<Popup />);
+    await screen.findByText("ALD");
+
+    await userEvent.type(screen.getByPlaceholderText(/rechercher/i), "inexistant");
+
+    expect(screen.getByText(/aucun résultat pour « inexistant »/i)).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /ajouter ce terme dans notion/i });
+    expect(link).toHaveAttribute("href", expect.stringContaining("notion.com"));
+    expect(link).toHaveAttribute("target", "_blank");
   });
 
   it("shows an error message with a retry button when fetching fails", async () => {

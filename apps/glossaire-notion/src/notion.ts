@@ -2,7 +2,10 @@ import { NotionAPI } from "notion-client";
 import { getBlockValue } from "notion-utils";
 import type { Collection, Decoration, ExtendedRecordMap, PageBlock } from "notion-types";
 
-/** Page ID of the "Glossaire" database, from https://app.notion.com/p/01-04-Glossaire-388879eb539c804ca147d9fc6ec591e5 */
+export const GLOSSARY_EDIT_URL =
+  "https://app.notion.com/p/01-04-Glossaire-388879eb539c804ca147d9fc6ec591e5";
+
+/** Page ID of the "Glossaire" database, extracted from GLOSSARY_EDIT_URL */
 const PAGE_ID = "388879eb-539c-804c-a147-d9fc6ec591e5";
 
 export interface GlossaryEntry {
@@ -12,6 +15,7 @@ export interface GlossaryEntry {
   categorie?: string;
   statut?: string;
   source?: string;
+  structureParente?: string;
 }
 
 type RowProperties = Record<string, Decoration[]>;
@@ -40,6 +44,7 @@ export function parseGlossaryEntries(recordMap: ExtendedRecordMap): GlossaryEntr
   const categoriePropId = findPropertyId(schema, "Catégorie");
   const statutPropId = findPropertyId(schema, "Statut");
   const sourcePropId = findPropertyId(schema, "Source");
+  const structureParentePropId = findPropertyId(schema, "Structure parente");
 
   const entries: GlossaryEntry[] = [];
   for (const entry of Object.values(recordMap.block ?? {})) {
@@ -59,6 +64,9 @@ export function parseGlossaryEntries(recordMap: ExtendedRecordMap): GlossaryEntr
       categorie: categoriePropId ? richTextToPlainText(properties[categoriePropId]).trim() || undefined : undefined,
       statut: statutPropId ? richTextToPlainText(properties[statutPropId]).trim() || undefined : undefined,
       source: sourcePropId ? richTextToPlainText(properties[sourcePropId]).trim() || undefined : undefined,
+      structureParente: structureParentePropId
+        ? richTextToPlainText(properties[structureParentePropId]).trim() || undefined
+        : undefined,
     });
   }
 
