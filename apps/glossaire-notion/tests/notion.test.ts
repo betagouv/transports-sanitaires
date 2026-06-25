@@ -38,6 +38,14 @@ describe("parseGlossaryEntries", () => {
     const amblea = entries.find((entry) => entry.terme === "Amblea");
 
     expect(amblea?.source).toBeUndefined();
+    expect(amblea?.structureParente).toBeUndefined();
+  });
+
+  it("maps the Structure parente column", () => {
+    const entries = parseGlossaryEntries(recordMap);
+    const cabddgos = entries.find((entry) => entry.terme === "CABDDGOS");
+
+    expect(cabddgos?.structureParente).toBe("DDGOS");
   });
 
   it("returns an empty array when there is no collection in the recordMap", () => {

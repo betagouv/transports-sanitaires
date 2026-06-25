@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getOrFetchGlossary } from "../storage";
 import { searchGlossary } from "../search";
-import type { GlossaryEntry } from "../notion";
+import { GLOSSARY_EDIT_URL, type GlossaryEntry } from "../notion";
 
 type Status = "loading" | "ready" | "error";
 
@@ -11,6 +11,7 @@ export function Popup() {
   const [fetchedAt, setFetchedAt] = useState<number>();
   const [query, setQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const load = async (forceRefresh: boolean) => {
     try {
@@ -25,6 +26,11 @@ export function Popup() {
 
   useEffect(() => {
     load(false);
+  }, []);
+
+  // Extension popups don't reliably honor the `autoFocus` HTML attribute, so focus imperatively.
+  useEffect(() => {
+    searchInputRef.current?.focus();
   }, []);
 
   const handleRefresh = async () => {
@@ -45,11 +51,11 @@ export function Popup() {
       </header>
 
       <input
+        ref={searchInputRef}
         type="search"
         placeholder="Rechercher un terme…"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        autoFocus
       />
 
       {status === "loading" && <p className="popup-message">Chargement du glossaire…</p>}
@@ -73,12 +79,23 @@ export function Popup() {
                   {entry.categorie && <span className="badge">{entry.categorie}</span>}
                 </div>
                 <p>{entry.definition}</p>
+                {entry.structureParente && (
+                  <p className="entry-source">Structure parente : {entry.structureParente}</p>
+                )}
                 {entry.source && <p className="entry-source">Source : {entry.source}</p>}
               </li>
             ))}
           </ul>
 
-          {results.length === 0 && <p className="popup-message">Aucun résultat.</p>}
+          {results.length === 0 && (
+            <p className="popup-message">
+              {query.trim() ? <>Aucun résultat pour « {query.trim()} ».</> : "Aucun résultat."}
+              <br />
+              <a href={GLOSSARY_EDIT_URL} target="_blank" rel="noopener noreferrer">
+                Ajouter ce terme dans Notion
+              </a>
+            </p>
+          )}
 
           {fetchedAt && (
             <footer className="popup-footer">
