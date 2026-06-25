@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "watch": "vite build --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prezip": "npm run build",
+    "zip": "rm -f glossaire-notion.zip && cd dist && zip -r ../glossaire-notion.zip . && cd .."
   },
   "dependencies": {
     "notion-client": "^7.10.0",
