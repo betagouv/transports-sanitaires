@@ -1,12 +1,9 @@
 import { NotionAPI } from "notion-client";
 import { getBlockValue } from "notion-utils";
 import type { Collection, Decoration, ExtendedRecordMap, PageBlock } from "notion-types";
+import { PAGE_ID } from "./config";
 
-export const GLOSSARY_EDIT_URL =
-  "https://app.notion.com/p/01-04-Glossaire-388879eb539c804ca147d9fc6ec591e5";
-
-/** Page ID of the "Glossaire" database, extracted from GLOSSARY_EDIT_URL */
-const PAGE_ID = "388879eb-539c-804c-a147-d9fc6ec591e5";
+export { GLOSSARY_EDIT_URL } from "./config";
 
 export interface GlossaryEntry {
   id: string;
