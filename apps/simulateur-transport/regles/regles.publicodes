@@ -1,117 +1,737 @@
-situation:
-  titre: Situation médicale
-
-situation . hospitalisation ou séance:
-  question: Le patient est-il hospitalisé ou suit-il une séance assimilée (chimiothérapie, radiothérapie, dialyse) ?
-  type: booléen
-  par défaut: non
-
-situation . accident du travail:
-  question: Le transport est-il lié à un accident du travail ou une maladie professionnelle reconnue ?
-  type: booléen
-  par défaut: non
-
-situation . ALD:
-  titre: Affection longue durée (ALD)
-
-situation . ALD . reconnue:
-  question: Le patient bénéficie-t-il d'une ALD (affection longue durée) reconnue ?
-  type: booléen
-  par défaut: non
-
-situation . ALD . exonérante:
-  question: Cette ALD est-elle exonérante ?
+ald:
+  valeur: oui
+alerte:
+  valeur: oui
+checklist:
+  valeur: oui
+dap:
+  valeur: oui
+identification:
+  valeur: oui
+interface:
+  valeur: oui
+mode:
+  valeur: oui
+motif:
+  valeur: oui
+question 1:
+  valeur: oui
+question 2:
+  valeur: oui
+question 2_1:
+  valeur: oui
+question 3:
+  valeur: oui
+question 4:
+  valeur: oui
+question 4_1:
+  valeur: oui
+question 4_2:
+  valeur: oui
+question 5:
+  valeur: oui
+question 5_1:
+  valeur: oui
+question 6:
+  valeur: oui
+question 6 . ambulance:
+  valeur: oui
+question 6 . individuel commun:
+  valeur: oui
+question 6 . tpmr:
+  valeur: oui
+question 6 . vsl taxi:
+  valeur: oui
+question 6_1:
+  valeur: oui
+resultat:
+  valeur: oui
+resultat . patient:
+  valeur: oui
+resultat . prescripteur:
+  valeur: oui
+sortie:
+  valeur: oui
+transports en serie:
+  valeur: oui
+simulation:
+  valeur: oui
+  titre: Simulation d'éligibilité à un transport pris en charge par l'Assurance Maladie
   description: |
-    Information non utilisée pour le calcul de l'éligibilité en V1, mais
-    réservée pour une V2 sur les taux de remboursement.
-  applicable si: situation . ALD . reconnue
-  type: booléen
+    Ce formulaire permet de déterminer si la situation du patient ouvre droit à une prise en charge du transport par l'Assurance Maladie,
+    puis d'indiquer le document à utiliser et les cases à compléter.
+identification . etablissement renseigne:
+  question: L'établissement prescripteur est-il renseigné ?
   par défaut: non
-
-situation . ALD . lien avec le transport:
-  question: Le transport est-il en lien avec cette ALD ?
-  applicable si: situation . ALD . reconnue
-  type: booléen
+identification . service renseigne:
+  question: Le service ou l'unité du prescripteur est-il renseigné ?
   par défaut: non
-
-situation . ALD . déficience ou incapacité:
-  question: Le patient présente-t-il une déficience ou une incapacité justifiant le transport ?
-  applicable si: situation . ALD . reconnue
-  type: booléen
+identification . prescripteur renseigne:
+  question: Le prescripteur réalisant la simulation est-il renseigné ?
   par défaut: non
-
-situation . distance aller:
-  question: Quelle est la distance aller du trajet (en km) ?
-  type: nombre
-  unité: km
-  par défaut: 0
-
-situation . nombre de trajets sur 2 mois:
-  question: Combien de trajets de plus de 50 km sont prévus sur 2 mois pour ce traitement ?
-  applicable si: situation . distance aller > 50
-  type: nombre
-  par défaut: 0
-
-autonomie:
-  titre: Autonomie du patient
-
-autonomie . déplacement autonome:
-  question: Le patient peut-il se déplacer de manière autonome ?
-  type: booléen
-  par défaut: oui
-
-autonomie . aide technique ou tierce personne:
-  question: Le patient nécessite-t-il une aide technique ou une tierce personne pendant le trajet ?
-  type: booléen
+identification . prescripteur autre:
+  question: Le prescripteur sélectionné est-il "Autre prescripteur" ?
   par défaut: non
-
-autonomie . risque d'effets secondaires pendant le trajet:
-  question: Existe-t-il un risque d'effets secondaires importants pendant le trajet ?
-  type: booléen
+identification . autre prescripteur prenom renseigne:
+  question: Le prénom de l'autre prescripteur est-il renseigné ?
+  applicable si: identification . prescripteur autre
   par défaut: non
-
-autonomie . position allongée, surveillance ou conditions stériles:
-  question: Le patient doit-il voyager en position allongée, sous surveillance médicale ou dans des conditions stériles ?
-  type: booléen
+identification . autre prescripteur nom renseigne:
+  question: Le nom de l'autre prescripteur est-il renseigné ?
+  applicable si: identification . prescripteur autre
   par défaut: non
-
-éligible:
-  titre: Éligibilité à la prise en charge du transport
-  type: booléen
-  formule:
-    une de ces conditions:
-      - situation . hospitalisation ou séance
-      - situation . accident du travail
-      - toutes ces conditions:
-          - situation . ALD . reconnue
-          - situation . ALD . lien avec le transport
-          - situation . ALD . déficience ou incapacité
-      - situation . distance aller > 150
-      - toutes ces conditions:
-          - situation . distance aller > 50
-          - situation . nombre de trajets sur 2 mois >= 4
-
-mode de transport:
-  titre: Mode de transport prescriptible
-  applicable si: éligible
-  formule:
-    variations:
-      - si: autonomie . position allongée, surveillance ou conditions stériles
-        alors: "'ambulance'"
-      - si:
-          une de ces conditions:
-            - autonomie . aide technique ou tierce personne
-            - autonomie . risque d'effets secondaires pendant le trajet
-        alors: "'TAP (taxi/VSL)'"
-      - sinon: "'véhicule personnel / transports en commun'"
-
-accord préalable requis:
-  titre: Accord préalable requis
-  applicable si: éligible
-  type: booléen
-  formule:
-    une de ces conditions:
-      - situation . distance aller > 150
-      - toutes ces conditions:
-          - situation . distance aller > 50
-          - situation . nombre de trajets sur 2 mois >= 4
+identification . prescripteur identifie:
+  toutes ces conditions:
+    - identification . etablissement renseigne
+    - identification . service renseigne
+    - identification . prescripteur renseigne
+    - une de ces conditions:
+        - identification . prescripteur autre = non
+        - toutes ces conditions:
+            - identification . autre prescripteur prenom renseigne
+            - identification . autre prescripteur nom renseigne
+simulation . possible:
+  valeur: identification . prescripteur identifie
+question 1 . situation particuliere:
+  question: Une des situations suivantes s'applique-t-elle au transport demandé ?
+  une possibilité:
+    - "'aucune'"
+    - "'smur'"
+    - "'patient-hospitalise-detenu'"
+    - "'contrainte-bariatrique-uniquement'"
+    - "'permission-demandee-par-patient-sans-motif-medical'"
+  par défaut: "'aucune'"
+question 1 . smur:
+  valeur: question 1 . situation particuliere = 'smur'
+question 1 . patient hospitalise detenu:
+  valeur: question 1 . situation particuliere = 'patient-hospitalise-detenu'
+question 1 . contrainte bariatrique uniquement:
+  valeur: question 1 . situation particuliere = 'contrainte-bariatrique-uniquement'
+question 1 . permission demandee par patient sans motif medical:
+  valeur: question 1 . situation particuliere = 'permission-demandee-par-patient-sans-motif-medical'
+question 1 . aucune situation particuliere:
+  valeur: question 1 . situation particuliere = 'aucune'
+question 2 . patient hospitalise:
+  question: Le patient est-il hospitalisé au moment du transport, y compris en hospitalisation de jour ?
+  applicable si: question 1 . aucune situation particuliere
+  par défaut: non
+question 2_1 . exception assurance maladie:
+  question: Le transport entre-t-il dans l'une des exceptions suivantes restant prises en charge par l'Assurance Maladie ?
+  applicable si: question 2 . patient hospitalise
+  une possibilité:
+    - "'aucune'"
+    - "'retour-usld'"
+    - "'retour-ehpad'"
+    - "'retour-had'"
+    - "'radiotherapie-structure-liberale-ou-centre-sante'"
+    - "'permission-moins-48h-moins-20ans-hospitalise-plus-14jours'"
+  par défaut: "'aucune'"
+question 2_1 . exception validee:
+  une de ces conditions:
+    - question 2_1 . exception assurance maladie = 'retour-usld'
+    - question 2_1 . exception assurance maladie = 'retour-ehpad'
+    - question 2_1 . exception assurance maladie = 'retour-had'
+    - question 2_1 . exception assurance maladie = 'radiotherapie-structure-liberale-ou-centre-sante'
+    - question 2_1 . exception assurance maladie = 'permission-moins-48h-moins-20ans-hospitalise-plus-14jours'
+question 2_1 . aucune exception:
+  toutes ces conditions:
+    - question 2 . patient hospitalise
+    - question 2_1 . exception assurance maladie = 'aucune'
+question 3 . motif principal:
+  question: Quel est le motif principal du transport ?
+  applicable si:
+    toutes ces conditions:
+      - question 1 . aucune situation particuliere
+      - une de ces conditions:
+          - question 2 . patient hospitalise = non
+          - question 2_1 . exception validee
+  une possibilité:
+    - "'convocation-controle-securite-sociale'"
+    - "'camsp-cmpp'"
+    - "'engagement-maternite'"
+    - "'samsah'"
+    - "'hospitalisation-ou-seance-assimilee'"
+    - "'accident-travail-maladie-professionnelle'"
+    - "'ald-reconnue'"
+    - "'ambulance-justifiee-etat-patient'"
+    - "'aucun'"
+  par défaut: "'aucun'"
+question 3 . convocation controle securite sociale:
+  valeur: question 3 . motif principal = 'convocation-controle-securite-sociale'
+question 3 . camsp cmpp:
+  valeur: question 3 . motif principal = 'camsp-cmpp'
+question 3 . engagement maternite:
+  valeur: question 3 . motif principal = 'engagement-maternite'
+question 3 . samsah:
+  valeur: question 3 . motif principal = 'samsah'
+question 3 . hospitalisation ou seance assimilee:
+  valeur: question 3 . motif principal = 'hospitalisation-ou-seance-assimilee'
+question 3 . accident travail maladie professionnelle:
+  valeur: question 3 . motif principal = 'accident-travail-maladie-professionnelle'
+question 3 . ald reconnue:
+  valeur: question 3 . motif principal = 'ald-reconnue'
+question 3 . ambulance justifiee etat patient:
+  valeur: question 3 . motif principal = 'ambulance-justifiee-etat-patient'
+question 3 . aucun motif:
+  valeur: question 3 . motif principal = 'aucun'
+question 4 . transport en lien avec ald reconnue:
+  question: Le transport est-il en lien avec l'ALD reconnue du patient ?
+  applicable si: question 3 . ald reconnue
+  par défaut: non
+question 4_1 . seance dialyse radiotherapie chimiotherapie:
+  question: S'agit-il d'une séance de dialyse, radiothérapie ou chimiothérapie ?
+  applicable si: question 4 . transport en lien avec ald reconnue
+  par défaut: non
+question 4_2 . incapacite ou deficience:
+  question: Le patient présente-t-il une incapacité ou déficience justifiant le transport ?
+  applicable si:
+    toutes ces conditions:
+      - question 4 . transport en lien avec ald reconnue
+      - question 4_1 . seance dialyse radiotherapie chimiotherapie = non
+  par défaut: non
+ald . condition complementaire validee:
+  une de ces conditions:
+    - question 4_1 . seance dialyse radiotherapie chimiotherapie
+    - question 4_2 . incapacite ou deficience
+ald . validee:
+  toutes ces conditions:
+    - question 3 . ald reconnue
+    - question 4 . transport en lien avec ald reconnue
+    - ald . condition complementaire validee
+ald . non validee:
+  toutes ces conditions:
+    - question 3 . ald reconnue
+    - ald . validee = non
+question 5 . trajet plus de 150 km aller:
+  question: Le trajet est-il supérieur à 150 km aller ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5 . transports en serie:
+  question: Le transport relève-t-il de transports en série ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5 . avion ou bateau ligne reguliere:
+  question: Le transport nécessite-t-il un avion ou un bateau de ligne régulière ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5 . transport vers camsp cmpp:
+  question: Le transport concerne-t-il un CAMSP ou un CMPP ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5 . engagement maternite maternité eloignee:
+  question: Le transport concerne-t-il une maternité éloignée dans le cadre de l'engagement maternité ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5 . soins traitements samsah:
+  question: Le transport concerne-t-il des soins ou traitements vers un SAMSAH ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 5_1 . au moins 4 transports:
+  question: Au moins 4 transports sont-ils prévus ?
+  applicable si: question 5 . transports en serie
+  par défaut: non
+question 5_1 . periode 2 mois:
+  question: Ces transports ont-ils lieu sur une période de 2 mois ?
+  applicable si: question 5 . transports en serie
+  par défaut: non
+question 5_1 . meme traitement:
+  question: Ces transports concernent-ils le même traitement ?
+  applicable si: question 5 . transports en serie
+  par défaut: non
+question 5_1 . chaque trajet superieur 50 km aller:
+  question: Chaque trajet aller est-il supérieur à 50 km ?
+  applicable si: question 5 . transports en serie
+  par défaut: non
+question 5_1 . hors ald:
+  question: Ces transports en série sont-ils hors ALD ?
+  applicable si: question 5 . transports en serie
+  par défaut: non
+transports en serie . dap validee:
+  toutes ces conditions:
+    - question 5 . transports en serie
+    - question 5_1 . au moins 4 transports
+    - question 5_1 . periode 2 mois
+    - question 5_1 . meme traitement
+    - question 5_1 . chaque trajet superieur 50 km aller
+    - question 5_1 . hors ald
+transports en serie . dap non validee:
+  toutes ces conditions:
+    - question 5 . transports en serie
+    - transports en serie . dap validee = non
+question 6 . ambulance . allonge ou demi assis:
+  question: Le patient doit-il être allongé ou en position demi-assise ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . ambulance . surveillance qualifiee:
+  question: Le patient doit-il être surveillé par une personne qualifiée ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . ambulance . oxygene:
+  question: Le patient doit-il recevoir de l'oxygène pendant le transport ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . ambulance . brancardage ou portage:
+  question: Le patient doit-il être brancardé ou porté ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . ambulance . asepsie:
+  question: Le patient doit-il voyager dans des conditions d'asepsie ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+mode . ambulance justifiee:
+  une de ces conditions:
+    - question 6 . ambulance . allonge ou demi assis
+    - question 6 . ambulance . surveillance qualifiee
+    - question 6 . ambulance . oxygene
+    - question 6 . ambulance . brancardage ou portage
+    - question 6 . ambulance . asepsie
+question 6 . tpmr . fauteuil roulant sans transfert:
+  question: Le patient doit-il être transporté sans quitter son fauteuil roulant manuel ou électrique ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+mode . tpmr justifie:
+  valeur: question 6 . tpmr . fauteuil roulant sans transfert
+question 6 . vsl taxi . aide au deplacement:
+  question: Le patient nécessite-t-il une aide au déplacement ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . vsl taxi . aide transmission informations:
+  question: Le patient nécessite-t-il l'aide d'une tierce personne pour transmettre les informations nécessaires à l'équipe soignante ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . vsl taxi . regles hygiene:
+  question: Le patient nécessite-t-il le respect rigoureux de règles d'hygiène ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . vsl taxi . risque effets secondaires:
+  question: Le patient présente-t-il un risque d'effets secondaires pendant le transport ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+mode . vsl taxi justifie:
+  une de ces conditions:
+    - question 6 . vsl taxi . aide au deplacement
+    - question 6 . vsl taxi . aide transmission informations
+    - question 6 . vsl taxi . regles hygiene
+    - question 6 . vsl taxi . risque effets secondaires
+question 6 . individuel commun . autonome:
+  question: Le patient peut-il se déplacer seul, sans assistance particulière ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+question 6 . individuel commun . accompagne proche:
+  question: Le patient peut-il se déplacer avec l'aide d'un proche, sans assistance particulière ?
+  applicable si: motif . ouvrant droit valide
+  par défaut: non
+mode . individuel commun justifie:
+  une de ces conditions:
+    - question 6 . individuel commun . autonome
+    - question 6 . individuel commun . accompagne proche
+mode . justifie:
+  une de ces conditions:
+    - mode . ambulance justifiee
+    - mode . tpmr justifie
+    - mode . vsl taxi justifie
+    - mode . individuel commun justifie
+mode . principal:
+  variations:
+    - si: mode . ambulance justifiee
+      alors: "'ambulance'"
+    - si: mode . tpmr justifie
+      alors: "'vsl-ou-taxi-tpmr'"
+    - si: mode . vsl taxi justifie
+      alors: "'vsl-ou-taxi-conventionne'"
+    - si: mode . individuel commun justifie
+      alors: "'vehicule-personnel-ou-transport-commun'"
+    - sinon: "'mode-non-justifie'"
+question 6_1 . transport partage incompatible:
+  question: L'état de santé du patient est-il incompatible avec un transport partagé ?
+  applicable si:
+    toutes ces conditions:
+      - mode . vsl taxi justifie
+      - mode . ambulance justifiee = non
+      - mode . tpmr justifie = non
+  par défaut: non
+motif . ambulance valide:
+  toutes ces conditions:
+    - question 3 . ambulance justifiee etat patient
+    - mode . ambulance justifiee
+motif . ouvrant droit valide:
+  une de ces conditions:
+    - question 3 . camsp cmpp
+    - question 3 . engagement maternite
+    - question 3 . samsah
+    - question 3 . hospitalisation ou seance assimilee
+    - question 3 . accident travail maladie professionnelle
+    - ald . validee
+    - motif . ambulance valide
+motif . ouvrant droit non valide:
+  toutes ces conditions:
+    - question 3 . convocation controle securite sociale = non
+    - motif . ouvrant droit valide = non
+dap . necessaire:
+  une de ces conditions:
+    - question 5 . trajet plus de 150 km aller
+    - transports en serie . dap validee
+    - question 5 . avion ou bateau ligne reguliere
+    - question 5 . transport vers camsp cmpp
+    - question 3 . camsp cmpp
+    - question 5 . engagement maternite maternité eloignee
+    - question 5 . soins traitements samsah
+    - question 3 . samsah
+dap . non necessaire:
+  valeur: dap . necessaire = non
+alerte . samsah:
+  une de ces conditions:
+    - question 3 . samsah
+    - question 5 . soins traitements samsah
+alerte . samsah message:
+  applicable si: alerte . samsah
+  texte: Point de vigilance — SAMSAH. Ce cas est conservé dans le POC pour observation terrain. Le prescripteur ou le référent établissement doit confirmer la procédure documentaire applicable avant émission définitive.
+alerte . transports en serie non dap:
+  valeur: transports en serie . dap non validee
+alerte . transports en serie non dap message:
+  applicable si: alerte . transports en serie non dap
+  texte: Les transports en série ne remplissent pas toutes les conditions nécessaires à une demande d’accord préalable au titre des transports en série. Vérifier s’il existe un autre cas nécessitant une DAP.
+sortie . simulation impossible:
+  valeur: simulation . possible = non
+sortie . hors parcours pmt dap standard:
+  une de ces conditions:
+    - question 1 . smur
+    - question 1 . patient hospitalise detenu
+    - question 2_1 . aucune exception
+sortie . mode non justifie:
+  toutes ces conditions:
+    - sortie . convocation valant prescription = non
+    - motif . ouvrant droit valide
+    - mode . justifie = non
+sortie . non eligible:
+  une de ces conditions:
+    - question 1 . contrainte bariatrique uniquement
+    - question 1 . permission demandee par patient sans motif medical
+    - question 3 . aucun motif
+    - ald . non validee
+    - motif . ouvrant droit non valide
+    - sortie . mode non justifie
+sortie . convocation valant prescription:
+  valeur: question 3 . convocation controle securite sociale
+sortie . eligible pmt:
+  toutes ces conditions:
+    - simulation . possible
+    - motif . ouvrant droit valide
+    - dap . non necessaire
+    - mode . justifie
+    - sortie . hors parcours pmt dap standard = non
+    - sortie . non eligible = non
+    - sortie . convocation valant prescription = non
+sortie . eligible dap:
+  toutes ces conditions:
+    - simulation . possible
+    - motif . ouvrant droit valide
+    - dap . necessaire
+    - mode . justifie
+    - sortie . hors parcours pmt dap standard = non
+    - sortie . non eligible = non
+    - sortie . convocation valant prescription = non
+resultat . statut:
+  variations:
+    - si: sortie . simulation impossible
+      alors: "'simulation-impossible-prescripteur-non-identifie'"
+    - si: sortie . hors parcours pmt dap standard
+      alors: "'situation-hors-parcours-assurance-maladie-standard'"
+    - si: sortie . convocation valant prescription
+      alors: "'patient-eligible-convocation-valant-prescription'"
+    - si: sortie . non eligible
+      alors: "'patient-non-eligible'"
+    - si: sortie . eligible dap
+      alors: "'patient-eligible-sous-reserve-accord-prealable'"
+    - si: sortie . eligible pmt
+      alors: "'patient-eligible'"
+    - sinon: "'patient-non-eligible'"
+resultat . document:
+  variations:
+    - si: resultat . statut = 'patient-eligible'
+      alors: "'pmt'"
+    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
+      alors: "'dap'"
+    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
+      alors: "'convocation-ou-avis'"
+    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+      alors: "'procedure-locale-ou-etablissement'"
+    - si: resultat . statut = 'simulation-impossible-prescripteur-non-identifie'
+      alors: "'aucun-document'"
+    - sinon: "'aucun-document-assurance-maladie'"
+resultat . mode transport:
+  valeur: mode . principal
+resultat . patient . motif simplifie:
+  variations:
+    - si: question 3 . hospitalisation ou seance assimilee
+      alors:
+        texte: Votre transport est lié à une hospitalisation ou à une séance de soins.
+    - si: question 3 . accident travail maladie professionnelle
+      alors:
+        texte: Votre transport est lié à un accident du travail ou à une maladie professionnelle.
+    - si: ald . validee
+      alors:
+        texte: Votre transport est lié à des soins en rapport avec une affection reconnue.
+    - si: question 3 . ambulance justifiee etat patient
+      alors:
+        texte: Votre état de santé justifie un mode de transport adapté.
+    - si: question 3 . camsp cmpp
+      alors:
+        texte: Votre transport concerne des soins ou traitements nécessitant une validation spécifique.
+    - si: question 3 . engagement maternite
+      alors:
+        texte: Votre transport concerne une situation nécessitant une validation spécifique.
+    - si: question 3 . samsah
+      alors:
+        texte: Votre transport concerne des soins ou traitements nécessitant une validation spécifique.
+    - sinon:
+        texte: Les informations renseignées correspondent à une situation pouvant ouvrir droit à une prise en charge.
+resultat . patient . motif dap simplifie:
+  variations:
+    - si: question 5 . trajet plus de 150 km aller
+      alors:
+        texte: Le trajet est supérieur à 150 km aller.
+    - si: transports en serie . dap validee
+      alors:
+        texte: Plusieurs transports sont nécessaires pour le même traitement.
+    - si: question 5 . avion ou bateau ligne reguliere
+      alors:
+        texte: Le transport nécessite un avion ou un bateau de ligne régulière.
+    - si:
+        une de ces conditions:
+          - question 5 . transport vers camsp cmpp
+          - question 3 . camsp cmpp
+      alors:
+        texte: Le transport concerne des soins ou traitements nécessitant une validation spécifique.
+    - si: question 5 . engagement maternite maternité eloignee
+      alors:
+        texte: Le transport concerne une maternité éloignée.
+    - si:
+        une de ces conditions:
+          - question 5 . soins traitements samsah
+          - question 3 . samsah
+      alors:
+        texte: Le transport concerne des soins ou traitements nécessitant une validation spécifique.
+    - sinon:
+        texte: Le transport relève d'un cas nécessitant une demande d’accord préalable.
+resultat . patient . niveau 1:
+  variations:
+    - si: resultat . statut = 'patient-eligible'
+      alors:
+        texte: Patient éligible — Votre situation ouvre droit à une prise en charge du transport par l’Assurance Maladie.
+    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
+      alors:
+        texte: Patient éligible sous réserve d’accord préalable — Votre situation peut ouvrir droit à une prise en charge du transport par l’Assurance Maladie, sous réserve d’accord préalable.
+    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
+      alors:
+        texte: Patient éligible — convocation valant prescription. Votre transport est pris en charge sur la base de la convocation ou de l’avis reçu, sous réserve de respecter le mode de transport indiqué.
+    - si: resultat . statut = 'patient-non-eligible'
+      alors:
+        texte: Patient non éligible — La situation déclarée ne permet pas d’établir une prise en charge du transport par l’Assurance Maladie.
+    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+      alors:
+        texte: Situation hors parcours Assurance Maladie standard — La situation déclarée nécessite une procédure spécifique.
+    - si: resultat . statut = 'simulation-impossible-prescripteur-non-identifie'
+      alors:
+        texte: Simulation impossible — Le prescripteur doit être identifié avant de poursuivre.
+    - sinon:
+        texte: Patient non éligible — La situation déclarée ne permet pas d’établir une prise en charge du transport par l’Assurance Maladie.
+resultat . patient . niveau 2:
+  variations:
+    - si: resultat . statut = 'patient-eligible'
+      alors: resultat . patient . motif simplifie
+    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
+      alors: resultat . patient . motif dap simplifie
+    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
+      alors:
+        texte: Le déplacement concerne une convocation ou un contrôle prévu par la Sécurité sociale.
+    - si: resultat . statut = 'patient-non-eligible'
+      alors:
+        texte: Les informations renseignées ne correspondent pas à un cas permettant de prescrire une PMT ou une DAP.
+    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+      alors:
+        texte: La situation déclarée ne relève pas du parcours standard de prescription Assurance Maladie.
+    - sinon:
+        texte: Les informations renseignées ne permettent pas de finaliser la simulation.
+resultat . patient . niveau 3:
+  variations:
+    - si: resultat . document = 'pmt'
+      alors:
+        texte: Le prescripteur doit compléter une Prescription Médicale de Transport. Une fois le document remis, contactez rapidement un transporteur sanitaire pour organiser le ou les transports prescrits. Vous devrez respecter le mode de transport indiqué et conserver les justificatifs nécessaires au remboursement.
+    - si: resultat . document = 'dap'
+      alors:
+        texte: Le prescripteur doit compléter une Demande d’Accord Préalable de Transport. Vous devrez transmettre ce document selon les modalités indiquées sur celui-ci. En l’absence de réponse sous 15 jours, l’accord est considéré comme donné, sauf urgence attestée par le médecin. Une fois l’accord obtenu ou le délai écoulé sans réponse, contactez rapidement un transporteur sanitaire pour organiser le ou les transports prescrits.
+    - si: resultat . document = 'convocation-ou-avis'
+      alors:
+        texte: Conservez la convocation ou l’avis reçu. Ce document tient lieu de prescription médicale de transport. Contactez rapidement le transporteur sanitaire adapté au mode de transport indiqué sur la convocation ou l’avis.
+    - si: resultat . statut = 'patient-non-eligible'
+      alors:
+        texte: "Vous pouvez organiser votre déplacement par vos propres moyens : véhicule personnel, accompagnement par un proche, transport en commun, taxi non conventionné, service de mobilité local ou solution proposée par l’établissement si elle existe."
+    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+      alors:
+        texte: Rapprochez-vous de l’établissement ou du référent compétent pour appliquer la procédure adaptée.
+    - sinon:
+        texte: Complétez les informations nécessaires pour finaliser la simulation.
+resultat . prescripteur . document a completer:
+  variations:
+    - si: resultat . document = 'pmt'
+      alors:
+        texte: PMT — Prescription Médicale de Transport
+    - si: resultat . document = 'dap'
+      alors:
+        texte: DAP — Demande d’Accord Préalable de Transport
+    - si: resultat . document = 'convocation-ou-avis'
+      alors:
+        texte: Aucun document PMT ou DAP à compléter dans ce cas
+    - si: resultat . document = 'procedure-locale-ou-etablissement'
+      alors:
+        texte: Procédure locale ou établissement à appliquer
+    - sinon:
+        texte: Aucun document Assurance Maladie à compléter
+resultat . prescripteur . alerte:
+  variations:
+    - si: alerte . samsah
+      alors: alerte . samsah message
+    - si: alerte . transports en serie non dap
+      alors: alerte . transports en serie non dap message
+    - sinon:
+        texte: ""
+checklist . generer pmt:
+  valeur: resultat . document = 'pmt'
+checklist . generer dap:
+  valeur: resultat . document = 'dap'
+checklist . ne pas generer pmt:
+  une de ces conditions:
+    - resultat . document = 'dap'
+    - resultat . document = 'convocation-ou-avis'
+    - resultat . document = 'procedure-locale-ou-etablissement'
+    - resultat . document = 'aucun-document-assurance-maladie'
+checklist . ne pas generer dap:
+  une de ces conditions:
+    - resultat . document = 'pmt'
+    - resultat . document = 'convocation-ou-avis'
+    - resultat . document = 'procedure-locale-ou-etablissement'
+    - resultat . document = 'aucun-document-assurance-maladie'
+checklist . cocher motif hospitalisation:
+  valeur: question 3 . hospitalisation ou seance assimilee
+checklist . cocher motif ald:
+  valeur: ald . validee
+checklist . cocher motif accident travail maladie professionnelle:
+  valeur: question 3 . accident travail maladie professionnelle
+checklist . cocher motif engagement maternite:
+  valeur: question 3 . engagement maternite
+checklist . cocher motif camsp cmpp:
+  valeur: question 3 . camsp cmpp
+checklist . cocher motif samsah:
+  valeur: question 3 . samsah
+checklist . cocher accord prealable trajet plus 150 km:
+  valeur: question 5 . trajet plus de 150 km aller
+checklist . cocher accord prealable transports en serie:
+  valeur: transports en serie . dap validee
+checklist . cocher accord prealable avion bateau:
+  valeur: question 5 . avion ou bateau ligne reguliere
+checklist . cocher accord prealable camsp cmpp:
+  une de ces conditions:
+    - question 5 . transport vers camsp cmpp
+    - question 3 . camsp cmpp
+checklist . cocher accord prealable engagement maternite:
+  valeur: question 5 . engagement maternite maternité eloignee
+checklist . cocher accord prealable samsah:
+  une de ces conditions:
+    - question 5 . soins traitements samsah
+    - question 3 . samsah
+checklist . renseigner nombre transports:
+  valeur: transports en serie . dap validee
+checklist . cocher ambulance:
+  valeur: mode . ambulance justifiee
+checklist . cocher ambulance allonge demi assis:
+  valeur: question 6 . ambulance . allonge ou demi assis
+checklist . cocher ambulance surveillance qualifiee:
+  valeur: question 6 . ambulance . surveillance qualifiee
+checklist . cocher ambulance oxygene:
+  valeur: question 6 . ambulance . oxygene
+checklist . cocher ambulance brancardage portage:
+  valeur: question 6 . ambulance . brancardage ou portage
+checklist . cocher ambulance asepsie:
+  valeur: question 6 . ambulance . asepsie
+checklist . cocher tpmr:
+  valeur: mode . tpmr justifie
+checklist . cocher vsl taxi:
+  toutes ces conditions:
+    - mode . vsl taxi justifie
+    - mode . ambulance justifiee = non
+    - mode . tpmr justifie = non
+checklist . cocher vehicule personnel ou transport commun:
+  toutes ces conditions:
+    - mode . individuel commun justifie
+    - mode . ambulance justifiee = non
+    - mode . tpmr justifie = non
+    - mode . vsl taxi justifie = non
+checklist . cocher transport partage incompatible:
+  valeur: question 6_1 . transport partage incompatible
+checklist . cocher accompagnant:
+  une de ces conditions:
+    - question 6 . individuel commun . accompagne proche
+    - question 6 . vsl taxi . aide transmission informations
+checklist . texte document:
+  variations:
+    - si: checklist . generer pmt
+      alors:
+        texte: Compléter une PMT — Prescription Médicale de Transport.
+    - si: checklist . generer dap
+      alors:
+        texte: Compléter une DAP — Demande d’Accord Préalable de Transport.
+    - si: resultat . document = 'convocation-ou-avis'
+      alors:
+        texte: Aucun document PMT ou DAP à compléter. Vérifier que la convocation ou l’avis mentionne le mode de transport.
+    - si: resultat . document = 'procedure-locale-ou-etablissement'
+      alors:
+        texte: Ne pas utiliser de document PMT ou DAP. Appliquer la procédure locale ou établissement.
+    - sinon:
+        texte: Aucun document Assurance Maladie à compléter.
+checklist . texte mode:
+  variations:
+    - si: resultat . mode transport = 'ambulance'
+      alors:
+        texte: "Mode principal : ambulance."
+    - si: resultat . mode transport = 'vsl-ou-taxi-tpmr'
+      alors:
+        texte: "Mode principal : VSL TPMR ou taxi conventionné TPMR."
+    - si: resultat . mode transport = 'vsl-ou-taxi-conventionne'
+      alors:
+        texte: "Mode principal : VSL ou taxi conventionné."
+    - si: resultat . mode transport = 'vehicule-personnel-ou-transport-commun'
+      alors:
+        texte: "Mode principal : véhicule personnel ou transport en commun."
+    - sinon:
+        texte: Aucun mode de transport médicalement justifié.
+interface . afficher page resultat:
+  valeur: simulation . possible
+interface . afficher section patient:
+  valeur: simulation . possible
+interface . afficher section prescripteur:
+  valeur: simulation . possible
+interface . afficher alerte prescripteur:
+  une de ces conditions:
+    - alerte . samsah
+    - alerte . transports en serie non dap
+interface . sortie statut:
+  valeur: resultat . statut
+interface . sortie document:
+  valeur: resultat . document
+interface . sortie mode transport:
+  valeur: resultat . mode transport
+interface . sortie patient niveau 1:
+  valeur: resultat . patient . niveau 1
+interface . sortie patient niveau 2:
+  valeur: resultat . patient . niveau 2
+interface . sortie patient niveau 3:
+  valeur: resultat . patient . niveau 3
+interface . sortie prescripteur document:
+  valeur: resultat . prescripteur . document a completer
+interface . sortie prescripteur alerte:
+  valeur: resultat . prescripteur . alerte
+interface . sortie checklist document:
+  valeur: checklist . texte document
+interface . sortie checklist mode:
+  valeur: checklist . texte mode
