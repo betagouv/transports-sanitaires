@@ -6,9 +6,8 @@ Permettre à un prescripteur (ou son personnel) de répondre à un questionnaire
 sur la situation d'un patient et d'obtenir :
 
 - **Statut** de la situation (`resultat . statut`) : éligible, éligible sous
-  réserve d'accord préalable, convocation valant prescription, non éligible,
-  situation hors parcours Assurance Maladie standard, ou simulation impossible
-  (prescripteur non identifié).
+  réserve d'accord préalable, convocation valant prescription, non éligible, ou
+  situation hors parcours Assurance Maladie standard.
 - **Document à établir** (`resultat . document`) : PMT (prescription médicale
   de transport), DAP (demande d'accord préalable), convocation/avis, procédure
   locale/établissement, ou aucun document Assurance Maladie.
@@ -30,13 +29,6 @@ Source des règles : référentiel CNAM
 Le questionnaire est généré automatiquement par `@publicodes/forms` à partir des
 cibles `resultat . statut`, `resultat . document` et `resultat . mode transport`.
 Les questions applicables (et leur enchaînement) sont déduites des règles.
-
-### Identification du prescripteur (`identification . *`)
-
-- établissement renseigné, service/unité renseigné, prescripteur renseigné,
-  « Autre prescripteur » (avec nom/prénom si applicable).
-- `simulation . possible` = prescripteur complètement identifié. Sinon le statut
-  est `simulation-impossible-prescripteur-non-identifie`.
 
 ### Parcours médical
 
@@ -74,8 +66,8 @@ Les questions applicables (et leur enchaînement) sont déduites des règles.
 - `mode . principal` : ambulance > VSL/taxi TPMR > VSL/taxi conventionné >
   véhicule personnel/commun (priorité décroissante), sinon mode non justifié.
 - `resultat . statut` puis `resultat . document` : dérivés des règles `sortie . *`
-  dans l'ordre simulation impossible → hors parcours → convocation → non éligible
-  → éligible DAP → éligible PMT.
+  dans l'ordre hors parcours → convocation → non éligible → éligible DAP →
+  éligible PMT.
 
 ## Résultat affiché
 
@@ -92,8 +84,8 @@ Les questions applicables (et leur enchaînement) sont déduites des règles.
 
 `apps/simulateur-transport/`
 
-- `regles/regles.publicodes` — modèle complet (identification, questions 1..6,
-  motif, mode, DAP, alertes, résultat, checklist, sorties `interface . *`).
+- `regles/regles.publicodes` — modèle complet (questions 1..6, motif, mode,
+  DAP, alertes, résultat, checklist, sorties `interface . *`).
 - UI : React + `@codegouvfr/react-dsfr` + `@publicodes/forms` — formulaire
   auto-généré (`FormBuilder`) et page de résultat.
   - `src/App.tsx` — pilotage du formulaire multi-pages.

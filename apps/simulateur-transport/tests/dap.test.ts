@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { identifie, baseEligible, evalRule } from "./helpers";
+import { baseEligible, evalRule } from "./helpers";
 
 const dapNecessaire = (s: Record<string, unknown>) =>
   evalRule("dap . necessaire", s);
@@ -63,7 +63,6 @@ describe("dap . necessaire", () => {
   it("motif CAMSP/CMPP → DAP nécessaire", () => {
     expect(
       dapNecessaire({
-        ...identifie,
         "question 1 . situation particuliere": "'aucune'",
         "question 2 . patient hospitalise": "non",
         "question 3 . motif principal": "'camsp-cmpp'",
@@ -74,7 +73,6 @@ describe("dap . necessaire", () => {
   it("motif SAMSAH → DAP nécessaire", () => {
     expect(
       dapNecessaire({
-        ...identifie,
         "question 1 . situation particuliere": "'aucune'",
         "question 2 . patient hospitalise": "non",
         "question 3 . motif principal": "'samsah'",

@@ -6,8 +6,6 @@ checklist:
   valeur: oui
 dap:
   valeur: oui
-identification:
-  valeur: oui
 interface:
   valeur: oui
 mode:
@@ -56,42 +54,8 @@ transports en serie:
   valeur: oui
 simulation:
   valeur: oui
-  titre: Simulation d'éligibilité à un transport pris en charge par l'Assurance Maladie
-  description: |
-    Ce formulaire permet de déterminer si la situation du patient ouvre droit à une prise en charge du transport par l'Assurance Maladie,
-    puis d'indiquer le document à utiliser et les cases à compléter.
-identification . etablissement renseigne:
-  question: L'établissement prescripteur est-il renseigné ?
-  par défaut: non
-identification . service renseigne:
-  question: Le service ou l'unité du prescripteur est-il renseigné ?
-  par défaut: non
-identification . prescripteur renseigne:
-  question: Le prescripteur réalisant la simulation est-il renseigné ?
-  par défaut: non
-identification . prescripteur autre:
-  question: Le prescripteur sélectionné est-il "Autre prescripteur" ?
-  par défaut: non
-identification . autre prescripteur prenom renseigne:
-  question: Le prénom de l'autre prescripteur est-il renseigné ?
-  applicable si: identification . prescripteur autre
-  par défaut: non
-identification . autre prescripteur nom renseigne:
-  question: Le nom de l'autre prescripteur est-il renseigné ?
-  applicable si: identification . prescripteur autre
-  par défaut: non
-identification . prescripteur identifie:
-  toutes ces conditions:
-    - identification . etablissement renseigne
-    - identification . service renseigne
-    - identification . prescripteur renseigne
-    - une de ces conditions:
-        - identification . prescripteur autre = non
-        - toutes ces conditions:
-            - identification . autre prescripteur prenom renseigne
-            - identification . autre prescripteur nom renseigne
 simulation . possible:
-  valeur: identification . prescripteur identifie
+  valeur: oui
 question 1 . situation particuliere:
   question: Une des situations suivantes s'applique-t-elle au transport demandé ?
   une possibilité:
@@ -401,8 +365,6 @@ alerte . transports en serie non dap:
 alerte . transports en serie non dap message:
   applicable si: alerte . transports en serie non dap
   texte: Les transports en série ne remplissent pas toutes les conditions nécessaires à une demande d’accord préalable au titre des transports en série. Vérifier s’il existe un autre cas nécessitant une DAP.
-sortie . simulation impossible:
-  valeur: simulation . possible = non
 sortie . hors parcours pmt dap standard:
   une de ces conditions:
     - question 1 . smur
@@ -443,8 +405,6 @@ sortie . eligible dap:
     - sortie . convocation valant prescription = non
 resultat . statut:
   variations:
-    - si: sortie . simulation impossible
-      alors: "'simulation-impossible-prescripteur-non-identifie'"
     - si: sortie . hors parcours pmt dap standard
       alors: "'situation-hors-parcours-assurance-maladie-standard'"
     - si: sortie . convocation valant prescription
@@ -466,8 +426,6 @@ resultat . document:
       alors: "'convocation-ou-avis'"
     - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
       alors: "'procedure-locale-ou-etablissement'"
-    - si: resultat . statut = 'simulation-impossible-prescripteur-non-identifie'
-      alors: "'aucun-document'"
     - sinon: "'aucun-document-assurance-maladie'"
 resultat . mode transport:
   valeur: mode . principal
@@ -541,9 +499,6 @@ resultat . patient . niveau 1:
     - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
       alors:
         texte: Situation hors parcours Assurance Maladie standard — La situation déclarée nécessite une procédure spécifique.
-    - si: resultat . statut = 'simulation-impossible-prescripteur-non-identifie'
-      alors:
-        texte: Simulation impossible — Le prescripteur doit être identifié avant de poursuivre.
     - sinon:
         texte: Patient non éligible — La situation déclarée ne permet pas d’établir une prise en charge du transport par l’Assurance Maladie.
 resultat . patient . niveau 2:

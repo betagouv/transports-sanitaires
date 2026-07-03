@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { identifie, baseEligible, evalRule } from "./helpers";
+import { baseEligible, evalRule } from "./helpers";
 
 describe("checklist", () => {
   it("cas PMT → générer PMT, pas de DAP", () => {
@@ -38,7 +38,6 @@ describe("resultat . prescripteur . alerte", () => {
   it("motif SAMSAH → alerte de vigilance", () => {
     expect(
       evalRule("resultat . prescripteur . alerte", {
-        ...identifie,
         "question 1 . situation particuliere": "'aucune'",
         "question 2 . patient hospitalise": "non",
         "question 3 . motif principal": "'samsah'",
