@@ -1,112 +1,111 @@
-# Simulateur d'éligibilité aux transports sanitaires — Spec V1
+# Simulateur d'éligibilité aux transports sanitaires — Spec
 
 ## Objectif
 
-Permettre à un médecin (ou son personnel) de répondre à un questionnaire sur
-la situation d'un patient et d'obtenir :
+Permettre à un prescripteur (ou son personnel) de répondre à un questionnaire
+sur la situation d'un patient et d'obtenir :
 
-- **Éligibilité** à la prise en charge du transport : oui / non
-- **Mode de transport** prescriptible : véhicule personnel / TAP (taxi-VSL) / ambulance
-- **Accord préalable requis** : oui / non
-- **Détail des règles évaluées** : trace complète de la décision (arbre publicode)
+- **Statut** de la situation (`resultat . statut`) : éligible, éligible sous
+  réserve d'accord préalable, convocation valant prescription, non éligible,
+  situation hors parcours Assurance Maladie standard, ou simulation impossible
+  (prescripteur non identifié).
+- **Document à établir** (`resultat . document`) : PMT (prescription médicale
+  de transport), DAP (demande d'accord préalable), convocation/avis, procédure
+  locale/établissement, ou aucun document Assurance Maladie.
+- **Mode de transport** (`resultat . mode transport`) : ambulance, VSL/taxi
+  TPMR, VSL/taxi conventionné, véhicule personnel/transport en commun, ou mode
+  non justifié.
+- **Messages patient** en trois niveaux (`resultat . patient . niveau 1/2/3`)
+  et **aide prescripteur** (document à compléter, checklist, alertes).
+- **Détail des règles évaluées** : trace de la décision (statut, document, mode).
 
-Hors scope V1 : pré-remplissage de la prescription, calcul des frais
-kilométriques, taux de remboursement.
+Hors scope : pré-remplissage du document, calcul des frais kilométriques,
+taux de remboursement.
 
 Source des règles : référentiel CNAM
 (https://www.ameli.fr/transporteur-sanitaire/exercice-professionnel/prescription-prise-charge).
 
-## Périmètre des situations couvertes
-
-1. Hospitalisation / séances assimilées (chimiothérapie, radiothérapie, dialyse)
-2. Accident du travail / maladie professionnelle reconnu
-3. ALD (affection longue durée) : ALD reconnue + transport lié à l'ALD +
-   déficience/incapacité justifiant le transport (critère simplifié,
-   sans détail du référentiel de déficiences par pathologie)
-4. Longue distance (> 150 km aller) et transport en série
-   (≥ 4 trajets > 50 km sur 2 mois pour le même traitement)
-
-Hors scope V1 : convocations administratives, transports CAMSP/CMPP.
-
 ## Modèle de questions
 
-### Situation médicale
+Le questionnaire est généré automatiquement par `@publicodes/forms` à partir des
+cibles `resultat . statut`, `resultat . document` et `resultat . mode transport`.
+Les questions applicables (et leur enchaînement) sont déduites des règles.
 
-- `situation . hospitalisation ou séance` (oui/non) — entrée/sortie
-  d'établissement, chimio, radiothérapie, dialyse
-- `situation . accident du travail` (oui/non)
-- `situation . ALD . statut` — non / ALD non exonérante / ALD exonérante
-- `situation . ALD . lien avec le transport` (oui/non, affiché si ALD)
-- `situation . ALD . déficience ou incapacité` (oui/non, affiché si ALD) —
-  question générique, sans détail par catégorie de déficience
-- `situation . distance aller` (km, saisie manuelle — pas de calcul
-  d'adresses en V1)
-- `situation . nombre de trajets sur 2 mois` (affiché si distance > 50 km)
+### Identification du prescripteur (`identification . *`)
 
-### Autonomie du patient (pour le mode de transport)
+- établissement renseigné, service/unité renseigné, prescripteur renseigné,
+  « Autre prescripteur » (avec nom/prénom si applicable).
+- `simulation . possible` = prescripteur complètement identifié. Sinon le statut
+  est `simulation-impossible-prescripteur-non-identifie`.
 
-- `autonomie . déplacement autonome` (oui/non)
-- `autonomie . aide technique ou tierce personne` (oui/non)
-- `autonomie . risque d'effets secondaires pendant le trajet` (oui/non)
-- `autonomie . position allongée, surveillance ou conditions stériles` (oui/non)
+### Parcours médical
 
-## Règles de décision
+- `question 1 . situation particuliere` — aucune / SMUR / patient hospitalisé
+  détenu / contrainte bariatrique uniquement / permission sans motif médical.
+  Les situations SMUR et patient hospitalisé détenu conduisent à une situation
+  hors parcours ; contrainte bariatrique et permission sans motif médical sont
+  non éligibles.
+- `question 2 . patient hospitalise` (si aucune situation particulière) et
+  `question 2_1 . exception assurance maladie` (si hospitalisé) — les exceptions
+  (retour USLD/EHPAD/HAD, radiothérapie en structure libérale, permission
+  courte) restent prises en charge.
+- `question 3 . motif principal` — convocation contrôle Sécurité sociale,
+  CAMSP/CMPP, engagement maternité, SAMSAH, hospitalisation ou séance assimilée,
+  accident du travail/maladie professionnelle, ALD reconnue, ambulance justifiée
+  par l'état du patient, ou aucun.
+- `question 4 . *` — lien du transport avec l'ALD, séance
+  dialyse/radiothérapie/chimiothérapie, incapacité/déficience (validation ALD).
+- `question 5 . *` — critères d'accord préalable (> 150 km, transports en série,
+  avion/bateau de ligne, CAMSP/CMPP, maternité éloignée, SAMSAH) et
+  `question 5_1 . *` (conditions détaillées des transports en série).
+- `question 6 . *` — justification du mode de transport (ambulance, TPMR,
+  VSL/taxi, individuel/commun) et `question 6_1` (incompatibilité transport
+  partagé).
 
-### Éligibilité
+## Règles de décision (principales)
 
-```
-éligible =
-  situation . hospitalisation ou séance
-  OU situation . accident du travail
-  OU (situation . ALD . statut != "non"
-      ET situation . ALD . lien avec le transport
-      ET situation . ALD . déficience ou incapacité)
-  OU situation . distance aller > 150
-  OU (situation . distance aller > 50 ET situation . nombre de trajets sur 2 mois >= 4)
-```
-
-### Mode de transport (si éligible)
-
-```
-mode =
-  si autonomie . position allongée, surveillance ou conditions stériles : "ambulance"
-  sinon si (autonomie . aide technique ou tierce personne
-            OU autonomie . risque d'effets secondaires pendant le trajet) : "TAP (taxi/VSL)"
-  sinon : "véhicule personnel / transports en commun"
-```
-
-### Accord préalable
-
-```
-accord préalable requis =
-  situation . distance aller > 150
-  OU (situation . distance aller > 50 ET situation . nombre de trajets sur 2 mois >= 4)
-```
-
-Note : `situation . ALD . statut` (exonérante / non exonérante) est capturé
-mais n'influence pas l'éligibilité ni le mode en V1 — réservé pour une V2
-sur les taux de remboursement.
+- `motif . permet poursuivre formulaire` : gate non circulaire (basé sur la
+  sélection de motif + ALD validée) qui rend applicables les questions 5 et 6.
+- `motif . ouvrant droit valide` : décision finale d'ouverture de droit (inclut
+  `motif . ambulance valide` = motif ambulance **et** mode ambulance justifié).
+- `ald . validee` : ALD reconnue + transport lié + (séance OU
+  incapacité/déficience).
+- `dap . necessaire` : ≥ 1 critère d'accord préalable rempli.
+- `mode . principal` : ambulance > VSL/taxi TPMR > VSL/taxi conventionné >
+  véhicule personnel/commun (priorité décroissante), sinon mode non justifié.
+- `resultat . statut` puis `resultat . document` : dérivés des règles `sortie . *`
+  dans l'ordre simulation impossible → hors parcours → convocation → non éligible
+  → éligible DAP → éligible PMT.
 
 ## Résultat affiché
 
-- Éligibilité (oui/non)
-- Mode de transport recommandé (si éligible)
-- Accord préalable requis (oui/non)
-- Détail complet de l'évaluation : pour chaque règle (`éligible`, `mode`,
-  `accord préalable requis`), affichage de l'arbre de décision publicode
-  (règles déclenchantes, valeurs des variables intermédiaires)
+- Bandeau de statut coloré (succès / info / avertissement / erreur) avec le
+  message patient niveau 1 (titre) et niveau 2 (motif simplifié).
+- Encart « Ce que vous devez faire » (niveau 3).
+- Encart « Pour le prescripteur » : document à compléter + checklist
+  (`checklist . texte document` / `checklist . texte mode`).
+- Alerte de vigilance éventuelle (`resultat . prescripteur . alerte`) : SAMSAH,
+  transports en série ne remplissant pas les conditions de DAP.
+- Détail des règles évaluées (statut, document, mode).
 
 ## Architecture
 
 `apps/simulateur-transport/`
 
-- `regles/`
-  - `situation.publicodes`
-  - `autonomie.publicodes`
-  - `eligibilite.publicodes`
-  - `mode-transport.publicodes`
-  - `accord-prealable.publicodes`
-- UI : React + `@publicodes/react-ui` — formulaire auto-généré à partir
-  des règles ci-dessus + page de résultat affichant l'éligibilité, le
-  mode, l'accord préalable et l'explication détaillée via le moteur
-  publicode
+- `regles/regles.publicodes` — modèle complet (identification, questions 1..6,
+  motif, mode, DAP, alertes, résultat, checklist, sorties `interface . *`).
+- UI : React + `@codegouvfr/react-dsfr` + `@publicodes/forms` — formulaire
+  auto-généré (`FormBuilder`) et page de résultat.
+  - `src/App.tsx` — pilotage du formulaire multi-pages.
+  - `src/FormField.tsx` — rendu des champs (RadioGroup, select, nombre).
+  - `src/Resultats.tsx` — page de résultat à partir des sorties du moteur.
+  - `src/engine.ts` — chargement des règles et instanciation du moteur.
+- Tests (`tests/`) : tests moteur (`resultat`, `dap`, `checklist-alerte`) sans
+  mock + tests d'intégration UI (`App.test.tsx`).
+
+## Limites connues
+
+- Les libellés des options `une possibilité` (question 1, 2_1, 3) sont les
+  identifiants bruts des règles (ex. `hospitalisation-ou-seance-assimilee`).
+  Pour des libellés lisibles, ajouter des `titre` aux possibilités concernées
+  dans le fichier de règles.
