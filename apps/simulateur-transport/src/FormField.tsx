@@ -49,6 +49,33 @@ export function FormField({ field, onChange }: Props) {
         </fieldset>
       )}
 
+      {element === "select" && (
+        <div className="fr-select-group">
+          <label className="fr-label" htmlFor={id}>
+            {label}
+            {description && <span className="fr-hint-text">{description}</span>}
+          </label>
+          <select
+            className="fr-select"
+            id={id}
+            name={id}
+            value={(field.value as string | undefined) ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={field.disabled}
+            autoFocus={field.autofocus && field.value === undefined}
+          >
+            <option value="" disabled hidden>
+              Sélectionnez une option
+            </option>
+            {field.options.map((opt) => (
+              <option key={String(opt.value)} value={String(opt.value)}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {element === "input" && field.type === "number" && (
         <div className="fr-input-group">
           <label className="fr-label" htmlFor={id}>

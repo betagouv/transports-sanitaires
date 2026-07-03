@@ -3,9 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import { App } from "../src/App";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+type User = ReturnType<typeof userEvent.setup>;
+type Reponse = [RegExp, string];
 
 function setup() {
   const user = userEvent.setup();
@@ -13,40 +12,53 @@ function setup() {
   return { user };
 }
 
-async function repondre(
-  user: ReturnType<typeof userEvent.setup>,
-  questionPattern: RegExp,
-  reponse: string
-) {
-  const fieldset = screen.getByRole("group", { name: questionPattern });
-  await user.click(within(fieldset).getByRole("radio", { name: reponse }));
-}
+// Réponses menant à un patient éligible (PMT) : prescripteur identifié,
+// motif hospitalisation, patient autonome.
+const ELIGIBLE_PMT: Reponse[] = [
+  [/situations suivantes/i, "aucune"],
+  [/hospitalisé au moment/i, "Non"],
+  [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
+  [/se déplacer seul/i, "Oui"],
+  [/établissement prescripteur/i, "Oui"],
+  [/service ou l.unité/i, "Oui"],
+  [/prescripteur réalisant/i, "Oui"],
+  [/est-il .*Autre prescripteur/i, "Non"],
+];
 
-async function saisirDistance(
-  user: ReturnType<typeof userEvent.setup>,
-  km: number
-) {
-  const input = screen.getByRole("spinbutton", { name: /distance aller/i });
-  await user.clear(input);
-  await user.type(input, String(km));
-}
-
-async function clicSuivant(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: /suivant/i }));
-}
-
-async function clicVoirResultats(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: /voir les résultats/i }));
-}
-
-// Navigue jusqu'à la fin du formulaire quelle que soit la structure de pages.
-async function allerJusquAuBoutDuFormulaire(
-  user: ReturnType<typeof userEvent.setup>
-) {
-  while (screen.queryByRole("button", { name: /voir les résultats/i }) === null) {
-    await clicSuivant(user);
+// Répond aux champs de la page courante selon `reponses`, puis met à « Non »
+// tout groupe booléen resté sans réponse (pour avancer de façon déterministe).
+async function repondrePage(user: User, reponses: Reponse[]) {
+  for (const [re, value] of reponses) {
+    const group = screen.queryByRole("group", { name: re });
+    if (group) {
+      const radio = within(group).queryByRole("radio", { name: value });
+      if (radio) await user.click(radio);
+      continue;
+    }
+    const combo = screen.queryByRole("combobox", { name: re });
+    if (combo) await user.selectOptions(combo, value);
   }
-  await clicVoirResultats(user);
+
+  for (const group of screen.queryAllByRole("group")) {
+    const dejaRepondu = within(group).queryByRole("radio", { checked: true });
+    if (dejaRepondu) continue;
+    const non = within(group).queryByRole("radio", { name: "Non" });
+    if (non) await user.click(non);
+  }
+}
+
+// Remplit tout le formulaire puis ouvre la page de résultats.
+async function remplirEtVoirResultats(user: User, reponses: Reponse[]) {
+  for (let i = 0; i < 30; i++) {
+    await repondrePage(user, reponses);
+    const voir = screen.queryByRole("button", { name: /voir les résultats/i });
+    if (voir) {
+      await user.click(voir);
+      return;
+    }
+    await user.click(screen.getByRole("button", { name: /suivant/i }));
+  }
+  throw new Error("Formulaire non terminé après 30 pages");
 }
 
 // ---------------------------------------------------------------------------
@@ -61,189 +73,76 @@ describe("rendu initial", () => {
     );
   });
 
-  it("affiche la question hospitalisation", () => {
+  it("affiche la question 1 (situations particulières)", () => {
     setup();
     expect(
-      screen.getByRole("group", { name: /hospitalisé/i })
+      screen.getByRole("group", { name: /situations suivantes/i })
     ).toBeInTheDocument();
   });
 
-  it("affiche la question accident du travail", () => {
+  it("affiche le menu déroulant du motif principal", () => {
     setup();
     expect(
-      screen.getByRole("group", { name: /accident du travail/i })
+      screen.getByRole("combobox", { name: /motif principal/i })
     ).toBeInTheDocument();
   });
+});
 
-  it("affiche 'Voir les résultats' quand rien n'est éligible (1 seule page)", () => {
-    setup();
+// ---------------------------------------------------------------------------
+// Questions conditionnelles
+// ---------------------------------------------------------------------------
+
+describe("questions conditionnelles", () => {
+  it("choisir une situation particulière (SMUR) masque le motif principal", async () => {
+    const { user } = setup();
     expect(
-      screen.getByRole("button", { name: /voir les résultats/i })
+      screen.getByRole("combobox", { name: /motif principal/i })
     ).toBeInTheDocument();
+
+    const group = screen.getByRole("group", { name: /situations suivantes/i });
+    await user.click(within(group).getByRole("radio", { name: "smur" }));
+
     expect(
-      screen.queryByRole("button", { name: /suivant/i })
+      screen.queryByRole("combobox", { name: /motif principal/i })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("group", { name: /hospitalisé au moment/i })
     ).toBeNull();
   });
 
-  it("le bouton passe à 'Suivant' quand hospitalisation = Oui (page autonomie ajoutée)", async () => {
+  it("patient hospitalisé = Oui masque le motif principal (exceptions à qualifier d'abord)", async () => {
     const { user } = setup();
-    await repondre(user, /hospitalisé/i, "Oui");
     expect(
-      screen.getByRole("button", { name: /suivant/i })
+      screen.getByRole("combobox", { name: /motif principal/i })
     ).toBeInTheDocument();
-  });
-});
 
-// ---------------------------------------------------------------------------
-// Questions conditionnelles — ALD
-// ---------------------------------------------------------------------------
+    const group = screen.getByRole("group", { name: /hospitalisé au moment/i });
+    await user.click(within(group).getByRole("radio", { name: "Oui" }));
 
-describe("questions conditionnelles — ALD", () => {
-  it("les sous-questions ALD sont absentes si ALD non reconnue", () => {
-    setup();
-    expect(screen.queryByRole("group", { name: /lien avec/i })).toBeNull();
-    expect(screen.queryByRole("group", { name: /déficience/i })).toBeNull();
-  });
-
-  it("ALD = Oui → page 2 : question 'lien avec le transport'", async () => {
-    const { user } = setup();
-    await repondre(user, /ALD.*reconnue/i, "Oui");
-    await clicSuivant(user);
     expect(
-      screen.getByRole("group", { name: /lien avec/i })
-    ).toBeInTheDocument();
-  });
-
-  it("lien avec ALD = Oui → page 3 : question 'déficience ou incapacité'", async () => {
-    const { user } = setup();
-    await repondre(user, /ALD.*reconnue/i, "Oui");
-    await clicSuivant(user);
-    await repondre(user, /lien avec/i, "Oui");
-    await clicSuivant(user);
-    expect(
-      screen.getByRole("group", { name: /déficience/i })
-    ).toBeInTheDocument();
-  });
-
-  it("revenir en arrière et choisir ALD = Non rend la page ALD vide (champs non applicables)", async () => {
-    const { user } = setup();
-    await repondre(user, /ALD.*reconnue/i, "Oui");
-    await clicSuivant(user);
-    await user.click(screen.getByRole("button", { name: /précédent/i }));
-    await repondre(user, /ALD.*reconnue/i, "Non");
-    await clicSuivant(user);
-    // La page ALD existe encore dans `pages` mais ses champs ne sont plus applicables
-    expect(screen.queryByRole("group", { name: /lien avec/i })).toBeNull();
-    expect(screen.queryByRole("group", { name: /déficience/i })).toBeNull();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Questions conditionnelles — trajets
-// ---------------------------------------------------------------------------
-
-describe("questions conditionnelles — trajets", () => {
-  it("le champ nombre de trajets est absent pour distance ≤ 50 km", async () => {
-    const { user } = setup();
-    await saisirDistance(user, 40);
-    // même après navigation, le champ n'existe pas
-    expect(
-      screen.queryByRole("button", { name: /suivant/i })
-    ).toBeNull();
-    expect(
-      screen.queryByRole("spinbutton", { name: /trajets/i })
+      screen.queryByRole("combobox", { name: /motif principal/i })
     ).toBeNull();
   });
-
-  it("le champ nombre de trajets apparaît sur la page suivante pour distance > 50 km", async () => {
-    const { user } = setup();
-    await saisirDistance(user, 60);
-    await clicSuivant(user);
-    expect(
-      screen.getByRole("spinbutton", { name: /trajets/i })
-    ).toBeInTheDocument();
-  });
 });
 
 // ---------------------------------------------------------------------------
-// Navigation multi-pages
+// Résultats — cas éligible (PMT)
 // ---------------------------------------------------------------------------
 
-describe("navigation", () => {
-  it("le bouton Précédent est absent sur la page 1", () => {
-    setup();
-    expect(screen.queryByRole("button", { name: /précédent/i })).toBeNull();
+describe("résultats — patient éligible (PMT)", () => {
+  it("affiche le statut « patient éligible »", async () => {
+    const { user } = setup();
+    await remplirEtVoirResultats(user, ELIGIBLE_PMT);
+    expect(screen.getByText(/patient éligible/i)).toBeInTheDocument();
   });
 
-  it("passer à la page autonomie affiche le bouton Précédent", async () => {
+  it("affiche la section prescripteur avec le document PMT à compléter", async () => {
     const { user } = setup();
-    await repondre(user, /hospitalisé/i, "Oui");
-    await clicSuivant(user);
+    await remplirEtVoirResultats(user, ELIGIBLE_PMT);
     expect(
-      screen.getByRole("button", { name: /précédent/i })
+      screen.getByRole("heading", { name: /pour le prescripteur/i })
     ).toBeInTheDocument();
-  });
-
-  it("la page autonomie contient la question 'position allongée'", async () => {
-    const { user } = setup();
-    await repondre(user, /hospitalisé/i, "Oui");
-    await clicSuivant(user);
-    expect(
-      screen.getByRole("group", { name: /position allongée/i })
-    ).toBeInTheDocument();
-  });
-
-  it("Précédent depuis la page autonomie ramène à la page situation", async () => {
-    const { user } = setup();
-    await repondre(user, /hospitalisé/i, "Oui");
-    await clicSuivant(user);
-    await user.click(screen.getByRole("button", { name: /précédent/i }));
-    expect(
-      screen.getByRole("group", { name: /hospitalisé/i })
-    ).toBeInTheDocument();
-  });
-
-  it("Suivant navigue vers la page autonomie quand distance = 0 et hospitalisation = Oui", async () => {
-    const { user } = setup();
-    await saisirDistance(user, 0);
-    await repondre(user, /Le patient est-il hospitalisé ou suit-il une séance assimilée/i, "Oui");
-    await clicSuivant(user);
-    expect(
-      screen.getByRole("group", { name: /position allongée/i })
-    ).toBeInTheDocument();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Résultats — cas éligible
-// ---------------------------------------------------------------------------
-
-describe("résultats — cas éligible (hospitalisation)", () => {
-  async function allerAuResultat(user: ReturnType<typeof userEvent.setup>) {
-    await repondre(user, /hospitalisé/i, "Oui");
-    await allerJusquAuBoutDuFormulaire(user);
-  }
-
-  it("affiche le message 'Transport pris en charge'", async () => {
-    const { user } = setup();
-    await allerAuResultat(user);
-    expect(screen.getByText(/transport pris en charge/i)).toBeInTheDocument();
-  });
-
-  it("affiche la section Mode de transport", async () => {
-    const { user } = setup();
-    await allerAuResultat(user);
-    expect(
-      screen.getByRole("heading", { name: /mode de transport/i })
-    ).toBeInTheDocument();
-  });
-
-  it("affiche la section Accord préalable", async () => {
-    const { user } = setup();
-    await allerAuResultat(user);
-    expect(
-      screen.getByRole("heading", { name: /accord préalable/i })
-    ).toBeInTheDocument();
+    expect(screen.getAllByText(/PMT/).length).toBeGreaterThan(0);
   });
 });
 
@@ -251,42 +150,40 @@ describe("résultats — cas éligible (hospitalisation)", () => {
 // Résultats — cas non éligible
 // ---------------------------------------------------------------------------
 
-describe("résultats — cas non éligible", () => {
-  it("affiche 'non éligible' quand aucune condition n'est remplie", async () => {
-    const { user } = setup();
-    await clicVoirResultats(user);
-    expect(screen.getByText(/non éligible/i)).toBeInTheDocument();
-  });
+describe("résultats — patient non éligible", () => {
+  // Identifié, motif hospitalisation, mais aucun mode de transport justifié.
+  const NON_ELIGIBLE: Reponse[] = [
+    [/situations suivantes/i, "aucune"],
+    [/hospitalisé au moment/i, "Non"],
+    [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
+    [/établissement prescripteur/i, "Oui"],
+    [/service ou l.unité/i, "Oui"],
+    [/prescripteur réalisant/i, "Oui"],
+    [/est-il .*Autre prescripteur/i, "Non"],
+  ];
 
-  it("n'affiche pas de section Mode de transport si non éligible", async () => {
+  it("affiche « patient non éligible » quand aucun mode n'est justifié", async () => {
     const { user } = setup();
-    await clicVoirResultats(user);
-    expect(
-      screen.queryByRole("heading", { name: /mode de transport/i })
-    ).toBeNull();
+    await remplirEtVoirResultats(user, NON_ELIGIBLE);
+    expect(screen.getByText(/non éligible/i)).toBeInTheDocument();
   });
 });
 
 // ---------------------------------------------------------------------------
-// Résultats — accord préalable
+// Résultats — simulation impossible (prescripteur non identifié)
 // ---------------------------------------------------------------------------
 
-describe("résultats — accord préalable", () => {
-  it("affiche 'accord préalable requis' pour longue distance (> 150 km)", async () => {
+describe("résultats — simulation impossible", () => {
+  it("affiche « simulation impossible » si le prescripteur n'est pas identifié", async () => {
     const { user } = setup();
-    await saisirDistance(user, 200);
-    await allerJusquAuBoutDuFormulaire(user);
-    expect(
-      screen.getByText(/accord préalable de l'assurance maladie est requis/i)
-    ).toBeInTheDocument();
-  });
-
-  it("affiche 'aucun accord préalable' pour hospitalisation courte distance", async () => {
-    const { user } = setup();
-    await repondre(user, /hospitalisé/i, "Oui");
-    await saisirDistance(user, 30);
-    await allerJusquAuBoutDuFormulaire(user);
-    expect(screen.getByText(/aucun accord préalable/i)).toBeInTheDocument();
+    // On répond au parcours médical mais on laisse l'identification à « Non ».
+    await remplirEtVoirResultats(user, [
+      [/situations suivantes/i, "aucune"],
+      [/hospitalisé au moment/i, "Non"],
+      [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
+      [/se déplacer seul/i, "Oui"],
+    ]);
+    expect(screen.getByText(/simulation impossible/i)).toBeInTheDocument();
   });
 });
 
@@ -295,16 +192,17 @@ describe("résultats — accord préalable", () => {
 // ---------------------------------------------------------------------------
 
 describe("réinitialisation", () => {
-  it("le bouton 'Nouvelle simulation' ramène au formulaire vierge", async () => {
+  it("« Nouvelle simulation » ramène au formulaire vierge", async () => {
     const { user } = setup();
-    await clicVoirResultats(user);
+    await remplirEtVoirResultats(user, ELIGIBLE_PMT);
     await user.click(
       screen.getByRole("button", { name: /nouvelle simulation/i })
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       /simulateur d'éligibilité/i
     );
-    expect(screen.queryByText(/transport pris en charge/i)).toBeNull();
-    expect(screen.queryByText(/non éligible/i)).toBeNull();
+    expect(
+      screen.getByRole("group", { name: /situations suivantes/i })
+    ).toBeInTheDocument();
   });
 });

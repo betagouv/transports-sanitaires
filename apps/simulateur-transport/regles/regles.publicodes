@@ -202,29 +202,39 @@ ald . non validee:
   toutes ces conditions:
     - question 3 . ald reconnue
     - ald . validee = non
+
+motif . permet poursuivre formulaire:
+  une de ces conditions:
+    - question 3 . camsp cmpp
+    - question 3 . engagement maternite
+    - question 3 . samsah
+    - question 3 . hospitalisation ou seance assimilee
+    - question 3 . accident travail maladie professionnelle
+    - ald . validee
+    - question 3 . ambulance justifiee etat patient
 question 5 . trajet plus de 150 km aller:
   question: Le trajet est-il supérieur à 150 km aller ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5 . transports en serie:
   question: Le transport relève-t-il de transports en série ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5 . avion ou bateau ligne reguliere:
   question: Le transport nécessite-t-il un avion ou un bateau de ligne régulière ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5 . transport vers camsp cmpp:
   question: Le transport concerne-t-il un CAMSP ou un CMPP ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5 . engagement maternite maternité eloignee:
   question: Le transport concerne-t-il une maternité éloignée dans le cadre de l'engagement maternité ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5 . soins traitements samsah:
   question: Le transport concerne-t-il des soins ou traitements vers un SAMSAH ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 5_1 . au moins 4 transports:
   question: Au moins 4 transports sont-ils prévus ?
@@ -260,23 +270,23 @@ transports en serie . dap non validee:
     - transports en serie . dap validee = non
 question 6 . ambulance . allonge ou demi assis:
   question: Le patient doit-il être allongé ou en position demi-assise ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . ambulance . surveillance qualifiee:
   question: Le patient doit-il être surveillé par une personne qualifiée ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . ambulance . oxygene:
   question: Le patient doit-il recevoir de l'oxygène pendant le transport ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . ambulance . brancardage ou portage:
   question: Le patient doit-il être brancardé ou porté ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . ambulance . asepsie:
   question: Le patient doit-il voyager dans des conditions d'asepsie ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 mode . ambulance justifiee:
   une de ces conditions:
@@ -287,25 +297,25 @@ mode . ambulance justifiee:
     - question 6 . ambulance . asepsie
 question 6 . tpmr . fauteuil roulant sans transfert:
   question: Le patient doit-il être transporté sans quitter son fauteuil roulant manuel ou électrique ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 mode . tpmr justifie:
   valeur: question 6 . tpmr . fauteuil roulant sans transfert
 question 6 . vsl taxi . aide au deplacement:
   question: Le patient nécessite-t-il une aide au déplacement ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . vsl taxi . aide transmission informations:
   question: Le patient nécessite-t-il l'aide d'une tierce personne pour transmettre les informations nécessaires à l'équipe soignante ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . vsl taxi . regles hygiene:
   question: Le patient nécessite-t-il le respect rigoureux de règles d'hygiène ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . vsl taxi . risque effets secondaires:
   question: Le patient présente-t-il un risque d'effets secondaires pendant le transport ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 mode . vsl taxi justifie:
   une de ces conditions:
@@ -315,11 +325,11 @@ mode . vsl taxi justifie:
     - question 6 . vsl taxi . risque effets secondaires
 question 6 . individuel commun . autonome:
   question: Le patient peut-il se déplacer seul, sans assistance particulière ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 question 6 . individuel commun . accompagne proche:
   question: Le patient peut-il se déplacer avec l'aide d'un proche, sans assistance particulière ?
-  applicable si: motif . ouvrant droit valide
+  applicable si: motif . permet poursuivre formulaire
   par défaut: non
 mode . individuel commun justifie:
   une de ces conditions:

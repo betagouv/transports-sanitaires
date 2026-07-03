@@ -6,53 +6,81 @@ type Props = {
   onReset: () => void;
 };
 
+// Type d'alerte DSFR selon le statut de sortie du moteur.
+function alertKind(statut: string): "success" | "info" | "warning" | "error" {
+  switch (statut) {
+    case "patient-eligible":
+    case "patient-eligible-convocation-valant-prescription":
+      return "success";
+    case "patient-eligible-sous-reserve-accord-prealable":
+      return "info";
+    case "situation-hors-parcours-assurance-maladie-standard":
+    case "simulation-impossible-prescripteur-non-identifie":
+      return "warning";
+    case "patient-non-eligible":
+    default:
+      return "error";
+  }
+}
+
 export function Resultats({ situation, onReset }: Props) {
   const e = engine.setSituation(situation);
 
-  const eligible = e.evaluate("éligible");
-  const eligibleValue = eligible.nodeValue as boolean;
+  const statutNode = e.evaluate("resultat . statut");
+  const documentNode = e.evaluate("resultat . document");
+  const modeNode = e.evaluate("resultat . mode transport");
 
-  const mode = eligibleValue ? e.evaluate("mode de transport") : null;
-  const accord = eligibleValue ? e.evaluate("accord préalable requis") : null;
+  const statut = String(statutNode.nodeValue ?? "");
+  const kind = alertKind(statut);
+
+  const str = (rule: string) => {
+    const v = e.evaluate(rule).nodeValue;
+    return typeof v === "string" ? v : "";
+  };
+
+  const niveau1 = str("interface . sortie patient niveau 1");
+  const niveau2 = str("interface . sortie patient niveau 2");
+  const niveau3 = str("interface . sortie patient niveau 3");
+  const prescripteurDocument = str("interface . sortie prescripteur document");
+  const prescripteurAlerte = str("interface . sortie prescripteur alerte");
+  const checklistDocument = str("interface . sortie checklist document");
+  const checklistMode = str("interface . sortie checklist mode");
 
   return (
     <div>
       <div
-        className={`fr-alert ${eligibleValue ? "fr-alert--success" : "fr-alert--error"}`}
+        className={`fr-alert fr-alert--${kind}`}
         style={{ marginBottom: "2rem" }}
       >
-        <h3 className="fr-alert__title">
-          {eligibleValue
-            ? "Transport pris en charge"
-            : "Transport non éligible à la prise en charge"}
-        </h3>
-        {!eligibleValue && (
-          <p>
-            Aucune des conditions d'éligibilité n'est remplie pour ce patient.
-          </p>
-        )}
+        <h3 className="fr-alert__title">{niveau1}</h3>
+        {niveau2 && <p>{niveau2}</p>}
       </div>
 
-      {eligibleValue && mode && (
+      {niveau3 && (
         <div className="fr-callout" style={{ marginBottom: "1.5rem" }}>
-          <h4 className="fr-callout__title">Mode de transport</h4>
-          <p className="fr-callout__text">
-            <strong>{String(mode.nodeValue).replace(/'/g, "")}</strong>
-          </p>
+          <h4 className="fr-callout__title">Ce que vous devez faire</h4>
+          <p className="fr-callout__text">{niveau3}</p>
         </div>
       )}
 
-      {eligibleValue && accord && (
+      <div className="fr-callout" style={{ marginBottom: "1.5rem" }}>
+        <h4 className="fr-callout__title">Pour le prescripteur</h4>
+        <p className="fr-callout__text">
+          <strong>Document à compléter :</strong> {prescripteurDocument}
+        </p>
+        {checklistDocument && (
+          <p className="fr-callout__text">{checklistDocument}</p>
+        )}
+        {checklistMode && <p className="fr-callout__text">{checklistMode}</p>}
+      </div>
+
+      {prescripteurAlerte && (
         <div
-          className={`fr-callout ${accord.nodeValue ? "fr-callout--brown-caramel" : ""}`}
+          className="fr-alert fr-alert--warning"
           style={{ marginBottom: "1.5rem" }}
         >
-          <h4 className="fr-callout__title">Accord préalable</h4>
-          <p className="fr-callout__text">
-            {accord.nodeValue
-              ? "Un accord préalable de l'Assurance Maladie est requis."
-              : "Aucun accord préalable requis."}
-          </p>
+          <h3 className="fr-alert__title">Point de vigilance</h3>
+          <p>{prescripteurAlerte}</p>
         </div>
       )}
 
@@ -61,13 +89,15 @@ export function Resultats({ situation, onReset }: Props) {
           Détail des règles évaluées
         </summary>
         <div
-          style={{ marginTop: "1rem", fontFamily: "monospace", fontSize: "0.85rem" }}
+          style={{
+            marginTop: "1rem",
+            fontFamily: "monospace",
+            fontSize: "0.85rem",
+          }}
         >
-          <EvalDetail label="Éligible" node={eligible} />
-          {mode && <EvalDetail label="Mode de transport" node={mode} />}
-          {accord && (
-            <EvalDetail label="Accord préalable requis" node={accord} />
-          )}
+          <EvalDetail label="Statut" node={statutNode} />
+          <EvalDetail label="Document" node={documentNode} />
+          <EvalDetail label="Mode de transport" node={modeNode} />
         </div>
       </details>
 

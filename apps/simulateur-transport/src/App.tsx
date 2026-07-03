@@ -6,9 +6,9 @@ import { FormField } from "./FormField";
 import { Resultats } from "./Resultats";
 
 const TARGETS = [
-  "éligible",
-  "mode de transport",
-  "accord préalable requis",
+  "resultat . statut",
+  "resultat . document",
+  "resultat . mode transport",
 ] as const;
 
 const formBuilder = new FormBuilder({ engine });
