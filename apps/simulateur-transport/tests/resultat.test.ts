@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { identifie, baseEligible, evalRule } from "./helpers";
+import { baseEligible, evalRule } from "./helpers";
 
 const statut = (s: Record<string, unknown>) => evalRule("resultat . statut", s);
 const document = (s: Record<string, unknown>) =>
@@ -8,34 +8,9 @@ const mode = (s: Record<string, unknown>) =>
   evalRule("resultat . mode transport", s);
 
 describe("resultat . statut", () => {
-  it("prescripteur non identifié → simulation impossible", () => {
-    expect(statut({})).toBe(
-      "simulation-impossible-prescripteur-non-identifie"
-    );
-    expect(document({})).toBe("aucun-document");
-  });
-
-  it("prescripteur identifié partiellement → simulation impossible", () => {
-    expect(
-      statut({
-        "identification . etablissement renseigne": "oui",
-        "identification . service renseigne": "oui",
-        "identification . prescripteur renseigne": "non",
-      })
-    ).toBe("simulation-impossible-prescripteur-non-identifie");
-  });
-
-  it("autre prescripteur sans nom/prénom → simulation impossible", () => {
-    expect(
-      statut({
-        "identification . etablissement renseigne": "oui",
-        "identification . service renseigne": "oui",
-        "identification . prescripteur renseigne": "oui",
-        "identification . prescripteur autre": "oui",
-        "identification . autre prescripteur prenom renseigne": "non",
-        "identification . autre prescripteur nom renseigne": "oui",
-      })
-    ).toBe("simulation-impossible-prescripteur-non-identifie");
+  it("situation vide (aucun motif par défaut) → patient non éligible", () => {
+    expect(statut({})).toBe("patient-non-eligible");
+    expect(document({})).toBe("aucun-document-assurance-maladie");
   });
 
   it("motif hospitalisation + mode individuel → patient éligible (PMT)", () => {
@@ -60,7 +35,6 @@ describe("resultat . statut", () => {
 
   it("convocation contrôle sécurité sociale → convocation valant prescription", () => {
     const s = {
-      ...identifie,
       "question 1 . situation particuliere": "'aucune'",
       "question 2 . patient hospitalise": "non",
       "question 3 . motif principal": "'convocation-controle-securite-sociale'",
@@ -73,7 +47,6 @@ describe("resultat . statut", () => {
 
   it("SMUR → situation hors parcours Assurance Maladie standard", () => {
     const s = {
-      ...identifie,
       "question 1 . situation particuliere": "'smur'",
     };
     expect(statut(s)).toBe(
@@ -84,7 +57,6 @@ describe("resultat . statut", () => {
 
   it("patient hospitalisé sans exception → hors parcours", () => {
     const s = {
-      ...identifie,
       "question 1 . situation particuliere": "'aucune'",
       "question 2 . patient hospitalise": "oui",
       "question 2_1 . exception assurance maladie": "'aucune'",
@@ -96,7 +68,6 @@ describe("resultat . statut", () => {
 
   it("contrainte bariatrique uniquement → patient non éligible", () => {
     const s = {
-      ...identifie,
       "question 1 . situation particuliere": "'contrainte-bariatrique-uniquement'",
     };
     expect(statut(s)).toBe("patient-non-eligible");
@@ -105,7 +76,6 @@ describe("resultat . statut", () => {
 
   it("aucun motif → patient non éligible", () => {
     const s = {
-      ...identifie,
       "question 1 . situation particuliere": "'aucune'",
       "question 2 . patient hospitalise": "non",
       "question 3 . motif principal": "'aucun'",

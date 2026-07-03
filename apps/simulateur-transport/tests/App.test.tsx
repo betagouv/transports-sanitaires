@@ -12,17 +12,13 @@ function setup() {
   return { user };
 }
 
-// Réponses menant à un patient éligible (PMT) : prescripteur identifié,
-// motif hospitalisation, patient autonome.
+// Réponses menant à un patient éligible (PMT) : motif hospitalisation,
+// patient autonome.
 const ELIGIBLE_PMT: Reponse[] = [
   [/situations suivantes/i, "aucune"],
   [/hospitalisé au moment/i, "Non"],
   [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
   [/se déplacer seul/i, "Oui"],
-  [/établissement prescripteur/i, "Oui"],
-  [/service ou l.unité/i, "Oui"],
-  [/prescripteur réalisant/i, "Oui"],
-  [/est-il .*Autre prescripteur/i, "Non"],
 ];
 
 // Répond aux champs de la page courante selon `reponses`, puis met à « Non »
@@ -151,39 +147,17 @@ describe("résultats — patient éligible (PMT)", () => {
 // ---------------------------------------------------------------------------
 
 describe("résultats — patient non éligible", () => {
-  // Identifié, motif hospitalisation, mais aucun mode de transport justifié.
+  // Motif hospitalisation, mais aucun mode de transport justifié.
   const NON_ELIGIBLE: Reponse[] = [
     [/situations suivantes/i, "aucune"],
     [/hospitalisé au moment/i, "Non"],
     [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
-    [/établissement prescripteur/i, "Oui"],
-    [/service ou l.unité/i, "Oui"],
-    [/prescripteur réalisant/i, "Oui"],
-    [/est-il .*Autre prescripteur/i, "Non"],
   ];
 
   it("affiche « patient non éligible » quand aucun mode n'est justifié", async () => {
     const { user } = setup();
     await remplirEtVoirResultats(user, NON_ELIGIBLE);
     expect(screen.getByText(/non éligible/i)).toBeInTheDocument();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Résultats — simulation impossible (prescripteur non identifié)
-// ---------------------------------------------------------------------------
-
-describe("résultats — simulation impossible", () => {
-  it("affiche « simulation impossible » si le prescripteur n'est pas identifié", async () => {
-    const { user } = setup();
-    // On répond au parcours médical mais on laisse l'identification à « Non ».
-    await remplirEtVoirResultats(user, [
-      [/situations suivantes/i, "aucune"],
-      [/hospitalisé au moment/i, "Non"],
-      [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
-      [/se déplacer seul/i, "Oui"],
-    ]);
-    expect(screen.getByText(/simulation impossible/i)).toBeInTheDocument();
   });
 });
 

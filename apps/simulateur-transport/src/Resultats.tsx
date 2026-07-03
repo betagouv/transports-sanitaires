@@ -15,7 +15,6 @@ function alertKind(statut: string): "success" | "info" | "warning" | "error" {
     case "patient-eligible-sous-reserve-accord-prealable":
       return "info";
     case "situation-hors-parcours-assurance-maladie-standard":
-    case "simulation-impossible-prescripteur-non-identifie":
       return "warning";
     case "patient-non-eligible":
     default:
