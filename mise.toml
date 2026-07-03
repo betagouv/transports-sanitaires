@@ -6,7 +6,7 @@ python = "3.13.14"
 description = "Installe proprement (npm ci) les dépendances des deux apps"
 run = [
   "npm --prefix {{config_root}}/apps/identification ci",
-  "npm --prefix {{config_root}}/apps/simulateur-transport ci",
+  "npm --prefix {{config_root}}/apps/simulateur-eligibilite ci",
 ]
 
 [tasks.dev-identification]
@@ -16,7 +16,7 @@ run = "npm run dev"
 
 [tasks.dev-simulateur]
 description = "Serveur de dev du simulateur (http://localhost:5173)"
-dir = "{{config_root}}/apps/simulateur-transport"
+dir = "{{config_root}}/apps/simulateur-eligibilite"
 run = "npm run dev"
 
 [tasks.dev]

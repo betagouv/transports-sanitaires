@@ -2,7 +2,7 @@
 
 > Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-03
 >
-> Couche d'identification en amont du [simulateur d'éligibilité](../../apps/simulateur-transport).
+> Couche d'identification en amont du [simulateur d'éligibilité](../../apps/simulateur-eligibilite).
 > Le suivi analytique du parcours fait l'objet d'un document séparé :
 > [analytics.md](./analytics.md).
 
@@ -87,7 +87,7 @@ gardant des données **fraîches**, sans opérer de serveur applicatif.
 reste l'outil d'admin. Voir §5 (modèle) et §6 (accès).
 
 ### ADR-6 — Le moteur publicodes reste hors périmètre identité
-**Décision.** `apps/simulateur-transport/regles/regles.publicodes` **n'est pas
+**Décision.** `apps/simulateur-eligibilite/regles/regles.publicodes` **n'est pas
 modifié**. L'identification (comme l'analytics) vit en dehors du moteur.
 
 ## 3. Architecture cible
@@ -115,7 +115,7 @@ Composants :
 | `apps/identification` | SPA statique (GitHub Pages) | **nouveau** |
 | Micro-fonction référentiel | FaaS (Cloudflare/Netlify/…) détenant la clé Grist | **nouveau** |
 | Grist | Base managée, admin à la main | **nouveau (config)** |
-| `apps/simulateur-transport` | SPA statique existante, lit le contexte `#ctx` | modifié |
+| `apps/simulateur-eligibilite` | SPA statique existante, lit le contexte `#ctx` | modifié |
 
 ## 4. Spécification du contexte `ctx`
 

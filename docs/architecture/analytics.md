@@ -2,7 +2,7 @@
 
 > Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-03
 >
-> Suivi analytique du parcours dans le [simulateur d'éligibilité](../../apps/simulateur-transport).
+> Suivi analytique du parcours dans le [simulateur d'éligibilité](../../apps/simulateur-eligibilite).
 > Repose sur le rattachement au prescripteur fourni par la couche d'identification :
 > voir [identification.md](./identification.md).
 

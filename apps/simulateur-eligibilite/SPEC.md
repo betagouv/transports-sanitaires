@@ -82,7 +82,7 @@ Les questions applicables (et leur enchaînement) sont déduites des règles.
 
 ## Architecture
 
-`apps/simulateur-transport/`
+`apps/simulateur-eligibilite/`
 
 - `regles/regles.publicodes` — modèle complet (questions 1..6, motif, mode,
   DAP, alertes, résultat, checklist, sorties `interface . *`).

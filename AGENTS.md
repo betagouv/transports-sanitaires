@@ -20,7 +20,7 @@ Light monorepo — **no workspace tooling** (no npm/pnpm workspaces, no turbo). 
 app under `apps/` is **independent**: its own `package.json` + `package-lock.json`,
 its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 
-- **`apps/simulateur-transport`** — SPA React 19 + Vite + DSFR
+- **`apps/simulateur-eligibilite`** — SPA React 19 + Vite + DSFR
   (`@codegouvfr/react-dsfr`). Eligibility rules engine **`publicodes`** (single file
   `regles/regles.publicodes`) + `@publicodes/forms` (`FormBuilder` auto-generates the
   form from the rules). **Static**, deployed to GitHub Pages
