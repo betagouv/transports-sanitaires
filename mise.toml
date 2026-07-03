@@ -1,3 +1,24 @@
 [tools]
 node = "24.16.0"
 python = "3.13.14"
+
+[tasks.clean-install]
+description = "Installe proprement (npm ci) les dépendances des deux apps"
+run = [
+  "npm --prefix {{config_root}}/apps/identification ci",
+  "npm --prefix {{config_root}}/apps/simulateur-transport ci",
+]
+
+[tasks.dev-identification]
+description = "Serveur de dev de l'identification (http://localhost:5174)"
+dir = "{{config_root}}/apps/identification"
+run = "npm run dev"
+
+[tasks.dev-simulateur]
+description = "Serveur de dev du simulateur (http://localhost:5173)"
+dir = "{{config_root}}/apps/simulateur-transport"
+run = "npm run dev"
+
+[tasks.dev]
+description = "Lance identification + simulateur en parallèle"
+depends = ["dev-identification", "dev-simulateur"]
