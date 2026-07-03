@@ -1,7 +1,7 @@
 # App d'identification
 
 SPA statique (React 19 + Vite + DSFR) qui identifie le prescripteur **en amont** du
-[simulateur d'éligibilité](../simulateur-transport), puis y redirige avec un contexte
+[simulateur d'éligibilité](../simulateur-eligibilite), puis y redirige avec un contexte
 d'identifiants opaques.
 
 Architecture de référence : [`docs/architecture/identification.md`](../../docs/architecture/identification.md).
