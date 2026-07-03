@@ -66,26 +66,19 @@ sans bandeau constitue une **réserve de conformité** explicite (R-4).
 
 ## 3. Architecture cible
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Simulateur d'éligibilité (SPA statique, top-level)              │
-│                                                                  │
-│   ┌───────────────────────┐     ┌──────────────────────────┐    │
-│   │ Parcours de simulation │────▶│ Gestion du consentement   │    │
-│   │ (formulaire + résultat)│     │ (flag — ADR-3)            │    │
-│   └───────────┬───────────┘     └────────────┬─────────────┘    │
-│               │ événements de parcours         │ autorise         │
-│               │                                ▼                  │
-│   contexte    │              ┌───────────────────────────────┐   │
-│   prescripteur│─────────────▶│ Traceur d'analytics            │   │
-│   (#ctx)      │              │ (dimension prescripteurRef)    │   │
-│               │              └───────────────┬───────────────┘   │
-└───────────────────────────────────────────── │ ─────────────────┘
-                                                │ événements + dimensions
-                                                ▼
-                                 ┌──────────────────────────────┐
-                                 │  Matomo (mutualisé beta.gouv) │
-                                 └──────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph simu["Simulateur d'éligibilité (SPA statique, top-level)"]
+        parcours["Parcours de simulation<br/>(formulaire + résultat)"]
+        consent["Gestion du consentement<br/>(ADR-3)"]
+        traceur["Traceur d'analytics<br/>(dimension prescripteurRef)"]
+        parcours -->|"événements de parcours"| traceur
+        consent -->|"autorise l'initialisation"| traceur
+    end
+    matomo[("Matomo<br/>(mutualisé beta.gouv)")]
+
+    ctx["contexte prescripteur (#ctx)"] --> traceur
+    traceur -->|"événements + dimensions"| matomo
 ```
 
 Le tracking a lieu **dans le simulateur en top-level** (pas dans l'iframe

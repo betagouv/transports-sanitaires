@@ -92,39 +92,20 @@ modifié**. L'identification (comme l'analytics) vit en dehors du moteur.
 
 ## 3. Architecture cible
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  CMS « Sites Conformes » (origine tierce)                         │
-│   page d'atterrissage                                             │
-│   └─ <iframe src="https://…/identification">  ← ADR-2             │
-│         Étape 1 : établissement → service                        │
-│         Étape 2 : prescripteur (ou « autre »)                    │
-│         au clic « Démarrer » :                                    │
-│           window.top.location = simulateur + "#ctx=<payload>"    │
-└───────────────┬─────────────────────────────────────────────────┘
-                │ fetch référentiel (filtré)          ▲ ADR-4
-                ▼                                      │
-┌──────────────────────────────┐          ┌───────────┴──────────────────────┐
-│  Micro-fonction serverless   │  clé →   │  apps/identification (SPA statique)│
-│  (FaaS) — ADR-5              │◄─────────│  DSFR, lit le référentiel filtré   │
-│  détient GRIST_API_KEY       │          └────────────────────────────────────┘
-│  renvoie référentiel filtré  │
-└───────────────┬──────────────┘
-                │ REST (clé)
-                ▼
-┌──────────────────────────────┐
-│  Grist (base, admin à la main)│  ← référentiel étab./service/prescripteur
-└──────────────────────────────┘
+```mermaid
+flowchart TB
+    cms["CMS « Sites Conformes »<br/>(origine tierce) — page d'atterrissage"]
+    ident["App d'identification (SPA statique, DSFR)<br/>Étape 1 : établissement → service<br/>Étape 2 : prescripteur (ou « autre »)"]
+    faas["Micro-fonction serverless / FaaS (ADR-5)<br/>détient la clé Grist<br/>renvoie un référentiel filtré"]
+    grist[("Grist — référentiel<br/>établissement / service / prescripteur<br/>(admin à la main)")]
+    simu["Simulateur d'éligibilité (SPA statique)<br/>reçoit #ctx, l'exploite en session, nettoie l'URL<br/>logique d'éligibilité (publicodes) inchangée"]
+    analytics["Suivi analytics<br/>(voir analytics.md)"]
 
-                    (navigation top-level, plein écran)
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Simulateur d'éligibilité (SPA statique existante)               │
-│   reçoit le contexte #ctx, l'exploite en session, nettoie l'URL  │
-│   logique d'éligibilité (publicodes) inchangée                   │
-│   → suivi analytics : voir analytics.md                          │
-└─────────────────────────────────────────────────────────────────┘
+    cms -->|"embarque en iframe (ADR-2)"| ident
+    ident -->|"référentiel filtré"| faas
+    faas -->|"REST (clé API)"| grist
+    ident -->|"navigation top-level, plein écran — #ctx (ADR-4)"| simu
+    simu -.-> analytics
 ```
 
 Composants :
@@ -152,10 +133,28 @@ Composants :
 
 ## 5. Modèle du référentiel (Grist)
 
-```
-Etablissement { id, libellé, finess?,  services →  }
-Service        { id, etabId, libellé,   prescripteurs → }
-Prescripteur   { id, serviceId, nom, prénom, rpps?, actif }
+```mermaid
+erDiagram
+    ETABLISSEMENT ||--o{ SERVICE : "services"
+    SERVICE ||--o{ PRESCRIPTEUR : "prescripteurs"
+    ETABLISSEMENT {
+        id id PK
+        string libelle
+        string finess "optionnel — migration FINESS"
+    }
+    SERVICE {
+        id id PK
+        id etabId FK
+        string libelle
+    }
+    PRESCRIPTEUR {
+        id id PK
+        id serviceId FK
+        string nom
+        string prenom
+        string rpps "optionnel — migration RPPS"
+        boolean actif
+    }
 ```
 
 - Les champs `finess?` / `rpps?` sont **prévus dès maintenant** (optionnels) pour la
