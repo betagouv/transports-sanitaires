@@ -59,22 +59,22 @@ simulation . possible:
 question 1 . situation particuliere:
   question: Une des situations suivantes s'applique-t-elle au transport demandé ?
   une possibilité:
-    - "'aucune'"
-    - "'smur'"
-    - "'patient-hospitalise-detenu'"
-    - "'contrainte-bariatrique-uniquement'"
-    - "'permission-demandee-par-patient-sans-motif-medical'"
-  par défaut: "'aucune'"
+    - "'Aucune de ces situations'"
+    - "'Transport SMUR'"
+    - "'Patient hospitalisé détenu'"
+    - "'Transport bariatrique uniquement'"
+    - "'Permission de sortie demandée par le patient sans motif médical'"
+  par défaut: "'Aucune de ces situations'"
 question 1 . smur:
-  valeur: question 1 . situation particuliere = 'smur'
+  valeur: question 1 . situation particuliere = 'Transport SMUR'
 question 1 . patient hospitalise detenu:
-  valeur: question 1 . situation particuliere = 'patient-hospitalise-detenu'
+  valeur: question 1 . situation particuliere = 'Patient hospitalisé détenu'
 question 1 . contrainte bariatrique uniquement:
-  valeur: question 1 . situation particuliere = 'contrainte-bariatrique-uniquement'
+  valeur: question 1 . situation particuliere = 'Transport bariatrique uniquement'
 question 1 . permission demandee par patient sans motif medical:
-  valeur: question 1 . situation particuliere = 'permission-demandee-par-patient-sans-motif-medical'
+  valeur: question 1 . situation particuliere = 'Permission de sortie demandée par le patient sans motif médical'
 question 1 . aucune situation particuliere:
-  valeur: question 1 . situation particuliere = 'aucune'
+  valeur: question 1 . situation particuliere = 'Aucune de ces situations'
 question 2 . patient hospitalise:
   question: Le patient est-il hospitalisé au moment du transport, y compris en hospitalisation de jour ?
   applicable si: question 1 . aucune situation particuliere
@@ -83,24 +83,24 @@ question 2_1 . exception assurance maladie:
   question: Le transport entre-t-il dans l'une des exceptions suivantes restant prises en charge par l'Assurance Maladie ?
   applicable si: question 2 . patient hospitalise
   une possibilité:
-    - "'aucune'"
-    - "'retour-usld'"
-    - "'retour-ehpad'"
-    - "'retour-had'"
-    - "'radiotherapie-structure-liberale-ou-centre-sante'"
-    - "'permission-moins-48h-moins-20ans-hospitalise-plus-14jours'"
-  par défaut: "'aucune'"
+    - "'Aucune de ces exceptions'"
+    - "'Retour vers une USLD'"
+    - "'Retour vers un EHPAD'"
+    - "'Retour vers une HAD'"
+    - "'Transfert provisoire vers un centre de santé ou une structure libérale pour des séances de radiothérapie'"
+    - "'Permission de sortie de moins de 48 heures pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours'"
+  par défaut: "'Aucune de ces exceptions'"
 question 2_1 . exception validee:
   une de ces conditions:
-    - question 2_1 . exception assurance maladie = 'retour-usld'
-    - question 2_1 . exception assurance maladie = 'retour-ehpad'
-    - question 2_1 . exception assurance maladie = 'retour-had'
-    - question 2_1 . exception assurance maladie = 'radiotherapie-structure-liberale-ou-centre-sante'
-    - question 2_1 . exception assurance maladie = 'permission-moins-48h-moins-20ans-hospitalise-plus-14jours'
+    - question 2_1 . exception assurance maladie = 'Retour vers une USLD'
+    - question 2_1 . exception assurance maladie = 'Retour vers un EHPAD'
+    - question 2_1 . exception assurance maladie = 'Retour vers une HAD'
+    - question 2_1 . exception assurance maladie = 'Transfert provisoire vers un centre de santé ou une structure libérale pour des séances de radiothérapie'
+    - question 2_1 . exception assurance maladie = 'Permission de sortie de moins de 48 heures pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours'
 question 2_1 . aucune exception:
   toutes ces conditions:
     - question 2 . patient hospitalise
-    - question 2_1 . exception assurance maladie = 'aucune'
+    - question 2_1 . exception assurance maladie = 'Aucune de ces exceptions'
 question 3 . motif principal:
   question: Quel est le motif principal du transport ?
   applicable si:
@@ -110,34 +110,34 @@ question 3 . motif principal:
           - question 2 . patient hospitalise = non
           - question 2_1 . exception validee
   une possibilité:
-    - "'convocation-controle-securite-sociale'"
-    - "'camsp-cmpp'"
-    - "'engagement-maternite'"
-    - "'samsah'"
-    - "'hospitalisation-ou-seance-assimilee'"
-    - "'accident-travail-maladie-professionnelle'"
-    - "'ald-reconnue'"
-    - "'ambulance-justifiee-etat-patient'"
-    - "'aucun'"
-  par défaut: "'aucun'"
+    - "'Convocation ou contrôle de l’Assurance Maladie'"
+    - "'Transport vers un CAMSP ou un CMPP'"
+    - "'Maternité éloignée dans le cadre de l’engagement maternité'"
+    - "'Soins ou traitements vers un SAMSAH'"
+    - "'Hospitalisation ou séance assimilée'"
+    - "'Accident du travail ou maladie professionnelle'"
+    - "'Soins ou examens en rapport avec une ALD reconnue'"
+    - "'Ambulance justifiée par l’état du patient'"
+    - "'Aucun de ces motifs'"
+  par défaut: "'Aucun de ces motifs'"
 question 3 . convocation controle securite sociale:
-  valeur: question 3 . motif principal = 'convocation-controle-securite-sociale'
+  valeur: question 3 . motif principal = 'Convocation ou contrôle de l’Assurance Maladie'
 question 3 . camsp cmpp:
-  valeur: question 3 . motif principal = 'camsp-cmpp'
+  valeur: question 3 . motif principal = 'Transport vers un CAMSP ou un CMPP'
 question 3 . engagement maternite:
-  valeur: question 3 . motif principal = 'engagement-maternite'
+  valeur: question 3 . motif principal = 'Maternité éloignée dans le cadre de l’engagement maternité'
 question 3 . samsah:
-  valeur: question 3 . motif principal = 'samsah'
+  valeur: question 3 . motif principal = 'Soins ou traitements vers un SAMSAH'
 question 3 . hospitalisation ou seance assimilee:
-  valeur: question 3 . motif principal = 'hospitalisation-ou-seance-assimilee'
+  valeur: question 3 . motif principal = 'Hospitalisation ou séance assimilée'
 question 3 . accident travail maladie professionnelle:
-  valeur: question 3 . motif principal = 'accident-travail-maladie-professionnelle'
+  valeur: question 3 . motif principal = 'Accident du travail ou maladie professionnelle'
 question 3 . ald reconnue:
-  valeur: question 3 . motif principal = 'ald-reconnue'
+  valeur: question 3 . motif principal = 'Soins ou examens en rapport avec une ALD reconnue'
 question 3 . ambulance justifiee etat patient:
-  valeur: question 3 . motif principal = 'ambulance-justifiee-etat-patient'
+  valeur: question 3 . motif principal = 'Ambulance justifiée par l’état du patient'
 question 3 . aucun motif:
-  valeur: question 3 . motif principal = 'aucun'
+  valeur: question 3 . motif principal = 'Aucun de ces motifs'
 question 4 . transport en lien avec ald reconnue:
   question: Le transport est-il en lien avec l'ALD reconnue du patient ?
   applicable si: question 3 . ald reconnue
@@ -308,14 +308,14 @@ mode . justifie:
 mode . principal:
   variations:
     - si: mode . ambulance justifiee
-      alors: "'ambulance'"
+      alors: "'Ambulance'"
     - si: mode . tpmr justifie
-      alors: "'vsl-ou-taxi-tpmr'"
+      alors: "'VSL ou taxi conventionné TPMR'"
     - si: mode . vsl taxi justifie
-      alors: "'vsl-ou-taxi-conventionne'"
+      alors: "'VSL ou taxi conventionné'"
     - si: mode . individuel commun justifie
-      alors: "'vehicule-personnel-ou-transport-commun'"
-    - sinon: "'mode-non-justifie'"
+      alors: "'Véhicule personnel ou transport en commun'"
+    - sinon: "'Aucun mode de transport médicalement justifié'"
 question 6_1 . transport partage incompatible:
   question: L'état de santé du patient est-il incompatible avec un transport partagé ?
   applicable si:
@@ -406,27 +406,27 @@ sortie . eligible dap:
 resultat . statut:
   variations:
     - si: sortie . hors parcours pmt dap standard
-      alors: "'situation-hors-parcours-assurance-maladie-standard'"
+      alors: "'Situation hors parcours Assurance Maladie standard'"
     - si: sortie . convocation valant prescription
-      alors: "'patient-eligible-convocation-valant-prescription'"
+      alors: "'Patient éligible — convocation valant prescription'"
     - si: sortie . non eligible
-      alors: "'patient-non-eligible'"
+      alors: "'Patient non éligible'"
     - si: sortie . eligible dap
-      alors: "'patient-eligible-sous-reserve-accord-prealable'"
+      alors: "'Patient éligible sous réserve d’accord préalable'"
     - si: sortie . eligible pmt
-      alors: "'patient-eligible'"
-    - sinon: "'patient-non-eligible'"
+      alors: "'Patient éligible'"
+    - sinon: "'Patient non éligible'"
 resultat . document:
   variations:
-    - si: resultat . statut = 'patient-eligible'
-      alors: "'pmt'"
-    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
-      alors: "'dap'"
-    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
-      alors: "'convocation-ou-avis'"
-    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
-      alors: "'procedure-locale-ou-etablissement'"
-    - sinon: "'aucun-document-assurance-maladie'"
+    - si: resultat . statut = 'Patient éligible'
+      alors: "'PMT — Prescription Médicale de Transport'"
+    - si: resultat . statut = 'Patient éligible sous réserve d’accord préalable'
+      alors: "'DAP — Demande d’Accord Préalable de Transport'"
+    - si: resultat . statut = 'Patient éligible — convocation valant prescription'
+      alors: "'Convocation ou avis valant prescription'"
+    - si: resultat . statut = 'Situation hors parcours Assurance Maladie standard'
+      alors: "'Procédure locale ou établissement'"
+    - sinon: "'Aucun document Assurance Maladie'"
 resultat . mode transport:
   valeur: mode . principal
 resultat . patient . motif simplifie:
@@ -484,71 +484,71 @@ resultat . patient . motif dap simplifie:
         texte: Le transport relève d'un cas nécessitant une demande d’accord préalable.
 resultat . patient . niveau 1:
   variations:
-    - si: resultat . statut = 'patient-eligible'
+    - si: resultat . statut = 'Patient éligible'
       alors:
         texte: Patient éligible — Votre situation ouvre droit à une prise en charge du transport par l’Assurance Maladie.
-    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
+    - si: resultat . statut = 'Patient éligible sous réserve d’accord préalable'
       alors:
         texte: Patient éligible sous réserve d’accord préalable — Votre situation peut ouvrir droit à une prise en charge du transport par l’Assurance Maladie, sous réserve d’accord préalable.
-    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
+    - si: resultat . statut = 'Patient éligible — convocation valant prescription'
       alors:
         texte: Patient éligible — convocation valant prescription. Votre transport est pris en charge sur la base de la convocation ou de l’avis reçu, sous réserve de respecter le mode de transport indiqué.
-    - si: resultat . statut = 'patient-non-eligible'
+    - si: resultat . statut = 'Patient non éligible'
       alors:
         texte: Patient non éligible — La situation déclarée ne permet pas d’établir une prise en charge du transport par l’Assurance Maladie.
-    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+    - si: resultat . statut = 'Situation hors parcours Assurance Maladie standard'
       alors:
         texte: Situation hors parcours Assurance Maladie standard — La situation déclarée nécessite une procédure spécifique.
     - sinon:
         texte: Patient non éligible — La situation déclarée ne permet pas d’établir une prise en charge du transport par l’Assurance Maladie.
 resultat . patient . niveau 2:
   variations:
-    - si: resultat . statut = 'patient-eligible'
+    - si: resultat . statut = 'Patient éligible'
       alors: resultat . patient . motif simplifie
-    - si: resultat . statut = 'patient-eligible-sous-reserve-accord-prealable'
+    - si: resultat . statut = 'Patient éligible sous réserve d’accord préalable'
       alors: resultat . patient . motif dap simplifie
-    - si: resultat . statut = 'patient-eligible-convocation-valant-prescription'
+    - si: resultat . statut = 'Patient éligible — convocation valant prescription'
       alors:
         texte: Le déplacement concerne une convocation ou un contrôle prévu par la Sécurité sociale.
-    - si: resultat . statut = 'patient-non-eligible'
+    - si: resultat . statut = 'Patient non éligible'
       alors:
         texte: Les informations renseignées ne correspondent pas à un cas permettant de prescrire une PMT ou une DAP.
-    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+    - si: resultat . statut = 'Situation hors parcours Assurance Maladie standard'
       alors:
         texte: La situation déclarée ne relève pas du parcours standard de prescription Assurance Maladie.
     - sinon:
         texte: Les informations renseignées ne permettent pas de finaliser la simulation.
 resultat . patient . niveau 3:
   variations:
-    - si: resultat . document = 'pmt'
+    - si: resultat . document = 'PMT — Prescription Médicale de Transport'
       alors:
         texte: Le prescripteur doit compléter une Prescription Médicale de Transport. Une fois le document remis, contactez rapidement un transporteur sanitaire pour organiser le ou les transports prescrits. Vous devrez respecter le mode de transport indiqué et conserver les justificatifs nécessaires au remboursement.
-    - si: resultat . document = 'dap'
+    - si: resultat . document = 'DAP — Demande d’Accord Préalable de Transport'
       alors:
         texte: Le prescripteur doit compléter une Demande d’Accord Préalable de Transport. Vous devrez transmettre ce document selon les modalités indiquées sur celui-ci. En l’absence de réponse sous 15 jours, l’accord est considéré comme donné, sauf urgence attestée par le médecin. Une fois l’accord obtenu ou le délai écoulé sans réponse, contactez rapidement un transporteur sanitaire pour organiser le ou les transports prescrits.
-    - si: resultat . document = 'convocation-ou-avis'
+    - si: resultat . document = 'Convocation ou avis valant prescription'
       alors:
         texte: Conservez la convocation ou l’avis reçu. Ce document tient lieu de prescription médicale de transport. Contactez rapidement le transporteur sanitaire adapté au mode de transport indiqué sur la convocation ou l’avis.
-    - si: resultat . statut = 'patient-non-eligible'
+    - si: resultat . statut = 'Patient non éligible'
       alors:
         texte: "Vous pouvez organiser votre déplacement par vos propres moyens : véhicule personnel, accompagnement par un proche, transport en commun, taxi non conventionné, service de mobilité local ou solution proposée par l’établissement si elle existe."
-    - si: resultat . statut = 'situation-hors-parcours-assurance-maladie-standard'
+    - si: resultat . statut = 'Situation hors parcours Assurance Maladie standard'
       alors:
         texte: Rapprochez-vous de l’établissement ou du référent compétent pour appliquer la procédure adaptée.
     - sinon:
         texte: Complétez les informations nécessaires pour finaliser la simulation.
 resultat . prescripteur . document a completer:
   variations:
-    - si: resultat . document = 'pmt'
+    - si: resultat . document = 'PMT — Prescription Médicale de Transport'
       alors:
         texte: PMT — Prescription Médicale de Transport
-    - si: resultat . document = 'dap'
+    - si: resultat . document = 'DAP — Demande d’Accord Préalable de Transport'
       alors:
         texte: DAP — Demande d’Accord Préalable de Transport
-    - si: resultat . document = 'convocation-ou-avis'
+    - si: resultat . document = 'Convocation ou avis valant prescription'
       alors:
         texte: Aucun document PMT ou DAP à compléter dans ce cas
-    - si: resultat . document = 'procedure-locale-ou-etablissement'
+    - si: resultat . document = 'Procédure locale ou établissement'
       alors:
         texte: Procédure locale ou établissement à appliquer
     - sinon:
@@ -562,21 +562,21 @@ resultat . prescripteur . alerte:
     - sinon:
         texte: ""
 checklist . generer pmt:
-  valeur: resultat . document = 'pmt'
+  valeur: resultat . document = 'PMT — Prescription Médicale de Transport'
 checklist . generer dap:
-  valeur: resultat . document = 'dap'
+  valeur: resultat . document = 'DAP — Demande d’Accord Préalable de Transport'
 checklist . ne pas generer pmt:
   une de ces conditions:
-    - resultat . document = 'dap'
-    - resultat . document = 'convocation-ou-avis'
-    - resultat . document = 'procedure-locale-ou-etablissement'
-    - resultat . document = 'aucun-document-assurance-maladie'
+    - resultat . document = 'DAP — Demande d’Accord Préalable de Transport'
+    - resultat . document = 'Convocation ou avis valant prescription'
+    - resultat . document = 'Procédure locale ou établissement'
+    - resultat . document = 'Aucun document Assurance Maladie'
 checklist . ne pas generer dap:
   une de ces conditions:
-    - resultat . document = 'pmt'
-    - resultat . document = 'convocation-ou-avis'
-    - resultat . document = 'procedure-locale-ou-etablissement'
-    - resultat . document = 'aucun-document-assurance-maladie'
+    - resultat . document = 'PMT — Prescription Médicale de Transport'
+    - resultat . document = 'Convocation ou avis valant prescription'
+    - resultat . document = 'Procédure locale ou établissement'
+    - resultat . document = 'Aucun document Assurance Maladie'
 checklist . cocher motif hospitalisation:
   valeur: question 3 . hospitalisation ou seance assimilee
 checklist . cocher motif ald:
@@ -646,26 +646,26 @@ checklist . texte document:
     - si: checklist . generer dap
       alors:
         texte: Compléter une DAP — Demande d’Accord Préalable de Transport.
-    - si: resultat . document = 'convocation-ou-avis'
+    - si: resultat . document = 'Convocation ou avis valant prescription'
       alors:
         texte: Aucun document PMT ou DAP à compléter. Vérifier que la convocation ou l’avis mentionne le mode de transport.
-    - si: resultat . document = 'procedure-locale-ou-etablissement'
+    - si: resultat . document = 'Procédure locale ou établissement'
       alors:
         texte: Ne pas utiliser de document PMT ou DAP. Appliquer la procédure locale ou établissement.
     - sinon:
         texte: Aucun document Assurance Maladie à compléter.
 checklist . texte mode:
   variations:
-    - si: resultat . mode transport = 'ambulance'
+    - si: resultat . mode transport = 'Ambulance'
       alors:
         texte: "Mode principal : ambulance."
-    - si: resultat . mode transport = 'vsl-ou-taxi-tpmr'
+    - si: resultat . mode transport = 'VSL ou taxi conventionné TPMR'
       alors:
         texte: "Mode principal : VSL TPMR ou taxi conventionné TPMR."
-    - si: resultat . mode transport = 'vsl-ou-taxi-conventionne'
+    - si: resultat . mode transport = 'VSL ou taxi conventionné'
       alors:
         texte: "Mode principal : VSL ou taxi conventionné."
-    - si: resultat . mode transport = 'vehicule-personnel-ou-transport-commun'
+    - si: resultat . mode transport = 'Véhicule personnel ou transport en commun'
       alors:
         texte: "Mode principal : véhicule personnel ou transport en commun."
     - sinon:
