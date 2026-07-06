@@ -9,14 +9,14 @@ type Props = {
 // Type d'alerte DSFR selon le statut de sortie du moteur.
 function alertKind(statut: string): "success" | "info" | "warning" | "error" {
   switch (statut) {
-    case "patient-eligible":
-    case "patient-eligible-convocation-valant-prescription":
+    case "Patient éligible":
+    case "Patient éligible — convocation valant prescription":
       return "success";
-    case "patient-eligible-sous-reserve-accord-prealable":
+    case "Patient éligible sous réserve d’accord préalable":
       return "info";
-    case "situation-hors-parcours-assurance-maladie-standard":
+    case "Situation hors parcours Assurance Maladie standard":
       return "warning";
-    case "patient-non-eligible":
+    case "Patient non éligible":
     default:
       return "error";
   }
