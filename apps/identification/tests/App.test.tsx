@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../src/App";
-import { CTX_VERSION, PRESCRIPTEUR_AUTRE } from "../src/ctx";
+import { PRESCRIPTEUR_AUTRE } from "../src/selection";
 
 async function choisir(labelSelect: RegExp, optionLabel: string) {
   const select = screen.getByRole("combobox", { name: labelSelect });
@@ -28,7 +28,6 @@ describe("parcours d'identification", () => {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",
       prescripteurId: "p_grenoble_cardio_1",
-      v: CTX_VERSION,
     });
   });
 

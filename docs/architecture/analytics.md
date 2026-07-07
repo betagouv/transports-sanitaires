@@ -1,6 +1,6 @@
 # Architecture — Analytics de parcours
 
-> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-03
+> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-07
 >
 > Suivi analytique du parcours dans le [simulateur d'éligibilité](../../apps/simulateur-eligibilite).
 > Repose sur le rattachement au prescripteur fourni par la couche d'identification :
@@ -15,8 +15,8 @@ On souhaite **suivre le parcours** de simulation :
 - qui l'**abandonne**, et **à quelle étape** ;
 - nombre de résultats **éligibles / non-éligibles par prescripteur**.
 
-Le rattachement « par prescripteur » s'appuie sur le `prescripteurId` transmis par la
-couche d'identification via le contexte `#ctx` (cf.
+Le rattachement « par prescripteur » s'appuie sur le `prescripteurRef` (pseudonyme HMAC)
+transmis par la couche d'identification via le contexte `#ctx` (cf.
 [identification.md — ADR-4](./identification.md)). Le simulateur reste une SPA
 **statique** ; on ne veut **pas** opérer de backend applicatif dédié à la collecte.
 
@@ -42,14 +42,19 @@ Custom Dimensions) et les quotas dépendent de la configuration de cette instanc
 mutualisée — à confirmer (voir R-8).
 
 ### ADR-2 — Découpage par prescripteur via custom dimension
-**Décision.** Chaque événement porte un **`prescripteurRef`** (l'`prescripteurId`
-opaque du contexte `#ctx`) en **custom dimension** Matomo (+ `etabRef`, `serviceRef`).
-Le reporting utilise les **Funnels** + la **segmentation** par cette dimension.
+**Décision.** Chaque événement porte un **`prescripteurRef`** en **custom dimension**
+Matomo (+ `etabRef`, `serviceRef`). Ces refs sont les **pseudonymes HMAC** du contexte
+`#ctx` — `HMAC-SHA256(id, secret)` calculé côté backend d'identification, jamais
+l'identifiant brut ni le nom (voir [identification.md — ADR-4](./identification.md)). Le
+reporting utilise les **Funnels** + la **segmentation** par cette dimension.
 **Pourquoi.** Répond directement au besoin « éligibles / non-éligibles par
-prescripteur » **sans backend** de croisement à nous.
-**Conséquences.** `prescripteurRef` est **opaque** (jamais le nom, jamais de RPPS). La
-ré-identification éventuelle se fait hors Matomo, via le référentiel, de façon
-contrôlée.
+prescripteur » **sans backend** de croisement à nous. Le pseudonyme à sens unique évite
+d'exposer un identifiant directement re-liable au référentiel (ou pire, un nom) dans
+Matomo.
+**Conséquences.** `prescripteurRef` est **opaque et non réversible** sans le secret
+(jamais le nom, jamais de RPPS). La ré-identification éventuelle se fait hors Matomo,
+via le référentiel, de façon contrôlée. **Pseudonyme ≠ anonyme** → la réserve RGPD (R-4)
+tient malgré la pseudonymisation.
 
 ### ADR-3 — Initialisation derrière un flag de consentement
 **Décision.** L'initialisation du tracking Matomo est conditionnée par un composant de

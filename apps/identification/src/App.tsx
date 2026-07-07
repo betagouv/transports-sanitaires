@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PRESCRIPTEUR_AUTRE, CTX_VERSION, type Ctx } from "./ctx";
+import { PRESCRIPTEUR_AUTRE, type Selection } from "./selection";
 import { goToSimulateur } from "./redirect";
 import {
   snapshotReferentiel,
@@ -11,7 +11,7 @@ import {
 
 type Props = {
   referentiel?: Referentiel;
-  onValider?: (ctx: Ctx) => void;
+  onValider?: (selection: Selection) => void;
 };
 
 const OPTION_PRESCRIPTEUR_AUTRE = "Autre / prescripteur non répertorié";
@@ -50,7 +50,7 @@ export function App({
   const etape2Valide = prescripteurId !== "";
 
   function handleValider() {
-    onValider({ etabId, serviceId, prescripteurId, v: CTX_VERSION });
+    onValider({ etabId, serviceId, prescripteurId });
   }
 
   return (

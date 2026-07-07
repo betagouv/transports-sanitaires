@@ -1,13 +1,25 @@
 // Contexte d'identification reçu de l'app d'identification via le fragment d'URL
 // (#ctx=). Voir docs/architecture/identification.md — ADR-4 & §4.
-// Identifiants opaques uniquement ; le contexte n'est pas signé.
+//
+// Deux niveaux à ne pas confondre :
+//   - l'**enveloppe** est un base64url d'un JSON — simple encodage de transport
+//     (pour loger un objet dans un fragment d'URL), **réversible par
+//     construction** : `fromBase64Url` + `JSON.parse` la décodent, c'est
+//     nécessaire pour lire les refs ;
+//   - les **valeurs** (`*Ref`) sont des **pseudonymes HMAC** calculés côté serveur
+//     d'identification — **non réversibles** sans le secret, jamais l'identifiant
+//     brut, le nom ou le RPPS.
+//
+// Le simulateur décode l'enveloppe puis forwarde les refs **telles quelles** à
+// Matomo (cf. analytics.md — ADR-2) ; il n'inverse jamais le HMAC. Le contexte
+// n'est pas signé.
 
-export const CTX_VERSION = 1 as const;
+export const CTX_VERSION = 2 as const;
 
 export type Ctx = {
-  etabId: string;
-  serviceId: string;
-  prescripteurId: string;
+  etabRef: string;
+  serviceRef: string;
+  prescripteurRef: string;
   v: typeof CTX_VERSION;
 };
 
@@ -23,9 +35,9 @@ function isCtx(value: unknown): value is Ctx {
   const c = value as Record<string, unknown>;
   return (
     c.v === CTX_VERSION &&
-    typeof c.etabId === "string" &&
-    typeof c.serviceId === "string" &&
-    typeof c.prescripteurId === "string"
+    typeof c.etabRef === "string" &&
+    typeof c.serviceRef === "string" &&
+    typeof c.prescripteurRef === "string"
   );
 }
 

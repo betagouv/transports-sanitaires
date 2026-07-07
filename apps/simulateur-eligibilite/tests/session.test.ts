@@ -11,9 +11,9 @@ function encodeCtx(json: object): string {
 }
 
 const ctx = {
-  etabId: "e_chu_grenoble",
-  serviceId: "s_grenoble_cardio",
-  prescripteurId: "p_grenoble_cardio_1",
+  etabRef: "aWJEZXRhYlJlZg",
+  serviceRef: "c2VydmljZVJlZg",
+  prescripteurRef: "cHJlc2NyaXB0ZXVyUmVm",
   v: CTX_VERSION,
 };
 
@@ -32,7 +32,7 @@ describe("decodeCtx", () => {
   });
 
   it("renvoie null pour un contexte de mauvaise forme", () => {
-    expect(decodeCtx(`#ctx=${encodeCtx({ etabId: "e", v: 1 })}`)).toBeNull();
+    expect(decodeCtx(`#ctx=${encodeCtx({ etabRef: "x", v: CTX_VERSION })}`)).toBeNull();
   });
 });
 

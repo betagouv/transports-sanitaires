@@ -17,13 +17,18 @@ Architecture de référence : [`docs/architecture/identification.md`](../../docs
   - `GET /api/etablissements`
   - `GET /api/services?etabId=…`
   - `GET /api/prescripteurs?serviceId=…`
-  - Source : **Grist** (`server/grist.ts`) si `GRIST_API_KEY` est présente ; sinon le
-    **snapshot factice** partagé (`src/referentiel.ts`) — dev/CI sans secret.
-    La clé Grist et les noms de prescripteurs (PII) restent **côté serveur** ; les
-    prescripteurs ne sont renvoyés que pour le service demandé.
-- À la validation : contexte `{ etabId, serviceId, prescripteurId, v }` (identifiants
-  **opaques** = colonne `Id` Grist, aucune PII, aucune donnée patient), encodé base64url,
-  **navigation top-level** vers `…/simulateur#ctx=<payload>`.
+  - `POST /api/contexte` — reçoit la sélection brute, renvoie le fragment `#ctx` encodé
+    (voir ci-dessous).
+  - Source du référentiel : **Grist** (`server/grist.ts`) si `GRIST_API_KEY` est
+    présente ; sinon le **snapshot factice** partagé (`src/referentiel.ts`) — dev/CI
+    sans secret. La clé Grist et les noms de prescripteurs (PII) restent **côté
+    serveur** ; les prescripteurs ne sont renvoyés que pour le service demandé.
+- À la validation : le front envoie la sélection à `POST /api/contexte` ; le backend
+  construit le contexte **pseudonymisé** `{ etabRef, serviceRef, prescripteurRef, v: 2 }`
+  — chaque ref = `HMAC-SHA256(id, secret)` (`server/contexte.ts`), **jamais d'identifiant
+  brut ni de nom**, secret côté serveur uniquement — l'encode base64url, et le front
+  **navigue en top-level** vers `…/simulateur#ctx=<payload>`. Le simulateur forwarde ces
+  refs à Matomo (voir `docs/architecture/analytics.md`).
 
 ## Commandes
 

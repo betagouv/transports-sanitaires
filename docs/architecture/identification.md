@@ -59,19 +59,31 @@ prescripteur) **sans preuve d'identité**.
 **Conséquences.** Usurpation déclarative possible ; le contexte transmis n'a pas de
 valeur probante (voir ADR-4). Migration future possible vers ProConnect/AgentConnect.
 
-### ADR-4 — Contexte inter-app : jeton non signé, sans patient, en fragment d'URL
-**Décision.** À la validation, l'iframe transmet un **contexte `ctx`** au simulateur
-via le **fragment d'URL** (`…/simulateur#ctx=<payload>`). Contenu : **identifiants
-opaques** `{ etabId, serviceId, prescripteurId }` issus du référentiel. **Non signé.
-Aucun nom, aucun RPPS, aucune donnée patient.**
-**Pourquoi.** L'identification étant déclarative (ADR-3), signer donnerait une fausse
-garantie ; ne pas signer évite d'introduire un secret serveur. Le fragment n'est ni
-envoyé au serveur, ni journalisé, ni présent dans le `Referer`.
+### ADR-4 — Contexte inter-app : refs pseudonymisées, en fragment d'URL
+**Décision.** À la validation, le **backend d'identification** construit un **contexte
+`ctx`** (`v: 2`) transmis au simulateur via le **fragment d'URL**
+(`…/simulateur#ctx=<payload>`, base64url d'un JSON). Contenu : **refs pseudonymisées**
+`{ etabRef, serviceRef, prescripteurRef }` = **`HMAC-SHA256(id, secret)`** (tronqué
+128 bits, base64url) des identifiants opaques du référentiel. **Aucun identifiant brut,
+aucun nom, aucun RPPS, aucune donnée patient.** Le **secret vit côté serveur** (variable
+d'env dédiée `PSEUDONYMISATION_SECRET`, distincte de la clé Grist) : le front envoie la
+sélection à `POST /api/contexte`, le backend renvoie le fragment encodé.
+**Pourquoi.** Le suivi Matomo n'a besoin que d'un **jeton stable et opaque** par
+prescripteur, pas de l'identifiant brut (enum. / re-liable au référentiel) ni du nom
+(PII). Un **HMAC à sens unique** donne un pseudonyme non réversible et non forgeable
+sans le secret ; le calculer **côté serveur** est indispensable — un keyed-hash
+client-side exposerait la clé dans le bundle et n'aurait aucune valeur. Le contexte
+n'est **pas signé** (l'identification étant déclarative — ADR-3, signer donnerait une
+fausse garantie). Le fragment n'est ni envoyé au serveur, ni journalisé, ni présent
+dans le `Referer`.
 **Conséquences.** Le simulateur lit le fragment, le garde **en mémoire** (pas de
-`localStorage`), puis nettoie l'URL (`history.replaceState`). Le contexte est
-falsifiable — acceptable en expérimental, à re-trancher avant tout usage probant. Le
-`prescripteurId` sert de clé de rattachement pour l'analytics (voir
-[analytics.md](./analytics.md)).
+`localStorage`), puis nettoie l'URL (`history.replaceState`) et forwarde les refs à
+Matomo (voir [analytics.md](./analytics.md)). Le contexte reste **falsifiable** (on peut
+injecter une ref arbitraire, mais pas fabriquer celle d'un prescripteur précis sans le
+secret) — acceptable en expérimental, à re-trancher avant tout usage probant. La
+ré-identification `prescripteurRef → prescripteur` se fait **hors Matomo**, via le
+référentiel, de façon contrôlée. **Pseudonyme ≠ anonyme** : la réserve RGPD (R-4
+d'analytics.md) tient. La rotation du secret re-bucketise tous les prescripteurs.
 
 ### ADR-5 — Référentiel dans Grist, lu par le backend de l'app d'identification
 **Décision.** Le référentiel établissement/service/prescripteur est **maintenu à la
@@ -130,14 +142,19 @@ Composants :
 ## 4. Spécification du contexte `ctx`
 
 - **Transport** : fragment d'URL `#ctx=<base64url(json)>`.
-- **Schéma** (identifiants opaques uniquement) :
+- **Construction** : **côté backend** (`POST /api/contexte` reçoit la sélection brute
+  `{ etabId, serviceId, prescripteurId }`, renvoie le fragment encodé). Le secret HMAC
+  ne quitte jamais le serveur.
+- **Schéma** (refs pseudonymisées uniquement) :
   ```json
-  { "etabId": "e_xxx", "serviceId": "s_xxx", "prescripteurId": "p_xxx", "v": 1 }
+  { "etabRef": "…", "serviceRef": "…", "prescripteurRef": "…", "v": 2 }
   ```
-- **Interdits** : nom/prénom, RPPS, tout identifiant patient, toute donnée de santé.
-- **Cas « prescripteur autre »** (absent du référentiel) : un `prescripteurId`
-  conventionnel (p. ex. `p_autre`) ; la saisie libre éventuelle reste **côté
-  simulateur/identification**, hors `ctx`, et n'est pas transmise nominativement.
+  où chaque ref = `base64url(HMAC-SHA256(id, PSEUDONYMISATION_SECRET)[:16])`.
+- **Interdits** : identifiant brut du référentiel, nom/prénom, RPPS, tout identifiant
+  patient, toute donnée de santé.
+- **Cas « prescripteur autre »** (absent du référentiel) : `prescripteurId` conventionnel
+  (`p_autre`) → `prescripteurRef` = son HMAC (bucket « autre » stable dans Matomo). La
+  saisie libre éventuelle reste **côté identification**, hors `ctx`.
 - **Cycle de vie** : lu au boot du simulateur, conservé **en mémoire de session**,
   fragment retiré de l'URL immédiatement.
 

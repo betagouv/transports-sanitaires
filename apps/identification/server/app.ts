@@ -7,6 +7,8 @@
 
 import express, { type Express, type Request, type Response } from "express";
 import type { Referentiel } from "../src/referentiel.ts";
+import type { Selection } from "../src/selection.ts";
+import { buildEncodedContexte } from "./contexte.ts";
 
 // Enrobe un handler async pour router les rejets vers le middleware d'erreur.
 function handle(fn: (req: Request, res: Response) => Promise<void>) {
@@ -18,8 +20,19 @@ function handle(fn: (req: Request, res: Response) => Promise<void>) {
   };
 }
 
-export function createApp(referentiel: Referentiel, distDir?: string): Express {
+export type AppOptions = {
+  /** Secret de pseudonymisation (HMAC) du contexte prescripteur. */
+  secret: string;
+  /** Répertoire du build front à servir (absent en test). */
+  distDir?: string;
+};
+
+export function createApp(
+  referentiel: Referentiel,
+  { secret, distDir }: AppOptions
+): Express {
   const app = express();
+  app.use(express.json());
 
   app.get(
     "/api/etablissements",
@@ -49,6 +62,24 @@ export function createApp(referentiel: Referentiel, distDir?: string): Express {
         return;
       }
       res.json(await referentiel.getPrescripteurs(serviceId));
+    })
+  );
+
+  // Construit le contexte pseudonymisé à transmettre au simulateur (#ctx).
+  // Reçoit la sélection brute, renvoie le fragment encodé — le secret HMAC ne
+  // quitte jamais le serveur.
+  app.post(
+    "/api/contexte",
+    handle(async (req, res) => {
+      const { etabId, serviceId, prescripteurId } = (req.body ?? {}) as Partial<Selection>;
+      if (!etabId || !serviceId || !prescripteurId) {
+        res
+          .status(400)
+          .json({ error: "etabId, serviceId et prescripteurId requis" });
+        return;
+      }
+      const ctx = buildEncodedContexte(secret, { etabId, serviceId, prescripteurId });
+      res.json({ ctx });
     })
   );
 
