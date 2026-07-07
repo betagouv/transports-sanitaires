@@ -1,35 +1,55 @@
 # App d'identification
 
-SPA statique (React 19 + Vite + DSFR) qui identifie le prescripteur **en amont** du
+Identifie le prescripteur **en amont** du
 [simulateur d'éligibilité](../simulateur-eligibilite), puis y redirige avec un contexte
-d'identifiants opaques.
+d'identifiants opaques. **App unique** : un front React (Vite + DSFR) servi par un
+**backend Node/Express** qui expose aussi l'API du référentiel (Grist).
 
-Architecture de référence : [`docs/architecture/identification.md`](../../docs/architecture/identification.md).
+Architecture de référence : [`docs/architecture/identification.md`](../../docs/architecture/identification.md)
+(ADR-5).
 
-## Périmètre (incrément 1)
+## Fonctionnement
 
 - Parcours en 2 étapes : établissement → service, puis prescripteur (ou « autre »).
-- **Référentiel factice** (`src/referentiel.ts`), 100 % statique, derrière l'interface
-  `Referentiel` — à substituer ultérieurement par la micro-fonction Grist (incrément 2).
-- À la validation : construit le contexte `{ etabId, serviceId, prescripteurId, v }`
-  (identifiants **opaques**, aucune PII, aucune donnée patient), l'encode en base64url
-  et **navigue en top-level** vers le simulateur : `…/simulateur#ctx=<payload>`.
+- Le **front** (`src/`) consomme le référentiel via l'API **same-origin** `/api/*`
+  (`src/http-referentiel.ts`), derrière l'interface `Referentiel` (`src/referentiel.ts`).
+- Le **backend** (`server/`) sert le build front **et** l'API :
+  - `GET /api/etablissements`
+  - `GET /api/services?etabId=…`
+  - `GET /api/prescripteurs?serviceId=…`
+  - Source : **Grist** (`server/grist.ts`) si `GRIST_API_KEY` est présente ; sinon le
+    **snapshot factice** partagé (`src/referentiel.ts`) — dev/CI sans secret.
+    La clé Grist et les noms de prescripteurs (PII) restent **côté serveur** ; les
+    prescripteurs ne sont renvoyés que pour le service demandé.
+- À la validation : contexte `{ etabId, serviceId, prescripteurId, v }` (identifiants
+  **opaques** = colonne `Id` Grist, aucune PII, aucune donnée patient), encodé base64url,
+  **navigation top-level** vers `…/simulateur#ctx=<payload>`.
 
 ## Commandes
 
-- `npm run dev` — serveur de dev (port **5174**)
-- `npm test` — vitest
-- `npm run build` — `tsc -b && vite build`
+- `npm run dev` — front de dev (port **5174**), proxifie `/api` → `:3000`
+- `npm run dev:server` — backend de dev (port **3000**, `--watch`, charge `.env` si présent)
+- `npm test` — vitest (le smoke Grist est ignoré sans `GRIST_API_KEY`)
+- `npm run build` — typecheck front + serveur, puis build Vite (`dist/`)
+- `npm start` — serveur de production (`node server/server.ts`, Node 24)
 
-## Configuration — URL du simulateur
+Depuis la racine du repo : `mise run dev-identification` lance front + backend en
+parallèle.
 
-URL de base vers laquelle rediriger après identification, résolue par ordre de
-priorité (voir `src/config.ts`) :
+## Configuration
 
-1. **Runtime** — balise `<meta name="simulateur-url" content="…">` dans
-   `index.html`. Modifiable **directement sur l'artefact déployé, sans rebuild**
-   (adapté à l'embarquement iframe multi-environnements). Laisser `content=""` pour
-   l'ignorer.
-2. **Build** — variable d'environnement `VITE_SIMULATEUR_URL` (cf. `.env.example`),
-   figée à la compilation.
-3. **Défaut** — `http://localhost:5173` (dev).
+Copier `.env.example` → `.env` (gitignoré). Variables :
+
+- `VITE_SIMULATEUR_URL` *(build)* — URL du simulateur pour la redirection. Surchargeable
+  à l'exécution par `<meta name="simulateur-url">` dans `index.html` (voir `src/config.ts`).
+- `GRIST_API_KEY` *(serveur)* — clé API Grist. **Absente ⇒ référentiel snapshot factice.**
+- `GRIST_DOC_URL` *(serveur, optionnel)* — base API du doc Grist ; défaut = doc du projet
+  (`server/referentiel.ts`).
+
+## Déploiement (Scalingo)
+
+App Node (front + backend, cf. ADR-5). Scalingo lance `npm run build` puis `npm start`
+(`Procfile`). Définir en variables d'environnement Scalingo : `GRIST_API_KEY`,
+éventuellement `VITE_SIMULATEUR_URL` / `GRIST_DOC_URL`. `PORT` est fourni par Scalingo.
+Le serveur exécute le TypeScript directement (type stripping natif de Node 24, épinglé
+via `engines`).

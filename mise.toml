@@ -9,10 +9,19 @@ run = [
   "npm --prefix {{config_root}}/apps/simulateur-eligibilite ci",
 ]
 
-[tasks.dev-identification]
-description = "Serveur de dev de l'identification (http://localhost:5174)"
+[tasks.dev-identification-front]
+description = "Front de dev de l'identification (http://localhost:5174, proxy /api → :3000)"
 dir = "{{config_root}}/apps/identification"
 run = "npm run dev"
+
+[tasks.dev-identification-server]
+description = "Backend de dev de l'identification (http://localhost:3000, API référentiel)"
+dir = "{{config_root}}/apps/identification"
+run = "npm run dev:server"
+
+[tasks.dev-identification]
+description = "Identification : front + backend en parallèle"
+depends = ["dev-identification-front", "dev-identification-server"]
 
 [tasks.dev-simulateur]
 description = "Serveur de dev du simulateur (http://localhost:5173)"
