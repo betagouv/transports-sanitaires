@@ -15,9 +15,9 @@ function setup() {
 // Réponses menant à un patient éligible (PMT) : motif hospitalisation,
 // patient autonome.
 const ELIGIBLE_PMT: Reponse[] = [
-  [/situations suivantes/i, "aucune"],
+  [/situations suivantes/i, "Aucune de ces situations"],
   [/hospitalisé au moment/i, "Non"],
-  [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
+  [/motif principal/i, "Hospitalisation ou séance assimilée"],
   [/se déplacer seul/i, "Oui"],
 ];
 
@@ -96,7 +96,7 @@ describe("questions conditionnelles", () => {
     ).toBeInTheDocument();
 
     const group = screen.getByRole("group", { name: /situations suivantes/i });
-    await user.click(within(group).getByRole("radio", { name: "smur" }));
+    await user.click(within(group).getByRole("radio", { name: "Transport SMUR" }));
 
     expect(
       screen.queryByRole("combobox", { name: /motif principal/i })
@@ -129,7 +129,9 @@ describe("résultats — patient éligible (PMT)", () => {
   it("affiche le statut « patient éligible »", async () => {
     const { user } = setup();
     await remplirEtVoirResultats(user, ELIGIBLE_PMT);
-    expect(screen.getByText(/patient éligible/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /patient éligible/i })
+    ).toBeInTheDocument();
   });
 
   it("affiche la section prescripteur avec le document PMT à compléter", async () => {
@@ -149,15 +151,17 @@ describe("résultats — patient éligible (PMT)", () => {
 describe("résultats — patient non éligible", () => {
   // Motif hospitalisation, mais aucun mode de transport justifié.
   const NON_ELIGIBLE: Reponse[] = [
-    [/situations suivantes/i, "aucune"],
+    [/situations suivantes/i, "Aucune de ces situations"],
     [/hospitalisé au moment/i, "Non"],
-    [/motif principal/i, "hospitalisation-ou-seance-assimilee"],
+    [/motif principal/i, "Hospitalisation ou séance assimilée"],
   ];
 
   it("affiche « patient non éligible » quand aucun mode n'est justifié", async () => {
     const { user } = setup();
     await remplirEtVoirResultats(user, NON_ELIGIBLE);
-    expect(screen.getByText(/non éligible/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /non éligible/i })
+    ).toBeInTheDocument();
   });
 });
 

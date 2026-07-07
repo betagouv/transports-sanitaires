@@ -63,9 +63,9 @@ describe("dap . necessaire", () => {
   it("motif CAMSP/CMPP → DAP nécessaire", () => {
     expect(
       dapNecessaire({
-        "question 1 . situation particuliere": "'aucune'",
+        "question 1 . situation particuliere": "'Aucune de ces situations'",
         "question 2 . patient hospitalise": "non",
-        "question 3 . motif principal": "'camsp-cmpp'",
+        "question 3 . motif principal": "'Transport vers un CAMSP ou un CMPP'",
       })
     ).toBe(true);
   });
@@ -73,9 +73,9 @@ describe("dap . necessaire", () => {
   it("motif SAMSAH → DAP nécessaire", () => {
     expect(
       dapNecessaire({
-        "question 1 . situation particuliere": "'aucune'",
+        "question 1 . situation particuliere": "'Aucune de ces situations'",
         "question 2 . patient hospitalise": "non",
-        "question 3 . motif principal": "'samsah'",
+        "question 3 . motif principal": "'Soins ou traitements vers un SAMSAH'",
       })
     ).toBe(true);
   });
