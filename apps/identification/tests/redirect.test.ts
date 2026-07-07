@@ -1,32 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
-import { CTX_VERSION, type Ctx } from "../src/ctx";
-import { goToSimulateur, simulateurUrl } from "../src/redirect";
-
-const ctx: Ctx = {
-  etabId: "e_chu_grenoble",
-  serviceId: "s_grenoble_cardio",
-  prescripteurId: "p_grenoble_cardio_1",
-  v: CTX_VERSION,
-};
+import { navigate, simulateurUrl } from "../src/redirect";
 
 describe("simulateurUrl", () => {
-  it("place le contexte dans le fragment", () => {
-    const url = simulateurUrl(ctx, "https://simulateur.example");
-    expect(url).toMatch(/^https:\/\/simulateur\.example#ctx=[A-Za-z0-9_-]+$/);
+  it("place le contexte encodé dans le fragment", () => {
+    const url = simulateurUrl("abc123", "https://simulateur.example");
+    expect(url).toBe("https://simulateur.example#ctx=abc123");
   });
 });
 
-describe("goToSimulateur", () => {
-  it("navigue en top-level vers le simulateur", () => {
+describe("navigate", () => {
+  it("navigue en top-level", () => {
     const assign = vi.fn();
     const target = {
       location: { assign: vi.fn() },
       top: { location: { assign } },
     } as unknown as Window;
 
-    goToSimulateur(ctx, target);
+    navigate("https://simulateur.example#ctx=x", target);
 
-    expect(assign).toHaveBeenCalledWith(simulateurUrl(ctx));
+    expect(assign).toHaveBeenCalledWith("https://simulateur.example#ctx=x");
   });
 
   it("retombe sur la fenêtre courante si l'accès à top lève (iframe cross-origin)", () => {
@@ -38,8 +30,8 @@ describe("goToSimulateur", () => {
       },
     } as unknown as Window;
 
-    goToSimulateur(ctx, target);
+    navigate("https://simulateur.example#ctx=x", target);
 
-    expect(assign).toHaveBeenCalledWith(simulateurUrl(ctx));
+    expect(assign).toHaveBeenCalledWith("https://simulateur.example#ctx=x");
   });
 });

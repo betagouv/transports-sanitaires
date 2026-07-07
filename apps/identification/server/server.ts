@@ -10,7 +10,22 @@ import { chooseReferentiel } from "./referentiel.ts";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(here, "..", "dist");
 
-const app = createApp(chooseReferentiel(), distDir);
+// Secret de pseudonymisation (HMAC) du contexte prescripteur. En production
+// (Scalingo) il vient d'une variable d'environnement dédiée ; en local sans
+// secret on retombe sur une valeur de dev (jamais pour de vrais indicateurs).
+function pseudonymisationSecret(): string {
+  const secret = process.env.PSEUDONYMISATION_SECRET?.trim();
+  if (secret) return secret;
+  console.warn(
+    "[identification] PSEUDONYMISATION_SECRET absente — secret de dev (non sécurisé)."
+  );
+  return "dev-secret-non-securise";
+}
+
+const app = createApp(chooseReferentiel(), {
+  secret: pseudonymisationSecret(),
+  distDir,
+});
 const port = Number(process.env.PORT ?? 3000);
 
 app.listen(port, () => {
