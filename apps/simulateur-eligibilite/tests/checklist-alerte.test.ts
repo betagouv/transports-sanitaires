@@ -38,9 +38,9 @@ describe("resultat . prescripteur . alerte", () => {
   it("motif SAMSAH → alerte de vigilance", () => {
     expect(
       evalRule("resultat . prescripteur . alerte", {
-        "question 1 . situation particuliere": "'aucune'",
+        "question 1 . situation particuliere": "'Aucune de ces situations'",
         "question 2 . patient hospitalise": "non",
-        "question 3 . motif principal": "'samsah'",
+        "question 3 . motif principal": "'Soins ou traitements vers un SAMSAH'",
         "question 6 . individuel commun . autonome": "oui",
       })
     ).toMatch(/SAMSAH/i);

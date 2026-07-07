@@ -9,8 +9,8 @@ const mode = (s: Record<string, unknown>) =>
 
 describe("resultat . statut", () => {
   it("situation vide (aucun motif par défaut) → patient non éligible", () => {
-    expect(statut({})).toBe("patient-non-eligible");
-    expect(document({})).toBe("aucun-document-assurance-maladie");
+    expect(statut({})).toBe("Patient non éligible");
+    expect(document({})).toBe("Aucun document Assurance Maladie");
   });
 
   it("motif hospitalisation + mode individuel → patient éligible (PMT)", () => {
@@ -18,9 +18,9 @@ describe("resultat . statut", () => {
       ...baseEligible,
       "question 6 . individuel commun . autonome": "oui",
     };
-    expect(statut(s)).toBe("patient-eligible");
-    expect(document(s)).toBe("pmt");
-    expect(mode(s)).toBe("vehicule-personnel-ou-transport-commun");
+    expect(statut(s)).toBe("Patient éligible");
+    expect(document(s)).toBe("PMT — Prescription Médicale de Transport");
+    expect(mode(s)).toBe("Véhicule personnel ou transport en commun");
   });
 
   it("trajet > 150 km → éligible sous réserve d'accord préalable (DAP)", () => {
@@ -29,63 +29,57 @@ describe("resultat . statut", () => {
       "question 6 . individuel commun . autonome": "oui",
       "question 5 . trajet plus de 150 km aller": "oui",
     };
-    expect(statut(s)).toBe("patient-eligible-sous-reserve-accord-prealable");
-    expect(document(s)).toBe("dap");
+    expect(statut(s)).toBe("Patient éligible sous réserve d’accord préalable");
+    expect(document(s)).toBe("DAP — Demande d’Accord Préalable de Transport");
   });
 
   it("convocation contrôle sécurité sociale → convocation valant prescription", () => {
     const s = {
-      "question 1 . situation particuliere": "'aucune'",
+      "question 1 . situation particuliere": "'Aucune de ces situations'",
       "question 2 . patient hospitalise": "non",
-      "question 3 . motif principal": "'convocation-controle-securite-sociale'",
+      "question 3 . motif principal": "'Convocation ou contrôle de l’Assurance Maladie'",
     };
-    expect(statut(s)).toBe(
-      "patient-eligible-convocation-valant-prescription"
-    );
-    expect(document(s)).toBe("convocation-ou-avis");
+    expect(statut(s)).toBe("Patient éligible — convocation valant prescription");
+    expect(document(s)).toBe("Convocation ou avis valant prescription");
   });
 
   it("SMUR → situation hors parcours Assurance Maladie standard", () => {
     const s = {
-      "question 1 . situation particuliere": "'smur'",
+      "question 1 . situation particuliere": "'Transport SMUR'",
     };
-    expect(statut(s)).toBe(
-      "situation-hors-parcours-assurance-maladie-standard"
-    );
-    expect(document(s)).toBe("procedure-locale-ou-etablissement");
+    expect(statut(s)).toBe("Situation hors parcours Assurance Maladie standard");
+    expect(document(s)).toBe("Procédure locale ou établissement");
   });
 
   it("patient hospitalisé sans exception → hors parcours", () => {
     const s = {
-      "question 1 . situation particuliere": "'aucune'",
+      "question 1 . situation particuliere": "'Aucune de ces situations'",
       "question 2 . patient hospitalise": "oui",
-      "question 2_1 . exception assurance maladie": "'aucune'",
+      "question 2_1 . exception assurance maladie": "'Aucune de ces exceptions'",
     };
-    expect(statut(s)).toBe(
-      "situation-hors-parcours-assurance-maladie-standard"
-    );
+    expect(statut(s)).toBe("Situation hors parcours Assurance Maladie standard");
   });
 
   it("contrainte bariatrique uniquement → patient non éligible", () => {
     const s = {
-      "question 1 . situation particuliere": "'contrainte-bariatrique-uniquement'",
+      "question 1 . situation particuliere": "'Transport bariatrique uniquement'",
     };
-    expect(statut(s)).toBe("patient-non-eligible");
-    expect(document(s)).toBe("aucun-document-assurance-maladie");
+    expect(statut(s)).toBe("Patient non éligible");
+    expect(document(s)).toBe("Aucun document Assurance Maladie");
   });
 
   it("aucun motif → patient non éligible", () => {
     const s = {
-      "question 1 . situation particuliere": "'aucune'",
+      "question 1 . situation particuliere": "'Aucune de ces situations'",
       "question 2 . patient hospitalise": "non",
-      "question 3 . motif principal": "'aucun'",
+      "question 3 . motif principal": "'Aucun de ces motifs'",
     };
-    expect(statut(s)).toBe("patient-non-eligible");
+    expect(statut(s)).toBe("Patient non éligible");
   });
 
   it("motif ouvrant droit mais aucun mode justifié → non éligible", () => {
     // hospitalisation mais aucune question 6 renseignée
-    expect(statut(baseEligible)).toBe("patient-non-eligible");
+    expect(statut(baseEligible)).toBe("Patient non éligible");
   });
 });
 
@@ -93,7 +87,7 @@ describe("resultat . mode transport", () => {
   it("ambulance justifiée → ambulance", () => {
     expect(
       mode({ ...baseEligible, "question 6 . ambulance . oxygene": "oui" })
-    ).toBe("ambulance");
+    ).toBe("Ambulance");
   });
 
   it("fauteuil roulant sans transfert → VSL/taxi TPMR", () => {
@@ -102,7 +96,7 @@ describe("resultat . mode transport", () => {
         ...baseEligible,
         "question 6 . tpmr . fauteuil roulant sans transfert": "oui",
       })
-    ).toBe("vsl-ou-taxi-tpmr");
+    ).toBe("VSL ou taxi conventionné TPMR");
   });
 
   it("aide au déplacement → VSL/taxi conventionné", () => {
@@ -111,7 +105,7 @@ describe("resultat . mode transport", () => {
         ...baseEligible,
         "question 6 . vsl taxi . aide au deplacement": "oui",
       })
-    ).toBe("vsl-ou-taxi-conventionne");
+    ).toBe("VSL ou taxi conventionné");
   });
 
   it("patient autonome → véhicule personnel / transport en commun", () => {
@@ -120,7 +114,7 @@ describe("resultat . mode transport", () => {
         ...baseEligible,
         "question 6 . individuel commun . autonome": "oui",
       })
-    ).toBe("vehicule-personnel-ou-transport-commun");
+    ).toBe("Véhicule personnel ou transport en commun");
   });
 
   it("ambulance prime sur les autres modes", () => {
@@ -131,6 +125,6 @@ describe("resultat . mode transport", () => {
         "question 6 . vsl taxi . aide au deplacement": "oui",
         "question 6 . individuel commun . autonome": "oui",
       })
-    ).toBe("ambulance");
+    ).toBe("Ambulance");
   });
 });
