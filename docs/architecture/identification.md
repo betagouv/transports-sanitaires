@@ -1,6 +1,6 @@
 # Architecture — Identification du prescripteur
 
-> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-03
+> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-07
 >
 > Couche d'identification en amont du [simulateur d'éligibilité](../../apps/simulateur-eligibilite).
 > Le suivi analytique du parcours fait l'objet d'un document séparé :
@@ -24,7 +24,9 @@ Contraintes :
 - Phase **expérimentale** : le référentiel établissement/service/prescripteur est
   **construit et maintenu à la main**, **non** intégré aux référentiels du SI
   Sécurité sociale / CNAM (pas de FINESS/RPPS officiels branchés à ce stade).
-- Volonté de **s'appuyer sur des services managés** plutôt que d'opérer un backend.
+- Volonté de **limiter l'empreinte serveur** : rester statique là où c'est possible
+  (le simulateur), et n'introduire qu'**un** backend minimal, sur une **plateforme
+  managée (Scalingo)**, là où c'est incontournable (accès Grist — cf. ADR-5).
 
 **Invariant** : l'identification ne doit **jamais** revenir dans le moteur
 `publicodes` (`regles/regles.publicodes`), qui ne contient que la logique métier
@@ -71,20 +73,26 @@ falsifiable — acceptable en expérimental, à re-trancher avant tout usage pro
 `prescripteurId` sert de clé de rattachement pour l'analytics (voir
 [analytics.md](./analytics.md)).
 
-### ADR-5 — Référentiel dans Grist, lu via une micro-fonction serverless
+### ADR-5 — Référentiel dans Grist, lu par le backend de l'app d'identification
 **Décision.** Le référentiel établissement/service/prescripteur est **maintenu à la
-main dans Grist**. Il est **lu par une micro-fonction serverless** qui détient la clé
-Grist et renvoie un **référentiel filtré** à l'app d'identification.
-**Pourquoi.** L'accès **direct navigateur → Grist est non viable** :
-- une clé API Grist porte **toutes les permissions du compte (lecture + écriture)** →
-  impossible à exposer dans une SPA ;
-- Grist **bloque le CORS** des appels navigateur (« API limitée aux non-navigateurs »).
-
-Un doc Grist public exposerait en plus les **noms de prescripteurs (PII)**
-publiquement. La micro-fonction protège **à la fois la clé et la PII**, tout en
-gardant des données **fraîches**, sans opérer de serveur applicatif.
-**Conséquences.** Introduit un composant serveur **managé (FaaS)** — assumé. Grist
-reste l'outil d'admin. Voir §5 (modèle) et §6 (accès).
+main dans Grist**. L'app d'identification n'est **plus une SPA statique** mais une
+**app unique servie par un backend** (Node, hébergée sur **Scalingo**) qui **sert le
+front React** (build Vite/DSFR inchangé) **et expose une API** détenant la clé Grist et
+renvoyant un **référentiel filtré**. Le front consomme cette API en **same-origin**.
+**Pourquoi.** L'accès **direct navigateur → Grist est non viable** (clé toute-puissante
+impossible à exposer dans une SPA ; **CORS bloqué** par Grist), et un doc Grist public
+exposerait les **noms de prescripteurs (PII)**. Un composant serveur détenant la clé et
+filtrant la PII est donc requis. **Scalingo ne propose pas de FaaS**, et faire cohabiter
+une SPA statique **et** une fonction dédiée complexifie l'infra inutilement : le backend
+de l'app d'identification **est** ce composant. En same-origin, le **problème CORS
+disparaît** (notre serveur parle à Grist en server-to-server) ; données **fraîches**
+(lecture Grist en direct) ; **une seule app** à déployer.
+**Conséquences.** L'app d'identification **quitte GitHub Pages** pour **Scalingo**. Le
+**front React et ses tests sont préservés** : seule l'implémentation de l'interface
+`Referentiel` (§5) passe du snapshot factice à un **client HTTP same-origin**. La clé
+Grist vit en **variable d'environnement Scalingo**. Le **simulateur reste 100 %
+statique sur GitHub Pages** (aucun backend). Grist reste l'outil d'admin. Voir §5
+(modèle) et §6 (accès).
 
 ### ADR-6 — Le moteur publicodes reste hors périmètre identité
 **Décision.** `apps/simulateur-eligibilite/regles/regles.publicodes` **n'est pas
@@ -95,15 +103,17 @@ modifié**. L'identification (comme l'analytics) vit en dehors du moteur.
 ```mermaid
 flowchart TB
     cms["CMS « Sites Conformes »<br/>(origine tierce) — page d'atterrissage"]
-    ident["App d'identification (SPA statique, DSFR)<br/>Étape 1 : établissement → service<br/>Étape 2 : prescripteur (ou « autre »)"]
-    faas["Micro-fonction serverless / FaaS (ADR-5)<br/>détient la clé Grist<br/>renvoie un référentiel filtré"]
+    subgraph scalingo["App d'identification — Scalingo (ADR-5)"]
+        ident["Front React (DSFR)<br/>Étape 1 : établissement → service<br/>Étape 2 : prescripteur (ou « autre »)"]
+        api["Backend Node<br/>sert le front + expose l'API référentiel<br/>détient la clé Grist, filtre la PII"]
+    end
     grist[("Grist — référentiel<br/>établissement / service / prescripteur<br/>(admin à la main)")]
     simu["Simulateur d'éligibilité (SPA statique)<br/>reçoit #ctx, l'exploite en session, nettoie l'URL<br/>logique d'éligibilité (publicodes) inchangée"]
     analytics["Suivi analytics<br/>(voir analytics.md)"]
 
     cms -->|"embarque en iframe (ADR-2)"| ident
-    ident -->|"référentiel filtré"| faas
-    faas -->|"REST (clé API)"| grist
+    ident -->|"référentiel filtré (same-origin)"| api
+    api -->|"REST (clé API, server-to-server)"| grist
     ident -->|"navigation top-level, plein écran — #ctx (ADR-4)"| simu
     simu -.-> analytics
 ```
@@ -112,10 +122,10 @@ Composants :
 
 | Composant | Nature | Nouveau ? |
 |---|---|---|
-| `apps/identification` | SPA statique (GitHub Pages) | **nouveau** |
-| Micro-fonction référentiel | FaaS (Cloudflare/Netlify/…) détenant la clé Grist | **nouveau** |
+| `apps/identification` | Front React + backend Node (une app, **Scalingo**) | **nouveau** |
+| API référentiel | Endpoint du backend `apps/identification` détenant la clé Grist | **nouveau** |
 | Grist | Base managée, admin à la main | **nouveau (config)** |
-| `apps/simulateur-eligibilite` | SPA statique existante, lit le contexte `#ctx` | modifié |
+| `apps/simulateur-eligibilite` | SPA statique existante (GitHub Pages), lit le contexte `#ctx` | modifié |
 
 ## 4. Spécification du contexte `ctx`
 
@@ -159,7 +169,7 @@ erDiagram
 
 - Les champs `finess?` / `rpps?` sont **prévus dès maintenant** (optionnels) pour la
   **migration future** vers les référentiels officiels.
-- L'app d'identification n'accède au référentiel **que via la micro-fonction**, qui
+- Le front n'accède au référentiel **que via l'API du backend** (same-origin), qui
   **filtre** (expose IDs + libellés ; les noms de prescripteurs ne sont renvoyés que
   pour le service sélectionné, jamais l'annuaire complet en clair public).
 - L'accès référentiel est masqué derrière une **interface** (`getEtablissements()`,
@@ -184,13 +194,15 @@ erDiagram
 
 ## 7. Découpage en incréments (identification)
 
-1. **App identification (statique) + contexte `ctx`.** `apps/identification` (DSFR,
-   parcours 2 étapes avec **données factices/snapshot**), navigation top vers le
-   simulateur avec `#ctx=`, lecture + nettoyage côté simulateur. Reste 100 % statique.
+1. **Front identification + contexte `ctx`.** `apps/identification` (front React DSFR,
+   parcours 2 étapes avec **données factices/snapshot** via l'interface `Referentiel`),
+   navigation top vers le simulateur avec `#ctx=`, lecture + nettoyage côté simulateur.
    *En parallèle : valider `sandbox`/CSP avec Sites Conformes (R-1).*
-2. **Micro-fonction référentiel + Grist.** FaaS détenant `GRIST_API_KEY`, endpoints
-   `getEtablissements`/`getServices`/`getPrescripteurs` filtrés + CORS ; branchement
-   de l'app d'identification.
+2. **Backend référentiel + Grist + déploiement Scalingo.** Backend Node de
+   `apps/identification` : sert le front build **et** expose l'API référentiel
+   (`getEtablissements`/`getServices`/`getPrescripteurs` filtrés) en **same-origin**,
+   détenant `GRIST_API_KEY` (variable d'env Scalingo). Bascule de l'implémentation
+   `Referentiel` snapshot → client HTTP same-origin ; déploiement sur Scalingo.
 3. **Durcissement iframe.** Repli `postMessage` + snippet CMS ; en-têtes CSP.
 4. **(futur) Migration FINESS/RPPS.** Nouvelle implémentation derrière l'interface
    référentiel (§5).
@@ -202,7 +214,7 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 | Réf | Risque / à valider | Portée |
 |---|---|---|
 | **R-1** | **Coopération Sites Conformes** : `sandbox` de l'iframe + CSP `frame-src`. Sans cela, ni embarquement ni navigation top. **Bloquant.** | à valider avec l'éditeur **avant de coder l'intégration** |
-| **R-2** | Choix d'hébergement : Grist (grist.com vs self-hosted) et FaaS (Cloudflare/Netlify/Scalingo). | décision infra |
-| **R-3** | Fraîcheur du référentiel : la micro-fonction lit Grist en direct → OK ; ne pas retomber sur un snapshot figé si le maintien « à la main » doit être visible immédiatement. | conception FaaS |
+| **R-2** | Choix d'hébergement Grist (grist.com vs self-hosted). L'app d'identification (front + backend) est **sur Scalingo** (pas de FaaS — cf. ADR-5). | décision infra |
+| **R-3** | Fraîcheur du référentiel : le backend lit Grist en direct → OK ; ne pas retomber sur un snapshot figé si le maintien « à la main » doit être visible immédiatement. | conception backend |
 | **R-5** | Contexte non signé → usurpation déclarative possible. Acceptable en expérimental ; à revoir avant tout usage probant. | sécurité |
 | **R-6** | PII de prescripteurs : jamais dans un bundle statique public ni un doc Grist public. | RGPD/sécurité |
