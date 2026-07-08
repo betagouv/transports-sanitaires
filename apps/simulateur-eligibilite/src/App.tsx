@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormBuilder } from "@publicodes/forms";
 import type { FormState } from "@publicodes/forms";
 import { engine } from "./engine";
 import { FormField } from "./FormField";
 import { Resultats } from "./Resultats";
+import {
+  trackResultat,
+  trackSimulationAbandon,
+  trackSimulationComplete,
+  trackSimulationStart,
+  trackSimulationStep,
+} from "./analytics";
 
 const TARGETS = [
   "resultat . statut",
@@ -22,6 +29,21 @@ export function App() {
   const { current, pageCount, hasNextPage, hasPreviousPage } =
     formBuilder.pagination(formState);
 
+  // Suivi analytics : début du parcours, et abandon si l'onglet est quitté
+  // avant d'atteindre le résultat (refs pour éviter les valeurs périmées).
+  const completedRef = useRef(false);
+  const currentRef = useRef(current);
+  currentRef.current = current;
+
+  useEffect(() => {
+    trackSimulationStart();
+    const onLeave = () => {
+      if (!completedRef.current) trackSimulationAbandon(currentRef.current);
+    };
+    window.addEventListener("pagehide", onLeave);
+    return () => window.removeEventListener("pagehide", onLeave);
+  }, []);
+
   const currentPage = formBuilder.currentPage(formState);
 
   function handleChange(id: string, value: unknown) {
@@ -36,9 +58,17 @@ export function App() {
 
   function handleNext() {
     if (hasNextPage) {
-      setFormState(formBuilder.goToNextPage(formState));
+      const next = formBuilder.goToNextPage(formState);
+      setFormState(next);
+      trackSimulationStep(formBuilder.pagination(next).current);
     } else {
       setDone(true);
+      completedRef.current = true;
+      trackSimulationComplete();
+      const statut = engine
+        .setSituation(formState.situation)
+        .evaluate("resultat . statut").nodeValue;
+      trackResultat(typeof statut === "string" ? statut : "");
     }
   }
 
