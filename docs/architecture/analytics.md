@@ -16,9 +16,10 @@ On souhaite **suivre le parcours** de simulation :
 - nombre de résultats **éligibles / non-éligibles par prescripteur**.
 
 Le rattachement « par prescripteur » s'appuie sur le `prescripteurRef` (pseudonyme HMAC)
-transmis par la couche d'identification via le contexte `#ctx` (cf.
-[identification.md — ADR-4](./identification.md)). Le simulateur reste une SPA
-**statique** ; on ne veut **pas** opérer de backend applicatif dédié à la collecte.
+fourni par l'étape d'identification **intégrée** et gardé **en mémoire de session** (cf.
+[identification.md — ADR-4](./identification.md)). Le simulateur a désormais un backend
+(pour l'identification), mais l'analytics part **directement du navigateur vers Matomo**
+— **pas** de backend applicatif dédié à la collecte.
 
 **Invariant** : aucune donnée patient, aucune PII, aucune réponse détaillée du
 formulaire ne doit être envoyée à l'analytics. Seuls des **identifiants opaques**
@@ -42,10 +43,10 @@ Custom Dimensions) et les quotas dépendent de la configuration de cette instanc
 mutualisée — à confirmer (voir R-8).
 
 ### ADR-2 — Découpage par prescripteur via propriété d'événement
-**Décision.** Le **`prescripteurRef`** (pseudonyme HMAC du contexte `#ctx` —
-`HMAC-SHA256(id, secret)` calculé côté backend d'identification, jamais l'identifiant
-brut ni le nom, voir [identification.md — ADR-4](./identification.md)) est porté **en
-propriété d'événement Matomo** : chaque `trackEvent` a pour **Nom** ce `prescripteurRef`
+**Décision.** Le **`prescripteurRef`** (pseudonyme HMAC —
+`HMAC-SHA256(id, secret)` calculé côté backend, gardé en mémoire de session, jamais
+l'identifiant brut ni le nom, voir [identification.md — ADR-4](./identification.md)) est
+porté **en propriété d'événement Matomo** : chaque `trackEvent` a pour **Nom** ce `prescripteurRef`
 (catégorie `simulateur`, action = type d'événement). Le reporting utilise le **rapport
 Événements** (Catégorie → Action → **Nom**) et la **segmentation** `eventName == <ref>`.
 **Pourquoi.** L'instance mutualisée beta.gouv **n'expose pas les custom dimensions**
@@ -76,22 +77,23 @@ sans bandeau constitue une **réserve de conformité** explicite (R-4).
 
 ```mermaid
 flowchart TB
-    subgraph simu["Simulateur d'éligibilité (SPA statique, top-level)"]
+    subgraph simu["App simulateur (dans l'iframe CMS)"]
         parcours["Parcours de simulation<br/>(formulaire + résultat)"]
         consent["Gestion du consentement<br/>(ADR-3)"]
-        traceur["Traceur d'analytics<br/>(prescripteurRef en Nom d'événement)"]
+        traceur["Traceur d'analytics — cookieless<br/>(prescripteurRef en Nom d'événement)"]
         parcours -->|"événements de parcours"| traceur
         consent -->|"autorise l'initialisation"| traceur
     end
     matomo[("Matomo<br/>(mutualisé beta.gouv)")]
 
-    ctx["contexte prescripteur (#ctx)"] --> traceur
+    ctx["contexte prescripteur<br/>(refs en mémoire de session)"] --> traceur
     traceur -->|"événements (Nom = prescripteurRef)"| matomo
 ```
 
-Le tracking a lieu **dans le simulateur en top-level** (pas dans l'iframe
-d'identification) : les cookies ne sont donc **pas** en contexte tiers. Pour tracer
-l'étape d'identification elle-même (optionnel), utiliser **Matomo cookieless**.
+Depuis la fusion, tout le parcours (identification + simulation) tourne **dans l'iframe**
+du CMS (contexte tiers) : les cookies y sont bloqués. Le traceur est donc **cookieless**
+(`_paq.push(["disableCookies"])`) — les événements partent sans cookie, ce qui convient à
+une mesure d'audience sans bandeau.
 
 ## 4. Spécification des événements
 
@@ -126,12 +128,14 @@ l'étape d'identification elle-même (optionnel), utiliser **Matomo cookieless**
 
 ## 6. Découpage en incréments (analytics)
 
-1. **Matomo funnel.** ✅ **Fait** (`src/analytics.ts`, site 275,
+1. **Matomo funnel.** ✅ **Fait** (`front/analytics/analytics.ts`, site 275,
    `https://stats.beta.gouv.fr/`). Traceur instrumenté dans le simulateur (5
-   événements portant le `prescripteurRef` en Nom), initialisé après lecture du `#ctx`,
-   **derrière le consentement (ADR-3)** et un **gating dev/prod** : actif en build de
-   prod uniquement, ou en local via `VITE_MATOMO_ENABLED=true` (sinon no-op). Reste à
-   configurer les **Funnels** côté Matomo si nécessaire.
+   événements portant le `prescripteurRef` en Nom), **amorcé au boot en cookieless**
+   (`disableCookies`), le `prescripteurRef` étant lu en session à l'émission de chaque
+   événement (renseigné après l'identification), **derrière le consentement (ADR-3)** et
+   un **gating dev/prod** : actif en build de prod uniquement, ou en local via
+   `VITE_MATOMO_ENABLED=true` (sinon no-op). Reste à configurer les **Funnels** côté
+   Matomo si nécessaire.
 
 Prérequis : la couche d'identification fournit le `prescripteurRef` (cf.
 [identification.md](./identification.md), incréments 1–2).

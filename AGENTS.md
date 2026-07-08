@@ -20,19 +20,24 @@ Light monorepo — **no workspace tooling** (no npm/pnpm workspaces, no turbo). 
 app under `apps/` is **independent**: its own `package.json` + `package-lock.json`,
 its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 
-- **`apps/simulateur-eligibilite`** — SPA React 19 + Vite + DSFR
+- **`apps/simulateur-eligibilite`** — React 19 + Vite + DSFR
   (`@codegouvfr/react-dsfr`). Eligibility rules engine **`publicodes`** (single file
   `regles/regles.publicodes`) + `@publicodes/forms` (`FormBuilder` auto-generates the
-  form from the rules). **Static**, deployed to GitHub Pages
-  (`.github/workflows/deploy.yml`).
+  form from the rules). Fronted by a **mandatory prescriber-identification gate**
+  (`front/identification/`, referential from Grist). Served by a **Node/Express backend**
+  (`server/`, front + `/api/*`), deployed to **Scalingo** — not static. **Feature-first
+  layout** across three runtime roots: `front/` (browser, bundled by Vite), `server/`
+  (backend, holds secrets), `shared/` (front⇄back contract). See
+  `docs/architecture/identification.md`.
 - **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
   with `npm run zip`.
 
 ## Commands (run inside the app directory)
 
 - `npm test` — vitest (run mode)
-- `npm run build` — `tsc -b && vite build`
-- `npm run dev` — vite dev server (simulateur)
+- `npm run build` — `tsc -b && vite build` (simulateur ; `tsc -b` typecheck front + serveur via les 3 projets référencés)
+- `npm run dev:front` — vite dev server (front); `npm run dev:server` — Express backend
+- `npm start` — production server (`node server/server.ts`, Node 24)
 
 ## Conventions
 

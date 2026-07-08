@@ -3,31 +3,23 @@ node = "24.16.0"
 python = "3.13.14"
 
 [tasks.clean-install]
-description = "Installe proprement (npm ci) les dépendances des deux apps"
-run = [
-  "npm --prefix {{config_root}}/apps/identification ci",
-  "npm --prefix {{config_root}}/apps/simulateur-eligibilite ci",
-]
+description = "Installe proprement (npm ci) les dépendances du simulateur"
+run = "npm --prefix {{config_root}}/apps/simulateur-eligibilite ci"
 
-[tasks.dev-identification-front]
-description = "Front de dev de l'identification (http://localhost:5174, proxy /api → :3000)"
-dir = "{{config_root}}/apps/identification"
-run = "npm run dev"
+[tasks.dev-simulateur-front]
+description = "Front de dev du simulateur (http://localhost:5173, proxy /api → :3000)"
+dir = "{{config_root}}/apps/simulateur-eligibilite"
+run = "npm run dev:front"
 
-[tasks.dev-identification-server]
-description = "Backend de dev de l'identification (http://localhost:3000, API référentiel)"
-dir = "{{config_root}}/apps/identification"
+[tasks.dev-simulateur-server]
+description = "Backend de dev du simulateur (http://localhost:3000, API référentiel + contexte)"
+dir = "{{config_root}}/apps/simulateur-eligibilite"
 run = "npm run dev:server"
 
-[tasks.dev-identification]
-description = "Identification : front + backend en parallèle"
-depends = ["dev-identification-front", "dev-identification-server"]
-
 [tasks.dev-simulateur]
-description = "Serveur de dev du simulateur (http://localhost:5173)"
-dir = "{{config_root}}/apps/simulateur-eligibilite"
-run = "npm run dev"
+description = "Simulateur : front + backend en parallèle"
+depends = ["dev-simulateur-front", "dev-simulateur-server"]
 
 [tasks.dev]
-description = "Lance identification + simulateur en parallèle"
-depends = ["dev-identification", "dev-simulateur"]
+description = "Lance le simulateur (front + backend)"
+depends = ["dev-simulateur"]
