@@ -87,7 +87,6 @@ export function Simulateur() {
         className="fr-container"
         style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
       >
-        <h1 className="fr-h3">Résultats</h1>
         <Resultats situation={formState.situation} onReset={handleReset} />
       </main>
     );
@@ -98,10 +97,6 @@ export function Simulateur() {
       className="fr-container"
       style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
     >
-      <h1 className="fr-h3">
-        Simulateur d'éligibilité aux transports sanitaires
-      </h1>
-
       <div
         className="fr-stepper"
         aria-label="Étapes du formulaire"
