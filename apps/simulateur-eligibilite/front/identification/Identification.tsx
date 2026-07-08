@@ -239,7 +239,7 @@ export function Identification({
           <>
             <div className="fr-input-group">
               <label className="fr-label" htmlFor="nom">
-                Nom
+                Votre nom
               </label>
               <input
                 className="fr-input"
@@ -251,7 +251,7 @@ export function Identification({
             </div>
             <div className="fr-input-group">
               <label className="fr-label" htmlFor="prenom">
-                Prénom
+                Votre prénom
               </label>
               <input
                 className="fr-input"
