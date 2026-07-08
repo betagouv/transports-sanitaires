@@ -173,7 +173,7 @@ Composants :
 ```
 Établissement ─┬─ (A/B/C réel) → Service ─┬─ (D/E/F réel) → Prescripteur ─┬─ (dans la liste)
                │                          │                              └─ « pas dans la liste » → Nom + Prénom
-               │                          └─ « Autre » → nom de service libre
+               │                          └─ « Autre » → nom de service libre + Nom + Prénom
                └─ « non rattaché » → catégorie (libéral | CNAM) → Nom + Prénom
 ```
 
@@ -193,9 +193,9 @@ Composants :
   `prescripteur:`, `identite:`) pour éviter toute collision id ↔ texte libre.
   - **Textes libres** (nom/prénom, nom de service) : **normalisés** (casse/espaces) puis
     **HMAC** — `identite:<nom>|<prenom>`. **Jamais le nom en clair** (invariant PII, R-6).
-  - Refs absentes selon la branche : « non rattaché » n'a **pas** de `serviceRef` ;
-    « autre service » n'a **pas** de `prescripteurRef` (⚠️ personne non identifiée dans
-    cette branche — cf. R-9).
+  - Refs absentes selon la branche : « non rattaché » n'a **pas** de `serviceRef` (il n'y
+    a pas de service). Toutes les branches capturent une identité → `prescripteurRef`
+    toujours présent.
 - **Interdits** : identifiant brut du référentiel, nom/prénom **en clair**, RPPS, tout
   identifiant patient, toute donnée de santé.
 - **Cycle de vie** : reçu à la validation de l'identification, conservé **en mémoire de
@@ -277,4 +277,4 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 | **R-3** | Fraîcheur du référentiel : le backend lit Grist en direct → OK ; ne pas retomber sur un snapshot figé si le maintien « à la main » doit être visible immédiatement. | conception backend |
 | **R-5** | Contexte non signé → usurpation déclarative possible. Acceptable en expérimental ; à revoir avant tout usage probant. | sécurité |
 | **R-6** | PII de prescripteurs : jamais dans un bundle statique public ni un doc Grist public. Les noms/prénoms libres saisis au formulaire sont **HMAC côté serveur**, jamais transmis en clair à l'analytics. | RGPD/sécurité |
-| **R-9** | Branche **« autre service »** : le workflow ne capture **aucune identité** (ni prescripteur, ni nom) → `prescripteurRef` absent, personne non suivie par prescripteur dans cette branche. À confirmer côté porteur (ajouter un nom/prénom ? bucket dédié ?). | produit / mesure |
+| ~~**R-9**~~ | ~~Branche « autre service » sans identité.~~ **Résolu (2026-07-08)** : la branche « autre service » capture désormais Nom + Prénom → `prescripteurRef` (identité HMAC), comme les autres branches. | résolu |
