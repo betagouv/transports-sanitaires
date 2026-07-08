@@ -1,6 +1,6 @@
 # Architecture — Analytics de parcours
 
-> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-07
+> Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-08
 >
 > Suivi analytique du parcours dans le [simulateur d'éligibilité](../../apps/simulateur-eligibilite).
 > Repose sur le rattachement au prescripteur fourni par la couche d'identification :
@@ -41,20 +41,23 @@ et récupérer le `siteId` + l'URL du tracker. Les fonctionnalités disponibles 
 Custom Dimensions) et les quotas dépendent de la configuration de cette instance
 mutualisée — à confirmer (voir R-8).
 
-### ADR-2 — Découpage par prescripteur via custom dimension
-**Décision.** Chaque événement porte un **`prescripteurRef`** en **custom dimension**
-Matomo (+ `etabRef`, `serviceRef`). Ces refs sont les **pseudonymes HMAC** du contexte
-`#ctx` — `HMAC-SHA256(id, secret)` calculé côté backend d'identification, jamais
-l'identifiant brut ni le nom (voir [identification.md — ADR-4](./identification.md)). Le
-reporting utilise les **Funnels** + la **segmentation** par cette dimension.
-**Pourquoi.** Répond directement au besoin « éligibles / non-éligibles par
-prescripteur » **sans backend** de croisement à nous. Le pseudonyme à sens unique évite
-d'exposer un identifiant directement re-liable au référentiel (ou pire, un nom) dans
-Matomo.
+### ADR-2 — Découpage par prescripteur via propriété d'événement
+**Décision.** Le **`prescripteurRef`** (pseudonyme HMAC du contexte `#ctx` —
+`HMAC-SHA256(id, secret)` calculé côté backend d'identification, jamais l'identifiant
+brut ni le nom, voir [identification.md — ADR-4](./identification.md)) est porté **en
+propriété d'événement Matomo** : chaque `trackEvent` a pour **Nom** ce `prescripteurRef`
+(catégorie `simulateur`, action = type d'événement). Le reporting utilise le **rapport
+Événements** (Catégorie → Action → **Nom**) et la **segmentation** `eventName == <ref>`.
+**Pourquoi.** L'instance mutualisée beta.gouv **n'expose pas les custom dimensions**
+(plugin/droits non disponibles — R-8). Les propriétés d'événement offrent le même
+découpage « éligibles / non-éligibles par prescripteur » **sans configuration admin ni
+backend** de croisement. `etabRef`/`serviceRef` ne sont **pas** transmis : ils sont
+dérivables du prescripteur via le référentiel lors d'une ré-identification contrôlée.
 **Conséquences.** `prescripteurRef` est **opaque et non réversible** sans le secret
 (jamais le nom, jamais de RPPS). La ré-identification éventuelle se fait hors Matomo,
-via le référentiel, de façon contrôlée. **Pseudonyme ≠ anonyme** → la réserve RGPD (R-4)
-tient malgré la pseudonymisation.
+via le référentiel. **Pseudonyme ≠ anonyme** → la réserve RGPD (R-4) tient malgré la
+pseudonymisation. Si les custom dimensions deviennent disponibles, on pourra les ajouter
+sans changer le transport actuel.
 
 ### ADR-3 — Initialisation derrière un flag de consentement
 **Décision.** L'initialisation du tracking Matomo est conditionnée par un composant de
@@ -76,14 +79,14 @@ flowchart TB
     subgraph simu["Simulateur d'éligibilité (SPA statique, top-level)"]
         parcours["Parcours de simulation<br/>(formulaire + résultat)"]
         consent["Gestion du consentement<br/>(ADR-3)"]
-        traceur["Traceur d'analytics<br/>(dimension prescripteurRef)"]
+        traceur["Traceur d'analytics<br/>(prescripteurRef en Nom d'événement)"]
         parcours -->|"événements de parcours"| traceur
         consent -->|"autorise l'initialisation"| traceur
     end
     matomo[("Matomo<br/>(mutualisé beta.gouv)")]
 
     ctx["contexte prescripteur (#ctx)"] --> traceur
-    traceur -->|"événements + dimensions"| matomo
+    traceur -->|"événements (Nom = prescripteurRef)"| matomo
 ```
 
 Le tracking a lieu **dans le simulateur en top-level** (pas dans l'iframe
@@ -92,20 +95,21 @@ l'étape d'identification elle-même (optionnel), utiliser **Matomo cookieless**
 
 ## 4. Spécification des événements
 
-Événements émis par le traceur d'analytics, tous porteurs de la dimension
-`prescripteurRef` (+ `etabRef`, `serviceRef`) :
+Événements `trackEvent` émis par le traceur, **catégorie `simulateur`**, portant le
+`prescripteurRef` en **Nom** (absent si le parcours a démarré sans `#ctx`) :
 
-| Événement | Moment du parcours |
-|---|---|
-| `simulation_start` | ouverture du simulateur / début du formulaire |
-| `simulation_step` `{stepIndex}` | passage à l'étape suivante |
-| `simulation_complete` | affichage de la page de résultat |
-| `simulation_abandon` `{lastStep}` | départ sans avoir atteint le résultat |
-| `resultat` `{statut}` | génération du résultat (éligible / non-éligible / …) |
+| Action | Valeur | Moment du parcours |
+|---|---|---|
+| `simulation_start` | — | ouverture du simulateur / début du formulaire |
+| `simulation_step` | `stepIndex` | passage à l'étape suivante |
+| `simulation_complete` | — | affichage de la page de résultat |
+| `simulation_abandon` | `lastStep` | départ (onglet quitté) sans avoir atteint le résultat |
+| `resultat:<statut>` | — | génération du résultat (le statut est encodé dans l'action) |
 
 - **Interdits** : réponses détaillées du formulaire, toute PII, toute donnée patient.
-- **Reporting** : Funnels Matomo + segmentation par `prescripteurRef` → éligibles /
-  non-éligibles par prescripteur, taux d'abandon par étape.
+- **Reporting** : rapport Événements (Catégorie → Action → Nom) + segmentation
+  `eventName == <prescripteurRef>` → éligibles / non-éligibles par prescripteur, taux
+  d'abandon par étape.
 
 ## 5. RGPD & consentement
 
@@ -122,10 +126,12 @@ l'étape d'identification elle-même (optionnel), utiliser **Matomo cookieless**
 
 ## 6. Découpage en incréments (analytics)
 
-1. **Matomo funnel.** Demander la création d'un site dans le **Matomo mutualisé
-   beta.gouv** (récupérer `siteId` + URL tracker). Instrumenter le **traceur
-   d'analytics** dans le simulateur (5 événements + dimension `prescripteurRef`)
-   derrière la **gestion du consentement**, initialisé après lecture du contexte `#ctx`.
+1. **Matomo funnel.** ✅ **Fait** (`src/analytics.ts`, site 275,
+   `https://stats.beta.gouv.fr/`). Traceur instrumenté dans le simulateur (5
+   événements portant le `prescripteurRef` en Nom), initialisé après lecture du `#ctx`,
+   **derrière le consentement (ADR-3)** et un **gating dev/prod** : actif en build de
+   prod uniquement, ou en local via `VITE_MATOMO_ENABLED=true` (sinon no-op). Reste à
+   configurer les **Funnels** côté Matomo si nécessaire.
 
 Prérequis : la couche d'identification fournit le `prescripteurRef` (cf.
 [identification.md](./identification.md), incréments 1–2).
@@ -136,4 +142,4 @@ Prérequis : la couche d'identification fournit le `prescripteurRef` (cf.
 |---|---|---|
 | **R-4** | **RGPD** : suivi par prescripteur sans bandeau = non conforme CNIL en l'état. Base légale, information des prescripteurs, durée de conservation. **Instruit côté porteur.** | conformité |
 | **R-7** | Couverture : si un bandeau est finalement requis, le KPI par prescripteur n'est collecté que pour les consentants → couverture partielle à documenter. | mesure |
-| **R-8** | Dépendance à l'instance Matomo mutualisée beta.gouv : disponibilité des **Funnels** et **Custom Dimensions**, quotas, éligibilité du produit, délai de création du site. | à confirmer avec beta.gouv |
+| **R-8** | Instance mutualisée beta.gouv : **custom dimensions indisponibles** → contourné par le transport en **propriété d'événement** (ADR-2). Reste à confirmer la disponibilité des **Funnels** et les quotas. | partiellement tranché |
