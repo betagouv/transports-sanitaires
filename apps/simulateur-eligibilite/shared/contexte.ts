@@ -10,10 +10,14 @@
 
 export const CONTEXTE_VERSION = 2 as const;
 
+// Refs **optionnelles** : selon la branche d'identification, certaines n'existent
+// pas (ex. « autre service » n'a pas de prescripteur ; « non rattaché » n'a pas de
+// service). L'analytics n'utilise que `prescripteurRef` (absent → événement sans
+// Nom, cf. analytics.ts).
 export type Contexte = {
-  etabRef: string;
-  serviceRef: string;
-  prescripteurRef: string;
+  etabRef?: string;
+  serviceRef?: string;
+  prescripteurRef?: string;
   v: typeof CONTEXTE_VERSION;
 };
 
@@ -21,10 +25,11 @@ export type Contexte = {
 export function isContexte(value: unknown): value is Contexte {
   if (typeof value !== "object" || value === null) return false;
   const c = value as Record<string, unknown>;
+  const refOk = (r: unknown) => r === undefined || typeof r === "string";
   return (
     c.v === CONTEXTE_VERSION &&
-    typeof c.etabRef === "string" &&
-    typeof c.serviceRef === "string" &&
-    typeof c.prescripteurRef === "string"
+    refOk(c.etabRef) &&
+    refOk(c.serviceRef) &&
+    refOk(c.prescripteurRef)
   );
 }

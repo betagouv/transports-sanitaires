@@ -8,7 +8,7 @@
 
 import express, { type Router, type Request, type Response } from "express";
 import type { Referentiel } from "../../shared/referentiel.ts";
-import type { Selection } from "../../shared/selection.ts";
+import { selectionComplete, type Selection } from "../../shared/selection.ts";
 import { buildContexte } from "./pseudonymisation.ts";
 
 // Enrobe un handler async pour router les rejets vers une réponse d'erreur.
@@ -64,14 +64,12 @@ export function identificationRoutes(
   router.post(
     "/contexte",
     handle(async (req, res) => {
-      const { etabId, serviceId, prescripteurId } = (req.body ?? {}) as Partial<Selection>;
-      if (!etabId || !serviceId || !prescripteurId) {
-        res
-          .status(400)
-          .json({ error: "etabId, serviceId et prescripteurId requis" });
+      const sel = (req.body ?? {}) as Selection;
+      if (!selectionComplete(sel)) {
+        res.status(400).json({ error: "sélection d'identification incomplète" });
         return;
       }
-      res.json(buildContexte(secret, { etabId, serviceId, prescripteurId }));
+      res.json(buildContexte(secret, sel));
     })
   );
 

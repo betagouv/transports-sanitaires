@@ -35,9 +35,10 @@ front/                   front (bundlé par Vite)
 ## Fonctionnement
 
 - **Écran-porte** (`front/app/App.tsx`) : affiche l'identification
-  (`front/identification/Identification.tsx`, 2 étapes établissement → service, puis
-  prescripteur ou « autre ») ; une fois validée, bascule sur le simulateur
-  (`front/simulateur/Simulateur.tsx`), inchangé.
+  (`front/identification/Identification.tsx`, formulaire à **branches** — établissement
+  → service → prescripteur, avec les cas « non rattaché », service « autre » et
+  prescripteur hors liste → nom/prénom libres ; cf. ADR-4 §4) ; une fois validée,
+  bascule sur le simulateur (`front/simulateur/Simulateur.tsx`), inchangé.
 - Le **front** consomme le référentiel via l'API **same-origin** `/api/*`
   (`front/identification/referentiel-http.ts`), derrière l'interface `Referentiel`
   (`shared/referentiel.ts`).

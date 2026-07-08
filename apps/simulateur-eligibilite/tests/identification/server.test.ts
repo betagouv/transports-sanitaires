@@ -97,7 +97,7 @@ describe("POST /api/contexte", () => {
     prescripteurId: "p_grenoble_cardio_1",
   };
 
-  it("renvoie un contexte pseudonymisé (refs HMAC), sans identifiant brut ni PII", async () => {
+  it("renvoie un contexte pseudonymisé (refs HMAC préfixées), sans identifiant brut", async () => {
     const { status, body: ctx } = await post("/api/contexte", selection);
     expect(status).toBe(200);
 
@@ -109,9 +109,11 @@ describe("POST /api/contexte", () => {
     ]);
     expect(ctx.v).toBe(2);
 
-    // Les refs sont le HMAC des identifiants — jamais les identifiants bruts.
-    expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, selection.prescripteurId));
-    expect(ctx.prescripteurRef).not.toBe(selection.prescripteurId);
+    // Les refs sont le HMAC de la valeur **préfixée par sa nature** — jamais l'id brut.
+    expect(ctx.prescripteurRef).toBe(
+      pseudonymise(SECRET, `prescripteur:${selection.prescripteurId}`)
+    );
+    expect(ctx.serviceRef).toBe(pseudonymise(SECRET, `service:${selection.serviceId}`));
     expect(JSON.stringify(ctx)).not.toContain(selection.prescripteurId);
   });
 
@@ -121,12 +123,50 @@ describe("POST /api/contexte", () => {
     expect(a.body).toEqual(b.body);
   });
 
-  it("exige les trois identifiants", async () => {
+  it("branche libre (hors liste) : identité HMAC, jamais le nom en clair", async () => {
+    const { status, body: ctx } = await post("/api/contexte", {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "Dupont",
+      prenom: "Marie",
+    });
+    expect(status).toBe(200);
+    expect(ctx.prescripteurRef).toBe(
+      pseudonymise(SECRET, "identite:dupont|marie")
+    );
+    // normalisation (casse/espaces) → même bucket
+    const variante = await post("/api/contexte", {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "  DUPONT ",
+      prenom: "Marie",
+    });
+    expect(variante.body.prescripteurRef).toBe(ctx.prescripteurRef);
+    expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie/i);
+  });
+
+  it("branche « non rattaché » : etabRef = catégorie, pas de serviceRef", async () => {
+    const { status, body: ctx } = await post("/api/contexte", {
+      etabId: "etab_non_rattache",
+      categorie: "liberal",
+      nom: "Martin",
+      prenom: "Paul",
+    });
+    expect(status).toBe(200);
+    expect(ctx.etabRef).toBe(pseudonymise(SECRET, "categorie:liberal"));
+    expect(ctx.serviceRef).toBeUndefined();
+    expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:martin|paul"));
+  });
+
+  it("refuse une sélection incomplète", async () => {
     const { status, body } = await post("/api/contexte", {
-      etabId: "e",
-      serviceId: "s",
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      // prescripteur manquant
     });
     expect(status).toBe(400);
-    expect(body.error).toMatch(/requis/);
+    expect(body.error).toMatch(/incompl/);
   });
 });

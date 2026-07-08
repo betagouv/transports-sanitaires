@@ -36,10 +36,8 @@ describe("écran-porte d'identification", () => {
     const { user } = setup();
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
-    await choisir(/Service/, "Cardiologie");
-    await user.click(screen.getByRole("button", { name: "Suivant" }));
-
-    await choisir(/Prescripteur/, "Dr Amina Berger");
+    await choisir(/Nom du service/, "Cardiologie");
+    await choisir(/Vous êtes/, "Dr Amina Berger");
     await user.click(
       screen.getByRole("button", { name: "Accéder au simulateur" })
     );

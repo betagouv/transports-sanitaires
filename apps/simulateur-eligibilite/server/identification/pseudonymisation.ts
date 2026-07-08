@@ -9,7 +9,12 @@
 
 import { createHmac } from "node:crypto";
 import { CONTEXTE_VERSION, type Contexte } from "../../shared/contexte.ts";
-import type { Selection } from "../../shared/selection.ts";
+import {
+  ETAB_NON_RATTACHE,
+  PRESCRIPTEUR_HORS_LISTE,
+  SERVICE_AUTRE,
+  type Selection,
+} from "../../shared/selection.ts";
 
 /** Pseudonyme stable, non réversible sans le secret (128 bits, base64url). */
 export function pseudonymise(secret: string, value: string): string {
@@ -20,11 +25,46 @@ export function pseudonymise(secret: string, value: string): string {
     .toString("base64url");
 }
 
+// Normalise un texte libre avant HMAC pour que des saisies quasi identiques
+// (casse, espaces) tombent dans le même « bucket ».
+const normalise = (s: string): string => s.trim().replace(/\s+/g, " ").toLowerCase();
+
+// Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
+// jamais le nom en clair (invariant PII, ADR-4 / R-6).
+const identiteRef = (secret: string, nom: string, prenom: string): string =>
+  pseudonymise(secret, `identite:${normalise(nom)}|${normalise(prenom)}`);
+
+/**
+ * Construit le contexte pseudonymisé selon la branche d'identification. Les valeurs
+ * sont préfixées par leur nature (`etab:`, `categorie:`, `service:`, …) pour éviter
+ * toute collision entre un id de référentiel et un texte libre. Certaines refs sont
+ * absentes selon la branche (contexte à refs optionnelles).
+ */
 export function buildContexte(secret: string, sel: Selection): Contexte {
-  return {
-    etabRef: pseudonymise(secret, sel.etabId),
-    serviceRef: pseudonymise(secret, sel.serviceId),
-    prescripteurRef: pseudonymise(secret, sel.prescripteurId),
-    v: CONTEXTE_VERSION,
-  };
+  const ctx: Contexte = { v: CONTEXTE_VERSION };
+
+  // Établissement (ou catégorie d'exercice si non rattaché).
+  if (sel.etabId === ETAB_NON_RATTACHE) {
+    if (sel.categorie) ctx.etabRef = pseudonymise(secret, `categorie:${sel.categorie}`);
+  } else if (sel.etabId) {
+    ctx.etabRef = pseudonymise(secret, `etab:${sel.etabId}`);
+  }
+
+  // Service (réel ou libre).
+  if (sel.serviceId === SERVICE_AUTRE) {
+    if (sel.serviceLibre) {
+      ctx.serviceRef = pseudonymise(secret, `service-libre:${normalise(sel.serviceLibre)}`);
+    }
+  } else if (sel.serviceId) {
+    ctx.serviceRef = pseudonymise(secret, `service:${sel.serviceId}`);
+  }
+
+  // Prescripteur (réel, ou identité libre si hors liste / exercice libéral·CNAM).
+  if (sel.prescripteurId && sel.prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
+    ctx.prescripteurRef = pseudonymise(secret, `prescripteur:${sel.prescripteurId}`);
+  } else if (sel.nom && sel.prenom) {
+    ctx.prescripteurRef = identiteRef(secret, sel.nom, sel.prenom);
+  }
+
+  return ctx;
 }
