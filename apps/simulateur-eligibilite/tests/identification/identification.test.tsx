@@ -41,8 +41,8 @@ describe("parcours d'identification", () => {
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Cardiologie");
     await choisir(/Vous êtes/, "Je ne suis pas dans la liste");
-    await userEvent.type(screen.getByRole("textbox", { name: "Nom" }), "Dupont");
-    await userEvent.type(screen.getByRole("textbox", { name: "Prénom" }), "Marie");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Dupont");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Marie");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
@@ -60,8 +60,8 @@ describe("parcours d'identification", () => {
 
     await choisir(/Établissement/, "Je ne suis pas rattaché à un établissement de santé");
     await choisir(/Précisez votre situation/, "J'exerce en libéral");
-    await userEvent.type(screen.getByRole("textbox", { name: "Nom" }), "Martin");
-    await userEvent.type(screen.getByRole("textbox", { name: "Prénom" }), "Paul");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Martin");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Paul");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
@@ -82,8 +82,8 @@ describe("parcours d'identification", () => {
       screen.getByRole("textbox", { name: /Précisez le nom de votre service/ }),
       "Consultations externes"
     );
-    await userEvent.type(screen.getByRole("textbox", { name: "Nom" }), "Durand");
-    await userEvent.type(screen.getByRole("textbox", { name: "Prénom" }), "Léa");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Durand");
+    await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Léa");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
