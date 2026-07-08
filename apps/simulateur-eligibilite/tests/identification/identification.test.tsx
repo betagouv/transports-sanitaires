@@ -72,7 +72,7 @@ describe("parcours d'identification", () => {
     });
   });
 
-  it("service « autre » → nom de service libre", async () => {
+  it("service « autre » → nom de service libre + nom/prénom", async () => {
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);
 
@@ -82,12 +82,16 @@ describe("parcours d'identification", () => {
       screen.getByRole("textbox", { name: /Précisez le nom de votre service/ }),
       "Consultations externes"
     );
+    await userEvent.type(screen.getByRole("textbox", { name: "Nom" }), "Durand");
+    await userEvent.type(screen.getByRole("textbox", { name: "Prénom" }), "Léa");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
       etabId: "e_chu_grenoble",
       serviceId: SERVICE_AUTRE,
       serviceLibre: "Consultations externes",
+      nom: "Durand",
+      prenom: "Léa",
     });
   });
 

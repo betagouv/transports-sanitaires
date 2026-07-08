@@ -5,8 +5,8 @@
 // server/identification/pseudonymisation.ts + ADR-4).
 //
 // Le workflow est à branches (voir docs/architecture/identification.md — §4) :
-//   établissement réel → service (réel | « autre ») → prescripteur (réel | « hors
-//   liste » → nom/prénom) ;
+//   établissement réel → service réel → prescripteur (réel | « hors liste » → nom/prénom) ;
+//   établissement réel → service « autre » → nom de service libre + nom/prénom ;
 //   « non rattaché » → catégorie (libéral | CNAM) → nom/prénom.
 
 /** Valeurs sentinelles (hors référentiel) choisies dans les listes déroulantes. */
@@ -49,7 +49,10 @@ export function selectionComplete(sel: Selection): boolean {
 
   // établissement réel → service requis
   if (!rempli(sel.serviceId)) return false;
-  if (sel.serviceId === SERVICE_AUTRE) return rempli(sel.serviceLibre);
+  if (sel.serviceId === SERVICE_AUTRE) {
+    // service « autre » → nom du service + identité libre
+    return rempli(sel.serviceLibre) && rempli(sel.nom) && rempli(sel.prenom);
+  }
 
   // service réel → prescripteur requis
   if (!rempli(sel.prescripteurId)) return false;

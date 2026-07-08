@@ -87,7 +87,9 @@ export function Identification({
   const serviceReel = serviceId !== "" && !serviceAutre;
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
   const identiteLibre =
-    (nonRattache && categorie !== "") || (serviceReel && prescripteurHorsListe);
+    (nonRattache && categorie !== "") ||
+    serviceAutre ||
+    (serviceReel && prescripteurHorsListe);
 
   function buildSelection(): Selection {
     const sel: Selection = { etabId };
@@ -101,6 +103,8 @@ export function Identification({
       sel.serviceId = serviceId;
       if (serviceAutre) {
         sel.serviceLibre = serviceLibre;
+        sel.nom = nom;
+        sel.prenom = prenom;
       } else {
         sel.prescripteurId = prescripteurId;
         if (prescripteurHorsListe) {

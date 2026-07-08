@@ -147,6 +147,22 @@ describe("POST /api/contexte", () => {
     expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie/i);
   });
 
+  it("branche « autre service » : serviceRef (libre) + prescripteurRef (identité)", async () => {
+    const { status, body: ctx } = await post("/api/contexte", {
+      etabId: "e_chu_grenoble",
+      serviceId: "service_autre",
+      serviceLibre: "Consultations externes",
+      nom: "Durand",
+      prenom: "Léa",
+    });
+    expect(status).toBe(200);
+    expect(ctx.serviceRef).toBe(
+      pseudonymise(SECRET, "service-libre:consultations externes")
+    );
+    expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:durand|léa"));
+    expect(JSON.stringify(ctx)).not.toMatch(/durand|léa/i);
+  });
+
   it("branche « non rattaché » : etabRef = catégorie, pas de serviceRef", async () => {
     const { status, body: ctx } = await post("/api/contexte", {
       etabId: "etab_non_rattache",
