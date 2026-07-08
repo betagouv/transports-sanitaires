@@ -64,8 +64,6 @@ export function Identification({
       className="fr-container"
       style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
     >
-      <h1 className="fr-h3">Identification</h1>
-
       <div
         className="fr-stepper"
         aria-label="Étapes de l'identification"

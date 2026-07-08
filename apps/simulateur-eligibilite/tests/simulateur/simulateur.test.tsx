@@ -62,11 +62,9 @@ async function remplirEtVoirResultats(user: User, reponses: Reponse[]) {
 // ---------------------------------------------------------------------------
 
 describe("rendu initial", () => {
-  it("affiche le titre du simulateur", () => {
+  it("n'affiche pas de titre h1 (app intégrée en iframe)", () => {
     setup();
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /simulateur d'éligibilité/i
-    );
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
   });
 
   it("affiche la question 1 (situations particulières)", () => {
@@ -176,9 +174,7 @@ describe("réinitialisation", () => {
     await user.click(
       screen.getByRole("button", { name: /nouvelle simulation/i })
     );
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /simulateur d'éligibilité/i
-    );
+    // Retour à la première page du formulaire (plus de titre h1 à vérifier).
     expect(
       screen.getByRole("group", { name: /situations suivantes/i })
     ).toBeInTheDocument();
