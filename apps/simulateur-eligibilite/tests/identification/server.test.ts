@@ -4,12 +4,13 @@
 // l'app avec le référentiel snapshot (comme le fait le backend quand
 // GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { createApp } from "../../server/app.ts";
 import { pseudonymise } from "../../server/identification/pseudonymisation.ts";
-import { snapshotReferentiel } from "../../shared/referentiel.ts";
+import { snapshotReferentiel, type Referentiel } from "../../shared/referentiel.ts";
+import type { Selection } from "../../shared/selection.ts";
 
 const SECRET = "secret-de-test";
 
@@ -184,5 +185,127 @@ describe("POST /api/contexte", () => {
     });
     expect(status).toBe(400);
     expect(body.error).toMatch(/incompl/);
+  });
+});
+
+// Démarre une app dédiée sur un référentiel injecté, sans mock (vraie requête HTTP).
+async function demarrer(
+  referentiel: Referentiel
+): Promise<{ base: string; close: () => Promise<void> }> {
+  const app = createApp(referentiel, { secret: SECRET });
+  const srv = await new Promise<Server>((resolve) => {
+    const s = app.listen(0, () => resolve(s));
+  });
+  const { port } = srv.address() as AddressInfo;
+  return {
+    base: `http://127.0.0.1:${port}`,
+    close: () =>
+      new Promise<void>((resolve, reject) =>
+        srv.close((err) => (err ? reject(err) : resolve()))
+      ),
+  };
+}
+
+const postTo = async (base: string, path: string, body: unknown) => {
+  const res = await fetch(base + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return { status: res.status, body: await res.json() };
+};
+
+describe("POST /api/contexte — enrichissement du référentiel (saisies libres)", () => {
+  // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
+  const appels: Selection[] = [];
+  const referentiel: Referentiel = {
+    getEtablissements: () => snapshotReferentiel.getEtablissements(),
+    getServices: (etabId) => snapshotReferentiel.getServices(etabId),
+    getPrescripteurs: (serviceId) => snapshotReferentiel.getPrescripteurs(serviceId),
+    async enrichirDepuisSaisie(sel) {
+      appels.push(sel);
+    },
+  };
+
+  let base: string;
+  let close: () => Promise<void>;
+  beforeAll(async () => ({ base, close } = await demarrer(referentiel)));
+  afterAll(() => close());
+  beforeEach(() => {
+    appels.length = 0;
+  });
+
+  it("déclenche l'enrichissement pour la branche « service autre »", async () => {
+    const sel = {
+      etabId: "e_chu_grenoble",
+      serviceId: "service_autre",
+      serviceLibre: "Consultations externes",
+      nom: "Durand",
+      prenom: "Léa",
+    };
+    const { status } = await postTo(base, "/api/contexte", sel);
+    expect(status).toBe(200);
+    expect(appels).toEqual([sel]);
+  });
+
+  it("déclenche l'enrichissement pour la branche « prescripteur hors liste »", async () => {
+    const sel = {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "Dupont",
+      prenom: "Marie",
+    };
+    const { status } = await postTo(base, "/api/contexte", sel);
+    expect(status).toBe(200);
+    expect(appels).toEqual([sel]);
+  });
+
+  it("déclenche l'enrichissement pour la branche « non rattaché »", async () => {
+    const sel = {
+      etabId: "etab_non_rattache",
+      categorie: "liberal",
+      nom: "Martin",
+      prenom: "Paul",
+    };
+    const { status } = await postTo(base, "/api/contexte", sel);
+    expect(status).toBe(200);
+    expect(appels).toEqual([sel]);
+  });
+
+  it("appelle quand même l'enrichissement pour une sélection issue des listes (no-op côté source)", async () => {
+    // La route délègue toujours ; c'est la source (Grist) qui décide de ne rien écrire.
+    const sel = {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "p_grenoble_cardio_1",
+    };
+    const { status } = await postTo(base, "/api/contexte", sel);
+    expect(status).toBe(200);
+    expect(appels).toEqual([sel]);
+  });
+
+  it("ne bloque pas l'accès si l'enrichissement échoue", async () => {
+    const { base: baseKo, close: closeKo } = await demarrer({
+      getEtablissements: () => snapshotReferentiel.getEtablissements(),
+      getServices: (etabId) => snapshotReferentiel.getServices(etabId),
+      getPrescripteurs: (serviceId) => snapshotReferentiel.getPrescripteurs(serviceId),
+      async enrichirDepuisSaisie() {
+        throw new Error("Grist indisponible");
+      },
+    });
+    try {
+      const { status, body: ctx } = await postTo(baseKo, "/api/contexte", {
+        etabId: "e_chu_grenoble",
+        serviceId: "s_grenoble_cardio",
+        prescripteurId: "prescripteur_hors_liste",
+        nom: "Dupont",
+        prenom: "Marie",
+      });
+      expect(status).toBe(200);
+      expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:dupont|marie"));
+    } finally {
+      await closeKo();
+    }
   });
 });

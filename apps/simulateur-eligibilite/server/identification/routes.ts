@@ -69,6 +69,15 @@ export function identificationRoutes(
         res.status(400).json({ error: "sélection d'identification incomplète" });
         return;
       }
+      // Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
+      // prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
+      // d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
+      // Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
+      try {
+        await referentiel.enrichirDepuisSaisie?.(sel);
+      } catch (err) {
+        console.error("[simulateur] enrichissement référentiel échoué:", err);
+      }
       res.json(buildContexte(secret, sel));
     })
   );

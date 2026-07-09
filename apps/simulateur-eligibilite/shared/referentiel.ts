@@ -8,6 +8,8 @@
 // `snapshotReferentiel` : données **factices** (aucune PII réelle), servant de
 // **défaut** en dev et dans les tests (front comme backend sans clé Grist).
 
+import type { Selection } from "./selection.ts";
+
 export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
 export type Prescripteur = { id: string; libelle: string };
@@ -16,6 +18,13 @@ export interface Referentiel {
   getEtablissements(): Promise<Etablissement[]>;
   getServices(etabId: string): Promise<Service[]>;
   getPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
+  /**
+   * Enrichit le référentiel avec les **saisies libres** d'une sélection (service
+   * « autre », prescripteur « hors liste », exercice libéral/CNAM). Optionnel : seule
+   * la source Grist l'implémente (le client HTTP front n'écrit jamais). Voir
+   * docs/specs/enrichissement-referentiel-saisies-libres.md.
+   */
+  enrichirDepuisSaisie?(sel: Selection): Promise<void>;
 }
 
 type SnapshotService = Service & { etabId: string };

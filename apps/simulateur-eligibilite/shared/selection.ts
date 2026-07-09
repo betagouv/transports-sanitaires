@@ -36,6 +36,14 @@ export type Selection = {
 const rempli = (v: string | undefined): boolean => (v ?? "").trim() !== "";
 
 /**
+ * Normalise un texte libre (casse, espaces superflus) pour que des saisies quasi
+ * identiques tombent dans le même « bucket ». Partagé entre la pseudonymisation
+ * (HMAC) et la déduplication des saisies libres écrites dans le référentiel Grist.
+ */
+export const normalise = (s: string): string =>
+  s.trim().replace(/\s+/g, " ").toLowerCase();
+
+/**
  * Vrai quand la branche sélectionnée est complète. Partagé entre le front (activer
  * le bouton de validation) et le backend (valider `POST /api/contexte`).
  */
