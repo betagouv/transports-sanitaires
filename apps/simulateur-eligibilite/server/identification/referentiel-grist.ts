@@ -10,7 +10,7 @@
 //   Services_Unites  : Id2, Nom, Etablissement (Ref:Etablissements)
 //   Prescripteurs    : Id2, Nom, Prenom, Service_Unite (Ref:Services_Unites)
 //
-// Les identifiants opaques du contexte (`etabId`/`serviceId`/`prescripteurId`)
+// Les identifiants opaques de l'identité saisie (`etabId`/`serviceId`/`prescripteurId`)
 // sont la colonne **Id2** (choix produit). Les colonnes de référence stockent le
 // **rowId interne Grist** de la ligne cible, pas son Id2 : on résout donc Id2 →
 // rowId avant de filtrer les enfants.
@@ -27,8 +27,8 @@ import {
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
   type Categorie,
-  type Selection,
-} from "../../shared/selection.ts";
+  type IdentiteSaisie,
+} from "../../shared/identite-saisie.ts";
 
 const TABLE = {
   etablissements: "Etablissements",
@@ -211,35 +211,35 @@ export function createGristReferentiel({
     // Écrit les saisies **libres** dans le référentiel (colonne `Origine=formulaire`).
     // Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
     // issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
-    async enrichirDepuisSaisie(sel: Selection): Promise<void> {
+    async enrichirDepuisSaisie(saisie: IdentiteSaisie): Promise<void> {
       // Service « autre » : service libre sous l'établissement réel + prescripteur.
-      if (sel.serviceId === SERVICE_AUTRE) {
-        if (!sel.serviceLibre || !sel.nom || !sel.prenom) return;
-        const etabRowId = await rowIdForId(TABLE.etablissements, sel.etabId);
+      if (saisie.serviceId === SERVICE_AUTRE) {
+        if (!saisie.serviceLibre || !saisie.nom || !saisie.prenom) return;
+        const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
         if (etabRowId == null) return;
-        const serviceRowId = await assurerService(etabRowId, sel.serviceLibre);
-        await assurerPrescripteur(serviceRowId, sel.nom, sel.prenom);
+        const serviceRowId = await assurerService(etabRowId, saisie.serviceLibre);
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
         return;
       }
 
       // Non rattaché : prescripteur sous le service libéral/CNAM existant.
-      if (sel.etabId === ETAB_NON_RATTACHE) {
-        if (!sel.categorie || !sel.nom || !sel.prenom) return;
+      if (saisie.etabId === ETAB_NON_RATTACHE) {
+        if (!saisie.categorie || !saisie.nom || !saisie.prenom) return;
         const serviceRowId = await rowIdForId(
           TABLE.services,
-          SERVICE_ID_PAR_CATEGORIE[sel.categorie]
+          SERVICE_ID_PAR_CATEGORIE[saisie.categorie]
         );
         if (serviceRowId == null) return;
-        await assurerPrescripteur(serviceRowId, sel.nom, sel.prenom);
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
         return;
       }
 
       // Prescripteur hors liste : prescripteur sous le service réel.
-      if (sel.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-        if (!sel.serviceId || !sel.nom || !sel.prenom) return;
-        const serviceRowId = await rowIdForId(TABLE.services, sel.serviceId);
+      if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
+        if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
+        const serviceRowId = await rowIdForId(TABLE.services, saisie.serviceId);
         if (serviceRowId == null) return;
-        await assurerPrescripteur(serviceRowId, sel.nom, sel.prenom);
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
         return;
       }
 

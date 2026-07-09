@@ -16,18 +16,18 @@ feature** :
 
 ```
 shared/                  contrat front ⇄ back (source unique)
-  contexte.ts            type Contexte + CONTEXTE_VERSION + isContexte
+  identite-pseudonymisee.ts  type IdentitePseudonymisee + VERSION + estIdentitePseudonymisee
   referentiel.ts         interface Referentiel + types + snapshot factice
-  selection.ts
+  identite-saisie.ts     type IdentiteSaisie + saisieComplete
 server/                  backend (barrière de sécurité : secrets ici, jamais bundlés)
   server.ts app.ts       bootstrap + composition (monte les routers, sert le front)
   identification/        LA feature backend
-    routes.ts            /api/etablissements|services|prescripteurs + /api/contexte
+    routes.ts            /api/etablissements|services|prescripteurs + /api/identite-pseudonymisee
     referentiel-grist.ts  referentiel-source.ts  pseudonymisation.ts
 front/                   front (bundlé par Vite)
   app/                   main.tsx  App.tsx (écran-porte)
   identification/        Identification.tsx  referentiel-http.ts
-  contexte/              contexte-http.ts (fetchContexte)  session.ts
+  identite/              pseudonymisation-http.ts (pseudonymiserViaApi)  session.ts
   simulateur/            Simulateur.tsx  FormField.tsx  Resultats.tsx  engine.ts
   analytics/             analytics.ts
 ```
@@ -46,7 +46,7 @@ front/                   front (bundlé par Vite)
   `server/identification/routes.ts`) :
   - `GET /api/etablissements`, `GET /api/services?etabId=…`,
     `GET /api/prescripteurs?serviceId=…`
-  - `POST /api/contexte` — reçoit la sélection brute, renvoie les **refs
+  - `POST /api/identite-pseudonymisee` — reçoit l'identité saisie brute, renvoie les **refs
     pseudonymisées** `{ etabRef, serviceRef, prescripteurRef, v: 2 }` (chaque ref =
     `HMAC-SHA256(id, secret)`, `server/identification/pseudonymisation.ts`) — **jamais
     d'identifiant brut ni de nom**, secret côté serveur uniquement.

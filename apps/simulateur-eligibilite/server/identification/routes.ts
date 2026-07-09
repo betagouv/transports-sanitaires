@@ -1,6 +1,6 @@
 // Router de la feature **identification** (backend) : lecture du référentiel
-// (établissement / service / prescripteur) + construction du contexte
-// pseudonymisé. Monté sous `/api` par `server/app.ts`. Voir
+// (établissement / service / prescripteur) + pseudonymisation de l'identité
+// saisie. Monté sous `/api` par `server/app.ts`. Voir
 // docs/architecture/identification.md — ADR-5.
 //
 // Prend le `Referentiel` et le secret en paramètres pour rester testable sans
@@ -8,13 +8,13 @@
 
 import express, { type Router, type Request, type Response } from "express";
 import type { Referentiel } from "../../shared/referentiel.ts";
-import { selectionComplete, type Selection } from "../../shared/selection.ts";
-import { buildContexte } from "./pseudonymisation.ts";
+import { saisieComplete, type IdentiteSaisie } from "../../shared/identite-saisie.ts";
+import { pseudonymiser } from "./pseudonymisation.ts";
 
 // Enrobe un handler async pour router les rejets vers une réponse d'erreur.
-function handle(fn: (req: Request, res: Response) => Promise<void>) {
+function handle(handler: (req: Request, res: Response) => Promise<void>) {
   return (req: Request, res: Response) => {
-    fn(req, res).catch((err: unknown) => {
+    handler(req, res).catch((err: unknown) => {
       console.error("[simulateur] erreur référentiel:", err);
       res.status(502).json({ error: "referentiel indisponible" });
     });
@@ -58,14 +58,14 @@ export function identificationRoutes(
     })
   );
 
-  // Construit le contexte pseudonymisé de la sélection (refs HMAC). Reçoit la
-  // sélection brute, renvoie l'objet refs en JSON — le secret HMAC ne quitte
-  // jamais le serveur. Le front garde ces refs en mémoire pour Matomo.
+  // Pseudonymise l'identité saisie (refs HMAC). Reçoit la saisie brute, renvoie
+  // l'objet refs en JSON — le secret HMAC ne quitte jamais le serveur. Le front
+  // garde ces refs en mémoire pour Matomo.
   router.post(
-    "/contexte",
+    "/identite-pseudonymisee",
     handle(async (req, res) => {
-      const sel = (req.body ?? {}) as Selection;
-      if (!selectionComplete(sel)) {
+      const saisie = (req.body ?? {}) as IdentiteSaisie;
+      if (!saisieComplete(saisie)) {
         res.status(400).json({ error: "sélection d'identification incomplète" });
         return;
       }
@@ -74,11 +74,11 @@ export function identificationRoutes(
       // d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
       // Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
       try {
-        await referentiel.enrichirDepuisSaisie?.(sel);
+        await referentiel.enrichirDepuisSaisie?.(saisie);
       } catch (err) {
         console.error("[simulateur] enrichissement référentiel échoué:", err);
       }
-      res.json(buildContexte(secret, sel));
+      res.json(pseudonymiser(secret, saisie));
     })
   );
 

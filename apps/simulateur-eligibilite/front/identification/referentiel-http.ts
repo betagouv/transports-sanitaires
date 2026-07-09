@@ -16,11 +16,12 @@ async function get<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-const q = (v: string) => encodeURIComponent(v);
+const encoder = (valeur: string) => encodeURIComponent(valeur);
 
 export const referentielHttp: Referentiel = {
   getEtablissements: () => get<Etablissement[]>("/api/etablissements"),
-  getServices: (etabId) => get<Service[]>(`/api/services?etabId=${q(etabId)}`),
+  getServices: (etabId) =>
+    get<Service[]>(`/api/services?etabId=${encoder(etabId)}`),
   getPrescripteurs: (serviceId) =>
-    get<Prescripteur[]>(`/api/prescripteurs?serviceId=${q(serviceId)}`),
+    get<Prescripteur[]>(`/api/prescripteurs?serviceId=${encoder(serviceId)}`),
 };

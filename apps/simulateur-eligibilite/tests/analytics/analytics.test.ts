@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { CONTEXTE_VERSION, type Contexte } from "../../shared/contexte";
-import { setSessionContexte } from "../../front/contexte/session";
+import {
+  VERSION,
+  type IdentitePseudonymisee,
+} from "../../shared/identite-pseudonymisee";
+import { setIdentite } from "../../front/identite/session";
 import {
   buildEvent,
   initAnalytics,
@@ -10,23 +13,23 @@ import {
   trackSimulationStep,
 } from "../../front/analytics/analytics";
 
-const ctx: Contexte = {
+const identite: IdentitePseudonymisee = {
   etabRef: "eRef",
   serviceRef: "sRef",
   prescripteurRef: "pRef",
-  v: CONTEXTE_VERSION,
+  v: VERSION,
 };
 
 const config = { enabled: true, url: "https://matomo.test/", siteId: "275" };
 
 beforeEach(() => {
   window._paq = [];
-  setSessionContexte(null);
+  setIdentite(null);
 });
 
 describe("buildEvent", () => {
   it("porte le prescripteurRef en Nom d'événement", () => {
-    expect(buildEvent(ctx, "simulation_start")).toEqual([
+    expect(buildEvent(identite, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
@@ -35,7 +38,7 @@ describe("buildEvent", () => {
   });
 
   it("place la valeur après le Nom", () => {
-    expect(buildEvent(ctx, "simulation_step", 2)).toEqual([
+    expect(buildEvent(identite, "simulation_step", 2)).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_step",
@@ -44,7 +47,7 @@ describe("buildEvent", () => {
     ]);
   });
 
-  it("sans contexte : pas de Nom, valeur précédée d'un Nom vide", () => {
+  it("sans identité : pas de Nom, valeur précédée d'un Nom vide", () => {
     expect(buildEvent(null, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
@@ -97,7 +100,7 @@ describe("initAnalytics + événements", () => {
 
   it("émet des événements portant le prescripteurRef de la session", () => {
     initAnalytics(config);
-    setSessionContexte(ctx); // ctx connu après l'identification, avant les événements
+    setIdentite(identite); // identité connue après l'identification, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
     trackSimulationStart();
     trackSimulationStep(3);

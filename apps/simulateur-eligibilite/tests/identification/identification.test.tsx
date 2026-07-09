@@ -6,7 +6,7 @@ import {
   ETAB_NON_RATTACHE,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
-} from "../../shared/selection";
+} from "../../shared/identite-saisie";
 
 async function choisir(labelSelect: RegExp, optionLabel: string) {
   const select = screen.getByRole("combobox", { name: labelSelect });

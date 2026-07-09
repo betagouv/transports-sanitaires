@@ -86,7 +86,7 @@ flowchart TB
     end
     matomo[("Matomo<br/>(mutualisé beta.gouv)")]
 
-    ctx["contexte prescripteur<br/>(refs en mémoire de session)"] --> traceur
+    identite["identité prescripteur<br/>(refs pseudonymisées en mémoire de session)"] --> traceur
     traceur -->|"événements (Nom = prescripteurRef)"| matomo
 ```
 
@@ -98,7 +98,7 @@ une mesure d'audience sans bandeau.
 ## 4. Spécification des événements
 
 Événements `trackEvent` émis par le traceur, **catégorie `simulateur`**, portant le
-`prescripteurRef` en **Nom** (absent si le parcours a démarré sans `#ctx`) :
+`prescripteurRef` en **Nom** (absent si le parcours a démarré sans identité pseudonymisée) :
 
 | Action | Valeur | Moment du parcours |
 |---|---|---|
