@@ -33,8 +33,6 @@ export type IdentiteSaisie = {
   prenom?: string;
 };
 
-const rempli = (v: string | undefined): boolean => (v ?? "").trim() !== "";
-
 /**
  * Normalise un texte libre (casse, espaces superflus) pour que des saisies quasi
  * identiques tombent dans le même « bucket ». Partagé entre la pseudonymisation
@@ -69,3 +67,5 @@ export function saisieComplete(saisie: IdentiteSaisie): boolean {
   }
   return true;
 }
+
+const rempli = (v: string | undefined): boolean => (v ?? "").trim() !== "";

@@ -20,20 +20,6 @@ import {
   type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
-/** Empreinte stable, non réversible sans le secret (128 bits, base64url). */
-export function empreinte(secret: string, value: string): string {
-  return createHmac("sha256", secret)
-    .update(value)
-    .digest()
-    .subarray(0, 16)
-    .toString("base64url");
-}
-
-// Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
-// jamais le nom en clair (invariant PII, ADR-4 / R-6).
-const refIdentite = (secret: string, nom: string, prenom: string): string =>
-  empreinte(secret, `identite:${normalise(nom)}|${normalise(prenom)}`);
-
 /**
  * Pseudonymise l'identité saisie selon la branche d'identification. Les valeurs
  * sont préfixées par leur nature (`etab:`, `categorie:`, `service:`, …) pour éviter
@@ -78,3 +64,17 @@ export function pseudonymiser(
 
   return identite;
 }
+
+/** Empreinte stable, non réversible sans le secret (128 bits, base64url). */
+export function empreinte(secret: string, value: string): string {
+  return createHmac("sha256", secret)
+    .update(value)
+    .digest()
+    .subarray(0, 16)
+    .toString("base64url");
+}
+
+// Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
+// jamais le nom en clair (invariant PII, ADR-4 / R-6).
+const refIdentite = (secret: string, nom: string, prenom: string): string =>
+  empreinte(secret, `identite:${normalise(nom)}|${normalise(prenom)}`);

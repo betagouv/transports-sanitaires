@@ -10,14 +10,6 @@ import type {
   Service,
 } from "../../shared/referentiel";
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`API ${path} → HTTP ${res.status}`);
-  return (await res.json()) as T;
-}
-
-const encoder = (valeur: string) => encodeURIComponent(valeur);
-
 export const referentielHttp: Referentiel = {
   getEtablissements: () => get<Etablissement[]>("/api/etablissements"),
   getServices: (etabId) =>
@@ -25,3 +17,11 @@ export const referentielHttp: Referentiel = {
   getPrescripteurs: (serviceId) =>
     get<Prescripteur[]>(`/api/prescripteurs?serviceId=${encoder(serviceId)}`),
 };
+
+async function get<T>(path: string): Promise<T> {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`API ${path} → HTTP ${res.status}`);
+  return (await res.json()) as T;
+}
+
+const encoder = (valeur: string) => encodeURIComponent(valeur);
