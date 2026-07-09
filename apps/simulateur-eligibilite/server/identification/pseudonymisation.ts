@@ -11,6 +11,7 @@ import { createHmac } from "node:crypto";
 import { CONTEXTE_VERSION, type Contexte } from "../../shared/contexte.ts";
 import {
   ETAB_NON_RATTACHE,
+  normalise,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
   type Selection,
@@ -24,10 +25,6 @@ export function pseudonymise(secret: string, value: string): string {
     .subarray(0, 16)
     .toString("base64url");
 }
-
-// Normalise un texte libre avant HMAC pour que des saisies quasi identiques
-// (casse, espaces) tombent dans le même « bucket ».
-const normalise = (s: string): string => s.trim().replace(/\s+/g, " ").toLowerCase();
 
 // Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
 // jamais le nom en clair (invariant PII, ADR-4 / R-6).
