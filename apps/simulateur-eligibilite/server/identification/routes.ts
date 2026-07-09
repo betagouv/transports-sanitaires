@@ -11,16 +11,6 @@ import type { Referentiel } from "../../shared/referentiel.ts";
 import { saisieComplete, type IdentiteSaisie } from "../../shared/identite-saisie.ts";
 import { pseudonymiser } from "./pseudonymisation.ts";
 
-// Enrobe un handler async pour router les rejets vers une réponse d'erreur.
-function handle(handler: (req: Request, res: Response) => Promise<void>) {
-  return (req: Request, res: Response) => {
-    handler(req, res).catch((err: unknown) => {
-      console.error("[simulateur] erreur référentiel:", err);
-      res.status(502).json({ error: "referentiel indisponible" });
-    });
-  };
-}
-
 export function identificationRoutes(
   referentiel: Referentiel,
   secret: string
@@ -83,4 +73,14 @@ export function identificationRoutes(
   );
 
   return router;
+}
+
+// Enrobe un handler async pour router les rejets vers une réponse d'erreur.
+function handle(handler: (req: Request, res: Response) => Promise<void>) {
+  return (req: Request, res: Response) => {
+    handler(req, res).catch((err: unknown) => {
+      console.error("[simulateur] erreur référentiel:", err);
+      res.status(502).json({ error: "referentiel indisponible" });
+    });
+  };
 }

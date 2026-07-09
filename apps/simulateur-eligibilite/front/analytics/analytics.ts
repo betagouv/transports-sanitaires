@@ -109,11 +109,6 @@ export function loadMatomo(url: string): void {
   document.head.appendChild(script);
 }
 
-function track(action: string, value?: number): void {
-  if (!state.enabled) return;
-  (window._paq ??= []).push(buildEvent(getIdentite(), action, value));
-}
-
 export const trackSimulationStart = (): void => track("simulation_start");
 export const trackSimulationStep = (stepIndex: number): void =>
   track("simulation_step", stepIndex);
@@ -121,3 +116,10 @@ export const trackSimulationComplete = (): void => track("simulation_complete");
 export const trackResultat = (statut: string): void => track(`resultat:${statut}`);
 export const trackSimulationAbandon = (lastStep: number): void =>
   track("simulation_abandon", lastStep);
+
+// Émet un événement quand le traceur est activé, en portant l'identité
+// pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
+function track(action: string, value?: number): void {
+  if (!state.enabled) return;
+  (window._paq ??= []).push(buildEvent(getIdentite(), action, value));
+}

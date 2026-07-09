@@ -30,55 +30,86 @@ import {
   type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
-const TABLE = {
-  etablissements: "Etablissements",
-  services: "Services_Unites",
-  prescripteurs: "Prescripteurs",
-} as const;
-
-const COL = {
-  id: "Id2",
-  nom: "Nom",
-  prenom: "Prenom",
-  refEtablissement: "Etablissement",
-  refService: "Service_Unite",
-  origine: "Origine",
-} as const;
-
-// Marqueur écrit dans la colonne `Origine` des lignes issues du formulaire (par
-// opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
-const ORIGINE_FORMULAIRE = "formulaire";
-
-// Branche « non rattaché » : le porteur a créé dans Grist un établissement
-// « Libéral / CNAM » (Id2 ci-dessous) et deux services porteurs. Cet établissement est
-// la contrepartie de l'option « Je ne suis pas rattaché à un établissement de santé » :
-// il ne doit **jamais** apparaître dans la liste des établissements (il n'accueille que
-// les prescripteurs non rattachés).
-const ETAB_ID_NON_RATTACHE = "2";
-
-// On rattache le prescripteur libre au service porteur selon la catégorie d'exercice
-// (Id2 métier des services, tous deux enfants de l'établissement ci-dessus).
-const SERVICE_ID_PAR_CATEGORIE: Record<Categorie, string> = {
-  cnam: "2",
-  liberal: "3",
-};
-
-type GristRecord = { id: number; fields: Record<string, unknown> };
-
 export type GristConfig = {
   /** Base API du doc, ex. https://…/api/docs/<docId> */
   docUrl: string;
   apiKey: string;
 };
 
-const str = (v: unknown): string =>
-  typeof v === "string" ? v.trim() : v == null ? "" : String(v);
-
 export function createGristReferentiel({
   docUrl,
   apiKey,
 }: GristConfig): Referentiel {
   const base = docUrl.replace(/\/$/, "");
+
+  return {
+    async getEtablissements(): Promise<Etablissement[]> {
+      return (await records(TABLE.etablissements))
+        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
+        // On masque l'établissement « Libéral / CNAM » : c'est le support de l'option
+        // « non rattaché », pas un établissement sélectionnable.
+        .filter((e) => e.id && e.libelle && e.id !== ETAB_ID_NON_RATTACHE);
+    },
+
+    async getServices(etabId: string): Promise<Service[]> {
+      const rowId = await rowIdForId(TABLE.etablissements, etabId);
+      if (rowId == null) return [];
+      return (await records(TABLE.services, { [COL.refEtablissement]: [rowId] }))
+        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
+        .filter((s) => s.id && s.libelle);
+    },
+
+    async getPrescripteurs(serviceId: string): Promise<Prescripteur[]> {
+      const rowId = await rowIdForId(TABLE.services, serviceId);
+      if (rowId == null) return [];
+      return (await records(TABLE.prescripteurs, { [COL.refService]: [rowId] }))
+        .map((r) => ({
+          id: str(r.fields[COL.id]),
+          libelle: `${str(r.fields[COL.prenom])} ${str(r.fields[COL.nom])}`.trim(),
+        }))
+        .filter((p) => p.id && p.libelle);
+    },
+
+    // Écrit les saisies **libres** dans le référentiel (colonne `Origine=formulaire`).
+    // Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
+    // issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
+    async enrichirDepuisSaisie(saisie: IdentiteSaisie): Promise<void> {
+      // Service « autre » : service libre sous l'établissement réel + prescripteur.
+      if (saisie.serviceId === SERVICE_AUTRE) {
+        if (!saisie.serviceLibre || !saisie.nom || !saisie.prenom) return;
+        const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
+        if (etabRowId == null) return;
+        const serviceRowId = await assurerService(etabRowId, saisie.serviceLibre);
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
+        return;
+      }
+
+      // Non rattaché : prescripteur sous le service libéral/CNAM existant.
+      if (saisie.etabId === ETAB_NON_RATTACHE) {
+        if (!saisie.categorie || !saisie.nom || !saisie.prenom) return;
+        const serviceRowId = await rowIdForId(
+          TABLE.services,
+          SERVICE_ID_PAR_CATEGORIE[saisie.categorie]
+        );
+        if (serviceRowId == null) return;
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
+        return;
+      }
+
+      // Prescripteur hors liste : prescripteur sous le service réel.
+      if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
+        if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
+        const serviceRowId = await rowIdForId(TABLE.services, saisie.serviceId);
+        if (serviceRowId == null) return;
+        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
+        return;
+      }
+
+      // Sinon : sélection issue des listes → rien à écrire.
+    },
+  };
+
+  // ---- Helpers privés à la closure (hoisted ; ils capturent `base`/`apiKey`). ----
 
   async function records(
     table: string,
@@ -179,71 +210,44 @@ export function createGristReferentiel({
       [COL.origine]: ORIGINE_FORMULAIRE,
     });
   }
-
-  return {
-    async getEtablissements(): Promise<Etablissement[]> {
-      return (await records(TABLE.etablissements))
-        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
-        // On masque l'établissement « Libéral / CNAM » : c'est le support de l'option
-        // « non rattaché », pas un établissement sélectionnable.
-        .filter((e) => e.id && e.libelle && e.id !== ETAB_ID_NON_RATTACHE);
-    },
-
-    async getServices(etabId: string): Promise<Service[]> {
-      const rowId = await rowIdForId(TABLE.etablissements, etabId);
-      if (rowId == null) return [];
-      return (await records(TABLE.services, { [COL.refEtablissement]: [rowId] }))
-        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
-        .filter((s) => s.id && s.libelle);
-    },
-
-    async getPrescripteurs(serviceId: string): Promise<Prescripteur[]> {
-      const rowId = await rowIdForId(TABLE.services, serviceId);
-      if (rowId == null) return [];
-      return (await records(TABLE.prescripteurs, { [COL.refService]: [rowId] }))
-        .map((r) => ({
-          id: str(r.fields[COL.id]),
-          libelle: `${str(r.fields[COL.prenom])} ${str(r.fields[COL.nom])}`.trim(),
-        }))
-        .filter((p) => p.id && p.libelle);
-    },
-
-    // Écrit les saisies **libres** dans le référentiel (colonne `Origine=formulaire`).
-    // Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
-    // issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
-    async enrichirDepuisSaisie(saisie: IdentiteSaisie): Promise<void> {
-      // Service « autre » : service libre sous l'établissement réel + prescripteur.
-      if (saisie.serviceId === SERVICE_AUTRE) {
-        if (!saisie.serviceLibre || !saisie.nom || !saisie.prenom) return;
-        const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
-        if (etabRowId == null) return;
-        const serviceRowId = await assurerService(etabRowId, saisie.serviceLibre);
-        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
-        return;
-      }
-
-      // Non rattaché : prescripteur sous le service libéral/CNAM existant.
-      if (saisie.etabId === ETAB_NON_RATTACHE) {
-        if (!saisie.categorie || !saisie.nom || !saisie.prenom) return;
-        const serviceRowId = await rowIdForId(
-          TABLE.services,
-          SERVICE_ID_PAR_CATEGORIE[saisie.categorie]
-        );
-        if (serviceRowId == null) return;
-        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
-        return;
-      }
-
-      // Prescripteur hors liste : prescripteur sous le service réel.
-      if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-        if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
-        const serviceRowId = await rowIdForId(TABLE.services, saisie.serviceId);
-        if (serviceRowId == null) return;
-        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
-        return;
-      }
-
-      // Sinon : sélection issue des listes → rien à écrire.
-    },
-  };
 }
+
+// ---- Détails d'implémentation privés au module (modèle Grist, coercition). ----
+
+type GristRecord = { id: number; fields: Record<string, unknown> };
+
+const TABLE = {
+  etablissements: "Etablissements",
+  services: "Services_Unites",
+  prescripteurs: "Prescripteurs",
+} as const;
+
+const COL = {
+  id: "Id2",
+  nom: "Nom",
+  prenom: "Prenom",
+  refEtablissement: "Etablissement",
+  refService: "Service_Unite",
+  origine: "Origine",
+} as const;
+
+// Marqueur écrit dans la colonne `Origine` des lignes issues du formulaire (par
+// opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
+const ORIGINE_FORMULAIRE = "formulaire";
+
+// Branche « non rattaché » : le porteur a créé dans Grist un établissement
+// « Libéral / CNAM » (Id2 ci-dessous) et deux services porteurs. Cet établissement est
+// la contrepartie de l'option « Je ne suis pas rattaché à un établissement de santé » :
+// il ne doit **jamais** apparaître dans la liste des établissements (il n'accueille que
+// les prescripteurs non rattachés).
+const ETAB_ID_NON_RATTACHE = "2";
+
+// On rattache le prescripteur libre au service porteur selon la catégorie d'exercice
+// (Id2 métier des services, tous deux enfants de l'établissement ci-dessus).
+const SERVICE_ID_PAR_CATEGORIE: Record<Categorie, string> = {
+  cnam: "2",
+  liberal: "3",
+};
+
+const str = (v: unknown): string =>
+  typeof v === "string" ? v.trim() : v == null ? "" : String(v);
