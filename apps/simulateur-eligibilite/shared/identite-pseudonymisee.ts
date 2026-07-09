@@ -1,5 +1,5 @@
-// Contrat **partagé front ⇄ back** du contexte d'identification : refs
-// pseudonymisées du prescripteur (et de son établissement / service). Source
+// Contrat **partagé front ⇄ back** de l'identité pseudonymisée du prescripteur :
+// refs pseudonymisées du prescripteur (et de son établissement / service). Source
 // **unique** de la forme et de la version — le backend (pseudonymisation) la
 // produit, le front la valide et la consomme. Voir
 // docs/architecture/identification.md — ADR-4.
@@ -8,28 +8,30 @@
 // **non réversibles** sans le secret, jamais l'identifiant brut, le nom ou le
 // RPPS. Le front ne fait que les forwarder à Matomo (cf. analytics.md).
 
-export const CONTEXTE_VERSION = 2 as const;
+export const VERSION = 2 as const;
 
 // Refs **optionnelles** : selon la branche d'identification, certaines n'existent
 // pas (ex. « autre service » n'a pas de prescripteur ; « non rattaché » n'a pas de
 // service). L'analytics n'utilise que `prescripteurRef` (absent → événement sans
 // Nom, cf. analytics.ts).
-export type Contexte = {
+export type IdentitePseudonymisee = {
   etabRef?: string;
   serviceRef?: string;
   prescripteurRef?: string;
-  v: typeof CONTEXTE_VERSION;
+  v: typeof VERSION;
 };
 
-/** Valide la forme d'un contexte reçu de l'API (`POST /api/contexte`). */
-export function isContexte(value: unknown): value is Contexte {
+/** Valide la forme d'une identité pseudonymisée reçue de l'API (`POST /api/identite-pseudonymisee`). */
+export function estIdentitePseudonymisee(
+  value: unknown
+): value is IdentitePseudonymisee {
   if (typeof value !== "object" || value === null) return false;
-  const c = value as Record<string, unknown>;
-  const refOk = (r: unknown) => r === undefined || typeof r === "string";
+  const candidat = value as Record<string, unknown>;
+  const refOk = (ref: unknown) => ref === undefined || typeof ref === "string";
   return (
-    c.v === CONTEXTE_VERSION &&
-    refOk(c.etabRef) &&
-    refOk(c.serviceRef) &&
-    refOk(c.prescripteurRef)
+    candidat.v === VERSION &&
+    refOk(candidat.etabRef) &&
+    refOk(candidat.serviceRef) &&
+    refOk(candidat.prescripteurRef)
   );
 }

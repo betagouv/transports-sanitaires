@@ -5,11 +5,11 @@ import { App } from "../../front/app/App";
 import { snapshotReferentiel } from "../../shared/referentiel";
 
 // La porte : impossible d'atteindre le simulateur sans s'être identifié. On
-// injecte le référentiel snapshot et une résolution de contexte factice (pas de
-// backend en test).
+// injecte le référentiel snapshot et une pseudonymisation factice (pas de backend
+// en test).
 function setup() {
   const user = userEvent.setup();
-  render(<App referentiel={snapshotReferentiel} resoudreContexte={async () => null} />);
+  render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
   return { user };
 }
 

@@ -3,35 +3,35 @@
 // — impossible de simuler sans s'être identifié (voir
 // docs/architecture/identification.md — ADR-1).
 //
-// À la validation, on convertit la sélection en contexte pseudonymisé via l'API
-// (`fetchContexte`), on le range en session (pour Matomo), puis on bascule sur le
-// simulateur. Un échec de l'API n'empêche pas d'entrer (contexte `null` : suivi
-// analytics dégradé).
+// À la validation, on convertit l'identité saisie en identité pseudonymisée via
+// l'API (`pseudonymiserViaApi`), on la range en session (pour Matomo), puis on
+// bascule sur le simulateur. Un échec de l'API n'empêche pas d'entrer (identité
+// `null` : suivi analytics dégradé).
 
 import { useState } from "react";
 import { Identification } from "../identification/Identification";
 import { Simulateur } from "../simulateur/Simulateur";
 import { referentielHttp } from "../identification/referentiel-http";
-import { fetchContexte } from "../contexte/contexte-http";
-import { setSessionContexte } from "../contexte/session";
-import type { Contexte } from "../../shared/contexte";
+import { pseudonymiserViaApi } from "../identite/pseudonymisation-http";
+import { setIdentite } from "../identite/session";
+import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import type { Referentiel } from "../../shared/referentiel";
-import type { Selection } from "../../shared/selection";
+import type { IdentiteSaisie } from "../../shared/identite-saisie";
 
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
-  resoudreContexte?: (sel: Selection) => Promise<Contexte | null>;
+  pseudonymiser?: (saisie: IdentiteSaisie) => Promise<IdentitePseudonymisee | null>;
 };
 
 export function App({
   referentiel = referentielHttp,
-  resoudreContexte = fetchContexte,
+  pseudonymiser = pseudonymiserViaApi,
 }: Props = {}) {
   const [identifie, setIdentifie] = useState(false);
 
-  async function handleValide(sel: Selection) {
-    setSessionContexte(await resoudreContexte(sel));
+  async function handleValide(saisie: IdentiteSaisie) {
+    setIdentite(await pseudonymiser(saisie));
     setIdentifie(true);
   }
 

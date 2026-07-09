@@ -5,7 +5,7 @@
 ## Contexte
 
 Le formulaire d'identification (`front/identification/Identification.tsx`) est à
-branches (voir `shared/selection.ts`). Trois branches capturent du **texte libre**
+branches (voir `shared/identite-saisie.ts`). Trois branches capturent du **texte libre**
 plutôt qu'une sélection dans une liste du référentiel :
 
 - **service « Autre »** (`SERVICE_AUTRE`) : nom de service libre + nom/prénom ;
@@ -54,14 +54,14 @@ Ajouter à l'interface `Referentiel` une méthode **optionnelle** (le client HTT
 l'implémente pas) :
 
 ```ts
-enrichirDepuisSaisie?(sel: Selection): Promise<void>;
+enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
 ```
 
-Import de `Selection` depuis `shared/selection.ts` (reste isomorphe, sans dép. node).
+Import de `IdentiteSaisie` depuis `shared/identite-saisie.ts` (reste isomorphe, sans dép. node).
 Le `snapshotReferentiel` reçoit une implémentation **no-op** (dev sans clé Grist / tests
 qui n'exercent pas l'écriture).
 
-### 2. `shared/selection.ts` — helper `normalise` partagé
+### 2. `shared/identite-saisie.ts` — helper `normalise` partagé
 Extraire la normalisation texte (aujourd'hui privée dans `pseudonymisation.ts` :
 `trim().replace(/\s+/g," ").toLowerCase()`) en export partagé `normalise(s)`, réutilisé
 par le HMAC **et** par la déduplication Grist (même « bucket »). Mettre à jour
@@ -77,15 +77,15 @@ Cœur du changement. Ajouter :
 - helper `trouverEnfant(table, refCol, parentRowId, predicat)` : liste les enfants d'un
   parent et renvoie le **record** (rowId + Id2) dont le `Nom`/`Prenom` normalisé matche,
   sinon `null` (dédup en JS, la normalisation casse/espaces n'étant pas filtrable Grist).
-- `enrichirDepuisSaisie(sel)` : dispatch par branche (sentinelles de `selection.ts`) :
-  - **service_autre** : résoudre etab rowId (Id2=`sel.etabId`) → réutiliser/créer le
+- `enrichirDepuisSaisie(saisie)` : dispatch par branche (sentinelles de `identite-saisie.ts`) :
+  - **service_autre** : résoudre etab rowId (Id2=`saisie.etabId`) → réutiliser/créer le
     service (`Nom`=serviceLibre, `Etablissement`=etab rowId, `Origine`=formulaire,
     `Id2`=nextId2) → réutiliser/créer le prescripteur sous ce service.
-  - **prescripteur_hors_liste** : résoudre service rowId (Id2=`sel.serviceId`) →
+  - **prescripteur_hors_liste** : résoudre service rowId (Id2=`saisie.serviceId`) →
     réutiliser/créer le prescripteur.
   - **non rattaché** : mapper `categorie` → service Id2 (`{ cnam:"2", liberal:"3" }`) →
     résoudre rowId → réutiliser/créer le prescripteur.
-  - Prescripteur créé : `Nom`=sel.nom, `Prenom`=sel.prenom, `Service_Unite`=service
+  - Prescripteur créé : `Nom`=saisie.nom, `Prenom`=saisie.prenom, `Service_Unite`=service
     rowId, `Origine`=formulaire, `Id2`=nextId2.
 - Constantes : `COL.origine = "Origine"`, `ORIGINE_FORMULAIRE = "formulaire"`,
   `SERVICE_ID_PAR_CATEGORIE`. **Pré-requis Grist** : la colonne `Origine` doit exister
@@ -93,16 +93,16 @@ Cœur du changement. Ajouter :
   valeur exacte).
 
 ### 4. `server/identification/routes.ts` — déclencher l'enrichissement
-Dans `POST /contexte`, après le `selectionComplete` (donc sélection valide) : appeler
-`referentiel.enrichirDepuisSaisie?.(sel)`, **isolé dans un try/catch qui logue et avale
-l'erreur** — la réponse (le contexte pseudonymisé) part quoi qu'il arrive. Le front et
-`Selection` n'ont **rien à changer** (le formulaire envoie déjà la sélection complète).
+Dans `POST /identite-pseudonymisee`, après le `saisieComplete` (donc saisie valide) : appeler
+`referentiel.enrichirDepuisSaisie?.(saisie)`, **isolé dans un try/catch qui logue et avale
+l'erreur** — la réponse (l'identité pseudonymisée) part quoi qu'il arrive. Le front et
+`IdentiteSaisie` n'ont **rien à changer** (le formulaire envoie déjà la saisie complète).
 
 ## Tests (sans mock, convention repo)
 
 - `tests/identification/server.test.ts` : ajouter un cas avec un **référentiel double
   en mémoire** (objet réel implémentant `Referentiel` + un `enrichirDepuisSaisie` qui
-  enregistre ses appels) passé à `createApp`, et vérifier que `POST /api/contexte` sur
+  enregistre ses appels) passé à `createApp`, et vérifier que `POST /api/identite-pseudonymisee` sur
   chaque branche libre déclenche l'enrichissement avec les bons champs ; et qu'une
   branche **sans** saisie libre ne le déclenche pas. Vérifier aussi qu'une erreur
   d'enrichissement **n'empêche pas** la réponse 200 (double qui `throw`).

@@ -8,9 +8,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { createApp } from "../../server/app.ts";
-import { pseudonymise } from "../../server/identification/pseudonymisation.ts";
+import { empreinte } from "../../server/identification/pseudonymisation.ts";
 import { snapshotReferentiel, type Referentiel } from "../../shared/referentiel.ts";
-import type { Selection } from "../../shared/selection.ts";
+import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
 
 const SECRET = "secret-de-test";
 
@@ -91,15 +91,15 @@ describe("API référentiel", () => {
   });
 });
 
-describe("POST /api/contexte", () => {
+describe("POST /api/identite-pseudonymisee", () => {
   const selection = {
     etabId: "e_chu_grenoble",
     serviceId: "s_grenoble_cardio",
     prescripteurId: "p_grenoble_cardio_1",
   };
 
-  it("renvoie un contexte pseudonymisé (refs HMAC préfixées), sans identifiant brut", async () => {
-    const { status, body: ctx } = await post("/api/contexte", selection);
+  it("renvoie une identité pseudonymisée (refs HMAC préfixées), sans identifiant brut", async () => {
+    const { status, body: ctx } = await post("/api/identite-pseudonymisee", selection);
     expect(status).toBe(200);
 
     expect(Object.keys(ctx).sort()).toEqual([
@@ -112,20 +112,20 @@ describe("POST /api/contexte", () => {
 
     // Les refs sont le HMAC de la valeur **préfixée par sa nature** — jamais l'id brut.
     expect(ctx.prescripteurRef).toBe(
-      pseudonymise(SECRET, `prescripteur:${selection.prescripteurId}`)
+      empreinte(SECRET, `prescripteur:${selection.prescripteurId}`)
     );
-    expect(ctx.serviceRef).toBe(pseudonymise(SECRET, `service:${selection.serviceId}`));
+    expect(ctx.serviceRef).toBe(empreinte(SECRET, `service:${selection.serviceId}`));
     expect(JSON.stringify(ctx)).not.toContain(selection.prescripteurId);
   });
 
   it("est déterministe pour une même sélection", async () => {
-    const a = await post("/api/contexte", selection);
-    const b = await post("/api/contexte", selection);
+    const a = await post("/api/identite-pseudonymisee", selection);
+    const b = await post("/api/identite-pseudonymisee", selection);
     expect(a.body).toEqual(b.body);
   });
 
   it("branche libre (hors liste) : identité HMAC, jamais le nom en clair", async () => {
-    const { status, body: ctx } = await post("/api/contexte", {
+    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",
       prescripteurId: "prescripteur_hors_liste",
@@ -134,10 +134,10 @@ describe("POST /api/contexte", () => {
     });
     expect(status).toBe(200);
     expect(ctx.prescripteurRef).toBe(
-      pseudonymise(SECRET, "identite:dupont|marie")
+      empreinte(SECRET, "identite:dupont|marie")
     );
     // normalisation (casse/espaces) → même bucket
-    const variante = await post("/api/contexte", {
+    const variante = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",
       prescripteurId: "prescripteur_hors_liste",
@@ -149,7 +149,7 @@ describe("POST /api/contexte", () => {
   });
 
   it("branche « autre service » : serviceRef (libre) + prescripteurRef (identité)", async () => {
-    const { status, body: ctx } = await post("/api/contexte", {
+    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "service_autre",
       serviceLibre: "Consultations externes",
@@ -158,27 +158,27 @@ describe("POST /api/contexte", () => {
     });
     expect(status).toBe(200);
     expect(ctx.serviceRef).toBe(
-      pseudonymise(SECRET, "service-libre:consultations externes")
+      empreinte(SECRET, "service-libre:consultations externes")
     );
-    expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:durand|léa"));
+    expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:durand|léa"));
     expect(JSON.stringify(ctx)).not.toMatch(/durand|léa/i);
   });
 
   it("branche « non rattaché » : etabRef = catégorie, pas de serviceRef", async () => {
-    const { status, body: ctx } = await post("/api/contexte", {
+    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "etab_non_rattache",
       categorie: "liberal",
       nom: "Martin",
       prenom: "Paul",
     });
     expect(status).toBe(200);
-    expect(ctx.etabRef).toBe(pseudonymise(SECRET, "categorie:liberal"));
+    expect(ctx.etabRef).toBe(empreinte(SECRET, "categorie:liberal"));
     expect(ctx.serviceRef).toBeUndefined();
-    expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:martin|paul"));
+    expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:martin|paul"));
   });
 
   it("refuse une sélection incomplète", async () => {
-    const { status, body } = await post("/api/contexte", {
+    const { status, body } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",
       // prescripteur manquant
@@ -215,9 +215,9 @@ const postTo = async (base: string, path: string, body: unknown) => {
   return { status: res.status, body: await res.json() };
 };
 
-describe("POST /api/contexte — enrichissement du référentiel (saisies libres)", () => {
+describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (saisies libres)", () => {
   // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
-  const appels: Selection[] = [];
+  const appels: IdentiteSaisie[] = [];
   const referentiel: Referentiel = {
     getEtablissements: () => snapshotReferentiel.getEtablissements(),
     getServices: (etabId) => snapshotReferentiel.getServices(etabId),
@@ -243,7 +243,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
       nom: "Durand",
       prenom: "Léa",
     };
-    const { status } = await postTo(base, "/api/contexte", sel);
+    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -256,7 +256,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
       nom: "Dupont",
       prenom: "Marie",
     };
-    const { status } = await postTo(base, "/api/contexte", sel);
+    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -268,7 +268,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
       nom: "Martin",
       prenom: "Paul",
     };
-    const { status } = await postTo(base, "/api/contexte", sel);
+    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -280,7 +280,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
       serviceId: "s_grenoble_cardio",
       prescripteurId: "p_grenoble_cardio_1",
     };
-    const { status } = await postTo(base, "/api/contexte", sel);
+    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -295,7 +295,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
       },
     });
     try {
-      const { status, body: ctx } = await postTo(baseKo, "/api/contexte", {
+      const { status, body: ctx } = await postTo(baseKo, "/api/identite-pseudonymisee", {
         etabId: "e_chu_grenoble",
         serviceId: "s_grenoble_cardio",
         prescripteurId: "prescripteur_hors_liste",
@@ -303,7 +303,7 @@ describe("POST /api/contexte — enrichissement du référentiel (saisies libres
         prenom: "Marie",
       });
       expect(status).toBe(200);
-      expect(ctx.prescripteurRef).toBe(pseudonymise(SECRET, "identite:dupont|marie"));
+      expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:dupont|marie"));
     } finally {
       await closeKo();
     }

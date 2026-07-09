@@ -2,8 +2,9 @@
 // au simulateur (voir docs/architecture/identification.md — ADR-1). Formulaire à
 // **révélation progressive** : chaque réponse dévoile la suite selon la branche
 // (workflow §4). Composant de pure sélection ; à la validation il remonte la
-// `Selection` brute à `onValide` (c'est la porte, App.tsx, qui la convertit en
-// contexte via l'API et bascule vers le simulateur). Le référentiel par défaut est
+// `IdentiteSaisie` brute à `onValide` (c'est la porte, App.tsx, qui la convertit
+// en identité pseudonymisée via l'API et bascule vers le simulateur). Le
+// référentiel par défaut est
 // le snapshot factice (dev / tests) ; en production App injecte le client HTTP.
 
 import { useEffect, useState } from "react";
@@ -11,10 +12,10 @@ import {
   ETAB_NON_RATTACHE,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
-  selectionComplete,
+  saisieComplete,
   type Categorie,
-  type Selection,
-} from "../../shared/selection";
+  type IdentiteSaisie,
+} from "../../shared/identite-saisie";
 import {
   snapshotReferentiel,
   type Etablissement,
@@ -25,7 +26,7 @@ import {
 
 type Props = {
   referentiel?: Referentiel;
-  onValide: (selection: Selection) => void;
+  onValide: (saisie: IdentiteSaisie) => void;
 };
 
 const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de santé";
@@ -91,33 +92,33 @@ export function Identification({
     serviceAutre ||
     (serviceReel && prescripteurHorsListe);
 
-  function buildSelection(): Selection {
-    const sel: Selection = { etabId };
+  function buildSaisie(): IdentiteSaisie {
+    const saisie: IdentiteSaisie = { etabId };
     if (nonRattache) {
-      if (categorie) sel.categorie = categorie as Categorie;
-      sel.nom = nom;
-      sel.prenom = prenom;
-      return sel;
+      if (categorie) saisie.categorie = categorie as Categorie;
+      saisie.nom = nom;
+      saisie.prenom = prenom;
+      return saisie;
     }
     if (etabReel && serviceId) {
-      sel.serviceId = serviceId;
+      saisie.serviceId = serviceId;
       if (serviceAutre) {
-        sel.serviceLibre = serviceLibre;
-        sel.nom = nom;
-        sel.prenom = prenom;
+        saisie.serviceLibre = serviceLibre;
+        saisie.nom = nom;
+        saisie.prenom = prenom;
       } else {
-        sel.prescripteurId = prescripteurId;
+        saisie.prescripteurId = prescripteurId;
         if (prescripteurHorsListe) {
-          sel.nom = nom;
-          sel.prenom = prenom;
+          saisie.nom = nom;
+          saisie.prenom = prenom;
         }
       }
     }
-    return sel;
+    return saisie;
   }
 
-  const selection = buildSelection();
-  const valide = selectionComplete(selection);
+  const saisie = buildSaisie();
+  const valide = saisieComplete(saisie);
 
   return (
     <main
@@ -127,7 +128,7 @@ export function Identification({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (valide) onValide(selection);
+          if (valide) onValide(saisie);
         }}
       >
         <div className="fr-select-group">
@@ -143,9 +144,9 @@ export function Identification({
             <option value="" disabled hidden>
               Sélectionnez un établissement
             </option>
-            {etablissements.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.libelle}
+            {etablissements.map((etab) => (
+              <option key={etab.id} value={etab.id}>
+                {etab.libelle}
               </option>
             ))}
             <option value={ETAB_NON_RATTACHE}>{OPTION_NON_RATTACHE}</option>
@@ -186,9 +187,9 @@ export function Identification({
               <option value="" disabled hidden>
                 Sélectionnez un service
               </option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.libelle}
+              {services.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.libelle}
                 </option>
               ))}
               <option value={SERVICE_AUTRE}>{OPTION_SERVICE_AUTRE}</option>
@@ -225,9 +226,9 @@ export function Identification({
               <option value="" disabled hidden>
                 Sélectionnez
               </option>
-              {prescripteurs.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.libelle}
+              {prescripteurs.map((prescripteur) => (
+                <option key={prescripteur.id} value={prescripteur.id}>
+                  {prescripteur.libelle}
                 </option>
               ))}
               <option value={PRESCRIPTEUR_HORS_LISTE}>{OPTION_HORS_LISTE}</option>

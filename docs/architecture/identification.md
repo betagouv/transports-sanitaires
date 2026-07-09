@@ -60,7 +60,7 @@ iframe, un seul déployable). L'identité reste isolée du moteur (ADR-6) et der
 l'interface `Referentiel` : la migration FINESS/RPPS reste possible sans toucher le
 simulateur.
 **Conséquences.** Plus de passage de contexte inter-app : la sélection est convertie en
-refs par l'API (`POST /api/contexte`) et gardée en mémoire (voir ADR-4). Le composant
+refs par l'API (`POST /api/identite-pseudonymisee`) et gardée en mémoire (voir ADR-4). Le composant
 d'identification (`Identification.tsx`) et le formulaire (`Simulateur.tsx`) cohabitent
 dans la même app, avec des steppers distincts.
 
@@ -85,21 +85,21 @@ prescripteur) **sans preuve d'identité**.
 **Conséquences.** Usurpation déclarative possible ; le contexte transmis n'a pas de
 valeur probante (voir ADR-4). Migration future possible vers ProConnect/AgentConnect.
 
-### ADR-4 — Contexte : refs pseudonymisées, en mémoire (~~fragment d'URL~~)
-**Décision (révisée 2026-07-08).** À la validation, le **backend** construit un
-**contexte `ctx`** (`v: 2`) = **refs pseudonymisées** `{ etabRef, serviceRef,
+### ADR-4 — Identité pseudonymisée : refs, en mémoire (~~fragment d'URL~~)
+**Décision (révisée 2026-07-08).** À la validation, le **backend** construit une
+**identité pseudonymisée** (`v: 2`) = **refs pseudonymisées** `{ etabRef, serviceRef,
 prescripteurRef }` = **`HMAC-SHA256(id, secret)`** (tronqué 128 bits, base64url) des
 identifiants opaques du référentiel. **Aucun identifiant brut, aucun nom, aucun RPPS,
-aucune donnée patient.** Le front envoie la sélection à `POST /api/contexte` ; le backend
+aucune donnée patient.** Le front envoie l'identité saisie à `POST /api/identite-pseudonymisee` ; le backend
 renvoie **l'objet refs en JSON**, que le front garde **en mémoire de session**
-(`front/contexte/session.ts`). Le **secret vit côté serveur** (variable d'env dédiée
+(`front/identite/session.ts`). Le **secret vit côté serveur** (variable d'env dédiée
 `PSEUDONYMISATION_SECRET`, distincte de la clé Grist). ~~Le contexte était transmis au
 simulateur via le fragment d'URL `#ctx=<base64url>` ; la fusion l'a rendu inutile.~~
 **Pourquoi.** Le suivi Matomo n'a besoin que d'un **jeton stable et opaque** par
 prescripteur, pas de l'identifiant brut (enum. / re-liable au référentiel) ni du nom
 (PII). Un **HMAC à sens unique** donne un pseudonyme non réversible et non forgeable
 sans le secret ; le calculer **côté serveur** est indispensable — un keyed-hash
-client-side exposerait la clé dans le bundle. Le contexte n'est **pas signé**
+client-side exposerait la clé dans le bundle. L'identité pseudonymisée n'est **pas signée**
 (l'identification étant déclarative — ADR-3, signer donnerait une fausse garantie). Les
 apps étant fusionnées, il n'y a **plus de transport inter-app** : plus de fragment
 d'URL, plus d'enveloppe base64url à décoder.
@@ -115,7 +115,7 @@ d'analytics.md) tient. La rotation du secret re-bucketise tous les prescripteurs
 une **app unique servie par un backend** (Node/Express, hébergée sur **Scalingo**) qui
 **sert le front React** (build Vite/DSFR) **et expose une API same-origin** détenant la
 clé Grist et le secret de pseudonymisation : `/api/etablissements|services|prescripteurs`
-(référentiel filtré) et `POST /api/contexte` (refs pseudonymisées). ~~Ce backend
+(référentiel filtré) et `POST /api/identite-pseudonymisee` (refs pseudonymisées). ~~Ce backend
 appartenait à une app d'identification distincte ; le simulateur restait statique sur
 GitHub Pages.~~
 **Pourquoi.** L'accès **direct navigateur → Grist est non viable** (clé toute-puissante
@@ -143,14 +143,14 @@ flowchart TB
     cms["CMS « Sites Conformes »<br/>(origine tierce) — page d'atterrissage"]
     subgraph scalingo["App simulateur — Scalingo (ADR-5)"]
         front["Front React (DSFR)<br/>Écran-porte identification (2 étapes)<br/>→ puis simulateur (publicodes)"]
-        api["Backend Node/Express<br/>sert le front + API référentiel + /api/contexte<br/>détient la clé Grist et le secret HMAC"]
+        api["Backend Node/Express<br/>sert le front + API référentiel + /api/identite-pseudonymisee<br/>détient la clé Grist et le secret HMAC"]
         analytics["Traceur analytics<br/>(cookieless — voir analytics.md)"]
     end
     grist[("Grist — référentiel<br/>établissement / service / prescripteur<br/>(admin à la main)")]
     matomo[("Matomo<br/>(mutualisé beta.gouv)")]
 
     cms -->|"embarque toute l'app en iframe (ADR-2)"| front
-    front -->|"référentiel filtré + POST /api/contexte (same-origin)"| api
+    front -->|"référentiel filtré + POST /api/identite-pseudonymisee (same-origin)"| api
     api -->|"REST (clé API, server-to-server)"| grist
     front -->|"refs en mémoire de session (ADR-4)"| analytics
     analytics -.-> matomo
@@ -161,11 +161,11 @@ Composants :
 | Composant | Nature | Statut |
 |---|---|---|
 | `apps/simulateur-eligibilite` | **App unique** : front React (identification + simulateur) + backend Node/Express, sur **Scalingo** | modifié (fusion) |
-| API référentiel + contexte | Endpoints du backend détenant la clé Grist + le secret HMAC | déplacé (ex-identification) |
+| API référentiel + identité pseudonymisée | Endpoints du backend détenant la clé Grist + le secret HMAC | déplacé (ex-identification) |
 | Grist | Base managée, admin à la main | config |
 | ~~`apps/identification`~~ | ~~app séparée~~ | **supprimé (fusionné)** |
 
-## 4. Workflow d'identification & contexte `ctx`
+## 4. Workflow d'identification & identité pseudonymisée
 
 **Workflow à branches** (formulaire à révélation progressive,
 `front/identification/Identification.tsx`) :
@@ -177,12 +177,12 @@ Composants :
                └─ « non rattaché » → catégorie (libéral | CNAM) → Nom + Prénom
 ```
 
-- **Transport** : réponse JSON de `POST /api/contexte` (same-origin). **Plus de fragment
+- **Transport** : réponse JSON de `POST /api/identite-pseudonymisee` (same-origin). **Plus de fragment
   d'URL** depuis la fusion.
 - **Construction** : **côté backend** (`server/identification/pseudonymisation.ts`, exposé
-  par `server/identification/routes.ts`). Reçoit la `Selection`
+  par `server/identification/routes.ts`). Reçoit l'`IdentiteSaisie`
   (`{ etabId, categorie?, serviceId?, serviceLibre?, prescripteurId?, nom?, prenom? }`,
-  `shared/selection.ts`), valide sa complétude (`selectionComplete`, partagé front/back),
+  `shared/identite-saisie.ts`), valide sa complétude (`saisieComplete`, partagé front/back),
   renvoie l'objet refs. Le secret HMAC ne quitte jamais le serveur.
 - **Schéma** (refs **optionnelles** selon la branche) :
   ```json
@@ -199,7 +199,7 @@ Composants :
 - **Interdits** : identifiant brut du référentiel, nom/prénom **en clair**, RPPS, tout
   identifiant patient, toute donnée de santé.
 - **Cycle de vie** : reçu à la validation de l'identification, conservé **en mémoire de
-  session** (`front/contexte/session.ts`, pas de `localStorage`), lu par le traceur au
+  session** (`front/identite/session.ts`, pas de `localStorage`), lu par le traceur au
   moment d'émettre chaque événement.
 
 ## 5. Modèle du référentiel (Grist)
@@ -254,12 +254,12 @@ iframe : **plus de navigation top-level** entre deux apps, donc plus besoin de
 
 ## 7. Découpage en incréments (identification)
 
-1. **Front identification + contexte `ctx`.** ✅ Fait (à l'origine dans `apps/identification`).
-2. **Backend référentiel + Grist.** ✅ Fait — API référentiel + `POST /api/contexte`
+1. **Front identification + identité pseudonymisée.** ✅ Fait (à l'origine dans `apps/identification`).
+2. **Backend référentiel + Grist.** ✅ Fait — API référentiel + `POST /api/identite-pseudonymisee`
    same-origin, `GRIST_API_KEY` en variable d'env.
 3. **Fusion dans le simulateur.** ✅ **Fait (2026-07-08)** — identification en écran-porte
-   obligatoire dans `apps/simulateur-eligibilite` ; backend (référentiel + contexte)
-   déplacé dans cette app ; contexte en mémoire (plus de fragment) ; `apps/identification`
+   obligatoire dans `apps/simulateur-eligibilite` ; backend (référentiel + identité pseudonymisée)
+   déplacé dans cette app ; identité en mémoire (plus de fragment) ; `apps/identification`
    supprimée ; workflow GitHub Pages retiré. *Reste : déploiement Scalingo effectif.*
 4. **Durcissement iframe.** En-têtes CSP `frame-ancestors` (en attente du domaine CMS,
    R-1). Plus de repli `postMessage` nécessaire (tout est in-iframe).
@@ -275,6 +275,6 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 | **R-1** | **Coopération Sites Conformes** : `sandbox` de l'iframe + CSP `frame-src`. Sans cela, pas d'embarquement. **Bloquant.** | à valider avec l'éditeur **avant de coder l'intégration** |
 | **R-2** | Choix d'hébergement Grist (grist.com vs self-hosted). L'app fusionnée (front + backend) est **sur Scalingo** (pas de FaaS — cf. ADR-5). | décision infra |
 | **R-3** | Fraîcheur du référentiel : le backend lit Grist en direct → OK ; ne pas retomber sur un snapshot figé si le maintien « à la main » doit être visible immédiatement. | conception backend |
-| **R-5** | Contexte non signé → usurpation déclarative possible. Acceptable en expérimental ; à revoir avant tout usage probant. | sécurité |
+| **R-5** | Identité pseudonymisée non signée → usurpation déclarative possible. Acceptable en expérimental ; à revoir avant tout usage probant. | sécurité |
 | **R-6** | PII de prescripteurs : jamais dans un bundle statique public ni un doc Grist public. Les noms/prénoms libres saisis au formulaire sont **HMAC côté serveur**, jamais transmis en clair à l'analytics. | RGPD/sécurité |
 | ~~**R-9**~~ | ~~Branche « autre service » sans identité.~~ **Résolu (2026-07-08)** : la branche « autre service » capture désormais Nom + Prénom → `prescripteurRef` (identité HMAC), comme les autres branches. | résolu |

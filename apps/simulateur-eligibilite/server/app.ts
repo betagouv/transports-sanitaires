@@ -1,6 +1,6 @@
 // App Express du simulateur : **composition**. Monte la feature identification
-// (référentiel + contexte) sous `/api`, puis sert le front (build Vite) en
-// same-origin. Voir docs/architecture/identification.md — ADR-5.
+// (référentiel + identité pseudonymisée) sous `/api`, puis sert le front (build
+// Vite) en same-origin. Voir docs/architecture/identification.md — ADR-5.
 //
 // `createApp` prend le `Referentiel` en paramètre pour rester testable sans mock
 // (les tests injectent le snapshot ; en production `server.ts` injecte le choix
@@ -11,7 +11,7 @@ import type { Referentiel } from "../shared/referentiel.ts";
 import { identificationRoutes } from "./identification/routes.ts";
 
 export type AppOptions = {
-  /** Secret de pseudonymisation (HMAC) du contexte prescripteur. */
+  /** Secret de pseudonymisation (HMAC) de l'identité prescripteur. */
   secret: string;
   /** Répertoire du build front à servir (absent en test). */
   distDir?: string;

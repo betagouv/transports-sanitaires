@@ -1,6 +1,6 @@
-// Sélection d'identification produite par le formulaire (identifiants métier
-// bruts + éventuelle identité libre). Elle n'est jamais transmise telle quelle au
-// simulateur : le backend la convertit en contexte pseudonymisé — les noms/prénoms
+// Identité **saisie** au formulaire d'identification (identifiants métier bruts +
+// éventuelle identité libre). Elle n'est jamais transmise telle quelle au
+// simulateur : le backend la convertit en identité pseudonymisée — les noms/prénoms
 // libres sont **HMAC**, jamais transmis en clair à l'analytics (voir
 // server/identification/pseudonymisation.ts + ADR-4).
 //
@@ -17,7 +17,7 @@ export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
 /** Catégorie d'exercice quand l'utilisateur n'est pas rattaché à un établissement. */
 export type Categorie = "liberal" | "cnam";
 
-export type Selection = {
+export type IdentiteSaisie = {
   /** id établissement du référentiel, ou `ETAB_NON_RATTACHE`. */
   etabId: string;
   /** si non rattaché : catégorie d'exercice. */
@@ -44,28 +44,28 @@ export const normalise = (s: string): string =>
   s.trim().replace(/\s+/g, " ").toLowerCase();
 
 /**
- * Vrai quand la branche sélectionnée est complète. Partagé entre le front (activer
- * le bouton de validation) et le backend (valider `POST /api/contexte`).
+ * Vrai quand la branche saisie est complète. Partagé entre le front (activer le
+ * bouton de validation) et le backend (valider `POST /api/identite-pseudonymisee`).
  */
-export function selectionComplete(sel: Selection): boolean {
-  if (!rempli(sel.etabId)) return false;
+export function saisieComplete(saisie: IdentiteSaisie): boolean {
+  if (!rempli(saisie.etabId)) return false;
 
-  if (sel.etabId === ETAB_NON_RATTACHE) {
+  if (saisie.etabId === ETAB_NON_RATTACHE) {
     // non rattaché → catégorie + identité libre
-    return !!sel.categorie && rempli(sel.nom) && rempli(sel.prenom);
+    return !!saisie.categorie && rempli(saisie.nom) && rempli(saisie.prenom);
   }
 
   // établissement réel → service requis
-  if (!rempli(sel.serviceId)) return false;
-  if (sel.serviceId === SERVICE_AUTRE) {
+  if (!rempli(saisie.serviceId)) return false;
+  if (saisie.serviceId === SERVICE_AUTRE) {
     // service « autre » → nom du service + identité libre
-    return rempli(sel.serviceLibre) && rempli(sel.nom) && rempli(sel.prenom);
+    return rempli(saisie.serviceLibre) && rempli(saisie.nom) && rempli(saisie.prenom);
   }
 
   // service réel → prescripteur requis
-  if (!rempli(sel.prescripteurId)) return false;
-  if (sel.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-    return rempli(sel.nom) && rempli(sel.prenom);
+  if (!rempli(saisie.prescripteurId)) return false;
+  if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
+    return rempli(saisie.nom) && rempli(saisie.prenom);
   }
   return true;
 }

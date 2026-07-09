@@ -8,7 +8,7 @@
 // `snapshotReferentiel` : données **factices** (aucune PII réelle), servant de
 // **défaut** en dev et dans les tests (front comme backend sans clé Grist).
 
-import type { Selection } from "./selection.ts";
+import type { IdentiteSaisie } from "./identite-saisie.ts";
 
 export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
@@ -24,7 +24,7 @@ export interface Referentiel {
    * la source Grist l'implémente (le client HTTP front n'écrit jamais). Voir
    * docs/specs/enrichissement-referentiel-saisies-libres.md.
    */
-  enrichirDepuisSaisie?(sel: Selection): Promise<void>;
+  enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
 }
 
 type SnapshotService = Service & { etabId: string };
@@ -60,14 +60,13 @@ export const snapshotReferentiel: Referentiel = {
     return ETABLISSEMENTS;
   },
   async getServices(etabId) {
-    return SERVICES.filter((s) => s.etabId === etabId).map(({ id, libelle }) => ({
-      id,
-      libelle,
-    }));
-  },
-  async getPrescripteurs(serviceId) {
-    return PRESCRIPTEURS.filter((p) => p.serviceId === serviceId).map(
+    return SERVICES.filter((service) => service.etabId === etabId).map(
       ({ id, libelle }) => ({ id, libelle })
     );
+  },
+  async getPrescripteurs(serviceId) {
+    return PRESCRIPTEURS.filter(
+      (prescripteur) => prescripteur.serviceId === serviceId
+    ).map(({ id, libelle }) => ({ id, libelle }));
   },
 };

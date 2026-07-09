@@ -12,11 +12,11 @@
 //   - **cookieless** (`disableCookies`) : l'app tourne dans l'iframe du CMS
 //     (contexte tiers → cookies bloqués), et la mesure d'audience se veut sans
 //     bandeau ;
-//   - le contexte prescripteur (connu **après** l'étape d'identification) est lu
+//   - l'identité prescripteur (connue **après** l'étape d'identification) est lue
 //     depuis la session au moment d'émettre chaque événement.
 
-import { getSessionContexte } from "../contexte/session";
-import type { Contexte } from "../../shared/contexte";
+import { getIdentite } from "../identite/session";
+import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 
 declare global {
   interface Window {
@@ -47,12 +47,12 @@ const DEFAULT_SITE_ID = "275";
  * `prescripteurRef` en **Nom** (s'il existe) et une valeur numérique optionnelle.
  */
 export function buildEvent(
-  ctx: Contexte | null,
+  identite: IdentitePseudonymisee | null,
   action: string,
   value?: number
 ): unknown[] {
   const event: unknown[] = ["trackEvent", CATEGORY, action];
-  const name = ctx?.prescripteurRef;
+  const name = identite?.prescripteurRef;
   if (name !== undefined) event.push(name);
   if (value !== undefined) {
     if (name === undefined) event.push(""); // Matomo : le Nom précède la Valeur
@@ -82,7 +82,7 @@ let state: { enabled: boolean } = { enabled: false };
 /**
  * Configure le traceur : si activé, empile les commandes d'amorçage dans `_paq`
  * (avant le chargement de matomo.js, qui traitera la file). Appelé au boot, avant
- * l'identification : le contexte prescripteur n'est **pas** connu ici — il est lu
+ * l'identification : l'identité prescripteur n'est **pas** connue ici — elle est lue
  * en session au moment d'émettre chaque événement (voir `track`). N'injecte
  * **pas** le script tiers — c'est le rôle de `loadMatomo`, appelé séparément
  * (garde les tests sans effet de bord réseau).
@@ -102,16 +102,16 @@ export function initAnalytics(config: AnalyticsConfig): void {
 /** Injecte le script matomo.js (idempotent). */
 export function loadMatomo(url: string): void {
   if (document.getElementById("matomo-js")) return;
-  const g = document.createElement("script");
-  g.id = "matomo-js";
-  g.async = true;
-  g.src = url + "matomo.js";
-  document.head.appendChild(g);
+  const script = document.createElement("script");
+  script.id = "matomo-js";
+  script.async = true;
+  script.src = url + "matomo.js";
+  document.head.appendChild(script);
 }
 
 function track(action: string, value?: number): void {
   if (!state.enabled) return;
-  (window._paq ??= []).push(buildEvent(getSessionContexte(), action, value));
+  (window._paq ??= []).push(buildEvent(getIdentite(), action, value));
 }
 
 export const trackSimulationStart = (): void => track("simulation_start");
