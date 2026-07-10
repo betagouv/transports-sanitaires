@@ -54,6 +54,11 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   them; pass the current `formState` directly (tests render without StrictMode so they
   won't catch this).
 
+## Git
+
+- **Always work on `main`.** Commit directly to `main` — do **not** create feature
+  branches (no PR workflow).
+
 ## Invariants
 
 - Keep **identification and analytics out of the publicodes engine**.
