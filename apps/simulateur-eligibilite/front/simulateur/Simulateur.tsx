@@ -76,6 +76,12 @@ export function Simulateur() {
     setFormState(formBuilder.goToPreviousPage(formState));
   }
 
+  // Revient au formulaire depuis les résultats, réponses conservées : le
+  // formState reste positionné sur la dernière page saisie.
+  function handleBack() {
+    setDone(false);
+  }
+
   function handleReset() {
     setDone(false);
     setFormState(formBuilder.start(FormBuilder.newState(), ...TARGETS));
@@ -87,7 +93,11 @@ export function Simulateur() {
         className="fr-container"
         style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
       >
-        <Resultats situation={formState.situation} onReset={handleReset} />
+        <Resultats
+          situation={formState.situation}
+          onBack={handleBack}
+          onReset={handleReset}
+        />
       </main>
     );
   }
