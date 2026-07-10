@@ -190,9 +190,10 @@ describe("POST /api/identite-pseudonymisee", () => {
 
 // Démarre une app dédiée sur un référentiel injecté, sans mock (vraie requête HTTP).
 async function demarrer(
-  referentiel: Referentiel
+  referentiel: Referentiel,
+  pseudonymesEnClair = false
 ): Promise<{ base: string; close: () => Promise<void> }> {
-  const app = createApp(referentiel, { secret: SECRET });
+  const app = createApp(referentiel, { secret: SECRET, pseudonymesEnClair });
   const srv = await new Promise<Server>((resolve) => {
     const s = app.listen(0, () => resolve(s));
   });
@@ -307,5 +308,37 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
     } finally {
       await closeKo();
     }
+  });
+});
+
+// Mode debug : `pseudonymesEnClair` renvoie les refs en clair (valeur préfixée)
+// au lieu du HMAC, pour lire directement les buckets dans Matomo en phase de test.
+describe("POST /api/identite-pseudonymisee — mode debug (refs en clair)", () => {
+  let base: string;
+  let close: () => Promise<void>;
+  beforeAll(async () => ({ base, close } = await demarrer(snapshotReferentiel, true)));
+  afterAll(() => close());
+
+  it("renvoie les refs en clair (valeur préfixée), pas le HMAC", async () => {
+    const { status, body: ctx } = await postTo(base, "/api/identite-pseudonymisee", {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "p_grenoble_cardio_1",
+    });
+    expect(status).toBe(200);
+    expect(ctx.etabRef).toBe("etab:e_chu_grenoble");
+    expect(ctx.serviceRef).toBe("service:s_grenoble_cardio");
+    expect(ctx.prescripteurRef).toBe("prescripteur:p_grenoble_cardio_1");
+  });
+
+  it("expose l'identité libre en clair (nom/prénom normalisés) pour le debug", async () => {
+    const { body: ctx } = await postTo(base, "/api/identite-pseudonymisee", {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_cardio",
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "Dupont",
+      prenom: "Marie",
+    });
+    expect(ctx.prescripteurRef).toBe("identite:dupont|marie");
   });
 });

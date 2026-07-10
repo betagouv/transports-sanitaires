@@ -13,7 +13,8 @@ import { pseudonymiser } from "./pseudonymisation.ts";
 
 export function identificationRoutes(
   referentiel: Referentiel,
-  secret: string
+  secret: string,
+  pseudonymesEnClair = false
 ): Router {
   const router = express.Router();
 
@@ -68,7 +69,7 @@ export function identificationRoutes(
       } catch (err) {
         console.error("[simulateur] enrichissement référentiel échoué:", err);
       }
-      res.json(pseudonymiser(secret, saisie));
+      res.json(pseudonymiser(secret, saisie, pseudonymesEnClair));
     })
   );
 

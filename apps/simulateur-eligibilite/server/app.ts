@@ -13,18 +13,23 @@ import { identificationRoutes } from "./identification/routes.ts";
 export type AppOptions = {
   /** Secret de pseudonymisation (HMAC) de l'identité prescripteur. */
   secret: string;
+  /**
+   * Mode debug : renvoie les refs en clair au lieu du HMAC (lecture directe dans
+   * Matomo en phase de test). ⚠️ Révèle des données brutes — jamais en production.
+   */
+  pseudonymesEnClair?: boolean;
   /** Répertoire du build front à servir (absent en test). */
   distDir?: string;
 };
 
 export function createApp(
   referentiel: Referentiel,
-  { secret, distDir }: AppOptions
+  { secret, pseudonymesEnClair = false, distDir }: AppOptions
 ): Express {
   const app = express();
   app.use(express.json());
 
-  app.use("/api", identificationRoutes(referentiel, secret));
+  app.use("/api", identificationRoutes(referentiel, secret, pseudonymesEnClair));
   // Toute autre route sous /api → 404 JSON (évite de servir index.html).
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "route inconnue" });
