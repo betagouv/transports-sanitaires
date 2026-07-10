@@ -3,6 +3,7 @@ import { engine } from "./engine";
 
 type Props = {
   situation: Situation<string>;
+  onBack: () => void;
   onReset: () => void;
 };
 
@@ -22,7 +23,7 @@ function alertKind(statut: string): "success" | "info" | "warning" | "error" {
   }
 }
 
-export function Resultats({ situation, onReset }: Props) {
+export function Resultats({ situation, onBack, onReset }: Props) {
   const e = engine.setSituation(situation);
 
   const statutNode = e.evaluate("resultat . statut");
@@ -100,9 +101,14 @@ export function Resultats({ situation, onReset }: Props) {
         </div>
       </details>
 
-      <button className="fr-btn fr-btn--secondary" onClick={onReset}>
-        Nouvelle simulation
-      </button>
+      <div className="fr-btns-group fr-btns-group--inline">
+        <button className="fr-btn fr-btn--secondary" onClick={onBack}>
+          Précédent
+        </button>
+        <button className="fr-btn fr-btn--secondary" onClick={onReset}>
+          Nouvelle simulation
+        </button>
+      </div>
     </div>
   );
 }

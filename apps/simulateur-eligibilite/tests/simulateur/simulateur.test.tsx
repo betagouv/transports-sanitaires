@@ -167,6 +167,28 @@ describe("résultats — patient non éligible", () => {
 // Réinitialisation
 // ---------------------------------------------------------------------------
 
+describe("retour au formulaire", () => {
+  it("« Précédent » ramène au formulaire avec les réponses conservées", async () => {
+    const { user } = setup();
+    await remplirEtVoirResultats(user, ELIGIBLE_PMT);
+
+    await user.click(screen.getByRole("button", { name: /précédent/i }));
+
+    // On revient sur la dernière page du formulaire (et non au formulaire
+    // vierge, qui repartirait de l'étape 1).
+    expect(
+      screen.getByRole("heading", { name: /étape 6 sur 6/i })
+    ).toBeInTheDocument();
+
+    // Réponses conservées : un simple clic sur « Voir les résultats » réaffiche
+    // le même statut, sans avoir à ressaisir les pages précédentes.
+    await user.click(screen.getByRole("button", { name: /voir les résultats/i }));
+    expect(
+      screen.getByRole("heading", { name: /patient éligible/i })
+    ).toBeInTheDocument();
+  });
+});
+
 describe("réinitialisation", () => {
   it("« Nouvelle simulation » ramène au formulaire vierge", async () => {
     const { user } = setup();
