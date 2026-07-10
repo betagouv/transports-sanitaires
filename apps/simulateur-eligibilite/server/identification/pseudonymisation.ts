@@ -6,6 +6,11 @@
 // l'identifiant brut, jamais le nom. Le secret reste **côté serveur** : c'est ce
 // qui rend le jeton non réversible et non forgeable sans le secret. Le front garde
 // ces refs en mémoire de session et les forwarde à Matomo (cf. analytics.md).
+//
+// Mode debug (`enClair`, piloté par `PSEUDONYMISATION_EN_CLAIR` — phase de test
+// **uniquement**) : on renvoie la valeur préfixée en clair au lieu du HMAC, pour
+// lire directement les refs dans Matomo. ⚠️ Révèle des données brutes (dont
+// nom/prénom normalisés) : à ne **jamais** activer en production.
 
 import { createHmac } from "node:crypto";
 import {
@@ -28,16 +33,17 @@ import {
  */
 export function pseudonymiser(
   secret: string,
-  saisie: IdentiteSaisie
+  saisie: IdentiteSaisie,
+  enClair = false
 ): IdentitePseudonymisee {
   const identite: IdentitePseudonymisee = { v: VERSION };
 
   // Établissement (ou catégorie d'exercice si non rattaché).
   if (saisie.etabId === ETAB_NON_RATTACHE) {
     if (saisie.categorie)
-      identite.etabRef = empreinte(secret, `categorie:${saisie.categorie}`);
+      identite.etabRef = empreinte(secret, `categorie:${saisie.categorie}`, enClair);
   } else if (saisie.etabId) {
-    identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`);
+    identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
   }
 
   // Service (réel ou libre).
@@ -45,28 +51,35 @@ export function pseudonymiser(
     if (saisie.serviceLibre) {
       identite.serviceRef = empreinte(
         secret,
-        `service-libre:${normalise(saisie.serviceLibre)}`
+        `service-libre:${normalise(saisie.serviceLibre)}`,
+        enClair
       );
     }
   } else if (saisie.serviceId) {
-    identite.serviceRef = empreinte(secret, `service:${saisie.serviceId}`);
+    identite.serviceRef = empreinte(secret, `service:${saisie.serviceId}`, enClair);
   }
 
   // Prescripteur (réel, ou identité libre si hors liste / exercice libéral·CNAM).
   if (saisie.prescripteurId && saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
     identite.prescripteurRef = empreinte(
       secret,
-      `prescripteur:${saisie.prescripteurId}`
+      `prescripteur:${saisie.prescripteurId}`,
+      enClair
     );
   } else if (saisie.nom && saisie.prenom) {
-    identite.prescripteurRef = refIdentite(secret, saisie.nom, saisie.prenom);
+    identite.prescripteurRef = refIdentite(secret, saisie.nom, saisie.prenom, enClair);
   }
 
   return identite;
 }
 
-/** Empreinte stable, non réversible sans le secret (128 bits, base64url). */
-export function empreinte(secret: string, value: string): string {
+/**
+ * Empreinte stable, non réversible sans le secret (128 bits, base64url). En mode
+ * debug (`enClair`, cf. en-tête du module) renvoie la valeur préfixée en clair
+ * pour faciliter la lecture dans Matomo en phase de test — jamais en production.
+ */
+export function empreinte(secret: string, value: string, enClair = false): string {
+  if (enClair) return value;
   return createHmac("sha256", secret)
     .update(value)
     .digest()
@@ -75,6 +88,11 @@ export function empreinte(secret: string, value: string): string {
 }
 
 // Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
-// jamais le nom en clair (invariant PII, ADR-4 / R-6).
-const refIdentite = (secret: string, nom: string, prenom: string): string =>
-  empreinte(secret, `identite:${normalise(nom)}|${normalise(prenom)}`);
+// jamais le nom en clair (invariant PII, ADR-4 / R-6), sauf mode debug `enClair`.
+const refIdentite = (
+  secret: string,
+  nom: string,
+  prenom: string,
+  enClair = false
+): string =>
+  empreinte(secret, `identite:${normalise(nom)}|${normalise(prenom)}`, enClair);

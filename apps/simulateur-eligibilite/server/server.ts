@@ -23,8 +23,23 @@ function pseudonymisationSecret(): string {
   return "dev-secret-non-securise";
 }
 
+// Mode debug (phase de test) : renvoie les refs en clair au lieu du HMAC pour les
+// lire directement dans Matomo. ⚠️ Révèle des données brutes (dont nom/prénom) —
+// à n'activer que hors production.
+function pseudonymesEnClair(): boolean {
+  const flag = process.env.PSEUDONYMISATION_EN_CLAIR?.trim().toLowerCase();
+  const actif = flag === "true" || flag === "1" || flag === "oui";
+  if (actif) {
+    console.warn(
+      "[simulateur] PSEUDONYMISATION_EN_CLAIR active — refs Matomo en clair (debug, hors prod)."
+    );
+  }
+  return actif;
+}
+
 const app = createApp(chooseReferentiel(), {
   secret: pseudonymisationSecret(),
+  pseudonymesEnClair: pseudonymesEnClair(),
   distDir,
 });
 const port = Number(process.env.PORT ?? 3000);
