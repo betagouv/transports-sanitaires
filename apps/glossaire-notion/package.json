@@ -8,7 +8,7 @@
     "watch": "vite build --watch",
     "test": "vitest run",
     "prezip": "npm run build",
-    "zip": "rm -f glossaire-notion.zip && cd dist && zip -r ../glossaire-notion.zip . && cd .."
+    "zip": "rm -f glossaire-notion-*.zip && cd dist && zip -r ../glossaire-notion-$npm_package_version.zip . && cd .."
   },
   "dependencies": {
     "notion-client": "^7.10.0",
