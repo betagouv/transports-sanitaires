@@ -85,7 +85,8 @@ p1_situation_smur:
   question: Le patient doit-il être transporté par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation ?
 p1_situation_bariatrique_seul:
   titre: Contrainte bariatrique seule
-  question: Le transport est-il demandé uniquement pour une contrainte bariatrique du patient, sans autre motif médical ouvrant droit ?
+  question: Le transport est-il demandé uniquement pour une contrainte bariatrique du patient, sans autre motif médical ouvrant
+    droit ?
   applicable si: p1_situation_smur = non
 p1_situation_permission_sans_motif_medical:
   titre: Permission de sortie sans motif médical
@@ -236,7 +237,8 @@ p1_critere_aucune_situation_encadree:
   applicable si: p1_autonomie_repondue
 p1_critere:
   titre: Situations nécessitant une prise en charge plus encadrée
-  question: Certaines situations peuvent nécessiter une prise en charge plus encadrée pendant le transport. Sélectionnez toutes les situations qui s’appliquent au patient.
+  question: Certaines situations peuvent nécessiter une prise en charge plus encadrée pendant le transport. Sélectionnez toutes
+    les situations qui s’appliquent au patient.
   mosaique:
     type: selection
     options:
@@ -318,13 +320,15 @@ p1_cas_final_direct:
     - si: resultat_medical_favorable = non
       alors: '''non éligible assurance maladie dans ce parcours'''
     - sinon: '''aucun'''
+p1_transport_partage_etape_applicable:
+  titre: Étape transport partagé applicable
+  une de ces conditions:
+  - p1_transport_adapte_deduit = 'VSL ou taxi conventionné'
+  - p1_transport_adapte_deduit = 'VSL TPMR ou taxi conventionné TPMR'
 p1_transport_partage_incompatible:
   titre: État de santé incompatible avec un transport partagé
   question: État de santé du patient incompatible avec un transport partagé.
-  applicable si:
-    une de ces conditions:
-    - p1_transport_adapte_deduit = 'VSL ou taxi conventionné'
-    - p1_transport_adapte_deduit = 'VSL TPMR ou taxi conventionné TPMR'
+  applicable si: p1_transport_partage_etape_applicable
 p1_accompagnant_necessaire:
   titre: Accompagnant nécessaire
   valeur:
@@ -455,7 +459,8 @@ p2_continue_apres_serie:
     - p1_ald_validee
 p2_avion_ou_bateau:
   titre: Transport par avion ou bateau de ligne régulière
-  question: Le trajet entre-t-il dans un cas nécessitant une Demande d’Accord Préalable en raison d’un transport par avion ou bateau de ligne régulière ?
+  question: Le trajet entre-t-il dans un cas nécessitant une Demande d’Accord Préalable en raison d’un transport par avion
+    ou bateau de ligne régulière ?
   applicable si:
     toutes ces conditions:
     - p2_accord_prealable_applicable
@@ -532,9 +537,13 @@ p2_accord_prealable_requis:
   - p2_accompagnement_tiers
 p2_informations_trajet_requises:
   titre: Informations de trajet à compléter
-  une de ces conditions:
-  - cas_final = 'prescription médicale de transport'
-  - cas_final = 'demande accord préalable'
+  description: Les informations de trajet ne doivent s’afficher qu’une fois le document PMT/DAP déterminé, afin d’éviter qu’elles
+    apparaissent en même temps que les questions d’accord préalable.
+  toutes ces conditions:
+  - p2_accord_prealable_questionnaire_complete
+  - une de ces conditions:
+    - cas_final = 'prescription médicale de transport'
+    - cas_final = 'demande accord préalable'
 p2_trajet_aller_retour:
   titre: Aller simple ou aller-retour
   question: Le trajet est-il un aller simple ou un aller-retour ?
@@ -642,3 +651,16 @@ sortie_transport_partage_applicable:
   une de ces conditions:
   - transport_sanitaire_prescrit = 'VSL ou taxi conventionné'
   - transport_sanitaire_prescrit = 'VSL TPMR ou taxi conventionné TPMR'
+p2_accord_prealable_questionnaire_complete:
+  titre: Questionnaire accord préalable complété
+  description: Vrai lorsque le bloc Accord préalable a soit détecté une Demande d’Accord Préalable, soit vérifié tous les
+    cas sans en déclencher.
+  une de ces conditions:
+  - p2_distance_aller_superieure_150km
+  - p2_transport_serie_declenche_dap
+  - p2_avion_ou_bateau
+  - p2_camsp_cmpp
+  - p2_maternite_eloignee
+  - p2_samsah
+  - p2_accompagnement_tiers
+  - p2_accompagnement_tiers = non
