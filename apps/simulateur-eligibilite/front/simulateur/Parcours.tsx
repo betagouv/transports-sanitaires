@@ -5,6 +5,8 @@ import type { Situation } from "publicodes";
 import { engine } from "./engine";
 import { construirePages } from "./pages";
 import { FormField } from "./FormField";
+import { Mosaique } from "./Mosaique";
+import { mosaiqueDe, valeurBool } from "./mosaique";
 import {
   trackSimulationAbandon,
   trackSimulationComplete,
@@ -86,6 +88,15 @@ export function Parcours({
     );
   }
 
+  // Applique plusieurs réponses booléennes en une passe. La mosaïque s'en sert
+  // pour, à chaque clic, mettre à jour l'option touchée ET figer les autres
+  // options du groupe (sinon indéfinies → le moteur les considère non répondues).
+  function appliquerMosaique(updates: Array<[string, boolean | undefined]>) {
+    let s = formState;
+    for (const [id, val] of updates) s = formBuilder.handleInputChange(s, id, val);
+    setFormState(s);
+  }
+
   function handleNext() {
     if (hasNextPage) {
       const next = formBuilder.goToNextPage(formState);
@@ -104,6 +115,57 @@ export function Parcours({
 
   // En cours de bascule vers la page de résultat : rien à afficher.
   if (aucuneQuestion) return null;
+
+  // Plan de rendu : une case-à-cocher groupée (Mosaique) pour les champs
+  // appartenant à une mosaïque, un FormField pour les autres.
+  const parId = new Map(
+    currentPage.elements.map((e) => [e.id, e] as const)
+  );
+  const groupesVus = new Set<string>();
+  const champs = currentPage.elements
+    .map((field) => {
+      const m = mosaiqueDe(field.id);
+      if (!m) {
+        return (
+          <FormField
+            key={field.id}
+            field={field}
+            onChange={(value) => handleChange(field.id, value)}
+          />
+        );
+      }
+      if (groupesVus.has(m.parentId)) return null;
+      groupesVus.add(m.parentId);
+      const opts = m.optionIds
+        .map((id) => parId.get(id))
+        .filter((e): e is NonNullable<typeof e> => Boolean(e));
+      const aucunCoche =
+        opts.length > 0 && opts.every((o) => valeurBool(o) === false);
+      return (
+        <Mosaique
+          key={m.parentId}
+          question={m.question}
+          options={opts}
+          aucun={m.aucun ? { label: m.aucun.label, coche: aucunCoche } : undefined}
+          onToggleOption={(id, coche) =>
+            appliquerMosaique(
+              opts.map((o): [string, boolean | undefined] =>
+                o.id === id ? [o.id, coche] : [o.id, valeurBool(o) === true]
+              )
+            )
+          }
+          onToggleAucun={(coche) =>
+            appliquerMosaique(
+              opts.map((o): [string, boolean | undefined] => [
+                o.id,
+                coche ? false : undefined,
+              ])
+            )
+          }
+        />
+      );
+    })
+    .filter(Boolean);
 
   return (
     <>
@@ -131,13 +193,7 @@ export function Parcours({
           handleNext();
         }}
       >
-        {currentPage.elements.map((field) => (
-          <FormField
-            key={field.id}
-            field={field}
-            onChange={(value) => handleChange(field.id, value)}
-          />
-        ))}
+        {champs}
 
         <div
           className="fr-btns-group fr-btns-group--inline"

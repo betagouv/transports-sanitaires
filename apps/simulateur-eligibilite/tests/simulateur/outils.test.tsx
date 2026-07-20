@@ -87,6 +87,47 @@ describe("prescripteur — parcours médical", () => {
     expect(passer).toHaveBeenCalledTimes(1);
   });
 
+  it("motifs (M1.1) : une seule question à cases à cocher avec exclusivité « Aucun »", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    // Page « Situation particulière » : aucune → répondre Non aux booléens.
+    for (const g of screen.getAllByRole("group")) {
+      const non = within(g).queryByRole("radio", { name: "Non" });
+      if (non) await user.click(non);
+    }
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Page « Motif » : une seule question, rendue en cases à cocher.
+    const motif = screen.getByRole("group", {
+      name: /quelle situation justifie le transport/i,
+    });
+    const ald = within(motif).getByRole("checkbox", {
+      name: /en lien avec une ALD/i,
+    });
+    const aucun = within(motif).getByRole("checkbox", {
+      name: /aucun de ces motifs/i,
+    });
+
+    // Aucun motif au chargement.
+    expect(ald).not.toBeChecked();
+
+    // Cocher un motif.
+    await user.click(ald);
+    expect(ald).toBeChecked();
+    expect(aucun).not.toBeChecked();
+
+    // Exclusivité : cocher « Aucun » décoche les motifs.
+    await user.click(aucun);
+    expect(aucun).toBeChecked();
+    expect(ald).not.toBeChecked();
+  });
+
   it("contrainte bariatrique seule → avis défavorable", async () => {
     const user = userEvent.setup();
     render(
