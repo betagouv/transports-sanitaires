@@ -1,5 +1,6 @@
 import type { Situation } from "publicodes";
 import { engine } from "../simulateur/engine";
+import { TraceDebug } from "../simulateur/TraceDebug";
 
 type Props = {
   situation: Situation<string>;
@@ -54,6 +55,17 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
           {labelSuite}
         </button>
       </div>
+
+      <TraceDebug
+        titre="résultat médical"
+        situation={situation}
+        sorties={[
+          "resultat_medical",
+          "transport_sanitaire_prescrit",
+          "partie_2_requise",
+          "cas_final",
+        ]}
+      />
     </div>
   );
 }

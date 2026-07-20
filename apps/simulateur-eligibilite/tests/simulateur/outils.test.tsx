@@ -183,9 +183,10 @@ describe("prescripteur — parcours médical", () => {
     expect(
       screen.getByRole("heading", { name: /avis médical favorable/i })
     ).toBeInTheDocument();
+    // (getAllByText : le panneau de debug répète la valeur du transport.)
     expect(
-      screen.getByText(/véhicule personnel ou transport en commun/i)
-    ).toBeInTheDocument();
+      screen.getAllByText(/véhicule personnel ou transport en commun/i).length
+    ).toBeGreaterThan(0);
   });
 
   it("contrainte bariatrique seule → avis défavorable", async () => {
