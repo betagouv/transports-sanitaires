@@ -25,6 +25,8 @@ transport_sanitaire_prescrit:
     - sinon: '''aucun'''
 cas_final:
   titre: Cas final affiché en Page Résultat 2
+  description: Le cas final n’est défini que lorsque toutes les questions intermédiaires obligatoires du parcours concerné
+    sont complétées.
   une possibilité:
   - '''prescription médicale de transport'''
   - '''demande accord préalable'''
@@ -50,9 +52,28 @@ cas_final:
       alors: '''non éligible assurance maladie dans ce parcours'''
     - si: p2_convocation_ou_avis_valant_prescription
       alors: '''convocation ou avis audience'''
-    - si: p2_accord_prealable_requis
+    - si:
+        toutes ces conditions:
+        - p2_document_dap_determine
+        - p2_informations_trajet_complete
       alors: '''demande accord préalable'''
-    - sinon: '''prescription médicale de transport'''
+    - si:
+        toutes ces conditions:
+        - p2_document_pmt_determine
+        - p2_informations_trajet_complete
+      alors: '''prescription médicale de transport'''
+resultat_2_affichable:
+  titre: Page Résultat 2 affichable
+  description: 'Garde-fou front : la Page Résultat 2 ne doit être affichée que lorsque cas_final est effectivement déterminé.'
+  une de ces conditions:
+  - cas_final = 'prescription médicale de transport'
+  - cas_final = 'demande accord préalable'
+  - cas_final = 'convocation ou avis audience'
+  - cas_final = 'transport charge établissement'
+  - cas_final = 'SMUR'
+  - cas_final = 'bariatrique seul'
+  - cas_final = 'permission sortie sans motif médical'
+  - cas_final = 'non éligible assurance maladie dans ce parcours'
 document_a_remettre_au_patient:
   titre: Document à remettre au patient
   valeur:
@@ -67,7 +88,12 @@ document_a_remettre_au_patient:
       alors: '''formulaire établissement ou document interne'''
     - si: cas_final = 'SMUR'
       alors: '''document ou consignes remis par l’équipe médicale, le service d’urgence ou l’établissement concerné'''
-    - sinon: '''aucun document'''
+    - si: cas_final = 'bariatrique seul'
+      alors: '''aucun document'''
+    - si: cas_final = 'permission sortie sans motif médical'
+      alors: '''aucun document'''
+    - si: cas_final = 'non éligible assurance maladie dans ce parcours'
+      alors: '''aucun document'''
 partie_2_requise:
   titre: Partie administrative requise
   une possibilité:
@@ -430,6 +456,17 @@ p2_convocation_ou_avis_type:
     toutes ces conditions:
     - p2_controle_securite_sociale_applicable
     - p2_convocation_ou_avis
+p2_convocation_ou_avis_type_renseigne:
+  titre: Type de convocation ou d’avis renseigné
+  description: Vrai uniquement lorsque le type de convocation ou d’avis a été sélectionné en A2.2.
+  une de ces conditions:
+  - p2_convocation_ou_avis_type = 'convocation contrôle médical'
+  - p2_convocation_ou_avis_type = 'convocation médecin expert ou consultant'
+  - p2_convocation_ou_avis_type = 'audience avec consultation clinique'
+  - p2_convocation_ou_avis_type = 'expert R141-1'
+  - p2_convocation_ou_avis_type = 'commission R142-8'
+  - p2_convocation_ou_avis_type = 'médecin désigné par commission'
+  - p2_convocation_ou_avis_type = 'fournisseur appareillage agréé'
 p2_accord_prealable_applicable:
   titre: Étape accord préalable applicable
   toutes ces conditions:
@@ -519,7 +556,10 @@ p2_non_eligible_assurance_maladie_dans_ce_parcours:
   - p2_detenu_retour_etablissement_penitentiaire = non
 p2_convocation_ou_avis_valant_prescription:
   titre: Convocation ou avis valant prescription médicale de transport
-  valeur: p2_convocation_ou_avis
+  description: Ne devient vrai qu’après la réponse Oui en A2.1 et la sélection du type de convocation ou d’avis en A2.2.
+  toutes ces conditions:
+  - p2_convocation_ou_avis
+  - p2_convocation_ou_avis_type_renseigne
 p2_transport_serie_declenche_dap:
   titre: Transport en série déclenchant une Demande d’Accord Préalable
   toutes ces conditions:
@@ -535,15 +575,29 @@ p2_accord_prealable_requis:
   - p2_maternite_eloignee
   - p2_samsah
   - p2_accompagnement_tiers
-p2_informations_trajet_requises:
-  titre: Informations de trajet à compléter
-  description: Les informations de trajet ne doivent s’afficher qu’une fois le document PMT/DAP déterminé, afin d’éviter qu’elles
-    apparaissent en même temps que les questions d’accord préalable.
+p2_document_dap_determine:
+  titre: Document DAP déterminé
+  description: Vrai dès qu’un cas d’accord préalable est identifié ; les informations de trajet A4 doivent encore être complétées
+    avant Résultat 2.
+  valeur: p2_accord_prealable_requis
+p2_document_pmt_determine:
+  titre: Document PMT déterminé
+  description: Vrai lorsque le questionnaire d’accord préalable est terminé sans déclencher de DAP ; les informations de trajet
+    A4 doivent encore être complétées avant Résultat 2.
   toutes ces conditions:
   - p2_accord_prealable_questionnaire_complete
-  - une de ces conditions:
-    - cas_final = 'prescription médicale de transport'
-    - cas_final = 'demande accord préalable'
+  - p2_accord_prealable_requis = non
+p2_document_pmt_ou_dap_determine:
+  titre: Document PMT ou DAP déterminé
+  description: Vrai lorsque le document cible est connu, avant complétion des informations de trajet.
+  une de ces conditions:
+  - p2_document_dap_determine
+  - p2_document_pmt_determine
+p2_informations_trajet_requises:
+  titre: Informations de trajet à compléter
+  description: Les informations de trajet s’affichent une fois le document cible PMT/DAP déterminé, avant la Page Résultat
+    2.
+  valeur: p2_document_pmt_ou_dap_determine
 p2_trajet_aller_retour:
   titre: Aller simple ou aller-retour
   question: Le trajet est-il un aller simple ou un aller-retour ?
@@ -621,6 +675,23 @@ p2_accident_cause_par_tiers:
     toutes ces conditions:
     - p2_informations_trajet_requises
     - p2_transport_urgence_renseigne
+p2_accident_cause_par_tiers_renseigne:
+  titre: Accident causé par un tiers renseigné
+  description: Vrai lorsque la question A4.6 a reçu une réponse Oui ou Non.
+  une de ces conditions:
+  - p2_accident_cause_par_tiers
+  - p2_accident_cause_par_tiers = non
+p2_informations_trajet_complete:
+  titre: Informations de trajet complètes
+  description: Vrai lorsque toutes les informations A4 nécessaires au document PMT/DAP sont renseignées.
+  toutes ces conditions:
+  - p2_informations_trajet_requises
+  - p2_trajet_aller_retour_renseigne
+  - p2_trajet_depart_renseigne
+  - p2_trajet_arrivee_renseigne
+  - p2_nombre_transports_prevus > 0
+  - p2_transport_urgence_renseigne
+  - p2_accident_cause_par_tiers_renseigne
 p2_lie_accident_travail_maladie_professionnelle:
   titre: Accident du travail ou maladie professionnelle
   description: Valeur reprise automatiquement depuis le motif médical renseigné en Partie 1.

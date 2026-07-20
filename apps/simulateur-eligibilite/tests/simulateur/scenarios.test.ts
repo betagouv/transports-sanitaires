@@ -43,6 +43,18 @@ const base: Record<string, string> = {
   p2_maternite_eloignee: "non",
   p2_samsah: "non",
   p2_accompagnement_tiers: "non",
+  // v8.1 : le cas final PMT/DAP n'est déterminé qu'après complétion des
+  // informations de trajet A4, et le cas convocation qu'après sélection du type
+  // en A2.2. Ces champs ne sont applicables que dans leur parcours (gate
+  // `applicable si`) ; renseignés dans la base neutre, ils permettent à
+  // `cas_final` de se résoudre sans variable manquante là où ils s'appliquent.
+  p2_trajet_aller_retour: "'aller simple'",
+  p2_trajet_depart: "'domicile'",
+  p2_trajet_arrivee: "'structure de soins'",
+  p2_nombre_transports_prevus: "1",
+  p2_transport_urgence: "'non'",
+  p2_accident_cause_par_tiers: "non",
+  p2_convocation_ou_avis_type: "'convocation contrôle médical'",
 };
 
 const TARGETS = [
