@@ -53,6 +53,18 @@ export function Parcours({
     formBuilder.pagination(formState);
   const currentPage = formBuilder.currentPage(formState);
 
+  // Une question affichée (applicable et visible) est « posée » : elle doit être
+  // répondue avant de pouvoir avancer. Le parcours n'est réellement terminé que
+  // si la page courante est entièrement répondue ET qu'aucune page suivante
+  // n'existe : avec le séquencement conditionnel du modèle, répondre peut révéler
+  // de nouvelles pages (`nextPages` recalculées à chaque saisie), donc
+  // `!hasNextPage` seul ne prouve pas qu'on est au bout — il vaut aussi « vrai »
+  // sur une page dont les questions ne sont pas encore répondues.
+  const questionsEnAttente = currentPage.elements.some(
+    (e) => e.applicable && !e.hidden && !e.answered
+  );
+  const parcoursTermine = !hasNextPage && !questionsEnAttente;
+
   // Toutes les cibles sont déjà déterminées par la situation initiale : aucune
   // question à poser (parcours court, ex. cas tranché dès la Partie 1). On
   // termine immédiatement. Le ref évite le double-déclenchement en StrictMode.
@@ -114,6 +126,10 @@ export function Parcours({
   }
 
   function handleNext() {
+    // Sécurité : ne jamais avancer (ni conclure le parcours) tant qu'une
+    // question posée reste sans réponse — le bouton est déjà désactivé, ceci
+    // couvre une soumission clavier éventuelle.
+    if (questionsEnAttente) return;
     if (hasNextPage) {
       const next = formBuilder.goToNextPage(formState);
       setFormState(next);
@@ -126,7 +142,20 @@ export function Parcours({
   }
 
   function handlePrev() {
-    setFormState(formBuilder.goToPreviousPage(formState));
+    // `goToPreviousPage` se contente de décrémenter l'index : les pages en aval
+    // restent dans `pages`. Or `computeNextFields` (appelé à chaque saisie)
+    // exclut tout ce qui figure déjà dans `pages` — un changement de réponse sur
+    // la page de retour ne recalculerait donc jamais la suite du parcours (page
+    // suivante figée). On restaure l'état tel qu'il était à l'arrivée sur cette
+    // page : les pages en aval repassent de `pages` vers `nextPages`, dans leur
+    // ordre d'origine.
+    const prev = formBuilder.goToPreviousPage(formState);
+    const i = prev.currentPageIndex;
+    setFormState({
+      ...prev,
+      pages: prev.pages.slice(0, i + 1),
+      nextPages: [...prev.pages.slice(i + 1), ...prev.nextPages],
+    });
   }
 
   // En cours de bascule vers la page de résultat : rien à afficher.
@@ -236,8 +265,12 @@ export function Parcours({
               Précédent
             </button>
           )}
-          <button type="submit" className="fr-btn">
-            {hasNextPage ? "Suivant" : labelFin}
+          <button
+            type="submit"
+            className="fr-btn"
+            disabled={questionsEnAttente}
+          >
+            {parcoursTermine ? labelFin : "Suivant"}
           </button>
         </div>
       </form>
