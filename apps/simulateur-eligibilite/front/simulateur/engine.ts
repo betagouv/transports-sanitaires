@@ -19,3 +19,8 @@ const rules = Object.values(modules).reduce<RawPublicodes<string>>(
 export const engine = new Engine(rules, {
   flag: { filterNotApplicablePossibilities: true },
 });
+
+// Ordre de déclaration des règles dans le modèle. Sert à ordonner les questions
+// à l'intérieur d'une page (cf. `pages.ts`) : `@publicodes/forms` les liste sinon
+// dans l'ordre du graphe de dépendances, sans rapport avec l'intention métier.
+export const ordreRegles = Object.keys(rules);

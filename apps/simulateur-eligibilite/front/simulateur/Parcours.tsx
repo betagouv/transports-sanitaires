@@ -3,6 +3,7 @@ import { FormBuilder } from "@publicodes/forms";
 import type { FormState } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { engine } from "./engine";
+import { construirePages } from "./pages";
 import { FormField } from "./FormField";
 import {
   trackSimulationAbandon,
@@ -11,7 +12,9 @@ import {
   trackSimulationStep,
 } from "../analytics/analytics";
 
-const formBuilder = new FormBuilder({ engine });
+// pageBuilder custom : les noms plats du modèle v3 n'ont pas de namespace pour
+// paginer (cf. `pages.ts`).
+const formBuilder = new FormBuilder({ engine, pageBuilder: construirePages });
 
 type Props = {
   // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).

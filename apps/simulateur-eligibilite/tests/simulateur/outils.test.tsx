@@ -44,6 +44,26 @@ async function terminerParcours(user: User, reponses: Reponse[]) {
 beforeEach(() => sessionStorage.clear());
 
 describe("prescripteur — parcours médical", () => {
+  it("commence par la page « Situation particulière » (SMUR en premier, ALD non révélée)", () => {
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+    // 1re page : situations particulières uniquement — les motifs et l'ALD
+    // n'apparaissent que sur les pages suivantes (révélation progressive).
+    expect(
+      screen.getByRole("group", { name: /équipe SMUR/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: /en lien avec une ALD/i })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("group", { name: /hospitalisation/i })
+    ).toBeNull();
+  });
+
   it("SMUR → avis médical favorable, passe la main au secrétariat", async () => {
     const user = userEvent.setup();
     const passer = vi.fn();
