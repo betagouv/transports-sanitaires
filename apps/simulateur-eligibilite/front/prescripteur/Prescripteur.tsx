@@ -24,7 +24,17 @@ export function Prescripteur({
     return (
       <Parcours
         outil="prescripteur"
-        cibles={["transport_sanitaire_prescrit", "partie_2_requise"]}
+        // Décision médicale + sorties Partie 1 destinées au document : cibler ces
+        // sorties fait collecter leurs questions propres (sinon jamais posées,
+        // car applicables mais hors du graphe des cibles). Toutes sont P1 (aucune
+        // dépendance p2_*), donc aucune question Partie 2 n'est posée ici.
+        cibles={[
+          "transport_sanitaire_prescrit",
+          "partie_2_requise",
+          "sortie_transport_partage_incompatible",
+          "sortie_autonomie_patient",
+          "sortie_accompagnant_necessaire",
+        ]}
         labelFin="Voir le résultat médical"
         onTermine={(s) => {
           setSituation(s);

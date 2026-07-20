@@ -189,6 +189,46 @@ describe("prescripteur — parcours médical", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("critères VSL/taxi → la question « transport partagé » est posée (cible sortie P1)", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await passerFiltresM0(user);
+    await user.click(
+      within(
+        screen.getByRole("group", {
+          name: /quelle situation justifie le transport/i,
+        })
+      ).getByRole("checkbox", { name: /hospitalisation/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    await user.click(
+      within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
+        "radio",
+        { name: /aucune de ces situations/i }
+      )
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Critère menant à un VSL/taxi → transport partagé devient applicable ET, la
+    // sortie étant ciblée, la question est posée à l'étape suivante.
+    await user.click(
+      within(
+        screen.getByRole("group", { name: /prise en charge plus encadrée/i })
+      ).getByRole("checkbox", { name: /respect rigoureux de règles d’hygiène/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    expect(
+      screen.getByRole("group", { name: /transport partagé/i })
+    ).toBeInTheDocument();
+  });
+
   it("contrainte bariatrique seule → avis défavorable", async () => {
     const user = userEvent.setup();
     render(
