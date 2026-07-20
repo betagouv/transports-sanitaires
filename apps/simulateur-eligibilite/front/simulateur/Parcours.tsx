@@ -7,7 +7,6 @@ import type {
 } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { engine } from "./engine";
-import { construirePages } from "./pages";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
@@ -18,9 +17,10 @@ import {
   trackSimulationStep,
 } from "../analytics/analytics";
 
-// pageBuilder custom : les noms plats du modèle v3 n'ont pas de namespace pour
-// paginer (cf. `pages.ts`).
-const formBuilder = new FormBuilder({ engine, pageBuilder: construirePages });
+// pageBuilder par défaut : depuis le séquencement conditionnel du modèle
+// (`applicable si`, v6), la pagination naturelle suffit — le pageBuilder custom
+// est désactivé.
+const formBuilder = new FormBuilder({ engine });
 
 type Props = {
   // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).

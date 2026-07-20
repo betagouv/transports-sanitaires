@@ -16,6 +16,10 @@ const base: Record<string, string> = {
   p1_ald_incapacite_ou_deficience: "non",
   p1_motif_accident_travail_maladie_professionnelle: "non",
   p1_motif_retour_etablissement_penitentiaire: "non",
+  p1_motif_aucun: "non",
+  // v6 : les critères ne sont applicables qu'après réponse à l'autonomie, elle-même
+  // gatée par la sélection d'un motif. Base neutre : autonomie répondue.
+  p1_autonomie: "'aucune de ces situations'",
   p1_critere_regles_hygiene: "non",
   p1_critere_risques_effets_secondaires: "non",
   p1_critere_fauteuil_sans_transfert: "non",
@@ -96,7 +100,7 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
   },
   {
     id: "ROUTE-P1-04-DEFAVORABLE-GENERIQUE",
-    inputs: { p1_critere_aucune_situation_encadree: "oui" },
+    inputs: { p1_motif_aucun: "oui", p1_critere_aucune_situation_encadree: "oui" },
     expected: {
       resultat_medical: "défavorable",
       transport_sanitaire_prescrit: "aucun",
@@ -106,7 +110,7 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
   },
   {
     id: "ROUTE-P1-05-AMBULANCE-MOTIF-DEDUIT",
-    inputs: { p1_critere_oxygene: "oui" },
+    inputs: { p1_motif_aucun: "oui", p1_critere_oxygene: "oui" },
     expected: {
       resultat_medical: "favorable",
       transport_sanitaire_prescrit: "ambulance",
