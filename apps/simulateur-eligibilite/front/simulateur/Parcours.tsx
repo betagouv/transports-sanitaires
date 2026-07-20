@@ -241,6 +241,41 @@ export function Parcours({
           </button>
         </div>
       </form>
+
+      {import.meta.env.DEV && (
+        <details
+          style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}
+        >
+          <summary style={{ cursor: "pointer" }}>
+            Debug — chemin parcouru ({outil})
+          </summary>
+          <div style={{ marginTop: "0.75rem" }}>
+            <strong>Pages (◀ = page courante) :</strong>
+            <ol style={{ margin: "0.25rem 0 1rem" }}>
+              {[...formState.pages, ...formState.nextPages].map((page, i) => (
+                <li
+                  key={i}
+                  style={{ fontWeight: i === current - 1 ? 700 : 400 }}
+                >
+                  <code>{page.elements.join(", ") || "—"}</code>
+                  {i === current - 1 ? " ◀" : ""}
+                </li>
+              ))}
+            </ol>
+            <strong>Réponses saisies :</strong>
+            <ul style={{ margin: "0.25rem 0" }}>
+              {Object.keys(formState.situation).length === 0 && (
+                <li>(aucune)</li>
+              )}
+              {Object.entries(formState.situation).map(([id, valeur]) => (
+                <li key={id}>
+                  <code>{id}</code> = <code>{JSON.stringify(valeur)}</code>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      )}
     </>
   );
 }
