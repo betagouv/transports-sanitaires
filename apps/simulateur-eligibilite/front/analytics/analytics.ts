@@ -109,13 +109,21 @@ export function loadMatomo(url: string): void {
   document.head.appendChild(script);
 }
 
-export const trackSimulationStart = (): void => track("simulation_start");
-export const trackSimulationStep = (stepIndex: number): void =>
-  track("simulation_step", stepIndex);
-export const trackSimulationComplete = (): void => track("simulation_complete");
-export const trackResultat = (statut: string): void => track(`resultat:${statut}`);
-export const trackSimulationAbandon = (lastStep: number): void =>
-  track("simulation_abandon", lastStep);
+// Préfixe l'action par l'outil émetteur (`prescripteur` / `secretariat`) pour
+// séparer les tunnels dans Matomo. Sans outil, l'action reste inchangée.
+const prefixe = (outil: string | undefined, action: string): string =>
+  outil ? `${outil}:${action}` : action;
+
+export const trackSimulationStart = (outil?: string): void =>
+  track(prefixe(outil, "simulation_start"));
+export const trackSimulationStep = (stepIndex: number, outil?: string): void =>
+  track(prefixe(outil, "simulation_step"), stepIndex);
+export const trackSimulationComplete = (outil?: string): void =>
+  track(prefixe(outil, "simulation_complete"));
+export const trackResultat = (statut: string, outil?: string): void =>
+  track(prefixe(outil, `resultat:${statut}`));
+export const trackSimulationAbandon = (lastStep: number, outil?: string): void =>
+  track(prefixe(outil, "simulation_abandon"), lastStep);
 
 // Émet un événement quand le traceur est activé, en portant l'identité
 // pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
