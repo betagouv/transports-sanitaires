@@ -109,10 +109,6 @@ p1_motif_aucun:
 p1_motif:
   titre: Motif ouvrant droit
   question: Quelle situation justifie le transport ?
-  description: >-
-    Règle non évaluée : porte la métadonnée de mosaïque (question à choix
-    multiple) rendue par l'UI à partir des booléens p1_motif_*. option aucun
-    exclut les autres.
   mosaique:
     type: selection
     options:
@@ -174,6 +170,21 @@ p1_critere_asepsie:
   question: Le patient doit voyager dans des conditions d’asepsie.
 p1_critere_aucune_situation_encadree:
   question: Aucune de ces situations ne s’applique au patient.
+p1_critere:
+  titre: Situations nécessitant une prise en charge plus encadrée
+  question: Certaines situations peuvent nécessiter une prise en charge plus encadrée pendant le transport. Sélectionnez toutes les situations qui s’appliquent au patient.
+  mosaique:
+    type: selection
+    options:
+    - p1_critere_regles_hygiene
+    - p1_critere_risques_effets_secondaires
+    - p1_critere_fauteuil_sans_transfert
+    - p1_critere_position_allongee_demi_assise
+    - p1_critere_brancardage_portage
+    - p1_critere_surveillance_personne_qualifiee
+    - p1_critere_oxygene
+    - p1_critere_asepsie
+    option aucun: p1_critere_aucune_situation_encadree
 p1_critere_ambulance:
   titre: Critère ambulance sélectionné
   une de ces conditions:
@@ -433,3 +444,28 @@ p2_lie_accident_travail_maladie_professionnelle:
   description: Valeur reprise automatiquement depuis le motif médical renseigné en Partie 1.
   applicable si: p2_informations_trajet_requises
   valeur: p1_motif_accident_travail_maladie_professionnelle
+sortie_autonomie_patient:
+  titre: Autonomie du patient — valeur de sortie
+  description: Valeur reprise depuis la Partie 1 pour l’affichage et les contrôles documentaires.
+  valeur: p1_autonomie
+sortie_accompagnant_necessaire:
+  titre: Accompagnant nécessaire — valeur de sortie
+  description: Valeur calculée depuis l’autonomie renseignée en Partie 1 pour alimenter les cases documentaires.
+  valeur: p1_accompagnant_necessaire
+sortie_transport_partage_incompatible:
+  titre: Transport partagé incompatible — valeur de sortie
+  description: Valeur utilisée uniquement lorsque le transport prescrit est un VSL/taxi ou un VSL/taxi TPMR.
+  valeur:
+    variations:
+    - si:
+        une de ces conditions:
+        - transport_sanitaire_prescrit = 'VSL ou taxi conventionné'
+        - transport_sanitaire_prescrit = 'VSL TPMR ou taxi conventionné TPMR'
+      alors: p1_transport_partage_incompatible
+    - sinon: non
+sortie_transport_partage_applicable:
+  titre: Transport partagé applicable
+  description: Indique si la case transport partagé doit être prise en compte.
+  une de ces conditions:
+  - transport_sanitaire_prescrit = 'VSL ou taxi conventionné'
+  - transport_sanitaire_prescrit = 'VSL TPMR ou taxi conventionné TPMR'
