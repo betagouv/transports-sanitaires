@@ -41,6 +41,20 @@ async function terminerParcours(user: User, reponses: Reponse[]) {
   throw new Error("parcours non terminé après 40 pages");
 }
 
+// v6 : les filtres M0 (SMUR → bariatrique → permission) se succèdent, une question
+// par page. On répond « Non » à chacun pour atteindre la question du motif.
+async function passerFiltresM0(user: User) {
+  for (const re of [
+    /équipe SMUR/i,
+    /contrainte bariatrique/i,
+    /permission de sortie/i,
+  ]) {
+    const g = await screen.findByRole("group", { name: re });
+    await user.click(within(g).getByRole("radio", { name: "Non" }));
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+  }
+}
+
 beforeEach(() => sessionStorage.clear());
 
 describe("prescripteur — parcours médical", () => {
@@ -96,12 +110,8 @@ describe("prescripteur — parcours médical", () => {
       />
     );
 
-    // Page « Situation particulière » : aucune → répondre Non aux booléens.
-    for (const g of screen.getAllByRole("group")) {
-      const non = within(g).queryByRole("radio", { name: "Non" });
-      if (non) await user.click(non);
-    }
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    // Page « Situation particulière » (révélation progressive) → page « Motif ».
+    await passerFiltresM0(user);
 
     // Page « Motif » : une seule question, rendue en cases à cocher.
     const motif = screen.getByRole("group", {
@@ -140,12 +150,8 @@ describe("prescripteur — parcours médical", () => {
       />
     );
 
-    // Situation : Non aux 3 booléens.
-    for (const g of screen.getAllByRole("group")) {
-      const non = within(g).queryByRole("radio", { name: "Non" });
-      if (non) await user.click(non);
-    }
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    // Situation (révélation progressive) → Motif.
+    await passerFiltresM0(user);
 
     // Motif : cocher « hospitalisation ».
     const motif = screen.getByRole("group", {
@@ -153,6 +159,13 @@ describe("prescripteur — parcours médical", () => {
     });
     await user.click(
       within(motif).getByRole("checkbox", { name: /hospitalisation/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Autonomie (v6 : gate des critères) : répondre.
+    const autonomie = screen.getByRole("group", { name: /^le patient/i });
+    await user.click(
+      within(autonomie).getByRole("radio", { name: /aucune de ces situations/i })
     );
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 
