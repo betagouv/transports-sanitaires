@@ -107,6 +107,9 @@ describe("prescripteur — parcours médical", () => {
     const motif = screen.getByRole("group", {
       name: /quelle situation justifie le transport/i,
     });
+    const hospit = within(motif).getByRole("checkbox", {
+      name: /hospitalisation/i,
+    });
     const ald = within(motif).getByRole("checkbox", {
       name: /en lien avec une ALD/i,
     });
@@ -114,17 +117,17 @@ describe("prescripteur — parcours médical", () => {
       name: /aucun de ces motifs/i,
     });
 
-    // Aucun motif au chargement.
-    expect(ald).not.toBeChecked();
-
-    // Cocher un motif.
+    // Choix multiple : deux motifs cochés simultanément (les autres options ne
+    // doivent pas se désactiver une fois l'agrégat OU satisfait).
+    await user.click(hospit);
     await user.click(ald);
+    expect(hospit).toBeChecked();
     expect(ald).toBeChecked();
-    expect(aucun).not.toBeChecked();
 
-    // Exclusivité : cocher « Aucun » décoche les motifs.
+    // Exclusivité : cocher « Aucun » décoche tous les motifs.
     await user.click(aucun);
     expect(aucun).toBeChecked();
+    expect(hospit).not.toBeChecked();
     expect(ald).not.toBeChecked();
   });
 

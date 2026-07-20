@@ -36,6 +36,12 @@ export function Mosaique({
       </legend>
       <div className="fr-fieldset__content">
         {options.map((opt) => {
+          // On ignore `disabled`/`hidden` (divulgation progressive de
+          // @publicodes/forms, qui « ferme » les options dès que l'agrégat OU
+          // est satisfait) : dans une mosaïque — vrai choix multiple — toute
+          // combinaison doit rester cochable. On respecte en revanche une
+          // non-applicabilité réelle (`applicable si`).
+          if (opt.applicable === false) return null;
           const coche = valeurBool(opt) === true;
           return (
             <div
@@ -47,7 +53,6 @@ export function Mosaique({
                 id={`mosaique-${opt.id}`}
                 name={opt.id}
                 checked={coche}
-                disabled={opt.disabled}
                 onChange={(e) => onToggleOption(opt.id, e.target.checked)}
               />
               <label className="fr-label" htmlFor={`mosaique-${opt.id}`}>
