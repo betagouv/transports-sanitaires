@@ -78,6 +78,36 @@ describe("prescripteur — parcours médical", () => {
     ).toBeNull();
   });
 
+  it("n'affiche pas « Voir le résultat médical » tant que le parcours n'est pas terminé", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    // 1re page, question non répondue : bien que le moteur n'ait pas encore de
+    // page suivante (le séquencement conditionnel dépend de la réponse), le
+    // bouton de fin ne doit pas apparaître. Le bouton d'avancement reste
+    // « Suivant » et est désactivé (« toute question posée doit être répondue »).
+    expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
+    const suivant = screen.getByRole("button", { name: /^suivant$/i });
+    expect(suivant).toBeDisabled();
+
+    // Après réponse, une page suivante existe : toujours pas de bouton de fin.
+    await user.click(
+      within(screen.getByRole("group", { name: /équipe SMUR/i })).getByRole(
+        "radio",
+        { name: "Non" }
+      )
+    );
+    expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /^suivant$/i })
+    ).toBeEnabled();
+  });
+
   it("SMUR → avis médical favorable, passe la main au secrétariat", async () => {
     const user = userEvent.setup();
     const passer = vi.fn();
@@ -240,6 +270,57 @@ describe("prescripteur — parcours médical", () => {
 
     await terminerParcours(user, [[/contrainte bariatrique/i, "Oui"]]);
 
+    expect(
+      screen.getByRole("heading", { name: /non justifié médicalement/i })
+    ).toBeInTheDocument();
+  });
+
+  it("retour : changer une réponse recalcule la suite (pas de page suivante figée)", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    const repondreFiltre = async (re: RegExp, val: string) => {
+      const g = await screen.findByRole("group", { name: re });
+      await user.click(within(g).getByRole("radio", { name: val }));
+      await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    };
+
+    // SMUR non → bariatrique non → on atteint la page « permission de sortie ».
+    await repondreFiltre(/équipe SMUR/i, "Non");
+    await repondreFiltre(/contrainte bariatrique/i, "Non");
+    expect(
+      screen.getByRole("group", { name: /permission de sortie/i })
+    ).toBeInTheDocument();
+
+    // Retour → page « contrainte bariatrique ».
+    await user.click(screen.getByRole("button", { name: /précédent/i }));
+    expect(
+      screen.getByRole("group", { name: /contrainte bariatrique/i })
+    ).toBeInTheDocument();
+
+    // Changer la réponse : bariatrique = Oui mène à une sortie directe. La page
+    // « permission de sortie » ne doit plus être figée dans l'état : le parcours
+    // se recalcule et se termine (bouton de fin), sans repasser par elle.
+    await user.click(
+      within(
+        screen.getByRole("group", { name: /contrainte bariatrique/i })
+      ).getByRole("radio", { name: "Oui" })
+    );
+    expect(
+      screen.getByRole("button", { name: /voir le résultat médical/i })
+    ).toBeEnabled();
+
+    await user.click(
+      screen.getByRole("button", { name: /voir le résultat médical/i })
+    );
+    expect(
+      screen.queryByRole("group", { name: /permission de sortie/i })
+    ).toBeNull();
     expect(
       screen.getByRole("heading", { name: /non justifié médicalement/i })
     ).toBeInTheDocument();
