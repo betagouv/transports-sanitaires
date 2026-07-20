@@ -106,6 +106,22 @@ p1_motif_retour_etablissement_penitentiaire:
   question: Retour vers établissement pénitentiaire avec prescription médicale.
 p1_motif_aucun:
   question: Aucun de ces motifs.
+p1_motif:
+  titre: Motif ouvrant droit
+  question: Quelle situation justifie le transport ?
+  description: >-
+    Règle non évaluée : porte la métadonnée de mosaïque (question à choix
+    multiple) rendue par l'UI à partir des booléens p1_motif_*. option aucun
+    exclut les autres.
+  mosaique:
+    type: selection
+    options:
+    - p1_motif_hospitalisation
+    - p1_motif_seance_chimio_radio_hemodialyse
+    - p1_motif_ald
+    - p1_motif_accident_travail_maladie_professionnelle
+    - p1_motif_retour_etablissement_penitentiaire
+    option aucun: p1_motif_aucun
 p1_ald_lien_avec_ald_reconnue:
   question: Le transport est-il en lien avec l’ALD — Affection de Longue Durée — reconnue du patient ?
   applicable si: p1_motif_ald

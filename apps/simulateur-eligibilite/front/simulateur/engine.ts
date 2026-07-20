@@ -24,3 +24,7 @@ export const engine = new Engine(rules, {
 // à l'intérieur d'une page (cf. `pages.ts`) : `@publicodes/forms` les liste sinon
 // dans l'ordre du graphe de dépendances, sans rapport avec l'intention métier.
 export const ordreRegles = Object.keys(rules);
+
+// Règles brutes (nœuds YAML) pour lire les métadonnées custom non interprétées
+// par le moteur — notamment la clé `mosaique` (cf. `mosaique.ts`).
+export const reglesBrutes = rules;
