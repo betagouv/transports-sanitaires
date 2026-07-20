@@ -1,0 +1,108 @@
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prescripteur } from "../../front/prescripteur/Prescripteur";
+import { Secretariat } from "../../front/secretariat/Secretariat";
+import { emettrePassation } from "../../front/simulateur/passation";
+
+type User = ReturnType<typeof userEvent.setup>;
+type Reponse = [RegExp, string];
+
+// Répond aux groupes booléens : les libellés ciblés selon `reponses`, puis
+// « Non » à tout groupe resté sans réponse (les questions du modèle v3 posées
+// pour ces cibles sont toutes des oui/non).
+async function repondrePage(user: User, reponses: Reponse[]) {
+  for (const [re, value] of reponses) {
+    const group = screen.queryByRole("group", { name: re });
+    if (group) {
+      const radio = within(group).queryByRole("radio", { name: value });
+      if (radio) await user.click(radio);
+    }
+  }
+  for (const group of screen.queryAllByRole("group")) {
+    if (within(group).queryByRole("radio", { checked: true })) continue;
+    const non = within(group).queryByRole("radio", { name: "Non" });
+    if (non) await user.click(non);
+  }
+}
+
+// Remplit le parcours page par page jusqu'au bouton de fin (tout sauf « Suivant »).
+async function terminerParcours(user: User, reponses: Reponse[]) {
+  for (let i = 0; i < 40; i++) {
+    await repondrePage(user, reponses);
+    const suivant = screen.queryByRole("button", { name: /^suivant$/i });
+    if (suivant) {
+      await user.click(suivant);
+      continue;
+    }
+    await user.click(screen.getByRole("button", { name: /^voir/i }));
+    return;
+  }
+  throw new Error("parcours non terminé après 40 pages");
+}
+
+beforeEach(() => sessionStorage.clear());
+
+describe("prescripteur — parcours médical", () => {
+  it("SMUR → avis médical favorable, passe la main au secrétariat", async () => {
+    const user = userEvent.setup();
+    const passer = vi.fn();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={passer}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await terminerParcours(user, [[/équipe SMUR/i, "Oui"]]);
+
+    expect(
+      screen.getByRole("heading", { name: /avis médical favorable/i })
+    ).toBeInTheDocument();
+
+    // Cas tranché dès la Partie 1 : le CTA mène directement au document.
+    await user.click(
+      screen.getByRole("button", { name: /voir le document/i })
+    );
+    expect(passer).toHaveBeenCalledTimes(1);
+  });
+
+  it("contrainte bariatrique seule → avis défavorable", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await terminerParcours(user, [[/contrainte bariatrique/i, "Oui"]]);
+
+    expect(
+      screen.getByRole("heading", { name: /non justifié médicalement/i })
+    ).toBeInTheDocument();
+  });
+});
+
+describe("secrétariat — parcours administratif", () => {
+  it("sans passation : invite à commencer par l'évaluation médicale", () => {
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+    expect(
+      screen.getByRole("heading", { name: /aucune prescription en attente/i })
+    ).toBeInTheDocument();
+  });
+
+  it("cas tranché dès la Partie 1 (SMUR) : affiche directement le document", () => {
+    emettrePassation({
+      p1_situation_smur: "oui",
+      p1_situation_bariatrique_seul: "non",
+      p1_situation_permission_sans_motif_medical: "non",
+    });
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    expect(screen.getByRole("heading", { name: /^SMUR$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /document à remettre au patient/i })
+    ).toBeInTheDocument();
+  });
+});

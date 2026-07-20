@@ -28,7 +28,7 @@ describe("écran-porte d'identification", () => {
       screen.getByRole("combobox", { name: /Établissement/ })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("group", { name: /situations suivantes/i })
+      screen.queryByRole("group", { name: /équipe SMUR/i })
     ).toBeNull();
   });
 
@@ -42,9 +42,9 @@ describe("écran-porte d'identification", () => {
       screen.getByRole("button", { name: "Accéder au simulateur" })
     );
 
-    // Le simulateur est monté : sa première question apparaît (plus de titre h1).
+    // Le simulateur est monté : une question de Partie 1 apparaît (plus de titre h1).
     expect(
-      await screen.findByRole("group", { name: /situations suivantes/i })
+      await screen.findByRole("group", { name: /équipe SMUR/i })
     ).toBeInTheDocument();
   });
 });

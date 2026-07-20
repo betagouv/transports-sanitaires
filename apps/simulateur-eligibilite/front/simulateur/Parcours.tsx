@@ -1,50 +1,77 @@
 import { useEffect, useRef, useState } from "react";
 import { FormBuilder } from "@publicodes/forms";
 import type { FormState } from "@publicodes/forms";
+import type { Situation } from "publicodes";
 import { engine } from "./engine";
 import { FormField } from "./FormField";
-import { Resultats } from "./Resultats";
 import {
-  trackResultat,
   trackSimulationAbandon,
   trackSimulationComplete,
   trackSimulationStart,
   trackSimulationStep,
 } from "../analytics/analytics";
 
-const TARGETS = [
-  "resultat . statut",
-  "resultat . document",
-  "resultat . mode transport",
-] as const;
-
 const formBuilder = new FormBuilder({ engine });
 
-export function Simulateur() {
+type Props = {
+  // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).
+  outil: string;
+  // Règles cibles : leur graphe de dépendances détermine les questions posées.
+  cibles: readonly string[];
+  // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions
+  // correspondantes ne sont pas reposées.
+  situationInitiale?: Situation<string>;
+  // Libellé du bouton de la dernière page.
+  labelFin: string;
+  onTermine: (situation: Situation<string>) => void;
+};
+
+// Parcours de questions générique piloté par `@publicodes/forms`. Un même
+// moteur amorcé avec une situation initiale différente produit deux
+// questionnaires distincts (Partie 1 vs Partie 2), sans logique dédiée.
+export function Parcours({
+  outil,
+  cibles,
+  situationInitiale,
+  labelFin,
+  onTermine,
+}: Props) {
   const [formState, setFormState] = useState<FormState<string>>(() =>
-    formBuilder.start(FormBuilder.newState(), ...TARGETS)
+    formBuilder.start(FormBuilder.newState(situationInitiale), ...cibles)
   );
-  const [done, setDone] = useState(false);
 
   const { current, pageCount, hasNextPage, hasPreviousPage } =
     formBuilder.pagination(formState);
+  const currentPage = formBuilder.currentPage(formState);
 
-  // Suivi analytics : début du parcours, et abandon si l'onglet est quitté
-  // avant d'atteindre le résultat (refs pour éviter les valeurs périmées).
-  const completedRef = useRef(false);
-  const currentRef = useRef(current);
-  currentRef.current = current;
+  // Toutes les cibles sont déjà déterminées par la situation initiale : aucune
+  // question à poser (parcours court, ex. cas tranché dès la Partie 1). On
+  // termine immédiatement. Le ref évite le double-déclenchement en StrictMode.
+  const aucuneQuestion = !hasNextPage && currentPage.elements.length === 0;
+  const termineRef = useRef(false);
 
   useEffect(() => {
-    trackSimulationStart();
+    if (aucuneQuestion && !termineRef.current) {
+      termineRef.current = true;
+      onTermine(formState.situation);
+    }
+  }, [aucuneQuestion, formState, onTermine]);
+
+  // Suivi analytics : début du parcours, abandon si l'onglet est quitté avant
+  // la fin (refs pour éviter les valeurs périmées dans le gestionnaire).
+  const currentRef = useRef(current);
+  currentRef.current = current;
+  useEffect(() => {
+    if (aucuneQuestion) return;
+    trackSimulationStart(outil);
     const onLeave = () => {
-      if (!completedRef.current) trackSimulationAbandon(currentRef.current);
+      if (!termineRef.current) trackSimulationAbandon(currentRef.current, outil);
     };
     window.addEventListener("pagehide", onLeave);
     return () => window.removeEventListener("pagehide", onLeave);
+    // Amorçage unique au montage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const currentPage = formBuilder.currentPage(formState);
 
   function handleChange(id: string, value: unknown) {
     setFormState(
@@ -60,15 +87,11 @@ export function Simulateur() {
     if (hasNextPage) {
       const next = formBuilder.goToNextPage(formState);
       setFormState(next);
-      trackSimulationStep(formBuilder.pagination(next).current);
+      trackSimulationStep(formBuilder.pagination(next).current, outil);
     } else {
-      setDone(true);
-      completedRef.current = true;
-      trackSimulationComplete();
-      const statut = engine
-        .setSituation(formState.situation)
-        .evaluate("resultat . statut").nodeValue;
-      trackResultat(typeof statut === "string" ? statut : "");
+      termineRef.current = true;
+      trackSimulationComplete(outil);
+      onTermine(formState.situation);
     }
   }
 
@@ -76,37 +99,11 @@ export function Simulateur() {
     setFormState(formBuilder.goToPreviousPage(formState));
   }
 
-  // Revient au formulaire depuis les résultats, réponses conservées : le
-  // formState reste positionné sur la dernière page saisie.
-  function handleBack() {
-    setDone(false);
-  }
-
-  function handleReset() {
-    setDone(false);
-    setFormState(formBuilder.start(FormBuilder.newState(), ...TARGETS));
-  }
-
-  if (done) {
-    return (
-      <main
-        className="fr-container"
-        style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-      >
-        <Resultats
-          situation={formState.situation}
-          onBack={handleBack}
-          onReset={handleReset}
-        />
-      </main>
-    );
-  }
+  // En cours de bascule vers la page de résultat : rien à afficher.
+  if (aucuneQuestion) return null;
 
   return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-    >
+    <>
       <div
         className="fr-stepper"
         aria-label="Étapes du formulaire"
@@ -153,10 +150,10 @@ export function Simulateur() {
             </button>
           )}
           <button type="submit" className="fr-btn">
-            {hasNextPage ? "Suivant" : "Voir les résultats"}
+            {hasNextPage ? "Suivant" : labelFin}
           </button>
         </div>
       </form>
-    </main>
+    </>
   );
 }
