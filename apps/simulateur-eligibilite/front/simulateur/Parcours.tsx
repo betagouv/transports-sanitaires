@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { FormBuilder } from "@publicodes/forms";
-import type { FormState } from "@publicodes/forms";
+import type {
+  EvaluatedFormElement,
+  FormPageElementProp,
+  FormState,
+} from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { engine } from "./engine";
 import { construirePages } from "./pages";
@@ -97,6 +101,18 @@ export function Parcours({
     setFormState(s);
   }
 
+  // Valeur booléenne courante d'une règle : depuis son champ de page s'il est
+  // présent, sinon par évaluation (cas d'une règle « aucun » inerte, hors page).
+  function valeurRegle(
+    id: string,
+    champ?: EvaluatedFormElement & FormPageElementProp
+  ): boolean {
+    if (champ) return valeurBool(champ) === true;
+    return (
+      engine.setSituation(formState.situation).evaluate(id).nodeValue === true
+    );
+  }
+
   function handleNext() {
     if (hasNextPage) {
       const next = formBuilder.goToNextPage(formState);
@@ -139,8 +155,18 @@ export function Parcours({
       const opts = m.optionIds
         .map((id) => parId.get(id))
         .filter((e): e is NonNullable<typeof e> => Boolean(e));
-      const aucunCoche =
-        opts.length > 0 && opts.every((o) => valeurBool(o) === false);
+      const aucunId = m.aucun?.id;
+      // État de « aucun » lu sur SA règle (champ de page si présent, sinon
+      // évaluation) — pas dérivé des autres options, car cette règle peut porter
+      // de la logique métier (ex. p1_critere_aucune_situation_encadree).
+      const aucunCoche = aucunId
+        ? valeurRegle(aucunId, parId.get(aucunId))
+        : false;
+      // Écritures liées à « aucun » (exclusivité) ajoutées à chaque bascule.
+      const ecrireAucun = (
+        v: boolean | undefined
+      ): Array<[string, boolean | undefined]> =>
+        aucunId ? [[aucunId, v]] : [];
       return (
         <Mosaique
           key={m.parentId}
@@ -148,19 +174,21 @@ export function Parcours({
           options={opts}
           aucun={m.aucun ? { label: m.aucun.label, coche: aucunCoche } : undefined}
           onToggleOption={(id, coche) =>
-            appliquerMosaique(
-              opts.map((o): [string, boolean | undefined] =>
+            appliquerMosaique([
+              ...opts.map((o): [string, boolean | undefined] =>
                 o.id === id ? [o.id, coche] : [o.id, valeurBool(o) === true]
-              )
-            )
+              ),
+              // Cocher/décocher une option exclut « aucun ».
+              ...ecrireAucun(false),
+            ])
           }
           onToggleAucun={(coche) =>
-            appliquerMosaique(
-              opts.map((o): [string, boolean | undefined] => [
-                o.id,
-                coche ? false : undefined,
-              ])
-            )
+            appliquerMosaique([
+              // « Aucun » décoche toutes les options…
+              ...opts.map((o): [string, boolean | undefined] => [o.id, false]),
+              // …et active/désactive sa propre règle.
+              ...ecrireAucun(coche),
+            ])
           }
         />
       );

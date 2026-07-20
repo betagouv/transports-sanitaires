@@ -85,8 +85,9 @@ p1_motif:
 La logique (« si ALD → M2 », « si un motif hors ALD → ouvrant droit ») s'encode
 ensuite en référençant les booléens (`p1_motif_ald`, `une de ces conditions`…).
 
-## Limite front connue (à signaler)
+## Option « aucun » à sémantique métier
 
-L'option « aucun » est traitée comme **inerte** (l'UI décoche juste les autres). Un
-« aucun » qui **déclenche** de la logique aval nécessiterait que le front active
-aussi cette règle — non géré aujourd'hui.
+Cocher « aucun » **active sa propre règle** (`option aucun`) en plus de décocher les
+autres options. Un « aucun » porteur de logique aval — ex.
+`p1_critere_aucune_situation_encadree`, qui déduit le transport « véhicule personnel
+ou transport en commun » — est donc correctement pris en compte.

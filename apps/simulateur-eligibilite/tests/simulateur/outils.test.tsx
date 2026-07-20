@@ -128,6 +128,50 @@ describe("prescripteur — parcours médical", () => {
     expect(ald).not.toBeChecked();
   });
 
+  it("critères — « Aucune situation » (aucun à sémantique métier) mène au transport véhicule personnel", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    // Situation : Non aux 3 booléens.
+    for (const g of screen.getAllByRole("group")) {
+      const non = within(g).queryByRole("radio", { name: "Non" });
+      if (non) await user.click(non);
+    }
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Motif : cocher « hospitalisation ».
+    const motif = screen.getByRole("group", {
+      name: /quelle situation justifie le transport/i,
+    });
+    await user.click(
+      within(motif).getByRole("checkbox", { name: /hospitalisation/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Critères : cocher « Aucune de ces situations » (option aucun = règle métier
+    // p1_critere_aucune_situation_encadree, qui doit être activée).
+    const crit = screen.getByRole("group", {
+      name: /prise en charge plus encadrée/i,
+    });
+    await user.click(
+      within(crit).getByRole("checkbox", { name: /aucune de ces situations/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^voir/i }));
+
+    // Résultat déduit : transport véhicule personnel ou transport en commun.
+    expect(
+      screen.getByRole("heading", { name: /avis médical favorable/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/véhicule personnel ou transport en commun/i)
+    ).toBeInTheDocument();
+  });
+
   it("contrainte bariatrique seule → avis défavorable", async () => {
     const user = userEvent.setup();
     render(
