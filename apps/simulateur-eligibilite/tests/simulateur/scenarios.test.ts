@@ -7,7 +7,7 @@ import { makeEngine } from "./engine";
 const base: Record<string, string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "non",
+  p1_situation_permission_sans_motif_medical: "'non'",
   p1_motif_hospitalisation: "non",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "non",
@@ -19,7 +19,7 @@ const base: Record<string, string> = {
   p1_motif_aucun: "non",
   // v6 : les critères ne sont applicables qu'après réponse à l'autonomie, elle-même
   // gatée par la sélection d'un motif. Base neutre : autonomie répondue.
-  p1_autonomie: "'aucune de ces situations'",
+  p1_autonomie: "'Aucune de ces situations.'",
   p1_critere_regles_hygiene: "non",
   p1_critere_risques_effets_secondaires: "non",
   p1_critere_fauteuil_sans_transfert: "non",
@@ -54,7 +54,7 @@ const base: Record<string, string> = {
   p2_nombre_transports_prevus: "1",
   p2_transport_urgence: "'non'",
   p2_accident_cause_par_tiers: "non",
-  p2_convocation_ou_avis_type: "'convocation contrôle médical'",
+  p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
 };
 
 const TARGETS = [
@@ -102,7 +102,7 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
   },
   {
     id: "ROUTE-P1-03-PERMISSION",
-    inputs: { p1_situation_permission_sans_motif_medical: "oui" },
+    inputs: { p1_situation_permission_sans_motif_medical: "'oui'" },
     expected: {
       resultat_medical: "défavorable",
       transport_sanitaire_prescrit: "aucun",
