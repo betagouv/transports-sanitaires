@@ -39,7 +39,7 @@ type VarianteDev = "favorable" | "defavorable" | "final-succes" | "final-refus";
 const SITUATION_DEMO_DEV_FAVORABLE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "'non'",
+  p1_situation_permission_sans_motif_medical: "'Non'",
   p1_motif_hospitalisation: "oui",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "non",
@@ -63,7 +63,7 @@ const SITUATION_DEMO_DEV_FAVORABLE: Situation<string> = {
 const SITUATION_DEMO_DEV_DEFAVORABLE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "'non'",
+  p1_situation_permission_sans_motif_medical: "'Non'",
   p1_motif_hospitalisation: "non",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "non",
@@ -88,7 +88,7 @@ const SITUATION_DEMO_DEV_DEFAVORABLE: Situation<string> = {
 const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "'non'",
+  p1_situation_permission_sans_motif_medical: "'Non'",
   p1_motif_hospitalisation: "non",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "oui",
@@ -117,12 +117,12 @@ const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
   p2_maternite_eloignee: "non",
   p2_samsah: "non",
   p2_accompagnement_tiers: "non",
-  p2_trajet_aller_retour: "'aller simple'",
-  p2_trajet_depart: "'domicile'",
-  p2_trajet_arrivee: "'structure de soins'",
+  p2_trajet_aller_retour: "'Aller simple'",
+  p2_trajet_depart: "'Domicile'",
+  p2_trajet_arrivee: "'Structure de soins'",
   p2_nombre_transports_prevus: "4",
-  p2_transport_urgence: "'non'",
-  p2_accident_cause_par_tiers: "non",
+  p2_transport_urgence: "'Non'",
+  p2_accident_cause_par_tiers: "'Non'",
 };
 
 // Situation de démo (dev) — Page Résultat 2 finale, cas refus : même P1
@@ -131,7 +131,7 @@ const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
 const SITUATION_DEMO_DEV_FINAL_REFUS: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "'non'",
+  p1_situation_permission_sans_motif_medical: "'Non'",
   p1_motif_hospitalisation: "non",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "oui",
@@ -152,7 +152,8 @@ const SITUATION_DEMO_DEV_FINAL_REFUS: Situation<string> = {
   p1_critere_asepsie: "non",
   p1_critere_aucune_situation_encadree: "non",
   p2_patient_hospitalise: "oui",
-  p2_exception_restant_assurance_maladie: "oui",
+  // v8.9 : `p2_exception_restant_assurance_maladie` est désormais dérivé du type
+  // d'exception A0.2-A0.3 ; on ne renseigne plus que ce dernier.
   p2_exception_type: "'Retour en HAD (Hospitalisation À Domicile).'",
   p2_detenu_hospitalise: "oui",
   p2_detenu_inter_etablissements: "non",
