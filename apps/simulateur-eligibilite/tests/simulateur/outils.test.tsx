@@ -506,4 +506,27 @@ describe("secrétariat — parcours administratif", () => {
       screen.getByText(/contrainte bariatrique seule insuffisante/i)
     ).toBeInTheDocument();
   });
+
+  it("raccourci `situationFinale` : ouvre directement la Page Résultat 2, sans passation", () => {
+    // Aucune passation émise : sans le raccourci, le secrétariat afficherait
+    // « aucune prescription ». Une situation complète en `situationFinale`
+    // court-circuite le parcours et rend le résultat final.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={{
+          p1_situation_smur: "oui",
+          p1_situation_bariatrique_seul: "non",
+          p1_situation_permission_sans_motif_medical: "'non'",
+        }}
+      />
+    );
+
+    expect(
+      screen.getByRole("heading", { name: /transport par équipe SMUR/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /aucune prescription en attente/i })
+    ).toBeNull();
+  });
 });
