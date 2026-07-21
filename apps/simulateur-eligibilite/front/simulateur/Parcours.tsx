@@ -21,7 +21,10 @@ import {
 // pageBuilder par défaut : depuis le séquencement conditionnel du modèle
 // (`applicable si`, v6), la pagination naturelle suffit — le pageBuilder custom
 // est désactivé.
-const formBuilder = new FormBuilder({ engine });
+// `selectTreshold` (sic, orthographe de la lib) : une question à N possibilités
+// est rendue en boutons radio jusqu'à ce seuil (défaut 5), en liste déroulante
+// au-delà. Relevé à 10 pour garder le radio sur les listes un peu longues.
+const formBuilder = new FormBuilder({ engine, selectTreshold: 10 });
 
 type Props = {
   // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).
