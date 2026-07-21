@@ -28,10 +28,12 @@ import type { IdentiteSaisie } from "../../shared/identite-saisie";
 
 type Outil = "prescripteur" | "secretariat";
 
-// Situation de démo (dev) : cas favorable riche — motif hospitalisation +
+type VarianteDev = "favorable" | "defavorable";
+
+// Situation de démo (dev) — cas favorable riche : motif hospitalisation +
 // critère « position allongée » (⇒ ambulance). Ouvre directement le résultat
 // prescripteur avec critères et motifs retenus renseignés.
-const SITUATION_DEMO_DEV: Situation<string> = {
+const SITUATION_DEMO_DEV_FAVORABLE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   p1_situation_permission_sans_motif_medical: "non",
@@ -51,6 +53,35 @@ const SITUATION_DEMO_DEV: Situation<string> = {
   p1_critere_oxygene: "non",
   p1_critere_asepsie: "non",
   p1_critere_aucune_situation_encadree: "non",
+};
+
+// Situation de démo (dev) — cas défavorable : aucun motif ouvrant droit et
+// aucune situation encadrée (⇒ transport non justifié médicalement).
+const SITUATION_DEMO_DEV_DEFAVORABLE: Situation<string> = {
+  p1_situation_smur: "non",
+  p1_situation_bariatrique_seul: "non",
+  p1_situation_permission_sans_motif_medical: "non",
+  p1_motif_hospitalisation: "non",
+  p1_motif_seance_chimio_radio_hemodialyse: "non",
+  p1_motif_ald: "non",
+  p1_motif_accident_travail_maladie_professionnelle: "non",
+  p1_motif_retour_etablissement_penitentiaire: "non",
+  p1_motif_aucun: "oui",
+  p1_autonomie: "'aucune de ces situations'",
+  p1_critere_regles_hygiene: "non",
+  p1_critere_risques_effets_secondaires: "non",
+  p1_critere_fauteuil_sans_transfert: "non",
+  p1_critere_position_allongee_demi_assise: "non",
+  p1_critere_brancardage_portage: "non",
+  p1_critere_surveillance_personne_qualifiee: "non",
+  p1_critere_oxygene: "non",
+  p1_critere_asepsie: "non",
+  p1_critere_aucune_situation_encadree: "oui",
+};
+
+const SITUATIONS_DEMO_DEV: Record<VarianteDev, Situation<string>> = {
+  favorable: SITUATION_DEMO_DEV_FAVORABLE,
+  defavorable: SITUATION_DEMO_DEV_DEFAVORABLE,
 };
 
 type Props = {
@@ -84,9 +115,10 @@ export function App({
   }
 
   // Raccourci dev : saute l'identification (identité non pseudonymisée, suivi
-  // analytics dégradé) et ouvre le résultat prescripteur sur une situation type.
-  function accesDirectDev() {
-    setSituationDev(SITUATION_DEMO_DEV);
+  // analytics dégradé) et ouvre le résultat prescripteur sur une situation type,
+  // favorable ou défavorable selon la variante.
+  function accesDirectDev(variante: VarianteDev) {
+    setSituationDev(SITUATIONS_DEMO_DEV[variante]);
     setOutil("prescripteur");
     setIdentifie(true);
   }
