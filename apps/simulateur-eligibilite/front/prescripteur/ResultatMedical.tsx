@@ -253,18 +253,20 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
               doivent être réunis :
             </p>
 
-            <p>
-              <strong>1. Une situation ouvrant droit à la prise en charge</strong>
-              <br />
+            <p className="fr-mb-4w">
+              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
+                1. Une situation ouvrant droit à la prise en charge
+              </strong>
               Par exemple : une hospitalisation, certains soins liés à une
               affection de longue durée, un accident du travail, une maladie
               professionnelle ou une autre situation prévue par l’Assurance
               Maladie.
             </p>
 
-            <p>
-              <strong>2. Un besoin médical de transport adapté</strong>
-              <br />
+            <p className="fr-mb-4w">
+              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
+                2. Un besoin médical de transport adapté
+              </strong>
               Par exemple : un besoin d’être transporté en ambulance, en VSL, en
               taxi conventionné, dans un véhicule adapté au fauteuil roulant, ou
               avec un niveau d’aide compatible avec votre état de santé.
