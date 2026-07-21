@@ -173,6 +173,37 @@ describe("prescripteur — parcours médical", () => {
     expect(ald).not.toBeChecked();
   });
 
+  it("motifs (M1.1) : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await passerFiltresM0(user);
+
+    const motif = screen.getByRole("group", {
+      name: /quelle situation justifie le transport/i,
+    });
+    const hospit = within(motif).getByRole("checkbox", {
+      name: /hospitalisation/i,
+    });
+
+    // La mosaïque fige toutes ses options dans la situation à chaque clic ; une
+    // fois « répondues » au sens de @publicodes/forms, un coche→décoche laisse le
+    // groupe visuellement vide MAIS sans « aucun » explicite. Le parcours ne doit
+    // pas être considéré terminé : le CTA de fin ne doit pas apparaître et
+    // l'avancement reste bloqué (« aucune sélection » n'est pas une réponse).
+    await user.click(hospit);
+    await user.click(hospit);
+    expect(hospit).not.toBeChecked();
+
+    expect(screen.queryByRole("button", { name: /^voir/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /^suivant$/i })).toBeDisabled();
+  });
+
   it("critères — « Aucune situation » (aucun à sémantique métier) mène au transport véhicule personnel", async () => {
     const user = userEvent.setup();
     render(
