@@ -453,7 +453,7 @@ describe("secrétariat — parcours administratif", () => {
     ).toBeInTheDocument();
   });
 
-  it("cas tranché dès la Partie 1 (SMUR) : affiche directement le document", () => {
+  it("cas tranché dès la Partie 1 (SMUR) : affiche directement la Page Résultat 2", () => {
     emettrePassation({
       p1_situation_smur: "oui",
       p1_situation_bariatrique_seul: "non",
@@ -461,9 +461,49 @@ describe("secrétariat — parcours administratif", () => {
     });
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
-    expect(screen.getByRole("heading", { name: /^SMUR$/i })).toBeInTheDocument();
+    // Bloc 1 — résultat final (titre du cas SMUR).
     expect(
-      screen.getByRole("heading", { name: /document à remettre au patient/i })
+      screen.getByRole("heading", { name: /transport par équipe SMUR/i })
+    ).toBeInTheDocument();
+    // Bloc 2 — information destinée au patient, avec les étapes.
+    expect(
+      screen.getByRole("heading", { name: /information destinée au patient/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /ce que vous devez faire maintenant/i })
+    ).toBeInTheDocument();
+    // Bloc 3 — informations pour le corps médical, avec le document (en texte).
+    expect(
+      screen.getByRole("heading", { name: /informations pour le corps médical/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/document à remettre au patient/i)).toBeInTheDocument();
+  });
+
+  it("cas défavorable sans transport (bariatrique) : bloc patient sur les deux conditions et reste à charge", () => {
+    emettrePassation({
+      p1_situation_smur: "non",
+      p1_situation_bariatrique_seul: "oui",
+    });
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    // Bloc 1 — aucun transport prescrit.
+    expect(
+      screen.getByRole("heading", { name: /au titre du seul motif « bariatrique »/i })
+    ).toBeInTheDocument();
+    // Bloc 2 — variante « aucun transport » : rappel des deux conditions, pas de
+    // section critères/motifs retenus.
+    expect(
+      screen.getByText(/deux éléments doivent être réunis/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /critères médicaux retenus/i })
+    ).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: /prise en charge \/ reste à charge/i })
+    ).toBeInTheDocument();
+    // Bloc 3 — cas retenu détaillé pour le corps médical.
+    expect(
+      screen.getByText(/contrainte bariatrique seule insuffisante/i)
     ).toBeInTheDocument();
   });
 });
