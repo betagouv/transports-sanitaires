@@ -28,8 +28,8 @@ type Props = {
   referentiel?: Referentiel;
   onValide: (saisie: IdentiteSaisie) => void;
   // Raccourci dev (fourni uniquement en mode dev) : ouvre directement le
-  // résultat prescripteur sans passer par le formulaire.
-  onAccesDirectDev?: () => void;
+  // résultat prescripteur sans passer par le formulaire, favorable ou non.
+  onAccesDirectDev?: (variante: "favorable" | "defavorable") => void;
 };
 
 const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de santé";
@@ -277,13 +277,22 @@ export function Identification({
             Accéder au simulateur
           </button>
           {onAccesDirectDev && (
-            <button
-              type="button"
-              className="fr-btn fr-btn--secondary"
-              onClick={onAccesDirectDev}
-            >
-              Résultat prescripteur (dev)
-            </button>
+            <>
+              <button
+                type="button"
+                className="fr-btn fr-btn--secondary"
+                onClick={() => onAccesDirectDev("favorable")}
+              >
+                Résultat favorable (dev)
+              </button>
+              <button
+                type="button"
+                className="fr-btn fr-btn--secondary"
+                onClick={() => onAccesDirectDev("defavorable")}
+              >
+                Résultat défavorable (dev)
+              </button>
+            </>
           )}
         </div>
       </form>
