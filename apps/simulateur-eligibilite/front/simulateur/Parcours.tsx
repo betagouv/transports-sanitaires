@@ -6,7 +6,7 @@ import type {
   FormState,
 } from "@publicodes/forms";
 import type { Situation } from "publicodes";
-import { engine } from "./engine";
+import { engine, reglesBrutes } from "./engine";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
@@ -34,6 +34,15 @@ type Props = {
   // Libellé du bouton de la dernière page.
   labelFin: string;
   onTermine: (situation: Situation<string>) => void;
+};
+
+// Identifiant fonctionnel (spec_id) d'une règle, lu depuis les métadonnées
+// brutes du modèle — pour la trace de debug uniquement.
+const specIdDe = (id: string): string | undefined => {
+  const regle = reglesBrutes[id];
+  return regle && typeof regle === "object"
+    ? (regle as { spec_id?: string }).spec_id
+    : undefined;
 };
 
 // Parcours de questions générique piloté par `@publicodes/forms`. Un même
@@ -307,7 +316,20 @@ export function Parcours({
                   key={i}
                   style={{ fontWeight: i === current - 1 ? 700 : 400 }}
                 >
-                  <code>{page.elements.join(", ") || "—"}</code>
+                  {page.elements.length === 0 ? (
+                    <code>—</code>
+                  ) : (
+                    page.elements.map((id, j) => {
+                      const specId = specIdDe(id);
+                      return (
+                        <span key={id}>
+                          {j > 0 ? ", " : ""}
+                          <code>{id}</code>
+                          {specId ? ` [${specId}]` : ""}
+                        </span>
+                      );
+                    })
+                  )}
                   {i === current - 1 ? " ◀" : ""}
                 </li>
               ))}
