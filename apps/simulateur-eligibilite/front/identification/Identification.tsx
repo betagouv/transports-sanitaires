@@ -9,11 +9,9 @@
 
 import { useEffect, useState } from "react";
 import {
-  ETAB_NON_RATTACHE,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
   saisieComplete,
-  type Categorie,
   type IdentiteSaisie,
 } from "../../shared/identite-saisie";
 import {
@@ -35,13 +33,12 @@ type Props = {
   ) => void;
 };
 
-const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de santé";
 const OPTION_SERVICE_AUTRE = "Autre";
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
 
 // Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
-// aux accents). Les options spéciales (« non rattaché », « Autre », « hors
-// liste ») sont ajoutées séparément après la liste et gardent leur place.
+// aux accents). Les options spéciales (« Autre », « hors liste ») sont ajoutées
+// séparément après la liste et gardent leur place.
 const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
   [...liste].sort((a, b) =>
     a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" })
@@ -57,7 +54,6 @@ export function Identification({
   const [prescripteurs, setPrescripteurs] = useState<Prescripteur[]>([]);
 
   const [etabId, setEtabId] = useState("");
-  const [categorie, setCategorie] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [serviceLibre, setServiceLibre] = useState("");
   const [prescripteurId, setPrescripteurId] = useState("");
@@ -70,10 +66,8 @@ export function Identification({
       .then((l) => setEtablissements(triParLibelle(l)));
   }, [referentiel]);
 
-  // Changement d'établissement → réinitialise l'aval, recharge les services si
-  // c'est un établissement réel.
+  // Changement d'établissement → réinitialise l'aval, recharge les services.
   useEffect(() => {
-    setCategorie("");
     setServiceId("");
     setServiceLibre("");
     setPrescripteurId("");
@@ -81,7 +75,7 @@ export function Identification({
     setPrenom("");
     setServices([]);
     setPrescripteurs([]);
-    if (etabId && etabId !== ETAB_NON_RATTACHE) {
+    if (etabId) {
       referentiel.getServices(etabId).then((l) => setServices(triParLibelle(l)));
     }
   }, [referentiel, etabId]);
@@ -94,32 +88,22 @@ export function Identification({
     setNom("");
     setPrenom("");
     setPrescripteurs([]);
-    if (serviceId && serviceId !== SERVICE_AUTRE && etabId !== ETAB_NON_RATTACHE) {
+    if (serviceId && serviceId !== SERVICE_AUTRE) {
       referentiel
         .getPrescripteurs(serviceId)
         .then((l) => setPrescripteurs(triParLibelle(l)));
     }
-  }, [referentiel, serviceId, etabId]);
+  }, [referentiel, serviceId]);
 
-  const nonRattache = etabId === ETAB_NON_RATTACHE;
-  const etabReel = etabId !== "" && !nonRattache;
+  const etabChoisi = etabId !== "";
   const serviceAutre = serviceId === SERVICE_AUTRE;
   const serviceReel = serviceId !== "" && !serviceAutre;
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
-  const identiteLibre =
-    (nonRattache && categorie !== "") ||
-    serviceAutre ||
-    (serviceReel && prescripteurHorsListe);
+  const identiteLibre = serviceAutre || (serviceReel && prescripteurHorsListe);
 
   function buildSaisie(): IdentiteSaisie {
     const saisie: IdentiteSaisie = { etabId };
-    if (nonRattache) {
-      if (categorie) saisie.categorie = categorie as Categorie;
-      saisie.nom = nom;
-      saisie.prenom = prenom;
-      return saisie;
-    }
-    if (etabReel && serviceId) {
+    if (etabChoisi && serviceId) {
       saisie.serviceId = serviceId;
       if (serviceAutre) {
         saisie.serviceLibre = serviceLibre;
@@ -168,31 +152,10 @@ export function Identification({
                 {etab.libelle}
               </option>
             ))}
-            <option value={ETAB_NON_RATTACHE}>{OPTION_NON_RATTACHE}</option>
           </select>
         </div>
 
-        {nonRattache && (
-          <div className="fr-select-group">
-            <label className="fr-label" htmlFor="categorie">
-              Précisez votre situation
-            </label>
-            <select
-              className="fr-select"
-              id="categorie"
-              value={categorie}
-              onChange={(e) => setCategorie(e.target.value)}
-            >
-              <option value="" disabled hidden>
-                Sélectionnez
-              </option>
-              <option value="liberal">J'exerce en libéral</option>
-              <option value="cnam">Je travaille au Ministère ou à la CNAM</option>
-            </select>
-          </div>
-        )}
-
-        {etabReel && (
+        {etabChoisi && (
           <div className="fr-select-group">
             <label className="fr-label" htmlFor="service">
               Nom du service

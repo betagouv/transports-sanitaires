@@ -21,11 +21,14 @@ const actif =
 describe.skipIf(!actif)("écriture Grist depuis une saisie libre (smoke)", () => {
   const ref = chooseReferentiel();
 
-  it("crée un prescripteur hors liste puis le déduplique (branche libéral)", async () => {
+  it("crée un prescripteur hors liste puis le déduplique (service Libéral)", async () => {
     const marqueur = `TEST-${Date.now()}`;
+    // Établissement « Libéral / CNAM / CPAM / Autre » (Id2=11) → service « Libéral »
+    // (Id2=3) → prescripteur hors liste : plus de branche « non rattaché » dédiée.
     const sel = {
-      etabId: "etab_non_rattache",
-      categorie: "liberal" as const,
+      etabId: "11",
+      serviceId: "3",
+      prescripteurId: "prescripteur_hors_liste" as const,
       nom: marqueur,
       prenom: "Smoke",
     };

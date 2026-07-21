@@ -164,19 +164,6 @@ describe("POST /api/identite-pseudonymisee", () => {
     expect(JSON.stringify(ctx)).not.toMatch(/durand|léa/i);
   });
 
-  it("branche « non rattaché » : etabRef = catégorie, pas de serviceRef", async () => {
-    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
-      etabId: "etab_non_rattache",
-      categorie: "liberal",
-      nom: "Martin",
-      prenom: "Paul",
-    });
-    expect(status).toBe(200);
-    expect(ctx.etabRef).toBe(empreinte(SECRET, "categorie:liberal"));
-    expect(ctx.serviceRef).toBeUndefined();
-    expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:martin|paul"));
-  });
-
   it("refuse une sélection incomplète", async () => {
     const { status, body } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
@@ -256,18 +243,6 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
       prescripteurId: "prescripteur_hors_liste",
       nom: "Dupont",
       prenom: "Marie",
-    };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
-    expect(status).toBe(200);
-    expect(appels).toEqual([sel]);
-  });
-
-  it("déclenche l'enrichissement pour la branche « non rattaché »", async () => {
-    const sel = {
-      etabId: "etab_non_rattache",
-      categorie: "liberal",
-      nom: "Martin",
-      prenom: "Paul",
     };
     const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
     expect(status).toBe(200);

@@ -20,8 +20,8 @@ export interface Referentiel {
   getPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
   /**
    * Enrichit le référentiel avec les **saisies libres** d'une sélection (service
-   * « autre », prescripteur « hors liste », exercice libéral/CNAM). Optionnel : seule
-   * la source Grist l'implémente (le client HTTP front n'écrit jamais). Voir
+   * « autre », prescripteur « hors liste »). Optionnel : seule la source Grist
+   * l'implémente (le client HTTP front n'écrit jamais). Voir
    * docs/specs/enrichissement-referentiel-saisies-libres.md.
    */
   enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
@@ -34,6 +34,10 @@ const ETABLISSEMENTS: Etablissement[] = [
   { id: "e_chu_grenoble", libelle: "CHU Grenoble Alpes" },
   { id: "e_ch_chambery", libelle: "Centre hospitalier de Chambéry" },
   { id: "e_clinique_belledonne", libelle: "Clinique Belledonne" },
+  // Établissement « fourre-tout » du référentiel pour les prescripteurs sans
+  // établissement de rattachement : ils le sélectionnent puis renseignent leur
+  // service (ou « Autre ») et leur identité (« hors liste »).
+  { id: "e_liberal_cnam", libelle: "Libéral / CNAM / CPAM / Autre" },
 ];
 
 const SERVICES: SnapshotService[] = [
@@ -43,6 +47,8 @@ const SERVICES: SnapshotService[] = [
   { id: "s_chambery_urgences", etabId: "e_ch_chambery", libelle: "Urgences" },
   { id: "s_chambery_medecine", etabId: "e_ch_chambery", libelle: "Médecine interne" },
   { id: "s_belledonne_chirurgie", etabId: "e_clinique_belledonne", libelle: "Chirurgie ambulatoire" },
+  { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
+  { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
 ];
 
 const PRESCRIPTEURS: SnapshotPrescripteur[] = [

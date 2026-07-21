@@ -3,7 +3,6 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Identification } from "../../front/identification/Identification";
 import {
-  ETAB_NON_RATTACHE,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
 } from "../../shared/identite-saisie";
@@ -54,19 +53,23 @@ describe("parcours d'identification", () => {
     });
   });
 
-  it("non rattaché → catégorie → saisie nom/prénom", async () => {
+  it("établissement « Libéral / CNAM / CPAM / Autre » → service → hors liste → nom/prénom", async () => {
+    // Le prescripteur sans établissement de rattachement passe désormais par
+    // l'établissement fourre-tout du référentiel, sans branche dédiée.
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);
 
-    await choisir(/Établissement/, "Je ne suis pas rattaché à un établissement de santé");
-    await choisir(/Précisez votre situation/, "J'exerce en libéral");
+    await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
+    await choisir(/Nom du service/, "Libéral");
+    await choisir(/Vous êtes/, "Je ne suis pas dans la liste");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Martin");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Paul");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
-      etabId: ETAB_NON_RATTACHE,
-      categorie: "liberal",
+      etabId: "e_liberal_cnam",
+      serviceId: "s_liberal",
+      prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Martin",
       prenom: "Paul",
     });

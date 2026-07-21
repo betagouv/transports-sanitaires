@@ -22,11 +22,9 @@ import type {
   Service,
 } from "../../shared/referentiel.ts";
 import {
-  ETAB_NON_RATTACHE,
   normalise,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
-  type Categorie,
   type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
@@ -46,9 +44,7 @@ export function createGristReferentiel({
     async getEtablissements(): Promise<Etablissement[]> {
       return (await records(TABLE.etablissements))
         .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
-        // On masque l'établissement « Libéral / CNAM » : c'est le support de l'option
-        // « non rattaché », pas un établissement sélectionnable.
-        .filter((e) => e.id && e.libelle && e.id !== ETAB_ID_NON_RATTACHE);
+        .filter((e) => e.id && e.libelle);
     },
 
     async getServices(etabId: string): Promise<Service[]> {
@@ -80,18 +76,6 @@ export function createGristReferentiel({
         const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
         if (etabRowId == null) return;
         const serviceRowId = await assurerService(etabRowId, saisie.serviceLibre);
-        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
-        return;
-      }
-
-      // Non rattaché : prescripteur sous le service libéral/CNAM existant.
-      if (saisie.etabId === ETAB_NON_RATTACHE) {
-        if (!saisie.categorie || !saisie.nom || !saisie.prenom) return;
-        const serviceRowId = await rowIdForId(
-          TABLE.services,
-          SERVICE_ID_PAR_CATEGORIE[saisie.categorie]
-        );
-        if (serviceRowId == null) return;
         await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
         return;
       }
@@ -234,20 +218,6 @@ const COL = {
 // Marqueur écrit dans la colonne `Origine` des lignes issues du formulaire (par
 // opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
 const ORIGINE_FORMULAIRE = "formulaire";
-
-// Branche « non rattaché » : le porteur a créé dans Grist un établissement
-// « Libéral / CNAM » (Id2 ci-dessous) et deux services porteurs. Cet établissement est
-// la contrepartie de l'option « Je ne suis pas rattaché à un établissement de santé » :
-// il ne doit **jamais** apparaître dans la liste des établissements (il n'accueille que
-// les prescripteurs non rattachés).
-const ETAB_ID_NON_RATTACHE = "2";
-
-// On rattache le prescripteur libre au service porteur selon la catégorie d'exercice
-// (Id2 métier des services, tous deux enfants de l'établissement ci-dessus).
-const SERVICE_ID_PAR_CATEGORIE: Record<Categorie, string> = {
-  cnam: "2",
-  liberal: "3",
-};
 
 const str = (v: unknown): string =>
   typeof v === "string" ? v.trim() : v == null ? "" : String(v);
