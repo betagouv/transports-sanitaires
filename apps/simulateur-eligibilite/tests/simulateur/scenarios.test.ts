@@ -65,7 +65,7 @@ const TARGETS = [
   "document_a_remettre_au_patient",
 ] as const;
 
-type Sortie = Partial<Record<(typeof TARGETS)[number], string>>;
+type Sortie = Partial<Record<(typeof TARGETS)[number], string | null>>;
 
 function evaluer(inputs: Record<string, string>): Record<string, unknown> {
   const engine = makeEngine({ ...base, ...inputs });
@@ -164,6 +164,8 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
       p1_ald_seance_specifique: "oui",
       p1_critere_regles_hygiene: "oui",
       p2_transport_en_serie: "oui",
+      // v8-6 : une série n'est valide qu'à partir de 4 transports prévus.
+      p2_nombre_transports_prevus: "4",
     },
     expected: {
       resultat_medical: "favorable",
@@ -177,11 +179,29 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
       p1_motif_hospitalisation: "oui",
       p1_critere_regles_hygiene: "oui",
       p2_transport_en_serie: "oui",
+      // v8-6 : une série n'est valide qu'à partir de 4 transports prévus.
+      p2_nombre_transports_prevus: "4",
     },
     expected: {
       resultat_medical: "favorable",
       transport_sanitaire_prescrit: "VSL ou taxi conventionné",
       cas_final: "demande accord préalable",
+    },
+  },
+  {
+    // v8-6 : une série de moins de 4 transports est invalide → les informations
+    // de trajet restent incomplètes et le cas final n'est pas déterminé.
+    id: "SERIE-MOINS-DE-4-CAS-FINAL-INDETERMINE",
+    inputs: {
+      p1_motif_hospitalisation: "oui",
+      p1_critere_regles_hygiene: "oui",
+      p2_transport_en_serie: "oui",
+      p2_nombre_transports_prevus: "3",
+    },
+    expected: {
+      resultat_medical: "favorable",
+      transport_sanitaire_prescrit: "VSL ou taxi conventionné",
+      cas_final: null,
     },
   },
   {
