@@ -27,9 +27,12 @@ import {
 type Props = {
   referentiel?: Referentiel;
   onValide: (saisie: IdentiteSaisie) => void;
-  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement le
-  // résultat prescripteur sans passer par le formulaire, favorable ou non.
-  onAccesDirectDev?: (variante: "favorable" | "defavorable") => void;
+  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement une page
+  // de résultat sans passer par le formulaire — résultat médical (favorable /
+  // défavorable) ou résultat final (succès / refus).
+  onAccesDirectDev?: (
+    variante: "favorable" | "defavorable" | "final-succes" | "final-refus"
+  ) => void;
 };
 
 const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de santé";
@@ -291,6 +294,20 @@ export function Identification({
                 onClick={() => onAccesDirectDev("defavorable")}
               >
                 Résultat défavorable (dev)
+              </button>
+              <button
+                type="button"
+                className="fr-btn fr-btn--tertiary"
+                onClick={() => onAccesDirectDev("final-succes")}
+              >
+                Résultat final — succès (dev)
+              </button>
+              <button
+                type="button"
+                className="fr-btn fr-btn--tertiary"
+                onClick={() => onAccesDirectDev("final-refus")}
+              >
+                Résultat final — refus (dev)
               </button>
             </>
           )}

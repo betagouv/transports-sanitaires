@@ -8,15 +8,34 @@ import { trackResultat } from "../analytics/analytics";
 
 type Props = {
   onNouvelleSimulation: () => void;
+  // Raccourci dev : situation complète (P1 + P2) ouvrant directement la Page
+  // Résultat 2, sans passation ni parcours administratif.
+  situationFinale?: Situation<string> | null;
 };
 
 // Outil 2 — parcours administratif du secrétariat : reprend la Partie 1 puis
 // pose la Partie 2 → Résultat 2. La situation initiale (P1) rend les questions
 // de Partie 1 déjà répondues : `Parcours` ne présente donc que la Partie 2, et
 // bascule directement au résultat quand le cas est tranché dès la Partie 1.
-export function Secretariat({ onNouvelleSimulation }: Props) {
+export function Secretariat({
+  onNouvelleSimulation,
+  situationFinale = null,
+}: Props) {
   const situationP1 = reprendrePassation();
-  const [situation, setSituation] = useState<Situation<string> | null>(null);
+  const [situation, setSituation] = useState<Situation<string> | null>(
+    situationFinale
+  );
+
+  // Situation complète déjà connue (parcours P2 terminé, ou raccourci dev) :
+  // affiche directement la Page Résultat 2.
+  if (situation) {
+    return (
+      <ResultatFinal
+        situation={situation}
+        onNouvelleSimulation={onNouvelleSimulation}
+      />
+    );
+  }
 
   if (!situationP1) {
     return (
@@ -32,28 +51,19 @@ export function Secretariat({ onNouvelleSimulation }: Props) {
     );
   }
 
-  if (!situation) {
-    return (
-      <Parcours
-        outil="secretariat"
-        cibles={["cas_final", "document_a_remettre_au_patient"]}
-        situationInitiale={situationP1}
-        labelFin="Voir le document à remettre au patient"
-        onTermine={(s) => {
-          setSituation(s);
-          const cas = String(
-            engine.setSituation(s).evaluate("cas_final").nodeValue ?? ""
-          );
-          trackResultat(cas, "secretariat");
-        }}
-      />
-    );
-  }
-
   return (
-    <ResultatFinal
-      situation={situation}
-      onNouvelleSimulation={onNouvelleSimulation}
+    <Parcours
+      outil="secretariat"
+      cibles={["cas_final", "document_a_remettre_au_patient"]}
+      situationInitiale={situationP1}
+      labelFin="Voir le document à remettre au patient"
+      onTermine={(s) => {
+        setSituation(s);
+        const cas = String(
+          engine.setSituation(s).evaluate("cas_final").nodeValue ?? ""
+        );
+        trackResultat(cas, "secretariat");
+      }}
     />
   );
 }
