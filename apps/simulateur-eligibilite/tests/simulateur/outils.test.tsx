@@ -50,7 +50,9 @@ async function passerFiltresM0(user: User) {
     /permission de sortie/i,
   ]) {
     const g = await screen.findByRole("group", { name: re });
-    await user.click(within(g).getByRole("radio", { name: "Non" }));
+    // M0.3 (permission) est un choix Oui/Non/Non concerné dont les libellés
+    // sont en minuscules ; ^non$ cible « non » sans matcher « non concerné ».
+    await user.click(within(g).getByRole("radio", { name: /^non$/i }));
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
   }
 }
@@ -424,7 +426,7 @@ describe("secrétariat — parcours administratif", () => {
     emettrePassation({
       p1_situation_smur: "oui",
       p1_situation_bariatrique_seul: "non",
-      p1_situation_permission_sans_motif_medical: "non",
+      p1_situation_permission_sans_motif_medical: "'non'",
     });
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
