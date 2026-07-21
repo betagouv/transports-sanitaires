@@ -27,7 +27,8 @@ export function FormField({ field, onChange }: Props) {
           // on l'omet donc. `classes.inputGroup` ajoute la classe à chaque groupe
           // (le composant ne pose `fr-radio-rich` de lui-même que si une option
           // fournit une `illustration`). Incompatible avec `small`.
-          classes={{ inputGroup: "fr-radio-rich" }}
+          // `legend` porte la question elle-même, mise en avant en `fr-text--lead`.
+          classes={{ inputGroup: "fr-radio-rich", legend: "fr-text--lead" }}
           disabled={field.disabled}
           options={field.options.map((opt) => ({
             label: opt.label,
@@ -43,7 +44,9 @@ export function FormField({ field, onChange }: Props) {
 
       {element === "select" && (
         <Select
-          label={label}
+          // `Select` n'expose pas de prop `classes` : on met la question en avant
+          // en enveloppant le libellé dans un span `fr-text--lead`.
+          label={<span className="fr-text--lead">{label}</span>}
           hint={description}
           disabled={field.disabled}
           nativeSelectProps={{
@@ -70,6 +73,7 @@ export function FormField({ field, onChange }: Props) {
           label={label}
           hintText={description}
           disabled={field.disabled}
+          classes={{ label: "fr-text--lead" }}
           style={{ maxWidth: "16rem" }}
           addon={
             field.unit ? (

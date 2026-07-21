@@ -56,6 +56,7 @@ export function Mosaique({
     <Checkbox
       legend={question}
       options={optionsCheckbox}
+      classes={{ legend: "fr-text--lead" }}
       style={{ marginBottom: "1.5rem" }}
     />
   );
