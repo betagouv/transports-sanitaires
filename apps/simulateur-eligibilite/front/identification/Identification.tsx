@@ -39,6 +39,14 @@ const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de sa
 const OPTION_SERVICE_AUTRE = "Autre";
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
 
+// Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
+// aux accents). Les options spéciales (« non rattaché », « Autre », « hors
+// liste ») sont ajoutées séparément après la liste et gardent leur place.
+const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
+  [...liste].sort((a, b) =>
+    a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" })
+  );
+
 export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
@@ -57,7 +65,9 @@ export function Identification({
   const [prenom, setPrenom] = useState("");
 
   useEffect(() => {
-    referentiel.getEtablissements().then(setEtablissements);
+    referentiel
+      .getEtablissements()
+      .then((l) => setEtablissements(triParLibelle(l)));
   }, [referentiel]);
 
   // Changement d'établissement → réinitialise l'aval, recharge les services si
@@ -72,7 +82,7 @@ export function Identification({
     setServices([]);
     setPrescripteurs([]);
     if (etabId && etabId !== ETAB_NON_RATTACHE) {
-      referentiel.getServices(etabId).then(setServices);
+      referentiel.getServices(etabId).then((l) => setServices(triParLibelle(l)));
     }
   }, [referentiel, etabId]);
 
@@ -85,7 +95,9 @@ export function Identification({
     setPrenom("");
     setPrescripteurs([]);
     if (serviceId && serviceId !== SERVICE_AUTRE && etabId !== ETAB_NON_RATTACHE) {
-      referentiel.getPrescripteurs(serviceId).then(setPrescripteurs);
+      referentiel
+        .getPrescripteurs(serviceId)
+        .then((l) => setPrescripteurs(triParLibelle(l)));
     }
   }, [referentiel, serviceId, etabId]);
 
