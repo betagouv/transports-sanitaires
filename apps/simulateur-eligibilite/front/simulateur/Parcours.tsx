@@ -232,7 +232,6 @@ export function Parcours({
         style={{ marginBottom: "2rem" }}
       >
         <h2 className="fr-stepper__title">
-          {currentPage.title ?? `Étape ${current}`}
           <span className="fr-stepper__state">
             Étape {current} sur {pageCount}
           </span>
