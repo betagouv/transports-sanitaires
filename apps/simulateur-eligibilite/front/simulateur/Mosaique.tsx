@@ -1,3 +1,5 @@
+import type { ChangeEvent } from "react";
+import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import type { EvaluatedFormElement, FormPageElementProp } from "@publicodes/forms";
 import { valeurBool } from "./mosaique";
 
@@ -22,61 +24,39 @@ export function Mosaique({
   onToggleOption,
   onToggleAucun,
 }: Props) {
-  return (
-    <fieldset
-      className="fr-fieldset"
-      style={{ marginBottom: "1.5rem" }}
-      aria-labelledby="mosaique-legend"
-    >
-      <legend
-        className="fr-fieldset__legend fr-text--regular"
-        id="mosaique-legend"
-      >
-        {question}
-      </legend>
-      <div className="fr-fieldset__content">
-        {options.map((opt) => {
-          // On ignore `disabled`/`hidden` (divulgation progressive de
-          // @publicodes/forms, qui « ferme » les options dès que l'agrégat OU
-          // est satisfait) : dans une mosaïque — vrai choix multiple — toute
-          // combinaison doit rester cochable. On respecte en revanche une
-          // non-applicabilité réelle (`applicable si`).
-          if (opt.applicable === false) return null;
-          const coche = valeurBool(opt) === true;
-          return (
-            <div
-              className="fr-checkbox-group fr-checkbox-group--sm"
-              key={opt.id}
-            >
-              <input
-                type="checkbox"
-                id={`mosaique-${opt.id}`}
-                name={opt.id}
-                checked={coche}
-                onChange={(e) => onToggleOption(opt.id, e.target.checked)}
-              />
-              <label className="fr-label" htmlFor={`mosaique-${opt.id}`}>
-                {opt.label}
-              </label>
-            </div>
-          );
-        })}
+  // On ignore `disabled`/`hidden` (divulgation progressive de @publicodes/forms,
+  // qui « ferme » les options dès que l'agrégat OU est satisfait) : dans une
+  // mosaïque — vrai choix multiple — toute combinaison doit rester cochable. On
+  // respecte en revanche une non-applicabilité réelle (`applicable si`).
+  const optionsCheckbox = options
+    .filter((opt) => opt.applicable !== false)
+    .map((opt) => ({
+      label: opt.label,
+      nativeInputProps: {
+        name: opt.id,
+        checked: valeurBool(opt) === true,
+        onChange: (e: ChangeEvent<HTMLInputElement>) =>
+          onToggleOption(opt.id, e.target.checked),
+      },
+    }));
 
-        {aucun && onToggleAucun && (
-          <div className="fr-checkbox-group fr-checkbox-group--sm">
-            <input
-              type="checkbox"
-              id="mosaique-aucun"
-              name="mosaique-aucun"
-              checked={aucun.coche}
-              onChange={(e) => onToggleAucun(e.target.checked)}
-            />
-            <label className="fr-label" htmlFor="mosaique-aucun">
-              {aucun.label}
-            </label>
-          </div>
-        )}
-      </div>
-    </fieldset>
+  if (aucun && onToggleAucun) {
+    optionsCheckbox.push({
+      label: aucun.label,
+      nativeInputProps: {
+        name: "mosaique-aucun",
+        checked: aucun.coche,
+        onChange: (e: ChangeEvent<HTMLInputElement>) =>
+          onToggleAucun(e.target.checked),
+      },
+    });
+  }
+
+  return (
+    <Checkbox
+      legend={question}
+      options={optionsCheckbox}
+      style={{ marginBottom: "1.5rem" }}
+    />
   );
 }

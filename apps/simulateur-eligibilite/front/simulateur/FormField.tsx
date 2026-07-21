@@ -1,3 +1,6 @@
+import { Input } from "@codegouvfr/react-dsfr/Input";
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
+import { Select } from "@codegouvfr/react-dsfr/Select";
 import type { EvaluatedFormElement, FormPageElementProp } from "@publicodes/forms";
 
 type Props = {
@@ -13,91 +16,78 @@ export function FormField({ field, onChange }: Props) {
   return (
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
       {element === "RadioGroup" && (
-        <fieldset
-          className="fr-fieldset"
+        <RadioButtons
           id={`fieldset-${id}`}
-          aria-labelledby={`legend-${id}`}
+          name={id}
+          legend={label}
+          hintText={description}
+          // Variante « riche » DSFR : chaque option est une carte bordée, avec
+          // fond gris + curseur pointeur au survol. Le picto (`fr-radio-rich__img`)
+          // est facultatif — la bordure et le survol sont portés par le label —,
+          // on l'omet donc. `classes.inputGroup` ajoute la classe à chaque groupe
+          // (le composant ne pose `fr-radio-rich` de lui-même que si une option
+          // fournit une `illustration`). Incompatible avec `small`.
+          classes={{ inputGroup: "fr-radio-rich" }}
           disabled={field.disabled}
-        >
-          <legend
-            className="fr-fieldset__legend fr-text--regular"
-            id={`legend-${id}`}
-          >
-            {label}
-            {description && (
-              <span className="fr-hint-text">{description}</span>
-            )}
-          </legend>
-          <div className="fr-fieldset__content">
-            {field.options.map((opt) => (
-              <div className="fr-radio-group fr-radio-group--sm" key={String(opt.value)}>
-                <input
-                  type="radio"
-                  id={`${id}-${opt.value}`}
-                  name={id}
-                  value={String(opt.value)}
-                  checked={(field.value as unknown) === opt.value}
-                  onChange={() => onChange(opt.value)}
-                  autoFocus={field.autofocus && field.value === undefined}
-                />
-                <label className="fr-label" htmlFor={`${id}-${opt.value}`}>
-                  {opt.label}
-                </label>
-              </div>
-            ))}
-          </div>
-        </fieldset>
+          options={field.options.map((opt) => ({
+            label: opt.label,
+            nativeInputProps: {
+              value: String(opt.value),
+              checked: (field.value as unknown) === opt.value,
+              onChange: () => onChange(opt.value),
+              autoFocus: field.autofocus && field.value === undefined,
+            },
+          }))}
+        />
       )}
 
       {element === "select" && (
-        <div className="fr-select-group">
-          <label className="fr-label" htmlFor={id}>
-            {label}
-            {description && <span className="fr-hint-text">{description}</span>}
-          </label>
-          <select
-            className="fr-select"
-            id={id}
-            name={id}
-            value={(field.value as string | undefined) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={field.disabled}
-            autoFocus={field.autofocus && field.value === undefined}
-          >
-            <option value="" disabled hidden>
-              Sélectionnez une option
+        <Select
+          label={label}
+          hint={description}
+          disabled={field.disabled}
+          nativeSelectProps={{
+            id,
+            name: id,
+            value: (field.value as string | undefined) ?? "",
+            onChange: (e) => onChange(e.target.value),
+            autoFocus: field.autofocus && field.value === undefined,
+          }}
+        >
+          <option value="" disabled hidden>
+            Sélectionnez une option
+          </option>
+          {field.options.map((opt) => (
+            <option key={String(opt.value)} value={String(opt.value)}>
+              {opt.label}
             </option>
-            {field.options.map((opt) => (
-              <option key={String(opt.value)} value={String(opt.value)}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          ))}
+        </Select>
       )}
 
       {element === "input" && field.type === "number" && (
-        <div className="fr-input-group">
-          <label className="fr-label" htmlFor={id}>
-            {label}
-            {description && <span className="fr-hint-text">{description}</span>}
-          </label>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <input
-              className="fr-input"
-              type="number"
-              id={id}
-              name={id}
-              min={0}
-              value={field.value ?? field.defaultValue ?? ""}
-              onChange={(e) => onChange(Number(e.target.value))}
-              disabled={field.disabled}
-              autoFocus={field.autofocus}
-              style={{ maxWidth: "12rem" }}
-            />
-            {field.unit && <span>{field.unit}</span>}
-          </div>
-        </div>
+        <Input
+          label={label}
+          hintText={description}
+          disabled={field.disabled}
+          style={{ maxWidth: "16rem" }}
+          addon={
+            field.unit ? (
+              <span className="fr-label" style={{ whiteSpace: "nowrap" }}>
+                {field.unit}
+              </span>
+            ) : undefined
+          }
+          nativeInputProps={{
+            id,
+            name: id,
+            type: "number",
+            min: 0,
+            value: field.value ?? field.defaultValue ?? "",
+            onChange: (e) => onChange(Number(e.target.value)),
+            autoFocus: field.autofocus,
+          }}
+        />
       )}
     </div>
   );

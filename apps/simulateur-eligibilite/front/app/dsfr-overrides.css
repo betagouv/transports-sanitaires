@@ -1,0 +1,13 @@
+/* Surcharges ponctuelles du DSFR. À n'utiliser que lorsqu'aucune prop de
+   composant ni classe utilitaire DSFR ne permet l'ajustement. */
+
+/* Boutons radio « riches » sans picto : le DSFR réserve une hauteur minimale de
+   5.5rem au label pour caler la place du pictogramme
+   (`.fr-fieldset .fr-fieldset__content .fr-radio-rich input[type=radio] + label`).
+   On n'affiche pas de picto, donc la carte n'a pas à faire cette hauteur : on
+   laisse le label épouser son contenu. `.fr-label` en plus = spécificité
+   supérieure au sélecteur DSFR, l'override gagne quel que soit l'ordre de
+   chargement des feuilles de style. */
+.fr-fieldset .fr-fieldset__content .fr-radio-rich input[type="radio"] + label.fr-label {
+  min-height: auto;
+}
