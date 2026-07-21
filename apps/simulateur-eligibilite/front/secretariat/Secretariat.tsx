@@ -52,18 +52,21 @@ export function Secretariat({
   }
 
   return (
-    <Parcours
-      outil="secretariat"
-      cibles={["cas_final", "document_a_remettre_au_patient"]}
-      situationInitiale={situationP1}
-      labelFin="Voir le document à remettre au patient"
-      onTermine={(s) => {
-        setSituation(s);
-        const cas = String(
-          engine.setSituation(s).evaluate("cas_final").nodeValue ?? ""
-        );
-        trackResultat(cas, "secretariat");
-      }}
-    />
+    <>
+      <h1 className="fr-h3">Qualification du document à remettre au patient</h1>
+      <Parcours
+        outil="secretariat"
+        cibles={["cas_final", "document_a_remettre_au_patient"]}
+        situationInitiale={situationP1}
+        labelFin="Voir le document à remettre au patient"
+        onTermine={(s) => {
+          setSituation(s);
+          const cas = String(
+            engine.setSituation(s).evaluate("cas_final").nodeValue ?? ""
+          );
+          trackResultat(cas, "secretariat");
+        }}
+      />
+    </>
   );
 }
