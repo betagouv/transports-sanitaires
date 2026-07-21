@@ -175,7 +175,7 @@ export function Identification({
                 Sélectionnez
               </option>
               <option value="liberal">J'exerce en libéral</option>
-              <option value="cnam">Je travaille à la CNAM</option>
+              <option value="cnam">Je travaille au Ministère ou à la CNAM</option>
             </select>
           </div>
         )}
