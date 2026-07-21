@@ -27,28 +27,31 @@ export function Prescripteur({
 
   if (!situation) {
     return (
-      <Parcours
-        outil="prescripteur"
-        // Décision médicale + sorties Partie 1 destinées au document : cibler ces
-        // sorties fait collecter leurs questions propres (sinon jamais posées,
-        // car applicables mais hors du graphe des cibles). Toutes sont P1 (aucune
-        // dépendance p2_*), donc aucune question Partie 2 n'est posée ici.
-        cibles={[
-          "transport_sanitaire_prescrit",
-          "partie_2_requise",
-          "sortie_transport_partage_incompatible",
-          "sortie_autonomie_patient",
-          "sortie_accompagnant_necessaire",
-        ]}
-        labelFin="Voir le résultat médical"
-        onTermine={(s) => {
-          setSituation(s);
-          const r = String(
-            engine.setSituation(s).evaluate("resultat_medical").nodeValue ?? ""
-          );
-          trackResultat(r, "prescripteur");
-        }}
-      />
+      <>
+        <h1 className="fr-h3">Évaluation médicale du transport</h1>
+        <Parcours
+          outil="prescripteur"
+          // Décision médicale + sorties Partie 1 destinées au document : cibler
+          // ces sorties fait collecter leurs questions propres (sinon jamais
+          // posées, car applicables mais hors du graphe des cibles). Toutes sont
+          // P1 (aucune dépendance p2_*), donc aucune question Partie 2 ici.
+          cibles={[
+            "transport_sanitaire_prescrit",
+            "partie_2_requise",
+            "sortie_transport_partage_incompatible",
+            "sortie_autonomie_patient",
+            "sortie_accompagnant_necessaire",
+          ]}
+          labelFin="Voir le résultat médical"
+          onTermine={(s) => {
+            setSituation(s);
+            const r = String(
+              engine.setSituation(s).evaluate("resultat_medical").nodeValue ?? ""
+            );
+            trackResultat(r, "prescripteur");
+          }}
+        />
+      </>
     );
   }
 
