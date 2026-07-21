@@ -2,12 +2,12 @@
 import type { Situation } from "publicodes";
 import { engine } from "../simulateur/engine";
 import { TraceDebug } from "../simulateur/TraceDebug";
+import { CRITERES, MOTIFS, retenus } from "../simulateur/vulgarisation";
 import {
-  CRITERES,
-  MOTIFS,
-  ListeVulgarisee,
-  retenus,
-} from "../simulateur/vulgarisation";
+  ExplicationTransportImpossible,
+  PourquoiCeTransport,
+  SousTitre,
+} from "../simulateur/information-patient";
 
 type Props = {
   situation: Situation<string>;
@@ -202,15 +202,6 @@ const RESTE_A_CHARGE: Record<string, string> = {
   "non éligible assurance maladie dans ce parcours":
     "Le transport reste à votre charge.",
 };
-
-function SousTitre({ icone, children }: { icone: string; children: string }) {
-  return (
-    <h4 className="fr-h6 fr-mt-3w">
-      <span className={`${icone} fr-mr-1w`} aria-hidden="true" />
-      {children}
-    </h4>
-  );
-}
 
 // Étapes patient (« Ce que vous devez faire maintenant »), propres au cas final
 // et, pour la PMT / DAP / convocation, au transport retenu.
@@ -536,63 +527,16 @@ function Bloc2({
               <strong>{transport}</strong>.
             </p>
 
-            <SousTitre icone="fr-icon-lightbulb-line">Pourquoi ce transport ?</SousTitre>
-            <p>
-              Ce choix correspond à votre situation au moment du transport et à
-              l’aide dont vous avez besoin pendant le trajet.
-            </p>
-
-            {criteresRetenus.length > 0 && (
-              <>
-                <SousTitre icone="fr-icon-stethoscope-line">
-                  Critères médicaux retenus
-                </SousTitre>
-                <ListeVulgarisee items={criteresRetenus} />
-              </>
-            )}
-
-            {motifsRetenus.length > 0 && (
-              <>
-                <SousTitre icone="fr-icon-checkbox-circle-line">
-                  Motifs ouvrant droit identifiés ou déduits
-                </SousTitre>
-                <ListeVulgarisee items={motifsRetenus} />
-              </>
-            )}
+            <PourquoiCeTransport
+              titreExplication="Pourquoi ce transport ?"
+              criteres={criteresRetenus}
+              titreCriteres="Critères médicaux retenus"
+              motifs={motifsRetenus}
+              titreMotifs="Motifs ouvrant droit identifiés ou déduits"
+            />
           </>
         ) : (
-          <>
-            <p>
-              Dans votre situation, les informations renseignées ne permettent pas à
-              votre médecin de prescrire un transport sanitaire.
-            </p>
-
-            <SousTitre icone="fr-icon-lightbulb-line">Quelques explications</SousTitre>
-            <p className="fr-mb-2w">
-              Pour qu’un transport sanitaire puisse être prescrit, deux éléments
-              doivent être réunis :
-            </p>
-            <p className="fr-mb-2w">
-              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-                1. Une situation ouvrant droit à la prise en charge
-              </strong>
-              Par exemple : une hospitalisation, certains soins liés à une affection
-              de longue durée, un accident du travail, une maladie professionnelle ou
-              une autre situation prévue par l’Assurance Maladie.
-            </p>
-            <p className="fr-mb-2w">
-              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-                2. Un besoin médical de transport adapté
-              </strong>
-              Par exemple : un besoin d’être transporté en ambulance, en VSL, en taxi
-              conventionné, dans un véhicule adapté au fauteuil roulant, ou avec un
-              niveau d’aide compatible avec votre état de santé.
-            </p>
-            <p>
-              Dans les informations indiquées, au moins l’un de ces deux éléments
-              n’est pas suffisamment établi.
-            </p>
-          </>
+          <ExplicationTransportImpossible />
         )}
 
         <SousTitre icone="fr-icon-money-euro-circle-line">
