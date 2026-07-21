@@ -128,6 +128,7 @@ export function Identification({
       className="fr-container"
       style={{ paddingTop: "2rem", paddingBottom: "4rem", maxWidth: "60rem" }}
     >
+      <h1 className="fr-h3">Commencez par vous identifier</h1>
       <form
         onSubmit={(e) => {
           e.preventDefault();
