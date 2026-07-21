@@ -457,7 +457,7 @@ describe("secrétariat — parcours administratif", () => {
     emettrePassation({
       p1_situation_smur: "oui",
       p1_situation_bariatrique_seul: "non",
-      p1_situation_permission_sans_motif_medical: "'non'",
+      p1_situation_permission_sans_motif_medical: "'Non'",
     });
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
@@ -517,7 +517,7 @@ describe("secrétariat — parcours administratif", () => {
         situationFinale={{
           p1_situation_smur: "non",
           p1_situation_bariatrique_seul: "non",
-          p1_situation_permission_sans_motif_medical: "'non'",
+          p1_situation_permission_sans_motif_medical: "'Non'",
           p1_motif_hospitalisation: "non",
           p1_motif_seance_chimio_radio_hemodialyse: "non",
           p1_motif_ald: "oui",
@@ -546,12 +546,12 @@ describe("secrétariat — parcours administratif", () => {
           p2_maternite_eloignee: "non",
           p2_samsah: "non",
           p2_accompagnement_tiers: "non",
-          p2_trajet_aller_retour: "'aller simple'",
-          p2_trajet_depart: "'domicile'",
-          p2_trajet_arrivee: "'structure de soins'",
+          p2_trajet_aller_retour: "'Aller simple'",
+          p2_trajet_depart: "'Domicile'",
+          p2_trajet_arrivee: "'Structure de soins'",
           p2_nombre_transports_prevus: "4",
-          p2_transport_urgence: "'non'",
-          p2_accident_cause_par_tiers: "non",
+          p2_transport_urgence: "'Non'",
+          p2_accident_cause_par_tiers: "'Non'",
         }}
       />
     );
@@ -588,7 +588,7 @@ describe("secrétariat — parcours administratif", () => {
         situationFinale={{
           p1_situation_smur: "oui",
           p1_situation_bariatrique_seul: "non",
-          p1_situation_permission_sans_motif_medical: "'non'",
+          p1_situation_permission_sans_motif_medical: "'Non'",
         }}
       />
     );

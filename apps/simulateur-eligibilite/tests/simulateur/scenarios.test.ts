@@ -7,7 +7,7 @@ import { makeEngine } from "./engine";
 const base: Record<string, string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
-  p1_situation_permission_sans_motif_medical: "'non'",
+  p1_situation_permission_sans_motif_medical: "'Non'",
   p1_motif_hospitalisation: "non",
   p1_motif_seance_chimio_radio_hemodialyse: "non",
   p1_motif_ald: "non",
@@ -30,7 +30,10 @@ const base: Record<string, string> = {
   p1_critere_asepsie: "non",
   p1_critere_aucune_situation_encadree: "non",
   p2_patient_hospitalise: "non",
-  p2_exception_restant_assurance_maladie: "non",
+  // v8.9 : `p2_exception_restant_assurance_maladie` n'est plus une question mais
+  // une valeur dérivée du type d'exception A0.2-A0.3. La base neutre renseigne
+  // donc directement le type avec la valeur « aucune exception ».
+  p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
   p2_detenu_hospitalise: "non",
   p2_detenu_inter_etablissements: "non",
   p2_detenu_uhsa_uhsi: "non",
@@ -48,12 +51,12 @@ const base: Record<string, string> = {
   // en A2.2. Ces champs ne sont applicables que dans leur parcours (gate
   // `applicable si`) ; renseignés dans la base neutre, ils permettent à
   // `cas_final` de se résoudre sans variable manquante là où ils s'appliquent.
-  p2_trajet_aller_retour: "'aller simple'",
-  p2_trajet_depart: "'domicile'",
-  p2_trajet_arrivee: "'structure de soins'",
+  p2_trajet_aller_retour: "'Aller simple'",
+  p2_trajet_depart: "'Domicile'",
+  p2_trajet_arrivee: "'Structure de soins'",
   p2_nombre_transports_prevus: "1",
-  p2_transport_urgence: "'non'",
-  p2_accident_cause_par_tiers: "non",
+  p2_transport_urgence: "'Non'",
+  p2_accident_cause_par_tiers: "'Non'",
   p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
 };
 
@@ -102,7 +105,7 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
   },
   {
     id: "ROUTE-P1-03-PERMISSION",
-    inputs: { p1_situation_permission_sans_motif_medical: "'oui'" },
+    inputs: { p1_situation_permission_sans_motif_medical: "'Oui'" },
     expected: {
       resultat_medical: "défavorable",
       transport_sanitaire_prescrit: "aucun",
@@ -210,7 +213,7 @@ const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: S
       p1_motif_hospitalisation: "oui",
       p1_critere_regles_hygiene: "oui",
       p2_patient_hospitalise: "oui",
-      p2_exception_restant_assurance_maladie: "non",
+      p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
     },
     expected: {
       resultat_medical: "favorable",
