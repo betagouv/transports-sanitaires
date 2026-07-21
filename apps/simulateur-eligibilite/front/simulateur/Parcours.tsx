@@ -10,6 +10,7 @@ import { engine } from "./engine";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
+import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import {
   trackSimulationAbandon,
   trackSimulationComplete,
@@ -60,9 +61,26 @@ export function Parcours({
   // de nouvelles pages (`nextPages` recalculées à chaque saisie), donc
   // `!hasNextPage` seul ne prouve pas qu'on est au bout — il vaut aussi « vrai »
   // sur une page dont les questions ne sont pas encore répondues.
-  const questionsEnAttente = currentPage.elements.some(
-    (e) => e.applicable && !e.hidden && !e.answered
-  );
+  // Une mosaïque (vrai choix multiple) n'est répondue que si au moins une option
+  // est cochée OU l'option « aucun » l'est. On ne peut PAS se fier à l'`answered`
+  // par élément : à chaque clic, `appliquerMosaique` écrit toutes les options
+  // (dont les non touchées, figées à `false`) dans la situation — elles comptent
+  // alors toutes comme « answered », y compris après un coche→décoche qui laisse
+  // le groupe visuellement vide mais sans « aucun » explicite.
+  const evalue = engine.setSituation(formState.situation);
+  const mosaiqueRepondue = (m: MosaiqueDesc): boolean => {
+    const coche = (id: string) => evalue.evaluate(id).nodeValue === true;
+    return m.optionIds.some(coche) || (m.aucun ? coche(m.aucun.id) : false);
+  };
+  const groupesEvalues = new Set<string>();
+  const questionsEnAttente = currentPage.elements.some((e) => {
+    if (!e.applicable || e.hidden) return false;
+    const m = mosaiqueDe(e.id);
+    if (!m) return !e.answered;
+    if (groupesEvalues.has(m.parentId)) return false;
+    groupesEvalues.add(m.parentId);
+    return !mosaiqueRepondue(m);
+  });
   const parcoursTermine = !hasNextPage && !questionsEnAttente;
 
   // Toutes les cibles sont déjà déterminées par la situation initiale : aucune
