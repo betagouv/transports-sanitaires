@@ -854,20 +854,29 @@ function Bloc3({
             <p className="fr-mt-2w">
               <strong>Cases à compléter ou cocher :</strong>
             </p>
-            {groupes.map((groupe) => (
-              <div key={groupe.titre ?? "sans-titre"}>
-                {groupe.titre && (
-                  <p className="fr-mb-1v">
-                    <strong>{groupe.titre}</strong>
-                  </p>
-                )}
-                <ul>
-                  {groupe.items.map((item) => (
-                    <li key={texteItem(item)}>{texteItem(item)}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Une colonne par groupe sur écran large (3 sections PMT ⇒ 3
+                colonnes), empilées sur mobile. */}
+            <div className="fr-grid-row fr-grid-row--gutters">
+              {groupes.map((groupe) => (
+                <div
+                  key={groupe.titre ?? "sans-titre"}
+                  className={`fr-col-12 fr-col-md-${Math.floor(
+                    12 / groupes.length
+                  )}`}
+                >
+                  {groupe.titre && (
+                    <p className="fr-mb-1v">
+                      <strong>{groupe.titre}</strong>
+                    </p>
+                  )}
+                  <ul>
+                    {groupe.items.map((item) => (
+                      <li key={texteItem(item)}>{texteItem(item)}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>
