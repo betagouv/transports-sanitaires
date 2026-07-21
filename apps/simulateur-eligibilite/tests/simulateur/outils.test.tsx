@@ -275,6 +275,91 @@ describe("prescripteur — parcours médical", () => {
     ).toBeInTheDocument();
   });
 
+  it("favorable : le bloc « Information destinée au patient » liste critères et motifs retenus", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await passerFiltresM0(user);
+
+    // Motif : hospitalisation → attendu dans les motifs ouvrant droit.
+    await user.click(
+      within(
+        screen.getByRole("group", {
+          name: /quelle situation justifie le transport/i,
+        })
+      ).getByRole("checkbox", { name: /hospitalisation/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    await user.click(
+      within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
+        "radio",
+        { name: /aucune de ces situations/i }
+      )
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // Critère : « Aucune situation » → attendu dans les critères retenus.
+    await user.click(
+      within(
+        screen.getByRole("group", { name: /prise en charge plus encadrée/i })
+      ).getByRole("checkbox", { name: /aucune de ces situations/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^voir/i }));
+
+    expect(
+      screen.getByRole("heading", { name: /information destinée au patient/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /critères médicaux retenus/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /aucune situation nécessitant une prise en charge plus encadrée/i
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /motifs ouvrant droit/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/entrée ou sortie d’hospitalisation/i)
+    ).toBeInTheDocument();
+  });
+
+  it("défavorable : le bloc patient explique les deux conditions manquantes", async () => {
+    const user = userEvent.setup();
+    render(
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />
+    );
+
+    await terminerParcours(user, [[/contrainte bariatrique/i, "Oui"]]);
+
+    expect(
+      screen.getByRole("heading", { name: /information destinée au patient/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/deux éléments doivent être réunis/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/une situation ouvrant droit à la prise en charge/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/un besoin médical de transport adapté/i)
+    ).toBeInTheDocument();
+    // Aucune section « critères/motifs retenus » quand l'avis est défavorable.
+    expect(
+      screen.queryByRole("heading", { name: /critères médicaux retenus/i })
+    ).toBeNull();
+  });
+
   it("retour : changer une réponse recalcule la suite (pas de page suivante figée)", async () => {
     const user = userEvent.setup();
     render(
