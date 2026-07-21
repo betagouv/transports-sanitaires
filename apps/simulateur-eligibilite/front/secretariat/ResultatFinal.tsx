@@ -861,7 +861,8 @@ function Bloc3({
 
         {groupes.length > 0 && (
           <>
-            <p className="fr-mt-2w">
+            <hr className="fr-mt-3w fr-pb-1v" />
+            <p className="fr-mb-3w">
               <strong>Cases à compléter ou cocher :</strong>
             </p>
             {/* Une colonne par groupe sur écran large (3 sections PMT ⇒ 3
