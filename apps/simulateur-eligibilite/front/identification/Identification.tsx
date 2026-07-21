@@ -126,7 +126,7 @@ export function Identification({
   return (
     <main
       className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
+      style={{ paddingTop: "2rem", paddingBottom: "4rem", maxWidth: "60rem" }}
     >
       <form
         onSubmit={(e) => {
