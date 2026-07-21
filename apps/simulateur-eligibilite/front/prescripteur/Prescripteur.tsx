@@ -9,6 +9,8 @@ type Props = {
   // Passe la main au secrétariat en emportant la situation de Partie 1.
   onPasserAuSecretariat: (situationP1: Situation<string>) => void;
   onNouvelleSimulation: () => void;
+  // Raccourci dev : pré-remplit le parcours pour ouvrir directement le résultat.
+  situationInitiale?: Situation<string> | null;
 };
 
 // Outil 1 — parcours médical du prescripteur : Partie 1 → Résultat 1.
@@ -17,8 +19,11 @@ type Props = {
 export function Prescripteur({
   onPasserAuSecretariat,
   onNouvelleSimulation,
+  situationInitiale = null,
 }: Props) {
-  const [situation, setSituation] = useState<Situation<string> | null>(null);
+  const [situation, setSituation] = useState<Situation<string> | null>(
+    situationInitiale
+  );
 
   if (!situation) {
     return (

@@ -27,6 +27,9 @@ import {
 type Props = {
   referentiel?: Referentiel;
   onValide: (saisie: IdentiteSaisie) => void;
+  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement le
+  // résultat prescripteur sans passer par le formulaire.
+  onAccesDirectDev?: () => void;
 };
 
 const OPTION_NON_RATTACHE = "Je ne suis pas rattaché à un établissement de santé";
@@ -36,6 +39,7 @@ const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
 export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
+  onAccesDirectDev,
 }: Props) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -272,6 +276,15 @@ export function Identification({
           <button type="submit" className="fr-btn" disabled={!valide}>
             Accéder au simulateur
           </button>
+          {onAccesDirectDev && (
+            <button
+              type="button"
+              className="fr-btn fr-btn--secondary"
+              onClick={onAccesDirectDev}
+            >
+              Résultat prescripteur (dev)
+            </button>
+          )}
         </div>
       </form>
     </main>

@@ -28,6 +28,31 @@ import type { IdentiteSaisie } from "../../shared/identite-saisie";
 
 type Outil = "prescripteur" | "secretariat";
 
+// Situation de démo (dev) : cas favorable riche — motif hospitalisation +
+// critère « position allongée » (⇒ ambulance). Ouvre directement le résultat
+// prescripteur avec critères et motifs retenus renseignés.
+const SITUATION_DEMO_DEV: Situation<string> = {
+  p1_situation_smur: "non",
+  p1_situation_bariatrique_seul: "non",
+  p1_situation_permission_sans_motif_medical: "non",
+  p1_motif_hospitalisation: "oui",
+  p1_motif_seance_chimio_radio_hemodialyse: "non",
+  p1_motif_ald: "non",
+  p1_motif_accident_travail_maladie_professionnelle: "non",
+  p1_motif_retour_etablissement_penitentiaire: "non",
+  p1_motif_aucun: "non",
+  p1_autonomie: "'aucune de ces situations'",
+  p1_critere_regles_hygiene: "non",
+  p1_critere_risques_effets_secondaires: "non",
+  p1_critere_fauteuil_sans_transfert: "non",
+  p1_critere_position_allongee_demi_assise: "oui",
+  p1_critere_brancardage_portage: "non",
+  p1_critere_surveillance_personne_qualifiee: "non",
+  p1_critere_oxygene: "non",
+  p1_critere_asepsie: "non",
+  p1_critere_aucune_situation_encadree: "non",
+};
+
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
@@ -48,26 +73,46 @@ export function App({
   // Remonté à chaque nouvelle simulation pour remonter (remount) l'outil et
   // repartir d'un parcours vierge.
   const [cle, setCle] = useState(0);
+  // Raccourci dev : situation pré-remplie pour ouvrir directement le résultat.
+  const [situationDev, setSituationDev] = useState<Situation<string> | null>(
+    null
+  );
 
   async function handleValide(saisie: IdentiteSaisie) {
     setIdentite(await pseudonymiser(saisie));
     setIdentifie(true);
   }
 
+  // Raccourci dev : saute l'identification (identité non pseudonymisée, suivi
+  // analytics dégradé) et ouvre le résultat prescripteur sur une situation type.
+  function accesDirectDev() {
+    setSituationDev(SITUATION_DEMO_DEV);
+    setOutil("prescripteur");
+    setIdentifie(true);
+  }
+
   function recommencer() {
     effacerPassation();
+    setSituationDev(null);
     setCle((c) => c + 1);
     setOutil("prescripteur");
   }
 
   if (!identifie) {
-    return <Identification referentiel={referentiel} onValide={handleValide} />;
+    return (
+      <Identification
+        referentiel={referentiel}
+        onValide={handleValide}
+        onAccesDirectDev={import.meta.env.DEV ? accesDirectDev : undefined}
+      />
+    );
   }
 
   const contenu =
     outil === "prescripteur" ? (
       <Prescripteur
         key={cle}
+        situationInitiale={situationDev}
         onPasserAuSecretariat={(situationP1: Situation<string>) => {
           emettrePassation(situationP1);
           setOutil("secretariat");
