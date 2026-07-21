@@ -248,12 +248,12 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
               />
               Quelques explications
             </h4>
-            <p>
+            <p className="fr-mb-2w">
               Pour qu’un transport sanitaire puisse être prescrit, deux éléments
               doivent être réunis :
             </p>
 
-            <p className="fr-mb-4w">
+            <p className="fr-mb-2w">
               <strong style={{ display: "block", marginBottom: "0.5rem" }}>
                 1. Une situation ouvrant droit à la prise en charge
               </strong>
@@ -263,7 +263,7 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
               Maladie.
             </p>
 
-            <p className="fr-mb-4w">
+            <p className="fr-mb-2w">
               <strong style={{ display: "block", marginBottom: "0.5rem" }}>
                 2. Un besoin médical de transport adapté
               </strong>
