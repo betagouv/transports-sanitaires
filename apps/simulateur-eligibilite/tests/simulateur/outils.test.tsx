@@ -507,6 +507,77 @@ describe("secrétariat — parcours administratif", () => {
     ).toBeInTheDocument();
   });
 
+  it("Bloc 3 « Mode de transport » : ne liste que les cases validées par la simulation", () => {
+    // Cas succès (PMT, transport déduit = ambulance via critère « position
+    // allongée »). La section « Mode de transport » ne doit afficher que les
+    // cases établies par la simulation, pas la liste complète.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={{
+          p1_situation_smur: "non",
+          p1_situation_bariatrique_seul: "non",
+          p1_situation_permission_sans_motif_medical: "'non'",
+          p1_motif_hospitalisation: "non",
+          p1_motif_seance_chimio_radio_hemodialyse: "non",
+          p1_motif_ald: "oui",
+          p1_ald_lien_avec_ald_reconnue: "oui",
+          p1_ald_seance_specifique: "non",
+          p1_ald_incapacite_ou_deficience: "oui",
+          p1_motif_accident_travail_maladie_professionnelle: "non",
+          p1_motif_retour_etablissement_penitentiaire: "non",
+          p1_motif_aucun: "non",
+          p1_autonomie: "'Aucune de ces situations.'",
+          p1_critere_regles_hygiene: "non",
+          p1_critere_risques_effets_secondaires: "non",
+          p1_critere_fauteuil_sans_transfert: "non",
+          p1_critere_position_allongee_demi_assise: "oui",
+          p1_critere_brancardage_portage: "non",
+          p1_critere_surveillance_personne_qualifiee: "non",
+          p1_critere_oxygene: "non",
+          p1_critere_asepsie: "non",
+          p1_critere_aucune_situation_encadree: "non",
+          p2_patient_hospitalise: "non",
+          p2_convocation_ou_avis: "non",
+          p2_distance_aller_superieure_150km: "non",
+          p2_transport_en_serie: "oui",
+          p2_avion_ou_bateau: "non",
+          p2_camsp_cmpp: "non",
+          p2_maternite_eloignee: "non",
+          p2_samsah: "non",
+          p2_accompagnement_tiers: "non",
+          p2_trajet_aller_retour: "'aller simple'",
+          p2_trajet_depart: "'domicile'",
+          p2_trajet_arrivee: "'structure de soins'",
+          p2_nombre_transports_prevus: "4",
+          p2_transport_urgence: "'non'",
+          p2_accident_cause_par_tiers: "non",
+        }}
+      />
+    );
+
+    // On est bien sur le cas PMT (ambulance).
+    expect(
+      screen.getByRole("heading", {
+        name: /vous êtes éligible à une prise en charge/i,
+      })
+    ).toBeInTheDocument();
+
+    // Cases validées affichées.
+    expect(screen.getByText("Ambulance.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Position allongée ou demi-assise.")
+    ).toBeInTheDocument();
+
+    // Cases non établies par la simulation : absentes.
+    expect(
+      screen.queryByText("Surveillance par une personne qualifiée.")
+    ).toBeNull();
+    expect(screen.queryByText("Administration d’oxygène.")).toBeNull();
+    expect(screen.queryByText("VSL ou taxi conventionné.")).toBeNull();
+    expect(screen.queryByText("Moyen de transport individuel.")).toBeNull();
+  });
+
   it("raccourci `situationFinale` : ouvre directement la Page Résultat 2, sans passation", () => {
     // Aucune passation émise : sans le raccourci, le secrétariat afficherait
     // « aucune prescription ». Une situation complète en `situationFinale`
