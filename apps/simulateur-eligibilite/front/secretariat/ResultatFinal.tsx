@@ -641,7 +641,7 @@ type CaseItem =
   | string
   | { text: string; visible: (e: typeof engine, transport: string) => boolean };
 
-type Groupe = { titre?: string; items: CaseItem[] };
+type Groupe = { titre?: string; icone?: string; items: CaseItem[] };
 
 const vrai = (e: typeof engine, id: string) => e.evaluate(id).nodeValue === true;
 
@@ -702,6 +702,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   "prescription médicale de transport": [
     {
       titre: "Situation permettant la prise en charge",
+      icone: "fr-icon-health-book-line",
       items: [
         "Entrée ou sortie d’hospitalisation.",
         "Séance de chimiothérapie, radiothérapie ou hémodialyse.",
@@ -712,10 +713,12 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     },
     {
       titre: "Mode de transport",
+      icone: "fr-icon-car-line",
       items: MODE_TRANSPORT_ITEMS,
     },
     {
       titre: "Trajet",
+      icone: "fr-icon-road-map-line",
       items: [
         "Départ.",
         "Arrivée.",
@@ -729,6 +732,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   "demande accord préalable": [
     {
       titre: "Situation nécessitant une DAP",
+      icone: "fr-icon-health-book-line",
       items: [
         "Trajet aller supérieur à 150 km.",
         "Transports en série.",
@@ -740,6 +744,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     },
     {
       titre: "Situation associée si avion ou bateau",
+      icone: "fr-icon-ship-2-line",
       items: [
         "Hospitalisation ou séances.",
         "ALD — Affection de Longue Durée.",
@@ -748,10 +753,12 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     },
     {
       titre: "Mode de transport",
+      icone: "fr-icon-car-line",
       items: MODE_TRANSPORT_ITEMS,
     },
     {
       titre: "Trajet",
+      icone: "fr-icon-road-map-line",
       items: [
         "Départ.",
         "Arrivée.",
@@ -765,6 +772,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   "convocation ou avis audience": [
     {
       titre: "Éléments à vérifier",
+      icone: "fr-icon-checkbox-circle-line",
       items: [
         "Type de convocation ou d’avis.",
         "Mode de transport indiqué ou validé.",
@@ -777,6 +785,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   "transport charge établissement": [
     {
       titre: "Assurez-vous que ces éléments soient complétés",
+      icone: "fr-icon-checkbox-line",
       items: [
         "Patient hospitalisé au moment du transport.",
         "Absence d’exception restant Assurance Maladie.",
@@ -792,6 +801,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   SMUR: [
     {
       titre: "Éléments à vérifier",
+      icone: "fr-icon-checkbox-circle-line",
       items: [
         "Intervention SMUR confirmée.",
         "Établissement ou service concerné.",
@@ -866,6 +876,12 @@ function Bloc3({
                 >
                   {groupe.titre && (
                     <p className="fr-mb-1v">
+                      {groupe.icone && (
+                        <span
+                          className={`${groupe.icone} fr-mr-1w`}
+                          aria-hidden="true"
+                        />
+                      )}
                       <strong>{groupe.titre}</strong>
                     </p>
                   )}
