@@ -1,12 +1,11 @@
 import type { Situation } from "publicodes";
 import { engine } from "../simulateur/engine";
 import { TraceDebug } from "../simulateur/TraceDebug";
+import { CRITERES, MOTIFS, retenus } from "../simulateur/vulgarisation";
 import {
-  CRITERES,
-  MOTIFS,
-  ListeVulgarisee,
-  retenus,
-} from "../simulateur/vulgarisation";
+  ExplicationTransportImpossible,
+  PourquoiCeTransport,
+} from "../simulateur/information-patient";
 
 type Props = {
   situation: Situation<string>;
@@ -75,87 +74,17 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
               Le transport retenu est : <strong>{transport}</strong>.
             </p>
 
-            <h4 className="fr-h6 fr-mt-3w">
-              <span
-                className="fr-icon-lightbulb-line fr-mr-1w"
-                aria-hidden="true"
-              />
-              Quelques explications
-            </h4>
-            <p>
-              Ce choix correspond à votre situation au moment du transport et à
-              l’aide dont vous avez besoin pendant le trajet.
-            </p>
-
-            {criteresRetenus.length > 0 && (
-              <>
-                <h4 className="fr-h6 fr-mt-3w">
-                  <span
-                    className="fr-icon-stethoscope-line fr-mr-1w"
-                    aria-hidden="true"
-                  />
-                  Le ou les critères médicaux retenus sont les suivants
-                </h4>
-                <ListeVulgarisee items={criteresRetenus} />
-              </>
-            )}
-
-            {motifsRetenus.length > 0 && (
-              <>
-                <h4 className="fr-h6 fr-mt-3w">
-                  <span
-                    className="fr-icon-checkbox-circle-line fr-mr-1w"
-                    aria-hidden="true"
-                  />
-                  Le ou les motifs ouvrant droit identifiés ou déduits sont les
-                  suivants
-                </h4>
-                <ListeVulgarisee items={motifsRetenus} />
-              </>
-            )}
+            <PourquoiCeTransport
+              titreExplication="Quelques explications"
+              criteres={criteresRetenus}
+              titreCriteres="Le ou les critères médicaux retenus sont les suivants"
+              motifs={motifsRetenus}
+              titreMotifs="Le ou les motifs ouvrant droit identifiés ou déduits sont les suivants"
+            />
           </div>
         ) : (
           <div className="fr-callout__text">
-            <p>
-              Dans votre situation, les informations renseignées ne permettent
-              pas à votre médecin de prescrire un transport sanitaire.
-            </p>
-
-            <h4 className="fr-h6 fr-mt-3w">
-              <span
-                className="fr-icon-lightbulb-line fr-mr-1w"
-                aria-hidden="true"
-              />
-              Quelques explications
-            </h4>
-            <p className="fr-mb-2w">
-              Pour qu’un transport sanitaire puisse être prescrit, deux éléments
-              doivent être réunis :
-            </p>
-
-            <p className="fr-mb-2w">
-              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-                1. Une situation ouvrant droit à la prise en charge
-              </strong>
-              Par exemple : une hospitalisation, certains soins liés à une
-              affection de longue durée, un accident du travail, une maladie
-              professionnelle ou une autre situation prévue par l’Assurance
-              Maladie.
-            </p>
-
-            <p className="fr-mb-2w">
-              <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-                2. Un besoin médical de transport adapté
-              </strong>
-              Par exemple : un besoin d’être transporté en ambulance, en VSL, en
-              taxi conventionné, dans un véhicule adapté au fauteuil roulant, ou
-              avec un niveau d’aide compatible avec votre état de santé.
-            </p>
-
-            <p>
-              Dans les informations indiquées, au moins l’un de ces deux éléments
-              n’est pas suffisamment établi.
-            </p>
+            <ExplicationTransportImpossible />
           </div>
         )}
       </div>
