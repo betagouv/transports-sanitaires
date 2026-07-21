@@ -634,7 +634,68 @@ const CAS_RETENU: Record<string, string> = {
     "Non éligible Assurance Maladie dans ce parcours",
 };
 
-type Groupe = { titre?: string; items: string[] };
+// Une case documentaire : soit un libellé toujours listé (checklist manuelle du
+// praticien), soit un libellé conditionné par une règle du modèle — auquel cas
+// il n'est affiché que si la simulation l'a établi.
+type CaseItem =
+  | string
+  | { text: string; visible: (e: typeof engine, transport: string) => boolean };
+
+type Groupe = { titre?: string; items: CaseItem[] };
+
+const vrai = (e: typeof engine, id: string) => e.evaluate(id).nodeValue === true;
+
+// Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
+// affichée que si la simulation l'a validée — conditions reprises du mapping
+// documentaire (tmp/8.6/transports-sanitaires.ui.v8-6.yaml, bloc_3_corps_medical
+// → « Mode de transport » → items.visible_if).
+const MODE_TRANSPORT_ITEMS: CaseItem[] = [
+  { text: "Ambulance.", visible: (_e, t) => t === "ambulance" },
+  {
+    text: "Position allongée ou demi-assise.",
+    visible: (e) => vrai(e, "p1_critere_position_allongee_demi_assise"),
+  },
+  {
+    text: "Surveillance par une personne qualifiée.",
+    visible: (e) => vrai(e, "p1_critere_surveillance_personne_qualifiee"),
+  },
+  {
+    text: "Administration d’oxygène.",
+    visible: (e) => vrai(e, "p1_critere_oxygene"),
+  },
+  {
+    text: "Brancardage ou portage.",
+    visible: (e) => vrai(e, "p1_critere_brancardage_portage"),
+  },
+  {
+    text: "Conditions d’asepsie.",
+    visible: (e) => vrai(e, "p1_critere_asepsie"),
+  },
+  {
+    text: "VSL ou taxi conventionné.",
+    visible: (_e, t) => t === "VSL ou taxi conventionné",
+  },
+  {
+    text: "Transport à mobilité réduite dans le fauteuil roulant.",
+    visible: (_e, t) => t === "VSL TPMR ou taxi conventionné TPMR",
+  },
+  {
+    text: "Transport partagé incompatible.",
+    visible: (e) => vrai(e, "sortie_transport_partage_incompatible"),
+  },
+  {
+    text: "Moyen de transport individuel.",
+    visible: (_e, t) => t === "véhicule personnel ou transport en commun",
+  },
+  {
+    text: "Transport en commun terrestre.",
+    visible: (_e, t) => t === "véhicule personnel ou transport en commun",
+  },
+  {
+    text: "Personne accompagnante si nécessaire.",
+    visible: (e) => vrai(e, "sortie_accompagnant_necessaire"),
+  },
+];
 
 // Cases à compléter ou cocher / éléments à vérifier, par cas final.
 const CASES_BLOC3: Record<string, Groupe[]> = {
@@ -651,20 +712,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     },
     {
       titre: "Mode de transport",
-      items: [
-        "Ambulance.",
-        "Position allongée ou demi-assise.",
-        "Surveillance par une personne qualifiée.",
-        "Administration d’oxygène.",
-        "Brancardage ou portage.",
-        "Conditions d’asepsie.",
-        "VSL ou taxi conventionné.",
-        "Transport partagé incompatible si case cochée.",
-        "Transport à mobilité réduite dans le fauteuil roulant.",
-        "Moyen de transport individuel.",
-        "Transport en commun terrestre.",
-        "Personne accompagnante si nécessaire.",
-      ],
+      items: MODE_TRANSPORT_ITEMS,
     },
     {
       titre: "Trajet",
@@ -700,20 +748,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     },
     {
       titre: "Mode de transport",
-      items: [
-        "Ambulance.",
-        "Position allongée ou demi-assise.",
-        "Surveillance par une personne qualifiée.",
-        "Oxygène.",
-        "Brancardage ou portage.",
-        "Conditions d’asepsie.",
-        "VSL ou taxi conventionné.",
-        "Transport partagé incompatible si case cochée.",
-        "Transport à mobilité réduite dans le fauteuil roulant.",
-        "Moyen de transport individuel.",
-        "Transport en commun terrestre.",
-        "Personne accompagnante si nécessaire.",
-      ],
+      items: MODE_TRANSPORT_ITEMS,
     },
     {
       titre: "Trajet",
@@ -769,17 +804,32 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
   "non éligible assurance maladie dans ce parcours": [],
 };
 
+function texteItem(item: CaseItem): string {
+  return typeof item === "string" ? item : item.text;
+}
+
 function Bloc3({
+  e,
   casFinal,
   transport,
   doc,
 }: {
+  e: typeof engine;
   casFinal: string;
   transport: string;
   doc: string;
 }) {
   const casRetenu = CAS_RETENU[casFinal] ?? casFinal;
-  const groupes = CASES_BLOC3[casFinal] ?? [];
+  // Ne conserve que les cases établies par la simulation ; un groupe entièrement
+  // filtré n'est pas affiché.
+  const groupes = (CASES_BLOC3[casFinal] ?? [])
+    .map((groupe) => ({
+      ...groupe,
+      items: groupe.items.filter(
+        (item) => typeof item === "string" || item.visible(e, transport)
+      ),
+    }))
+    .filter((groupe) => groupe.items.length > 0);
 
   return (
     <div className="fr-callout" style={{ marginBottom: "2rem" }}>
@@ -813,7 +863,7 @@ function Bloc3({
                 )}
                 <ul>
                   {groupe.items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={texteItem(item)}>{texteItem(item)}</li>
                   ))}
                 </ul>
               </div>
@@ -855,7 +905,7 @@ export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
         transport={transport}
         transportPrescrit={transportPrescrit}
       />
-      <Bloc3 casFinal={casFinal} transport={transport} doc={doc} />
+      <Bloc3 e={e} casFinal={casFinal} transport={transport} doc={doc} />
 
       <div className="fr-btns-group fr-btns-group--inline">
         <button
