@@ -10,8 +10,14 @@ plutôt qu'une sélection dans une liste du référentiel :
 
 - **service « Autre »** (`SERVICE_AUTRE`) : nom de service libre + nom/prénom ;
 - **prescripteur « hors liste »** (`PRESCRIPTEUR_HORS_LISTE`) : nom/prénom sous un
-  service réel ;
-- **« non rattaché »** (`ETAB_NON_RATTACHE` + `categorie` libéral/CNAM) : nom/prénom.
+  service réel.
+
+> **MàJ 2026-07-21** — la branche « non rattaché » a été supprimée : les prescripteurs
+> sans établissement de rattachement (libéral, CNAM/CPAM, autre) sélectionnent
+> désormais l'établissement **« Libéral / CNAM / CPAM / Autre »** du référentiel, puis
+> passent par les branches ci-dessus. Plus de `categorie` ni de sentinelle
+> `ETAB_NON_RATTACHE` ; les sections ci-dessous qui mentionnent « non rattaché » ne
+> valent plus que comme historique.
 
 Aujourd'hui ces valeurs libres ne servent qu'à calculer un **pseudonyme HMAC** pour
 l'analytics (`server/identification/pseudonymisation.ts`) puis sont jetées. **But** :
@@ -43,7 +49,6 @@ utilisateurs suivants) en bénéficient, sans re-saisir.
 |---|---|---|
 | service « Autre » | oui : `Nom`=serviceLibre sous l'étab. réel (Id2=etabId) | oui : sous le service ci-dessus |
 | prescripteur hors liste | non (service réel existant, Id2=serviceId) | oui : sous ce service |
-| non rattaché (libéral/CNAM) | non (service existant : cnam→Id2 2, liberal→Id2 3) | oui : sous ce service |
 
 Prescripteur pris dans une liste + service réel → **aucune écriture**.
 

@@ -18,7 +18,6 @@ import {
   type IdentitePseudonymisee,
 } from "../../shared/identite-pseudonymisee.ts";
 import {
-  ETAB_NON_RATTACHE,
   normalise,
   PRESCRIPTEUR_HORS_LISTE,
   SERVICE_AUTRE,
@@ -27,8 +26,8 @@ import {
 
 /**
  * Pseudonymise l'identité saisie selon la branche d'identification. Les valeurs
- * sont préfixées par leur nature (`etab:`, `categorie:`, `service:`, …) pour éviter
- * toute collision entre un id de référentiel et un texte libre. Certaines refs sont
+ * sont préfixées par leur nature (`etab:`, `service:`, …) pour éviter toute
+ * collision entre un id de référentiel et un texte libre. Certaines refs sont
  * absentes selon la branche (identité pseudonymisée à refs optionnelles).
  */
 export function pseudonymiser(
@@ -38,11 +37,8 @@ export function pseudonymiser(
 ): IdentitePseudonymisee {
   const identite: IdentitePseudonymisee = { v: VERSION };
 
-  // Établissement (ou catégorie d'exercice si non rattaché).
-  if (saisie.etabId === ETAB_NON_RATTACHE) {
-    if (saisie.categorie)
-      identite.etabRef = empreinte(secret, `categorie:${saisie.categorie}`, enClair);
-  } else if (saisie.etabId) {
+  // Établissement.
+  if (saisie.etabId) {
     identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
   }
 
@@ -59,7 +55,7 @@ export function pseudonymiser(
     identite.serviceRef = empreinte(secret, `service:${saisie.serviceId}`, enClair);
   }
 
-  // Prescripteur (réel, ou identité libre si hors liste / exercice libéral·CNAM).
+  // Prescripteur (réel, ou identité libre si hors liste / service « autre »).
   if (saisie.prescripteurId && saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
     identite.prescripteurRef = empreinte(
       secret,

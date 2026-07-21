@@ -171,17 +171,21 @@ Composants :
 `front/identification/Identification.tsx`) :
 
 ```
-Établissement ─┬─ (A/B/C réel) → Service ─┬─ (D/E/F réel) → Prescripteur ─┬─ (dans la liste)
-               │                          │                              └─ « pas dans la liste » → Nom + Prénom
-               │                          └─ « Autre » → nom de service libre + Nom + Prénom
-               └─ « non rattaché » → catégorie (libéral | CNAM) → Nom + Prénom
+Établissement → Service ─┬─ (réel) → Prescripteur ─┬─ (dans la liste)
+                         │                          └─ « pas dans la liste » → Nom + Prénom
+                         └─ « Autre » → nom de service libre + Nom + Prénom
 ```
+
+Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM, autre)
+sélectionnent l'établissement **« Libéral / CNAM / CPAM / Autre »** du référentiel et
+suivent les mêmes branches (plus de branche « non rattaché » dédiée, supprimée le
+2026-07-21).
 
 - **Transport** : réponse JSON de `POST /api/identite-pseudonymisee` (same-origin). **Plus de fragment
   d'URL** depuis la fusion.
 - **Construction** : **côté backend** (`server/identification/pseudonymisation.ts`, exposé
   par `server/identification/routes.ts`). Reçoit l'`IdentiteSaisie`
-  (`{ etabId, categorie?, serviceId?, serviceLibre?, prescripteurId?, nom?, prenom? }`,
+  (`{ etabId, serviceId?, serviceLibre?, prescripteurId?, nom?, prenom? }`,
   `shared/identite-saisie.ts`), valide sa complétude (`saisieComplete`, partagé front/back),
   renvoie l'objet refs. Le secret HMAC ne quitte jamais le serveur.
 - **Schéma** (refs **optionnelles** selon la branche) :
@@ -189,13 +193,13 @@ Composants :
   { "etabRef": "…", "serviceRef": "…", "prescripteurRef": "…", "v": 2 }
   ```
   chaque ref = `base64url(HMAC-SHA256("<nature>:<valeur>", SECRET)[:16])`, la valeur
-  étant **préfixée par sa nature** (`etab:`, `categorie:`, `service:`, `service-libre:`,
+  étant **préfixée par sa nature** (`etab:`, `service:`, `service-libre:`,
   `prescripteur:`, `identite:`) pour éviter toute collision id ↔ texte libre.
   - **Textes libres** (nom/prénom, nom de service) : **normalisés** (casse/espaces) puis
     **HMAC** — `identite:<nom>|<prenom>`. **Jamais le nom en clair** (invariant PII, R-6).
-  - Refs absentes selon la branche : « non rattaché » n'a **pas** de `serviceRef` (il n'y
-    a pas de service). Toutes les branches capturent une identité → `prescripteurRef`
-    toujours présent.
+  - Refs absentes selon la branche : le service « Autre » n'a pas de `serviceRef` de
+    référentiel mais un `serviceRef` de texte libre. Toutes les branches capturent une
+    identité → `prescripteurRef` toujours présent.
 - **Interdits** : identifiant brut du référentiel, nom/prénom **en clair**, RPPS, tout
   identifiant patient, toute donnée de santé.
 - **Cycle de vie** : reçu à la validation de l'identification, conservé **en mémoire de
