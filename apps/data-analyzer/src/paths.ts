@@ -1,17 +1,20 @@
 // Chemins des dossiers de l'ETL, résolus depuis l'emplacement de ce fichier
 // (indépendant du répertoire courant d'où l'on lance les scripts).
+//
+// L'emplacement des sources d'entrée est configurable : voir mapping.ts / mapping.json.
 
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+export class Paths {
+  static readonly #root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-// L'emplacement des sources d'entrée est configurable : voir config.ts / config.json.
-export const REF = join(root, "ref"); // référentiels figés (versionnés)
-export const BUILD = join(root, "build"); // artefacts ETL (versionnés)
+  static readonly REF = join(Paths.#root, "ref"); // référentiels publics figés (versionnés)
+  static readonly BUILD = join(Paths.#root, "build"); // artefacts ETL (non versionnés)
 
-export const EXTRACT = join(BUILD, "extract");
-export const EXTRACT_TRAJETS = join(EXTRACT, "trajets"); // 1 CSV normalisé par source
-export const STAGING = join(BUILD, "staging");
-export const RECONCILE = join(BUILD, "reconcile");
-export const MARTS = join(BUILD, "marts");
+  static readonly EXTRACT = join(Paths.BUILD, "extract");
+  static readonly EXTRACT_TRAJETS = join(Paths.EXTRACT, "trajets"); // 1 CSV normalisé par source
+  static readonly STAGING = join(Paths.BUILD, "staging");
+  static readonly RECONCILE = join(Paths.BUILD, "reconcile");
+  static readonly MARTS = join(Paths.BUILD, "marts");
+}
