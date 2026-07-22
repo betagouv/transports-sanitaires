@@ -2,10 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Identification } from "../../front/identification/Identification";
-import {
-  PRESCRIPTEUR_HORS_LISTE,
-  SERVICE_AUTRE,
-} from "../../shared/identite-saisie";
+import { PRESCRIPTEUR_HORS_LISTE } from "../../shared/identite-saisie";
 
 async function choisir(labelSelect: RegExp, optionLabel: string) {
   const select = screen.getByRole("combobox", { name: labelSelect });
@@ -75,24 +72,37 @@ describe("parcours d'identification", () => {
     });
   });
 
-  it("service « autre » → nom de service libre + nom/prénom", async () => {
+  it("service « Autre » → prescripteur du référentiel (service comme les autres)", async () => {
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
-    await userEvent.type(
-      screen.getByRole("textbox", { name: /Précisez le nom de votre service/ }),
-      "Consultations externes"
-    );
+    await choisir(/Vous êtes/, "Dr Hélène Fabre");
+    await valider();
+
+    expect(onValide).toHaveBeenCalledWith({
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_autre",
+      prescripteurId: "p_grenoble_autre_1",
+    });
+  });
+
+  it("service « Autre » → hors liste → saisie nom/prénom", async () => {
+    const onValide = vi.fn();
+    render(<Identification onValide={onValide} />);
+
+    await choisir(/Établissement/, "CHU Grenoble Alpes");
+    await choisir(/Nom du service/, "Autre");
+    await choisir(/Vous êtes/, "Je ne suis pas dans la liste");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Durand");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Léa");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
       etabId: "e_chu_grenoble",
-      serviceId: SERVICE_AUTRE,
-      serviceLibre: "Consultations externes",
+      serviceId: "s_grenoble_autre",
+      prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Durand",
       prenom: "Léa",
     });
@@ -125,6 +135,10 @@ describe("parcours d'identification", () => {
       .map((o) => o.textContent);
     expect(services.indexOf("Médecine interne")).toBeLessThan(
       services.indexOf("Urgences")
+    );
+    // « Autre » reste en fin de liste, malgré son rang alphabétique (A…).
+    expect(services.filter((s) => s !== "Sélectionnez un service").at(-1)).toBe(
+      "Autre"
     );
   });
 

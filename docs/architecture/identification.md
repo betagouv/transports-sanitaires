@@ -167,25 +167,29 @@ Composants :
 
 ## 4. Workflow d'identification & identité pseudonymisée
 
-**Workflow à branches** (formulaire à révélation progressive,
+**Workflow linéaire** (formulaire à révélation progressive,
 `front/identification/Identification.tsx`) :
 
 ```
-Établissement → Service ─┬─ (réel) → Prescripteur ─┬─ (dans la liste)
-                         │                          └─ « pas dans la liste » → Nom + Prénom
-                         └─ « Autre » → nom de service libre + Nom + Prénom
+Établissement → Service → Prescripteur ─┬─ (dans la liste)
+                                        └─ « pas dans la liste » → Nom + Prénom
 ```
+
+Le service **« Autre »** n'est plus un cas spécial (supprimé le 2026-07-22) : c'est une
+entrée du référentiel (un service par établissement) sélectionnée comme n'importe quelle
+autre, avec ses propres prescripteurs et la même option « pas dans la liste ». Le seul
+texte libre restant est le nom/prénom du prescripteur hors liste.
 
 Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM, autre)
 sélectionnent l'établissement **« Libéral / CNAM / CPAM / Autre »** du référentiel et
-suivent les mêmes branches (plus de branche « non rattaché » dédiée, supprimée le
+suivent le même workflow (plus de branche « non rattaché » dédiée, supprimée le
 2026-07-21).
 
 - **Transport** : réponse JSON de `POST /api/identite-pseudonymisee` (same-origin). **Plus de fragment
   d'URL** depuis la fusion.
 - **Construction** : **côté backend** (`server/identification/pseudonymisation.ts`, exposé
   par `server/identification/routes.ts`). Reçoit l'`IdentiteSaisie`
-  (`{ etabId, serviceId?, serviceLibre?, prescripteurId?, nom?, prenom? }`,
+  (`{ etabId, serviceId?, prescripteurId?, nom?, prenom? }`,
   `shared/identite-saisie.ts`), valide sa complétude (`saisieComplete`, partagé front/back),
   renvoie l'objet refs. Le secret HMAC ne quitte jamais le serveur.
 - **Schéma** (refs **optionnelles** selon la branche) :
@@ -193,13 +197,12 @@ suivent les mêmes branches (plus de branche « non rattaché » dédiée, suppr
   { "etabRef": "…", "serviceRef": "…", "prescripteurRef": "…", "v": 2 }
   ```
   chaque ref = `base64url(HMAC-SHA256("<nature>:<valeur>", SECRET)[:16])`, la valeur
-  étant **préfixée par sa nature** (`etab:`, `service:`, `service-libre:`,
-  `prescripteur:`, `identite:`) pour éviter toute collision id ↔ texte libre.
-  - **Textes libres** (nom/prénom, nom de service) : **normalisés** (casse/espaces) puis
-    **HMAC** — `identite:<nom>|<prenom>`. **Jamais le nom en clair** (invariant PII, R-6).
-  - Refs absentes selon la branche : le service « Autre » n'a pas de `serviceRef` de
-    référentiel mais un `serviceRef` de texte libre. Toutes les branches capturent une
-    identité → `prescripteurRef` toujours présent.
+  étant **préfixée par sa nature** (`etab:`, `service:`, `prescripteur:`, `identite:`)
+  pour éviter toute collision id ↔ texte libre.
+  - **Texte libre** (nom/prénom du prescripteur hors liste) : **normalisé** (casse/espaces)
+    puis **HMAC** — `identite:<nom>|<prenom>`. **Jamais le nom en clair** (invariant PII, R-6).
+  - `serviceRef` est toujours un id de référentiel (« Autre » compris). Toute sélection
+    capture une identité → `prescripteurRef` toujours présent.
 - **Interdits** : identifiant brut du référentiel, nom/prénom **en clair**, RPPS, tout
   identifiant patient, toute donnée de santé.
 - **Cycle de vie** : reçu à la validation de l'identification, conservé **en mémoire de

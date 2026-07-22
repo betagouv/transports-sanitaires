@@ -24,7 +24,6 @@ import type {
 import {
   normalise,
   PRESCRIPTEUR_HORS_LISTE,
-  SERVICE_AUTRE,
   type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
@@ -70,17 +69,8 @@ export function createGristReferentiel({
     // Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
     // issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
     async enrichirDepuisSaisie(saisie: IdentiteSaisie): Promise<void> {
-      // Service « autre » : service libre sous l'établissement réel + prescripteur.
-      if (saisie.serviceId === SERVICE_AUTRE) {
-        if (!saisie.serviceLibre || !saisie.nom || !saisie.prenom) return;
-        const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
-        if (etabRowId == null) return;
-        const serviceRowId = await assurerService(etabRowId, saisie.serviceLibre);
-        await assurerPrescripteur(serviceRowId, saisie.nom, saisie.prenom);
-        return;
-      }
-
-      // Prescripteur hors liste : prescripteur sous le service réel.
+      // Prescripteur hors liste : prescripteur sous le service réel (y compris le
+      // service « Autre », qui est désormais une entrée du référentiel comme les autres).
       if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
         if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
         const serviceRowId = await rowIdForId(TABLE.services, saisie.serviceId);
@@ -148,25 +138,6 @@ export function createGristReferentiel({
       0
     );
     return max + 1;
-  }
-
-  // Réutilise le service homonyme (Nom normalisé) sous l'établissement, sinon le crée.
-  async function assurerService(
-    etabRowId: number,
-    nom: string
-  ): Promise<number> {
-    const cible = normalise(nom);
-    const existants = await records(TABLE.services, {
-      [COL.refEtablissement]: [etabRowId],
-    });
-    const deja = existants.find((r) => normalise(str(r.fields[COL.nom])) === cible);
-    if (deja) return deja.id;
-    return create(TABLE.services, {
-      [COL.id]: await nextId2(TABLE.services),
-      [COL.nom]: nom.trim(),
-      [COL.refEtablissement]: etabRowId,
-      [COL.origine]: ORIGINE_FORMULAIRE,
-    });
   }
 
   // Réutilise le prescripteur homonyme (Nom+Prénom normalisés) du service, sinon le crée.
