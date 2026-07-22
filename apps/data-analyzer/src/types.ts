@@ -35,5 +35,13 @@ export interface AdapterOutput {
   etablissements?: EtablissementRow[];
 }
 
-/** Contrat d'un adaptateur de format : un fichier → des lignes normalisées. */
-export type Adapter = (location: string, entry: MappingEntry) => AdapterOutput;
+/** Un adaptateur de format : instancié avec un fichier, produit des lignes normalisées. */
+export interface Adapter {
+  execute(): AdapterOutput;
+}
+
+/** Constructeur d'adaptateur, tel qu'enregistré dans le registre des formats. */
+export type AdapterConstructor = new (location: string, entry: MappingEntry) => Adapter;
+
+/** Registre des formats : clé `format` du mapping → classe d'adaptateur. */
+export type FormatRegistry = Record<string, AdapterConstructor>;

@@ -1,13 +1,11 @@
 // Format « plateforme au niveau établissement » (CSV UTF-16 tabulé).
 //
-// Colonnes fixes (cf. constantes ci-dessous) ; les colonnes finess varient d'un fichier à
-// l'autre → passées en options du mapping :
-//   options: { colFinessJuridique: number, colFinessGeographique: number }
+// Colonnes fixes (cf. constantes) ; les colonnes finess varient d'un fichier à l'autre →
+// passées en options du mapping : { colFinessJuridique: number, colFinessGeographique: number }.
 
-import { readUtf16Tsv } from "../../csv.ts";
+import { Csv } from "../../csv.ts";
 import type { TrajetRow } from "../../contrats.ts";
-import type { Adapter, VehiculeCanonique } from "../../types.ts";
-import { colOption, toEnveloppe } from "./shared.ts";
+import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
 
 // Index (0-based) des colonnes fixes de ce format.
 const COL_ENVELOPPE = 2;
@@ -26,33 +24,68 @@ const VEHICULE: Record<string, VehiculeCanonique> = {
   TAP: "Assis",
 };
 
-export const plateformeFinessTsv: Adapter = (location, entry) => {
-  const colJur = colOption(entry.options, "colFinessJuridique");
-  const colGeo = colOption(entry.options, "colFinessGeographique");
+export class AdapterPlateformeFinessTsv implements Adapter {
+  readonly #location: string;
+  readonly #entry: MappingEntry;
+  readonly #colJuridique: number;
+  readonly #colGeographique: number;
 
-  const trajets: TrajetRow[] = [];
-  for (const r of readUtf16Tsv(location)) {
-    if (r.length < NB_COLONNES_MIN) continue;
-    const finessJur = r[colJur] ?? "";
-    const finessGeo = r[colGeo] ?? "";
-    if (!finessJur && !finessGeo) continue; // lignes d'agrégat sans finess
-    const nb = Number(r[COL_NB_TRAJETS]);
-    if (!Number.isFinite(nb) || nb <= 0) continue;
-    const vehiculeSource = r[COL_VEHICULE] ?? "";
-    const vehicule = VEHICULE[vehiculeSource];
-    if (!vehicule)
-      throw new Error(`Véhicule non mappé : ${JSON.stringify(vehiculeSource)} (${entry.label}).`);
-    trajets.push({
-      role: entry.role,
-      source: entry.label,
-      finess_juridique: finessJur,
-      finess_geographique: finessGeo === FINESS_GEOGRAPHIQUE_ABSENT ? "" : finessGeo,
-      ght_libelle: "",
-      enveloppe: toEnveloppe(r[COL_ENVELOPPE] ?? ""),
-      annee: r[COL_ANNEE] ?? "",
-      vehicule_canonique: vehicule,
-      nb_trajets: nb,
-    });
+  constructor(location: string, entry: MappingEntry) {
+    this.#location = location;
+    this.#entry = entry;
+    this.#colJuridique = AdapterPlateformeFinessTsv.#colOption(entry, "colFinessJuridique");
+    this.#colGeographique = AdapterPlateformeFinessTsv.#colOption(entry, "colFinessGeographique");
   }
-  return { trajets };
-};
+
+  execute(): AdapterOutput {
+    const trajets: TrajetRow[] = [];
+    for (const cells of Csv.readUtf16Tsv(this.#location)) {
+      const trajet = this.#toTrajet(cells);
+      if (trajet) trajets.push(trajet);
+    }
+    return { trajets };
+  }
+
+  #toTrajet(cells: string[]): TrajetRow | null {
+    if (cells.length < NB_COLONNES_MIN) return null;
+    const juridique = cells[this.#colJuridique] ?? "";
+    const geographique = cells[this.#colGeographique] ?? "";
+    if (!juridique && !geographique) return null; // ligne d'agrégat sans finess
+    const nb = Number(cells[COL_NB_TRAJETS]);
+    if (!Number.isFinite(nb) || nb <= 0) return null;
+    return this.#build(cells, juridique, geographique, nb);
+  }
+
+  #build(cells: string[], juridique: string, geographique: string, nb: number): TrajetRow {
+    return {
+      role: this.#entry.role,
+      source: this.#entry.label,
+      finess_juridique: juridique,
+      finess_geographique: geographique === FINESS_GEOGRAPHIQUE_ABSENT ? "" : geographique,
+      ght_libelle: "",
+      enveloppe: AdapterPlateformeFinessTsv.#toEnveloppe(cells[COL_ENVELOPPE] ?? ""),
+      annee: cells[COL_ANNEE] ?? "",
+      vehicule_canonique: this.#vehicule(cells[COL_VEHICULE] ?? ""),
+      nb_trajets: nb,
+    };
+  }
+
+  #vehicule(source: string): VehiculeCanonique {
+    const canonique = VEHICULE[source];
+    if (!canonique)
+      throw new Error(`Véhicule non mappé : ${JSON.stringify(source)} (${this.#entry.label}).`);
+    return canonique;
+  }
+
+  static #toEnveloppe(value: string): Enveloppe {
+    if (value === "Article 80" || value === "Hors Article 80") return value;
+    throw new Error(`Enveloppe inattendue : ${JSON.stringify(value)}`);
+  }
+
+  static #colOption(entry: MappingEntry, key: string): number {
+    const value = entry.options[key];
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 0)
+      throw new Error(`options.${key} attendu (index de colonne entier ≥ 0) pour ${entry.label}.`);
+    return value;
+  }
+}
