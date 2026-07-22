@@ -17,13 +17,26 @@ Le formulaire d'identification (`front/identification/Identification.tsx`) captu
 > `ETAB_NON_RATTACHE` ; les sections ci-dessous qui mentionnent « non rattaché » ne
 > valent plus que comme historique.
 
-> **MàJ 2026-07-22** — la branche « service Autre » (saisie d'un nom de service libre,
-> sentinelle `SERVICE_AUTRE`) a été supprimée : « Autre » est désormais une **entrée du
+> **MàJ 2026-07-22 (a)** — la branche « service Autre » (saisie d'un nom de service libre,
+> sentinelle `SERVICE_AUTRE`) a été supprimée : « Autre » est devenu une **entrée du
 > référentiel** (un service par établissement) sélectionnée comme n'importe quelle
-> autre, avec ses propres prescripteurs et la même option « hors liste ». Plus de
-> `serviceLibre` ni de sentinelle `SERVICE_AUTRE` ; le seul texte libre restant est le
-> nom/prénom du prescripteur hors liste. Les sections ci-dessous qui mentionnent le
-> service libre ne valent plus que comme historique.
+> autre. Plus de sentinelle `SERVICE_AUTRE`.
+>
+> **MàJ 2026-07-22 (b) — implémentée.** On **réintroduit** une saisie libre du service,
+> mais autrement : quand le prescripteur sélectionne l'entrée « Autre » du référentiel,
+> il **doit obligatoirement** saisir son service/unité réel (`serviceLibre`). Le backend
+> **crée** ce vrai service sous l'établissement (`Origine=formulaire`) et y **rattache**
+> le prescripteur — hors liste : création sous ce service ; déjà listé sous « Autre » :
+> **déplacement** (`PATCH Service_Unite`). But : à la connexion suivante, le prescripteur
+> apparaît sous son **vrai service** et non plus sous « Autre ». Le front porte deux
+> champs : `serviceEstAutre: boolean` (le front seul connaît le libellé → permet à
+> `saisieComplete`, partagé, d'exiger le service sans relire Grist) et `serviceLibre`.
+>
+> **Analytics** : le `serviceRef` HMAC reste calculé sur l'id « Autre » du référentiel
+> (le vrai service n'a pas encore d'id au moment de la pseudonymisation). La 1ʳᵉ visite
+> est donc buckettée sous « Autre », les suivantes sous le vrai service. Décrochage
+> mineur assumé en phase expérimentale ; `enrichirDepuisSaisie` reste totalement
+> **découplé et best-effort** (Grist indisponible → accès quand même).
 
 Aujourd'hui ces valeurs libres ne servent qu'à calculer un **pseudonyme HMAC** pour
 l'analytics (`server/identification/pseudonymisation.ts`) puis sont jetées. **But** :
@@ -51,11 +64,13 @@ utilisateurs suivants) en bénéficient, sans re-saisir.
 
 ## Ce qui s'écrit, par branche
 
-| Branche | Service créé/réutilisé | Prescripteur créé/réutilisé |
+| Branche | Service créé/réutilisé | Prescripteur créé/réutilisé/déplacé |
 |---|---|---|
-| prescripteur hors liste | non (service réel existant, Id2=serviceId ; « Autre » compris) | oui : sous ce service |
+| service « Autre » + `serviceLibre` + hors liste | oui : vrai service sous l'établissement | créé sous le vrai service |
+| service « Autre » + `serviceLibre` + prescripteur listé | oui : vrai service sous l'établissement | **déplacé** (PATCH `Service_Unite`) vers le vrai service |
+| prescripteur hors liste (service réel, hors « Autre ») | non (service réel existant, Id2=serviceId) | créé sous ce service |
 
-Prescripteur pris dans une liste → **aucune écriture**.
+Prescripteur pris dans une liste **sous un service réel** (hors « Autre ») → **aucune écriture**.
 
 ## Changements
 

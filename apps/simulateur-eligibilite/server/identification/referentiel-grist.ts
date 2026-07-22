@@ -69,8 +69,37 @@ export function createGristReferentiel({
     // Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
     // issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
     async enrichirDepuisSaisie(saisie: IdentiteSaisie): Promise<void> {
-      // Prescripteur hors liste : prescripteur sous le service réel (y compris le
-      // service « Autre », qui est désormais une entrée du référentiel comme les autres).
+      // Service « Autre » avec un vrai service saisi : on crée/réutilise ce service
+      // sous l'établissement, puis on y **rattache** le prescripteur (au lieu de
+      // « Autre »), pour qu'à la connexion suivante il apparaisse sous son service
+      // réel — et ne soit plus rattaché à « Autre ». Voir la spec.
+      if (saisie.serviceEstAutre && saisie.serviceLibre?.trim()) {
+        const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
+        if (etabRowId == null) return;
+        const serviceReelRowId = await assurerService(etabRowId, saisie.serviceLibre);
+
+        if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
+          // Nouveau prescripteur : on le crée directement sous le vrai service.
+          if (!saisie.nom || !saisie.prenom) return;
+          await assurerPrescripteur(serviceReelRowId, saisie.nom, saisie.prenom);
+        } else if (saisie.prescripteurId) {
+          // Prescripteur déjà listé sous « Autre » : on le **déplace** vers son
+          // vrai service (met à jour sa référence de service).
+          const prescRowId = await rowIdForId(
+            TABLE.prescripteurs,
+            saisie.prescripteurId
+          );
+          if (prescRowId != null) {
+            await update(TABLE.prescripteurs, prescRowId, {
+              [COL.refService]: serviceReelRowId,
+            });
+          }
+        }
+        return;
+      }
+
+      // Prescripteur hors liste (service réel, « Autre » sans service saisi compris) :
+      // prescripteur sous le service sélectionné.
       if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
         if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
         const serviceRowId = await rowIdForId(TABLE.services, saisie.serviceId);
@@ -129,6 +158,26 @@ export function createGristReferentiel({
     return id;
   }
 
+  // Met à jour les champs d'une ligne existante (PATCH). Sert à **déplacer** un
+  // prescripteur listé sous « Autre » vers son vrai service.
+  async function update(
+    table: string,
+    rowId: number,
+    fields: Record<string, unknown>
+  ): Promise<void> {
+    const res = await fetch(`${base}/tables/${table}/records`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ records: [{ id: rowId, fields }] }),
+    });
+    if (!res.ok) {
+      throw new Error(`Grist ${table} PATCH → HTTP ${res.status}`);
+    }
+  }
+
   // Prochain Id2 métier libre de la table (max + 1). Les lignes du formulaire sont
   // ainsi visibles immédiatement dans les listes (le read-path filtre sur Id2 non nul).
   async function nextId2(table: string): Promise<number> {
@@ -138,6 +187,25 @@ export function createGristReferentiel({
       0
     );
     return max + 1;
+  }
+
+  // Réutilise le service homonyme (Nom normalisé) de l'établissement, sinon le crée.
+  async function assurerService(
+    etabRowId: number,
+    nom: string
+  ): Promise<number> {
+    const cn = normalise(nom);
+    const existants = await records(TABLE.services, {
+      [COL.refEtablissement]: [etabRowId],
+    });
+    const deja = existants.find((r) => normalise(str(r.fields[COL.nom])) === cn);
+    if (deja) return deja.id;
+    return create(TABLE.services, {
+      [COL.id]: await nextId2(TABLE.services),
+      [COL.nom]: nom.trim(),
+      [COL.refEtablissement]: etabRowId,
+      [COL.origine]: ORIGINE_FORMULAIRE,
+    });
   }
 
   // Réutilise le prescripteur homonyme (Nom+Prénom normalisés) du service, sinon le crée.

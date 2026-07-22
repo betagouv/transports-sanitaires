@@ -42,4 +42,33 @@ describe.skipIf(!actif)("écriture Grist depuis une saisie libre (smoke)", () =>
     const trouves = prescripteurs.filter((p) => p.libelle.includes(marqueur));
     expect(trouves).toHaveLength(1);
   });
+
+  it("service « Autre » : crée le vrai service + son prescripteur, puis déduplique", async () => {
+    const marqueur = `TEST-SVC-${Date.now()}`;
+    // Établissement « Libéral / CNAM / CPAM / Autre » (Id2=11) → service « Autre » :
+    // on saisit un vrai service (`serviceLibre`) → il est créé sous l'établissement,
+    // et le prescripteur hors liste y est rattaché (pas à « Autre »).
+    const sel = {
+      etabId: "11",
+      serviceId: "0", // id « Autre » non utilisé par la branche serviceEstAutre
+      serviceEstAutre: true as const,
+      serviceLibre: marqueur,
+      prescripteurId: "prescripteur_hors_liste" as const,
+      nom: "Smoke",
+      prenom: "Autre",
+    };
+
+    await ref.enrichirDepuisSaisie!(sel);
+    await ref.enrichirDepuisSaisie!(sel);
+
+    // Le vrai service apparaît, une seule fois, dans les services de l'établissement.
+    const services = await ref.getServices("11");
+    const svc = services.filter((s) => s.libelle === marqueur);
+    expect(svc).toHaveLength(1);
+
+    // Le prescripteur est rattaché à ce vrai service, une seule fois.
+    const prescripteurs = await ref.getPrescripteurs(svc[0].id);
+    const trouves = prescripteurs.filter((p) => p.libelle.includes("Smoke"));
+    expect(trouves).toHaveLength(1);
+  });
 });

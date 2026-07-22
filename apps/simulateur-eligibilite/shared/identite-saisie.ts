@@ -6,11 +6,14 @@
 //
 // Le workflow est linéaire (voir docs/architecture/identification.md — §4) :
 //   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
-// Le service « Autre » n'est plus un cas spécial : c'est une entrée du référentiel
-// comme les autres (une par établissement), avec ses propres prescripteurs et la
-// même option « hors liste ». Les prescripteurs sans établissement de rattachement
-// (libéral, CNAM/CPAM, autre) sélectionnent l'établissement « Libéral / CNAM / CPAM
-// / Autre » du référentiel.
+// Le service « Autre » est une entrée du référentiel comme les autres (une par
+// établissement), avec ses propres prescripteurs et la même option « hors liste ».
+// **Cas particulier** : quand le prescripteur sélectionne « Autre », on lui demande
+// **obligatoirement** de saisir son service/unité réel (`serviceLibre`). Le backend
+// crée alors ce vrai service dans le référentiel et y rattache le prescripteur (au
+// lieu de « Autre »), pour qu'à la connexion suivante il soit listé sous son service
+// réel. Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM,
+// autre) sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre » du référentiel.
 
 /** Valeur sentinelle (hors référentiel) choisie dans la liste des prescripteurs. */
 export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
@@ -18,8 +21,19 @@ export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
 export type IdentiteSaisie = {
   /** id établissement du référentiel. */
   etabId: string;
-  /** id service du référentiel. */
+  /** id service du référentiel (« Autre » compris). */
   serviceId?: string;
+  /**
+   * Vrai quand le service sélectionné est l'entrée « Autre » du référentiel. Porté
+   * par le front (seul à connaître le libellé) pour que la complétude — partagée
+   * front/back — puisse exiger `serviceLibre` sans relire Grist.
+   */
+  serviceEstAutre?: boolean;
+  /**
+   * Service/unité réel saisi quand `serviceEstAutre` : **obligatoire** dans cette
+   * branche. Le backend crée/réutilise ce service et y rattache le prescripteur.
+   */
+  serviceLibre?: string;
   /** id prescripteur du référentiel, ou `PRESCRIPTEUR_HORS_LISTE`. */
   prescripteurId?: string;
   /** si prescripteur hors liste : identité libre. */
@@ -44,6 +58,8 @@ export function saisieComplete(saisie: IdentiteSaisie): boolean {
 
   // établissement → service → prescripteur requis
   if (!rempli(saisie.serviceId)) return false;
+  // service « Autre » → saisie du service/unité réel obligatoire
+  if (saisie.serviceEstAutre && !rempli(saisie.serviceLibre)) return false;
   if (!rempli(saisie.prescripteurId)) return false;
   if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
     // prescripteur hors liste → identité libre
