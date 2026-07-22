@@ -20,7 +20,6 @@ import {
 import {
   normalise,
   PRESCRIPTEUR_HORS_LISTE,
-  SERVICE_AUTRE,
   type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
@@ -42,20 +41,12 @@ export function pseudonymiser(
     identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
   }
 
-  // Service (réel ou libre).
-  if (saisie.serviceId === SERVICE_AUTRE) {
-    if (saisie.serviceLibre) {
-      identite.serviceRef = empreinte(
-        secret,
-        `service-libre:${normalise(saisie.serviceLibre)}`,
-        enClair
-      );
-    }
-  } else if (saisie.serviceId) {
+  // Service.
+  if (saisie.serviceId) {
     identite.serviceRef = empreinte(secret, `service:${saisie.serviceId}`, enClair);
   }
 
-  // Prescripteur (réel, ou identité libre si hors liste / service « autre »).
+  // Prescripteur (réel, ou identité libre si hors liste).
   if (saisie.prescripteurId && saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
     identite.prescripteurRef = empreinte(
       secret,

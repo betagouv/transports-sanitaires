@@ -148,18 +148,16 @@ describe("POST /api/identite-pseudonymisee", () => {
     expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie/i);
   });
 
-  it("branche « autre service » : serviceRef (libre) + prescripteurRef (identité)", async () => {
+  it("service « Autre » : serviceRef (id référentiel) + prescripteurRef (identité si hors liste)", async () => {
     const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
-      serviceId: "service_autre",
-      serviceLibre: "Consultations externes",
+      serviceId: "s_grenoble_autre",
+      prescripteurId: "prescripteur_hors_liste",
       nom: "Durand",
       prenom: "Léa",
     });
     expect(status).toBe(200);
-    expect(ctx.serviceRef).toBe(
-      empreinte(SECRET, "service-libre:consultations externes")
-    );
+    expect(ctx.serviceRef).toBe(empreinte(SECRET, "service:s_grenoble_autre"));
     expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:durand|léa"));
     expect(JSON.stringify(ctx)).not.toMatch(/durand|léa/i);
   });
@@ -223,11 +221,11 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
     appels.length = 0;
   });
 
-  it("déclenche l'enrichissement pour la branche « service autre »", async () => {
+  it("déclenche l'enrichissement pour un prescripteur hors liste du service « Autre »", async () => {
     const sel = {
       etabId: "e_chu_grenoble",
-      serviceId: "service_autre",
-      serviceLibre: "Consultations externes",
+      serviceId: "s_grenoble_autre",
+      prescripteurId: "prescripteur_hors_liste",
       nom: "Durand",
       prenom: "Léa",
     };

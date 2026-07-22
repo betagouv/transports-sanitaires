@@ -10,7 +10,6 @@
 import { useEffect, useState } from "react";
 import {
   PRESCRIPTEUR_HORS_LISTE,
-  SERVICE_AUTRE,
   saisieComplete,
   type IdentiteSaisie,
 } from "../../shared/identite-saisie";
@@ -33,16 +32,23 @@ type Props = {
   ) => void;
 };
 
-const OPTION_SERVICE_AUTRE = "Autre";
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
 
+// « Autre » (service / unité non listé du référentiel) reste toujours en **fin**
+// de liste, quel que soit l'ordre alphabétique.
+const estAutre = (libelle: string): boolean =>
+  libelle.trim().toLowerCase() === "autre";
+
 // Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
-// aux accents). Les options spéciales (« Autre », « hors liste ») sont ajoutées
-// séparément après la liste et gardent leur place.
+// aux accents), « Autre » repoussé en fin de liste. L'option spéciale « hors
+// liste » est ajoutée séparément après la liste et garde sa place.
 const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
-  [...liste].sort((a, b) =>
-    a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" })
-  );
+  [...liste].sort((a, b) => {
+    if (estAutre(a.libelle) !== estAutre(b.libelle)) {
+      return estAutre(a.libelle) ? 1 : -1;
+    }
+    return a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" });
+  });
 
 export function Identification({
   referentiel = snapshotReferentiel,
@@ -55,7 +61,6 @@ export function Identification({
 
   const [etabId, setEtabId] = useState("");
   const [serviceId, setServiceId] = useState("");
-  const [serviceLibre, setServiceLibre] = useState("");
   const [prescripteurId, setPrescripteurId] = useState("");
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -69,7 +74,6 @@ export function Identification({
   // Changement d'établissement → réinitialise l'aval, recharge les services.
   useEffect(() => {
     setServiceId("");
-    setServiceLibre("");
     setPrescripteurId("");
     setNom("");
     setPrenom("");
@@ -80,15 +84,13 @@ export function Identification({
     }
   }, [referentiel, etabId]);
 
-  // Changement de service → réinitialise l'aval, recharge les prescripteurs si
-  // c'est un service réel.
+  // Changement de service → réinitialise l'aval, recharge les prescripteurs.
   useEffect(() => {
-    setServiceLibre("");
     setPrescripteurId("");
     setNom("");
     setPrenom("");
     setPrescripteurs([]);
-    if (serviceId && serviceId !== SERVICE_AUTRE) {
+    if (serviceId) {
       referentiel
         .getPrescripteurs(serviceId)
         .then((l) => setPrescripteurs(triParLibelle(l)));
@@ -96,25 +98,18 @@ export function Identification({
   }, [referentiel, serviceId]);
 
   const etabChoisi = etabId !== "";
-  const serviceAutre = serviceId === SERVICE_AUTRE;
-  const serviceReel = serviceId !== "" && !serviceAutre;
+  const serviceChoisi = serviceId !== "";
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
-  const identiteLibre = serviceAutre || (serviceReel && prescripteurHorsListe);
+  const identiteLibre = serviceChoisi && prescripteurHorsListe;
 
   function buildSaisie(): IdentiteSaisie {
     const saisie: IdentiteSaisie = { etabId };
     if (etabChoisi && serviceId) {
       saisie.serviceId = serviceId;
-      if (serviceAutre) {
-        saisie.serviceLibre = serviceLibre;
+      saisie.prescripteurId = prescripteurId;
+      if (prescripteurHorsListe) {
         saisie.nom = nom;
         saisie.prenom = prenom;
-      } else {
-        saisie.prescripteurId = prescripteurId;
-        if (prescripteurHorsListe) {
-          saisie.nom = nom;
-          saisie.prenom = prenom;
-        }
       }
     }
     return saisie;
@@ -175,27 +170,11 @@ export function Identification({
                   {service.libelle}
                 </option>
               ))}
-              <option value={SERVICE_AUTRE}>{OPTION_SERVICE_AUTRE}</option>
             </select>
           </div>
         )}
 
-        {serviceAutre && (
-          <div className="fr-input-group">
-            <label className="fr-label" htmlFor="service-libre">
-              Précisez le nom de votre service
-            </label>
-            <input
-              className="fr-input"
-              id="service-libre"
-              type="text"
-              value={serviceLibre}
-              onChange={(e) => setServiceLibre(e.target.value)}
-            />
-          </div>
-        )}
-
-        {serviceReel && (
+        {serviceChoisi && (
           <div className="fr-select-group">
             <label className="fr-label" htmlFor="prescripteur">
               Vous êtes

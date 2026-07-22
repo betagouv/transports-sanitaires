@@ -4,20 +4,26 @@
 
 ## Contexte
 
-Le formulaire d'identification (`front/identification/Identification.tsx`) est à
-branches (voir `shared/identite-saisie.ts`). Trois branches capturent du **texte libre**
-plutôt qu'une sélection dans une liste du référentiel :
+Le formulaire d'identification (`front/identification/Identification.tsx`) capture du
+**texte libre** (plutôt qu'une sélection dans une liste du référentiel) dans un seul cas :
 
-- **service « Autre »** (`SERVICE_AUTRE`) : nom de service libre + nom/prénom ;
 - **prescripteur « hors liste »** (`PRESCRIPTEUR_HORS_LISTE`) : nom/prénom sous un
-  service réel.
+  service réel (y compris le service « Autre »).
 
 > **MàJ 2026-07-21** — la branche « non rattaché » a été supprimée : les prescripteurs
 > sans établissement de rattachement (libéral, CNAM/CPAM, autre) sélectionnent
 > désormais l'établissement **« Libéral / CNAM / CPAM / Autre »** du référentiel, puis
-> passent par les branches ci-dessus. Plus de `categorie` ni de sentinelle
+> passent par la branche ci-dessus. Plus de `categorie` ni de sentinelle
 > `ETAB_NON_RATTACHE` ; les sections ci-dessous qui mentionnent « non rattaché » ne
 > valent plus que comme historique.
+
+> **MàJ 2026-07-22** — la branche « service Autre » (saisie d'un nom de service libre,
+> sentinelle `SERVICE_AUTRE`) a été supprimée : « Autre » est désormais une **entrée du
+> référentiel** (un service par établissement) sélectionnée comme n'importe quelle
+> autre, avec ses propres prescripteurs et la même option « hors liste ». Plus de
+> `serviceLibre` ni de sentinelle `SERVICE_AUTRE` ; le seul texte libre restant est le
+> nom/prénom du prescripteur hors liste. Les sections ci-dessous qui mentionnent le
+> service libre ne valent plus que comme historique.
 
 Aujourd'hui ces valeurs libres ne servent qu'à calculer un **pseudonyme HMAC** pour
 l'analytics (`server/identification/pseudonymisation.ts`) puis sont jetées. **But** :
@@ -47,10 +53,9 @@ utilisateurs suivants) en bénéficient, sans re-saisir.
 
 | Branche | Service créé/réutilisé | Prescripteur créé/réutilisé |
 |---|---|---|
-| service « Autre » | oui : `Nom`=serviceLibre sous l'étab. réel (Id2=etabId) | oui : sous le service ci-dessus |
-| prescripteur hors liste | non (service réel existant, Id2=serviceId) | oui : sous ce service |
+| prescripteur hors liste | non (service réel existant, Id2=serviceId ; « Autre » compris) | oui : sous ce service |
 
-Prescripteur pris dans une liste + service réel → **aucune écriture**.
+Prescripteur pris dans une liste → **aucune écriture**.
 
 ## Changements
 

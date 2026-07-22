@@ -4,26 +4,25 @@
 // libres sont **HMAC**, jamais transmis en clair à l'analytics (voir
 // server/identification/pseudonymisation.ts + ADR-4).
 //
-// Le workflow est à branches (voir docs/architecture/identification.md — §4) :
-//   établissement → service réel → prescripteur (réel | « hors liste » → nom/prénom) ;
-//   établissement → service « autre » → nom de service libre + nom/prénom.
-// Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM, autre)
-// sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre » du référentiel.
+// Le workflow est linéaire (voir docs/architecture/identification.md — §4) :
+//   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
+// Le service « Autre » n'est plus un cas spécial : c'est une entrée du référentiel
+// comme les autres (une par établissement), avec ses propres prescripteurs et la
+// même option « hors liste ». Les prescripteurs sans établissement de rattachement
+// (libéral, CNAM/CPAM, autre) sélectionnent l'établissement « Libéral / CNAM / CPAM
+// / Autre » du référentiel.
 
-/** Valeurs sentinelles (hors référentiel) choisies dans les listes déroulantes. */
-export const SERVICE_AUTRE = "service_autre";
+/** Valeur sentinelle (hors référentiel) choisie dans la liste des prescripteurs. */
 export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
 
 export type IdentiteSaisie = {
   /** id établissement du référentiel. */
   etabId: string;
-  /** id service du référentiel, ou `SERVICE_AUTRE`. */
+  /** id service du référentiel. */
   serviceId?: string;
-  /** si service « autre » : nom libre du service. */
-  serviceLibre?: string;
-  /** si service réel : id prescripteur du référentiel, ou `PRESCRIPTEUR_HORS_LISTE`. */
+  /** id prescripteur du référentiel, ou `PRESCRIPTEUR_HORS_LISTE`. */
   prescripteurId?: string;
-  /** si service « autre » ou prescripteur hors liste : identité libre. */
+  /** si prescripteur hors liste : identité libre. */
   nom?: string;
   prenom?: string;
 };
@@ -43,16 +42,11 @@ export const normalise = (s: string): string =>
 export function saisieComplete(saisie: IdentiteSaisie): boolean {
   if (!rempli(saisie.etabId)) return false;
 
-  // établissement → service requis
+  // établissement → service → prescripteur requis
   if (!rempli(saisie.serviceId)) return false;
-  if (saisie.serviceId === SERVICE_AUTRE) {
-    // service « autre » → nom du service + identité libre
-    return rempli(saisie.serviceLibre) && rempli(saisie.nom) && rempli(saisie.prenom);
-  }
-
-  // service réel → prescripteur requis
   if (!rempli(saisie.prescripteurId)) return false;
   if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
+    // prescripteur hors liste → identité libre
     return rempli(saisie.nom) && rempli(saisie.prenom);
   }
   return true;
