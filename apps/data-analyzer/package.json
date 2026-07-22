@@ -1,0 +1,26 @@
+{
+  "name": "data-analyzer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "ETL versionné : part des trajets réalisés via les plateformes (numérateur) rapportée au référentiel national de remboursement (dénominateur)",
+  "scripts": {
+    "etl": "node src/run.ts",
+    "extract": "node src/01-extract/extract.ts",
+    "staging": "node src/02-staging/staging.ts",
+    "reconcile": "node src/03-reconcile/reconcile.ts",
+    "marts": "node src/04-marts/marts.ts",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
