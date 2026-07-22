@@ -152,14 +152,32 @@ describe("POST /api/identite-pseudonymisee", () => {
     const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
       prescripteurId: "prescripteur_hors_liste",
       nom: "Durand",
       prenom: "Léa",
     });
     expect(status).toBe(200);
+    // Le serviceRef reste l'id « Autre » du référentiel (le vrai service n'a pas
+    // encore d'id à ce stade) ; l'analytics est buckettée sous « Autre » à la 1ʳᵉ
+    // visite, puis sous le vrai service ensuite. Voir la spec.
     expect(ctx.serviceRef).toBe(empreinte(SECRET, "service:s_grenoble_autre"));
     expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:durand|léa"));
-    expect(JSON.stringify(ctx)).not.toMatch(/durand|léa/i);
+    expect(JSON.stringify(ctx)).not.toMatch(/durand|léa|néphrologie/i);
+  });
+
+  it("service « Autre » sans service réel saisi → 400 (saisie obligatoire)", async () => {
+    const { status, body } = await post("/api/identite-pseudonymisee", {
+      etabId: "e_chu_grenoble",
+      serviceId: "s_grenoble_autre",
+      serviceEstAutre: true,
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "Durand",
+      prenom: "Léa",
+    });
+    expect(status).toBe(400);
+    expect(body.error).toMatch(/incompl/);
   });
 
   it("refuse une sélection incomplète", async () => {
@@ -221,10 +239,12 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
     appels.length = 0;
   });
 
-  it("déclenche l'enrichissement pour un prescripteur hors liste du service « Autre »", async () => {
+  it("déclenche l'enrichissement pour un service « Autre » (vrai service saisi)", async () => {
     const sel = {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
       prescripteurId: "prescripteur_hors_liste",
       nom: "Durand",
       prenom: "Léa",

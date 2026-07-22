@@ -175,10 +175,14 @@ Composants :
                                         └─ « pas dans la liste » → Nom + Prénom
 ```
 
-Le service **« Autre »** n'est plus un cas spécial (supprimé le 2026-07-22) : c'est une
-entrée du référentiel (un service par établissement) sélectionnée comme n'importe quelle
-autre, avec ses propres prescripteurs et la même option « pas dans la liste ». Le seul
-texte libre restant est le nom/prénom du prescripteur hors liste.
+Le service **« Autre »** est une entrée du référentiel (un service par établissement)
+sélectionnée comme n'importe quelle autre, avec ses propres prescripteurs et la même
+option « pas dans la liste ». **Cas particulier** : quand « Autre » est sélectionné, le
+prescripteur **doit** saisir son service/unité réel — ce texte libre est alors écrit
+dans Grist (création du vrai service + rattachement/déplacement du prescripteur) pour
+qu'à la connexion suivante il apparaisse sous ce service réel et non plus sous « Autre »
+(voir [spec enrichissement](../specs/enrichissement-referentiel-saisies-libres.md)).
+L'autre texte libre est le nom/prénom du prescripteur hors liste.
 
 Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM, autre)
 sélectionnent l'établissement **« Libéral / CNAM / CPAM / Autre »** du référentiel et

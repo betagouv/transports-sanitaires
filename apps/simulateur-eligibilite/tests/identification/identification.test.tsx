@@ -72,28 +72,38 @@ describe("parcours d'identification", () => {
     });
   });
 
-  it("service « Autre » → prescripteur du référentiel (service comme les autres)", async () => {
+  it("service « Autre » → vrai service saisi → prescripteur listé (à déplacer)", async () => {
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Nom de votre service / unité" }),
+      "Néphrologie"
+    );
     await choisir(/Vous êtes/, "Dr Hélène Fabre");
     await valider();
 
     expect(onValide).toHaveBeenCalledWith({
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
       prescripteurId: "p_grenoble_autre_1",
     });
   });
 
-  it("service « Autre » → hors liste → saisie nom/prénom", async () => {
+  it("service « Autre » → vrai service saisi → hors liste → nom/prénom", async () => {
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Nom de votre service / unité" }),
+      "Néphrologie"
+    );
     await choisir(/Vous êtes/, "Je ne suis pas dans la liste");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre nom" }), "Durand");
     await userEvent.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Léa");
@@ -102,10 +112,32 @@ describe("parcours d'identification", () => {
     expect(onValide).toHaveBeenCalledWith({
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
       prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Durand",
       prenom: "Léa",
     });
+  });
+
+  it("service « Autre » : validation désactivée tant que le service réel n'est pas saisi", async () => {
+    render(<Identification onValide={vi.fn()} />);
+
+    await choisir(/Établissement/, "CHU Grenoble Alpes");
+    await choisir(/Nom du service/, "Autre");
+    await choisir(/Vous êtes/, "Dr Hélène Fabre");
+    // Prescripteur choisi mais service réel encore vide → bouton désactivé.
+    expect(
+      screen.getByRole("button", { name: "Accéder au simulateur" })
+    ).toBeDisabled();
+
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Nom de votre service / unité" }),
+      "Néphrologie"
+    );
+    expect(
+      screen.getByRole("button", { name: "Accéder au simulateur" })
+    ).toBeEnabled();
   });
 
   it("trie les listes déroulantes par ordre alphabétique", async () => {

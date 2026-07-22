@@ -61,6 +61,7 @@ export function Identification({
 
   const [etabId, setEtabId] = useState("");
   const [serviceId, setServiceId] = useState("");
+  const [serviceLibre, setServiceLibre] = useState("");
   const [prescripteurId, setPrescripteurId] = useState("");
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -74,6 +75,7 @@ export function Identification({
   // Changement d'établissement → réinitialise l'aval, recharge les services.
   useEffect(() => {
     setServiceId("");
+    setServiceLibre("");
     setPrescripteurId("");
     setNom("");
     setPrenom("");
@@ -86,6 +88,7 @@ export function Identification({
 
   // Changement de service → réinitialise l'aval, recharge les prescripteurs.
   useEffect(() => {
+    setServiceLibre("");
     setPrescripteurId("");
     setNom("");
     setPrenom("");
@@ -99,6 +102,10 @@ export function Identification({
 
   const etabChoisi = etabId !== "";
   const serviceChoisi = serviceId !== "";
+  // « Autre » sélectionné → saisie du service/unité réel obligatoire.
+  const serviceEstAutre = estAutre(
+    services.find((s) => s.id === serviceId)?.libelle ?? ""
+  );
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
   const identiteLibre = serviceChoisi && prescripteurHorsListe;
 
@@ -106,6 +113,10 @@ export function Identification({
     const saisie: IdentiteSaisie = { etabId };
     if (etabChoisi && serviceId) {
       saisie.serviceId = serviceId;
+      if (serviceEstAutre) {
+        saisie.serviceEstAutre = true;
+        saisie.serviceLibre = serviceLibre;
+      }
       saisie.prescripteurId = prescripteurId;
       if (prescripteurHorsListe) {
         saisie.nom = nom;
@@ -171,6 +182,21 @@ export function Identification({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {serviceEstAutre && (
+          <div className="fr-input-group">
+            <label className="fr-label" htmlFor="service-libre">
+              Nom de votre service / unité
+            </label>
+            <input
+              className="fr-input"
+              id="service-libre"
+              type="text"
+              value={serviceLibre}
+              onChange={(e) => setServiceLibre(e.target.value)}
+            />
           </div>
         )}
 
