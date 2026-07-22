@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- App embarquée en iframe dans le CMS : non-indexable en direct (défense
+         supplémentaire à l'en-tête X-Robots-Tag servi par le backend). -->
+    <meta name="robots" content="noindex, nofollow" />
     <title>Simulateur d'éligibilité aux transports sanitaires</title>
 
     <link rel="apple-touch-icon" href="/node_modules/@codegouvfr/react-dsfr/dsfr/favicon/apple-touch-icon.png" />
