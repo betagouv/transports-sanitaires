@@ -91,6 +91,20 @@ describe("API référentiel", () => {
   });
 });
 
+describe("non-indexation par les moteurs", () => {
+  it("sert un X-Robots-Tag noindex sur toutes les réponses", async () => {
+    const res = await fetch(base + "/api/etablissements");
+    expect(res.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+  });
+
+  it("sert un robots.txt qui interdit tout", async () => {
+    const res = await fetch(base + "/robots.txt");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toMatch(/text\/plain/);
+    expect(await res.text()).toContain("Disallow: /");
+  });
+});
+
 describe("POST /api/identite-pseudonymisee", () => {
   const selection = {
     etabId: "e_chu_grenoble",

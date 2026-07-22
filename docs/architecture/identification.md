@@ -262,6 +262,10 @@ iframe : **plus de navigation top-level** entre deux apps, donc plus besoin de
 - **Cookies tiers** : bloqués dans l'iframe (ITP/Chrome). Le tracking ayant désormais
   lieu **dans l'iframe**, le traceur est passé en **cookieless** (`disableCookies`) pour
   fonctionner sans cookies (cf. [analytics.md](./analytics.md)).
+- **Non-indexation** : l'app étant destinée à être embarquée (page canonique = celle du
+  CMS), l'URL brute ne doit **pas** être indexée. Le backend sert `X-Robots-Tag:
+  noindex, nofollow` sur **toutes** les réponses + un `robots.txt` `Disallow: /`, doublés
+  d'un `<meta name="robots" content="noindex, nofollow">` dans `index.html`.
 
 ## 7. Découpage en incréments (identification)
 
