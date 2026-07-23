@@ -4,9 +4,10 @@
 // par la suivante. Les regrouper ici rend explicite ce que chaque étape garantit en sortie
 // et attend en entrée.
 //
-//   extract  ──TrajetRow──────────────▶ staging ──TrajetRow──────────────▶ marts
-//   extract  ──EtablissementRow──────▶ reconcile ──EtablissementDimensionRow──▶ marts
-//   marts    ──MartEtablissementRow──▶ (livrable)
+//   extract  ──TrajetRow──────────▶ staging ──TrajetRow──▶ reconcile ──TrajetReconcilieRow──▶ marts
+//   extract  ──EtablissementRow──▶ reconcile ──EtablissementDimensionRow──────────────────────▶ marts
+//   extract  ──GhtRattachementRow─────────────▶ reconcile (rattache trajets au GHT) ──────────▶ marts
+//   marts    ──▶ livrables (mart_juridique, mart_geographique, mart_ght, mart_hors_ght, mart_article80)
 
 import type { Enveloppe, Role, VehiculeCanonique } from "./types.ts";
 
@@ -43,6 +44,26 @@ export interface GhtRattachementRow {
 }
 
 /**
+ * Trajet **réconcilié** : comme `TrajetRow`, mais le `finess_juridique` est ré-clé sur
+ * l'**autorité du référentiel** (le juridique du site géographique tel que le connaît le
+ * référentiel national, et non celui déclaré par la source), et le GHT est rattaché.
+ * Produit par : reconcile (re-clé + rattachement) → `build/reconcile/trajets.csv`.
+ * Consommé par : marts (tous les livrables en dérivent, par agrégation à leur grain).
+ */
+export interface TrajetReconcilieRow {
+  role: Role;
+  source: string;
+  finess_juridique: string; // autoritatif (via le référentiel), pas celui déclaré par la source
+  finess_geographique: string;
+  ght_code: string; // "" si l'établissement n'appartient à aucun GHT
+  ght_libelle: string; // libellé source (texte libre de la plateforme au niveau GHT), sinon ""
+  enveloppe: Enveloppe;
+  annee: string;
+  vehicule_canonique: VehiculeCanonique;
+  nb_trajets: number;
+}
+
+/**
  * Établissement « brut », un par site (finess géographique), porteur de l'identité.
  * Produit par : extract (référentiels uniquement) → `build/extract/etablissements.csv`.
  * Consommé par : reconcile.
@@ -71,18 +92,17 @@ export interface EtablissementDimensionRow {
 }
 
 /**
- * Ligne du mart établissement (livrable de l'itération 1).
- * Produit par : marts → `build/marts/mart_etablissement.csv`.
- * `part = nb_plateforme / nb_reference` (hors art. 80) ; `""` (NULL) si pas de dénominateur.
+ * Cellule ratio commune aux marts « part » (mart_juridique / _geographique / _ght / _hors_ght).
+ * Les colonnes d'identité (clé + libellés) varient selon le grain et sont ajoutées par le
+ * mart ; le cœur du calcul est ici. `part = nb_plateforme / nb_reference` (hors art. 80) ;
+ * `""` (NULL) si pas de dénominateur ; `alerte_qualite = "part>1"` quand le numérateur dépasse
+ * le dénominateur (signal de qualité assumé, non corrigé).
  */
-export interface MartEtablissementRow {
-  finess_juridique: string;
-  nom: string;
-  ville: string;
-  departement: string;
+export interface CelluleRatio {
   annee: string;
   vehicule: VehiculeCanonique;
   nb_plateforme: number;
   nb_reference: number;
   part: number | "";
+  alerte_qualite: string;
 }

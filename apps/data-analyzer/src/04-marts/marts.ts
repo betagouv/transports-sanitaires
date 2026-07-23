@@ -1,99 +1,134 @@
-// Étape 4 — marts : applique la règle de calcul et produit les livrables.
+// Étape 4 — marts : applique les règles de calcul et produit les livrables. Le calcul ne
+// connaît que des rôles ; chaque mart n'est qu'un choix de **grain** sur les trajets
+// réconciliés (build/reconcile/trajets.csv), habillé par une dimension d'identité.
 //
-// Itération 1 : `mart_etablissement` — part des trajets **hors Article 80** réalisés via
-// les plateformes (rôle `plateforme`, à finess), par établissement × année × type.
-//   part = Σ plateformes(hors art.80) / référentiel national,  au grain finess juridique
-//          × année × véhicule canonique.
-// Jointure externe complète : cellules sans dénominateur (années non couvertes) → part "" ;
-// cellules du référentiel sans plateforme → part 0. Le calcul ne connaît que des rôles.
+// Cinq livrables (cf. « Points d'attention métier » du README pour les spécificités) :
+//   - mart_geographique — grain finess géographique (le plus fin ; beaucoup de part NULL) ;
+//   - mart_juridique    — grain finess juridique (autorité référentiel) ;
+//   - mart_ght          — grain GHT (le plus propre ; établissements publics only) ;
+//   - mart_hors_ght     — grain finess juridique, restreint aux établissements sans GHT ;
+//   - mart_article80    — volumes + part par plateforme (pas de dénominateur national).
 
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import type { EtablissementDimensionRow, MartEtablissementRow, TrajetRow } from "../contrats.ts";
-import type { VehiculeCanonique } from "../types.ts";
+import { MartRatio } from "./mart-ratio.ts";
+import { MartArticle80 } from "./mart-article80.ts";
+import type {
+  EtablissementDimensionRow,
+  EtablissementRow,
+  GhtRattachementRow,
+  TrajetReconcilieRow,
+} from "../contrats.ts";
 
 type Row = Record<string, string | number>;
-interface Cellule {
-  nb_plateforme: number;
-  nb_reference: number;
-}
 
 export class Marts {
-  #etablissements = new Map<string, EtablissementDimensionRow>();
+  #juridique = new Map<string, EtablissementDimensionRow>();
+  #geo = new Map<string, EtablissementRow>();
+  #ght = new Map<string, GhtRattachementRow>();
 
   execute(): void {
-    this.#etablissements = this.#loadEtablissements();
-    const rows = this.#buildRows(this.#aggregate(this.#loadTrajets()));
-    Csv.write(join(Paths.MARTS, "mart_etablissement.csv"), rows as unknown as Row[]);
-    this.#report(rows);
+    this.#loadDimensions();
+    const trajets = this.#loadTrajets();
+    this.#martsRatio().forEach((mart) => mart.execute(trajets));
+    new MartArticle80(
+      (cle) => this.#juridique.get(cle)?.nom ?? "",
+      (cle) => this.#ght.get(cle)?.ght_libelle ?? "",
+    ).execute(trajets);
   }
 
-  #loadTrajets(): TrajetRow[] {
-    return Csv.read(join(Paths.STAGING, "trajets.csv")) as unknown as TrajetRow[];
+  #martsRatio(): MartRatio[] {
+    return [
+      new MartRatio({
+        fichier: "mart_geographique.csv",
+        log: "geographique",
+        grain: (t) => (this.#usable(t.finess_geographique) ? t.finess_geographique : ""),
+        identite: (cle) => this.#identiteGeo(cle),
+      }),
+      new MartRatio({
+        fichier: "mart_juridique.csv",
+        log: "juridique",
+        grain: (t) => t.finess_juridique,
+        identite: (cle) => this.#identiteJuridique(cle),
+      }),
+      new MartRatio({
+        fichier: "mart_ght.csv",
+        log: "ght",
+        grain: (t) => t.ght_code,
+        identite: (cle) => this.#identiteGht(cle),
+      }),
+      new MartRatio({
+        fichier: "mart_hors_ght.csv",
+        log: "hors_ght",
+        grain: (t) => (t.ght_code ? "" : t.finess_juridique),
+        identite: (cle) => this.#identiteJuridique(cle),
+      }),
+    ];
   }
 
-  #loadEtablissements(): Map<string, EtablissementDimensionRow> {
-    const rows = Csv.read(join(Paths.RECONCILE, "etablissements.csv")) as unknown as EtablissementDimensionRow[];
-    return new Map(rows.map((r) => [r.finess_juridique, r]));
-  }
-
-  #aggregate(trajets: TrajetRow[]): Map<string, Cellule> {
-    const cellules = new Map<string, Cellule>();
-    for (const t of trajets) this.#accumulate(cellules, t);
-    return cellules;
-  }
-
-  #accumulate(cellules: Map<string, Cellule>, t: TrajetRow): void {
-    if (t.enveloppe !== "Hors Article 80" || !t.finess_juridique) return;
-    const cellule = this.#cellule(cellules, `${t.finess_juridique}|${t.annee}|${t.vehicule_canonique}`);
-    if (t.role === "referentiel-national") cellule.nb_reference += Number(t.nb_trajets);
-    else if (t.role === "plateforme") cellule.nb_plateforme += Number(t.nb_trajets);
-  }
-
-  #cellule(cellules: Map<string, Cellule>, cle: string): Cellule {
-    let cellule = cellules.get(cle);
-    if (!cellule) cellules.set(cle, (cellule = { nb_plateforme: 0, nb_reference: 0 }));
-    return cellule;
-  }
-
-  #buildRows(cellules: Map<string, Cellule>): MartEtablissementRow[] {
-    return [...cellules.entries()].map(([cle, c]) => this.#toRow(cle, c)).sort((a, b) => this.#compare(a, b));
-  }
-
-  #toRow(cle: string, c: Cellule): MartEtablissementRow {
-    const [finess, annee, vehicule] = cle.split("|") as [string, string, VehiculeCanonique];
-    const etab = this.#etablissements.get(finess);
+  #identiteGeo(cle: string): Row {
+    const e = this.#geo.get(cle);
     return {
-      finess_juridique: finess,
-      nom: etab?.nom ?? "",
-      ville: etab?.ville ?? "",
-      departement: etab?.departement ?? "",
-      annee,
-      vehicule,
-      nb_plateforme: c.nb_plateforme,
-      nb_reference: c.nb_reference,
-      part: this.#part(c),
+      finess_geographique: cle,
+      finess_juridique: e?.finess_juridique ?? "",
+      nom: e?.nom ?? "",
+      ville: e?.ville ?? "",
+      departement: e?.departement ?? "",
     };
   }
 
-  #part(c: Cellule): number | "" {
-    return c.nb_reference > 0 ? Number((c.nb_plateforme / c.nb_reference).toFixed(4)) : "";
+  #identiteJuridique(cle: string): Row {
+    const e = this.#juridique.get(cle);
+    return { finess_juridique: cle, nom: e?.nom ?? "", ville: e?.ville ?? "", departement: e?.departement ?? "" };
   }
 
-  #compare(a: MartEtablissementRow, b: MartEtablissementRow): number {
-    return (
-      a.finess_juridique.localeCompare(b.finess_juridique) ||
-      a.annee.localeCompare(b.annee) ||
-      a.vehicule.localeCompare(b.vehicule)
+  #identiteGht(cle: string): Row {
+    const g = this.#ght.get(cle);
+    return { ght_code: cle, region: g?.region ?? "", ght_libelle: g?.ght_libelle ?? "" };
+  }
+
+  #loadDimensions(): void {
+    this.#juridique = new Map(this.#readDimension().map((r) => [r.finess_juridique, r]));
+    this.#geo = this.#geoDimension();
+    this.#ght = this.#ghtDimension();
+  }
+
+  #readDimension(): EtablissementDimensionRow[] {
+    return Csv.read(join(Paths.RECONCILE, "etablissements.csv")) as unknown as EtablissementDimensionRow[];
+  }
+
+  // Un site (finess géographique) peut apparaître plusieurs fois : on garde le plus gros volume.
+  #geoDimension(): Map<string, EtablissementRow> {
+    const map = new Map<string, EtablissementRow>();
+    for (const raw of Csv.read(join(Paths.EXTRACT, "etablissements.csv"))) {
+      const e = { ...raw, score: Number(raw.score) } as unknown as EtablissementRow;
+      const courant = map.get(e.finess_geographique);
+      if (this.#usable(e.finess_geographique) && (!courant || e.score > courant.score)) map.set(e.finess_geographique, e);
+    }
+    return map;
+  }
+
+  #ghtDimension(): Map<string, GhtRattachementRow> {
+    const map = new Map<string, GhtRattachementRow>();
+    const path = join(Paths.EXTRACT, "ght.csv");
+    if (!existsSync(path)) return map;
+    for (const raw of Csv.read(path)) {
+      const g = raw as unknown as GhtRattachementRow;
+      if (!map.has(g.ght_code)) map.set(g.ght_code, g);
+    }
+    return map;
+  }
+
+  #loadTrajets(): TrajetReconcilieRow[] {
+    return Csv.read(join(Paths.RECONCILE, "trajets.csv")).map(
+      (raw) => ({ ...raw, nb_trajets: Number(raw.nb_trajets) }) as unknown as TrajetReconcilieRow,
     );
   }
 
-  #report(rows: MartEtablissementRow[]): void {
-    const sansDenominateur = rows.filter((r) => r.part === "").length;
-    const anomalies = rows.filter((r) => typeof r.part === "number" && r.part > 1).length;
-    console.log(`marts etablissement          : ${rows.length} lignes (${sansDenominateur} sans dénominateur)`);
-    if (anomalies > 0) console.warn(`  ⚠️ ${anomalies} cellules avec part > 1 (à investiguer)`);
+  #usable(finess: string): boolean {
+    return Boolean(finess) && finess !== "0";
   }
 }
 

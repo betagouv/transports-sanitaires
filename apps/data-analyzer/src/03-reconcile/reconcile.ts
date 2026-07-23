@@ -1,37 +1,43 @@
-// Étape 3 — reconcile : pose les clés qui rendent les sources jointables.
+// Étape 3 — reconcile : pose les clés qui rendent les sources jointables et comparables.
 //
-// Itération 1 (niveau établissement) : la clé est le finess juridique, déjà présent dans
-// les lignes normalisées. reconcile consolide la **dimension établissements** émise par les
-// référentiels : un finess juridique regroupe plusieurs sites ; on retient l'identité du
-// site au plus gros volume (`score`) comme libellé représentatif.
+// Deux responsabilités :
+//  1. Dimension établissements — un finess juridique regroupe plusieurs sites ; on retient
+//     l'identité du site au plus gros volume (`score`) comme libellé représentatif.
+//  2. Trajets réconciliés — ré-clé chaque trajet sur l'**autorité du référentiel** : le
+//     finess juridique retenu est celui que le référentiel national associe au site
+//     géographique (et non celui déclaré par la source, qui peut diverger — cf. Points
+//     d'attention métier du README). On rattache aussi chaque trajet à son GHT.
 //
-// Le rattachement finess → GHT (pour mart_ght) s'appuiera sur `build/extract/ght.csv`,
-// produit par la source `referentiel-ght` (open data data.gouv `etablissements-de-sante-par-ght`,
-// aspiré par `npm run fetch-ght`) : voir la spec.
+// Le référentiel finess → GHT vient de `build/extract/ght.csv` (source `referentiel-ght`,
+// open data data.gouv `etablissements-de-sante-par-ght`, aspiré par `npm run fetch-ght`).
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import type { EtablissementDimensionRow, EtablissementRow } from "../contrats.ts";
+import type {
+  EtablissementDimensionRow,
+  EtablissementRow,
+  GhtRattachementRow,
+  TrajetReconcilieRow,
+  TrajetRow,
+} from "../contrats.ts";
 
 type Row = Record<string, string | number>;
 
 export class Reconcile {
   execute(): void {
-    this.#buildEtablissements();
-    this.#warnIfGhtManquant();
+    const etablissements = this.#readEtablissements();
+    this.#writeDimension(etablissements);
+    this.#writeTrajets(this.#geoToJuridique(etablissements), this.#juridiqueToGht());
   }
 
-  #buildEtablissements(): void {
-    const representatifs = this.#representatifs(this.#read());
+  // --- Dimension établissements (un libellé représentatif par finess juridique) ---
+
+  #writeDimension(etablissements: EtablissementRow[]): void {
+    const representatifs = this.#representatifs(etablissements);
     Csv.write(join(Paths.RECONCILE, "etablissements.csv"), representatifs as unknown as Row[]);
     console.log(`reconcile etablissements     : ${representatifs.length} établissements`);
-  }
-
-  #read(): EtablissementRow[] {
-    const path = join(Paths.EXTRACT, "etablissements.csv");
-    return Csv.read(path).map((raw) => ({ ...raw, score: Number(raw.score) }) as unknown as EtablissementRow);
   }
 
   #representatifs(rows: EtablissementRow[]): EtablissementDimensionRow[] {
@@ -55,11 +61,72 @@ export class Reconcile {
     };
   }
 
-  #warnIfGhtManquant(): void {
-    if (!existsSync(join(Paths.EXTRACT, "ght.csv")))
-      console.log(
-        "reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght` ; cf. spec, mart_ght)",
-      );
+  // --- Trajets réconciliés (ré-clé sur l'autorité du référentiel + rattachement GHT) ---
+
+  #writeTrajets(geoToJuridique: Map<string, string>, juridiqueToGht: Map<string, string>): void {
+    const trajets = this.#readTrajets().map((t) => this.#recle(t, geoToJuridique, juridiqueToGht));
+    const reagreges = this.#reagreger(trajets);
+    Csv.write(join(Paths.RECONCILE, "trajets.csv"), reagreges as unknown as Row[]);
+    const rattaches = reagreges.filter((t) => t.ght_code).length;
+    console.log(`reconcile trajets            : ${reagreges.length} lignes (${rattaches} rattachées à un GHT)`);
+  }
+
+  #recle(t: TrajetRow, geoToJuridique: Map<string, string>, juridiqueToGht: Map<string, string>): TrajetReconcilieRow {
+    const geo = t.finess_geographique;
+    const juridique = (this.#usable(geo) && geoToJuridique.get(geo)) || t.finess_juridique;
+    return { ...t, finess_juridique: juridique, ght_code: juridiqueToGht.get(juridique) ?? "" };
+  }
+
+  // La ré-clé peut faire coïncider des lignes jusque-là distinctes : on re-somme.
+  #reagreger(rows: TrajetReconcilieRow[]): TrajetReconcilieRow[] {
+    const parCle = new Map<string, TrajetReconcilieRow>();
+    for (const row of rows) {
+      const existante = parCle.get(this.#cle(row));
+      if (existante) existante.nb_trajets += row.nb_trajets;
+      else parCle.set(this.#cle(row), row);
+    }
+    return [...parCle.values()];
+  }
+
+  #cle(t: TrajetReconcilieRow): string {
+    return [
+      t.role, t.source, t.finess_juridique, t.finess_geographique,
+      t.ght_code, t.ght_libelle, t.enveloppe, t.annee, t.vehicule_canonique,
+    ].join("|");
+  }
+
+  // --- Tables d'autorité ---
+
+  #geoToJuridique(rows: EtablissementRow[]): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const r of rows) if (this.#usable(r.finess_geographique)) map.set(r.finess_geographique, r.finess_juridique);
+    return map;
+  }
+
+  #juridiqueToGht(): Map<string, string> {
+    const path = join(Paths.EXTRACT, "ght.csv");
+    if (!existsSync(path)) {
+      console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght`)");
+      return new Map();
+    }
+    const rows = Csv.read(path) as unknown as GhtRattachementRow[];
+    return new Map(rows.map((r) => [r.finess_juridique, r.ght_code]));
+  }
+
+  // --- Lecture ---
+
+  #readEtablissements(): EtablissementRow[] {
+    const path = join(Paths.EXTRACT, "etablissements.csv");
+    return Csv.read(path).map((raw) => ({ ...raw, score: Number(raw.score) }) as unknown as EtablissementRow);
+  }
+
+  #readTrajets(): TrajetRow[] {
+    const path = join(Paths.STAGING, "trajets.csv");
+    return Csv.read(path).map((raw) => ({ ...raw, nb_trajets: Number(raw.nb_trajets) }) as unknown as TrajetRow);
+  }
+
+  #usable(finess: string): boolean {
+    return Boolean(finess) && finess !== "0";
   }
 }
 

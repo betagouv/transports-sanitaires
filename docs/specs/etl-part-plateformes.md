@@ -1,10 +1,11 @@
 # Spec — ETL versionné : part des trajets réalisés via les plateformes
 
-> Statut : **itération 1 réalisée** (mart_etablissement). Cadrage validé avec le porteur
-> le 2026-07-22. Code : `apps/data-analyzer` (voir son README). Le **référentiel finess → GHT**
-> est intégré (source `referentiel-ght`, open data data.gouv → `build/extract/ght.csv`,
-> 888 finess / 135 GHT). Reste à faire : `reconcile` + `mart_ght` (remontée au GHT), et
-> l'arbitrage du grain finess juridique (cf. « Limite connue » ci-dessous / README).
+> Statut : cadrage validé avec le porteur le 2026-07-22. Code : `apps/data-analyzer` (voir son
+> README). **Livré** : référentiel finess → GHT (source `referentiel-ght`, 888 finess / 135 GHT) ;
+> `reconcile` ré-clé les trajets sur l'autorité du référentiel + rattache au GHT ; **5 marts**
+> (`mart_geographique`, `mart_juridique`, `mart_ght`, `mart_hors_ght`, `mart_article80`).
+> **Décisions actées** : autorité = référentiel ; `part>1` exposé (non corrigé) ; art. 80 en mart
+> dédié. Reste à faire : intégrer la plateforme au niveau GHT (mapping manuel), exploitation des livrables.
 
 > **Confidentialité.** Le monorepo est public ; ni les données ni l'identité des
 > fournisseurs ne le sont. Cette spec, comme le code, est **anonyme** : elle parle de
@@ -147,26 +148,27 @@ Concatène les sorties `extract/trajets/*.csv` et agrège au grain canonique (ex
 + taxi d'un référentiel → une ligne « Assis »). Sortie : `staging/trajets.csv`.
 
 ### 3. `reconcile` — clés finess & GHT
-- **Clé établissement** : `finess_juridique` (fiable partout ; le finess géographique de la
-  plateforme A est souvent `0`). À confirmer contre la granularité du référentiel externe.
+- **Ré-clé sur l'autorité du référentiel** : le `finess_juridique` d'un trajet est **remplacé**
+  par celui que le référentiel national associe à son site géographique (table géo→juridique,
+  18 653 sites, 0 ambigu). Les deux sources divergent parfois sur le juridique d'un même site ;
+  on tranche par le référentiel. Sortie : `build/reconcile/trajets.csv`.
 - **Dimension établissements** : dédupliquée au finess juridique, en retenant le site au
   plus gros volume (`score`) comme libellé représentatif.
-- **finess → GHT** (à venir) via `build/extract/ght.csv` (source `referentiel-ght`) pour le
-  référentiel et les plateformes A/B.
+- **finess → GHT** via `build/extract/ght.csv` (source `referentiel-ght`), rattaché à chaque
+  trajet (`ght_code`, vide si l'établissement n'est dans aucun GHT).
 - **Plateforme C → GHT** (à venir) via un mapping **manuel commité** `ref/plateforme-ght-mapping.csv`
   (≈ 24 entrées, noms libres bruités, dont des **établissements isolés et non des GHT**). Un
   rapprochement flou contre les libellés de `build/extract/ght.csv` sert à **pré-remplir** ;
   la table fait foi. Entrée `Total` ignorée.
 
-### 4. `marts` — calcul des parts (sur les rôles)
-- `mart_etablissement` : jointure plateformes (rôle `plateforme`, à finess) ↔ référentiel
-  (rôle `referentiel-national`) sur `finess_juridique × annee × vehicule_canonique`, **hors
-  art. 80**. Colonnes : `finess, nom, ville, departement, annee, vehicule, nb_plateforme,
-  nb_reference, part`. `part = nb_plateforme / nb_reference` ; `""` (NULL) si pas de
-  dénominateur (année non couverte).
-- `mart_ght` (à venir) : toutes les plateformes remontées au GHT. Deux blocs :
-  - **hors art. 80** : `part = Σ plateformes / référentiel(GHT)`.
-  - **art. 80** : `nb` par plateforme + `part_plateforme = nb_source / Σ plateformes`.
+### 4. `marts` — cinq livrables (même calcul, grains différents)
+Sur `build/reconcile/trajets.csv`. Quatre marts « ratio » **hors art. 80** (`part = Σ
+plateformes / référentiel`, `""` si pas de dénominateur, `alerte_qualite="part>1"` exposé sans
+correction) : `mart_geographique` (grain géo, beaucoup de NULL), `mart_juridique` (grain
+juridique), `mart_ght` (grain GHT, le plus propre), `mart_hors_ght` (juridique, établissements
+sans GHT). Plus `mart_article80` : **volumes + part par plateforme** (`part_plateforme =
+source / Σ plateformes`), aux grains juridique et GHT. La plateforme au niveau GHT (sans finess)
+rejoindra `mart_ght`/`mart_article80` une fois `ref/plateforme-ght-mapping.csv` construit.
 
 ## Points ouverts / à confirmer
 
@@ -186,21 +188,21 @@ Concatène les sorties `extract/trajets/*.csv` et agrège au grain canonique (ex
 - **Millésime du référentiel GHT** : 2018 (carte des 135 GHT stable depuis 2016, mais des
   fusions/rattachements ont pu bouger) ; les finess non reconnus seront signalés par `reconcile`.
 
-## Limite connue — grain finess juridique
+## Limite connue — `part > 1` résiduel (divergence entre systèmes)
 
-~0,5 % des cellules comparables ont `part > 1` (plateforme > référentiel). Au grain **finess
-juridique**, certaines entités agrègent un réseau national, et le référentiel répartit
-parfois les trajets sur les finess **géographiques** ; l'attribution plateforme ↔ référentiel
-ne se réconcilie alors pas. `marts` **signale** ces cellules sans les corriger. Arbitrage :
-joindre au finess géographique quand la source le fournit (plateforme B oui, A non) ;
-plafonner ; ou marquer comme réserve.
+Deux systèmes indépendants (plateformes vs remboursement national) ne s'emboîtent jamais
+parfaitement : après ré-clé sur l'autorité du référentiel, il reste des cellules `part > 1`
+(périmètre, calendrier, reclassement véhicule). Elles sont **exposées** (`alerte_qualite`) sans
+correction. Le grain amortit la divergence : géo ≫ juridique ≫ GHT (≈ 0 au grain GHT). Détail
+et exemples dans « Points d'attention métier » du README.
 
-## Vérification (itération 1)
+## Vérification
 
-1. `npm --prefix apps/data-analyzer run etl` enchaîne les 4 étapes sans erreur et régénère
-   `build/`.
-2. Contrôles de cohérence : totaux par source conservés à travers extract → staging ;
-   cellules `part > 1` en hors art. 80 **comptées et signalées** (limite ci-dessus).
-3. `mart_etablissement.csv` : pour quelques finess, `part` hors art. 80 sur 2024 plausible
-   (0–1) ; années non couvertes → `NULL`.
+1. `npm --prefix apps/data-analyzer run fetch-ght` (une fois) puis `run etl` : les 4 étapes
+   s'enchaînent sans erreur et régénèrent `build/` (dont les 5 marts).
+2. Contrôles de cohérence : totaux par source conservés extract → staging ; cellules `part > 1`
+   **comptées et signalées** (`alerte_qualite`), décroissantes du grain géo au grain GHT.
+3. `mart_ght.csv` : `part` hors art. 80 dans [0, 1] (plateformes ⊆ national au grain GHT) ;
+   `mart_*` : années non couvertes → `part` NULL.
 4. Chaque étape est **rejouable seule** à partir des artefacts de la précédente.
+5. Tests : `npm test` (adaptateurs, calcul des marts, CSV).

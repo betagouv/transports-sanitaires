@@ -71,8 +71,8 @@ l'ETL avec un message explicite.
 |---|---|---|
 | `extract`   | appliquer à chaque fichier l'**adaptateur de son format** → lignes normalisées (rôle + nomenclature canonique) | `mapping.json`, sources → `build/extract/` |
 | `staging`   | **réunir** les sources et **agréger** au grain canonique | `build/extract/trajets/` → `build/staging/trajets.csv` |
-| `reconcile` | poser les **clés** (dimension établissements ; remontée au GHT via `build/extract/ght.csv`, à venir) | `build/extract/` → `build/reconcile/` |
-| `marts`     | appliquer la **règle de calcul** (part), sur les **rôles** | `build/reconcile/`, `build/staging/` → `build/marts/` |
+| `reconcile` | poser les **clés** : dimension établissements ; **ré-clé** des trajets sur l'autorité du référentiel ; rattachement au GHT | `build/extract/`, `build/staging/` → `build/reconcile/` |
+| `marts`     | appliquer les **règles de calcul** (part / volumes), sur les **rôles**, à chaque grain | `build/reconcile/` → `build/marts/` |
 
 Toute la connaissance propre à une source (format, colonnes, vocabulaire véhicule) est
 encapsulée dans son **adaptateur** ; les étapes suivantes sont entièrement génériques.
@@ -85,11 +85,13 @@ encapsulée dans son **adaptateur** ; les étapes suivantes sont entièrement g�
 | `build/extract/etablissements.csv` | extract | L'identité des établissements, émise par les référentiels. | site (finess géographique) | `finess_juridique, finess_geographique, nom, ville, departement, categorie, score` |
 | `build/extract/ght.csv` | extract | Le rattachement finess juridique → GHT (open data, source `referentiel-ght`). Produit seulement si la source est déclarée et `data/ght/` peuplé (`fetch-ght`). | finess juridique | `finess_juridique, ght_code, ght_libelle, region, raison_sociale` |
 | `build/staging/trajets.csv` | staging | Toutes les sources réunies et agrégées au grain canonique, prêtes à être jointes. | schéma long commun (toutes sources) | idem `trajets/<label>.csv` |
-| `build/reconcile/etablissements.csv` | reconcile | Le libellé (nom, ville, département) représentatif de chaque établissement, pour habiller le mart. | dimension établissement (finess juridique) | `finess_juridique, nom, ville, departement, categorie` |
-| `build/marts/mart_etablissement.csv` | marts | Le résultat : la part des trajets réalisés via les plateformes, par établissement. | finess juridique × année × véhicule | `finess_juridique, nom, ville, departement, annee, vehicule, nb_plateforme, nb_reference, part` |
+| `build/reconcile/etablissements.csv` | reconcile | Le libellé (nom, ville, département) représentatif de chaque établissement, pour habiller les marts. | dimension établissement (finess juridique) | `finess_juridique, nom, ville, departement, categorie` |
+| `build/reconcile/trajets.csv` | reconcile | Les trajets **ré-clés** sur l'autorité du référentiel (finess juridique du site tel que vu par le référentiel) et **rattachés au GHT**. Base commune des marts. | idem staging + `ght_code` | `role, source, finess_juridique, finess_geographique, ght_code, ght_libelle, enveloppe, annee, vehicule_canonique, nb_trajets` |
+| `build/marts/mart_*.csv` | marts | Les **5 livrables** (voir tableau « Livrables » ci-dessous). | selon le mart | selon le mart |
 
-Nomenclature : `vehicule_canonique` ∈ {Ambulance, Assis, Autre, Total}. `part` =
-`nb_plateforme / nb_reference`, vide si pas de dénominateur pour la cellule.
+Nomenclature : `vehicule_canonique` ∈ {Ambulance, Assis, Autre, Total}. Dans les marts ratio,
+`part = nb_plateforme / nb_reference`, vide (NULL) si pas de dénominateur, et
+`alerte_qualite = "part>1"` quand le numérateur dépasse le dénominateur (signal assumé).
 
 ## Confidentialité
 
@@ -109,35 +111,48 @@ Le référentiel GHT (`data/ght/`, produit `build/extract/ght.csv`) est de l'ope
 (ODbL) ; il n'est **pas** versionné mais **régénérable** via `npm run fetch-ght` (réseau),
 conformément au principe « `build/` régénérable ».
 
-## État (itération 1)
+## Livrables (marts)
 
-Livré : `build/marts/mart_etablissement.csv` — part **hors Article 80** des plateformes à
-finess rapportée au référentiel national, par finess juridique × année × véhicule canonique
-(`nb_plateforme`, `nb_reference`, `part`). `part = ""` quand il n'y a pas de dénominateur
-pour la cellule (années non couvertes par le référentiel, tracé).
+Chaque mart est le **même calcul à un grain différent** sur `build/reconcile/trajets.csv`
+(trajets ré-clés sur l'autorité du référentiel + rattachés au GHT). Les quatre marts « ratio »
+partagent les colonnes `… annee, vehicule, nb_plateforme, nb_reference, part, alerte_qualite`.
 
-Référentiel GHT disponible : `build/extract/ght.csv` (source `referentiel-ght`, open data
-data.gouv `etablissements-de-sante-par-ght`) rattache **888 finess juridiques** à **135 GHT**.
-Prérequis de `mart_ght`, désormais levé.
+| Livrable | Grain | À savoir / limite |
+|---|---|---|
+| `mart_geographique.csv` | finess **géographique** | Le plus fin, mais **beaucoup de `part` NULL** : le référentiel n'a pas toujours de valeur sur *le même site* que la plateforme (dénominateur absent). Exclut les sources sans finess géographique. |
+| `mart_juridique.csv` | finess **juridique** (autorité référentiel) | Livrable établissement principal. Résidu de `part>1` (divergence réelle entre les deux systèmes, cf. point 1). |
+| `mart_ght.csv` | **GHT** | **Le plus propre** : les désaccords d'attribution intra-GHT se réconcilient (0 `part>1` observé). Ne couvre que les établissements **publics en GHT** (cf. point 2). La plateforme au niveau GHT (sans finess) **pas encore incluse** (cf. point 6). |
+| `mart_hors_ght.csv` | finess **juridique**, hors GHT | Complément de `mart_ght` : les établissements **sans GHT** (~91 % : cliniques privées, imagerie…). |
+| `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national — cf. point 3). Colonne `grain` = `juridique`/`ght`. Plateforme au niveau GHT pas encore incluse. |
 
-À venir : `reconcile` remonte trajets + référentiel au GHT via `build/extract/ght.csv`, puis
-`mart_ght` (exhaustif). Les réserves à trancher sont regroupées ci-dessous.
+Référentiel GHT : `build/extract/ght.csv` (source `referentiel-ght`, open data data.gouv
+`etablissements-de-sante-par-ght`) rattache **888 finess juridiques** à **135 GHT**.
+
+À venir : intégrer **la plateforme au niveau GHT** (sans finess) à `mart_ght` et
+`mart_article80` via le mapping manuel `ref/plateforme-ght-mapping.csv` (à relire par le porteur).
 
 ## Points d'attention métier
 
 À lire avant d'interpréter les marts. Ces points ne sont pas des bugs mais des propriétés de
 la donnée ou des règles de gestion assumées ; plusieurs demandent un arbitrage du porteur.
 
-### 1. Grain finess **juridique** vs **géographique** ⇒ cellules `part > 1`
+### 1. Divergence d'attribution entre sources ⇒ cellules `part > 1` (exposées, non corrigées)
 
-La clé de jointure est le **finess juridique** (fiable partout ; le finess géographique de la
-plateforme A est souvent `0`). Conséquence : ~0,5 % des cellules comparables ont `part > 1`
-(plateforme > référentiel). Au grain juridique, certaines entités **agrègent un réseau
-national**, et le référentiel répartit parfois les trajets sur les finess **géographiques** ;
-l'attribution plateforme ↔ référentiel ne se réconcilie alors pas. `marts` **signale** ces
-cellules (les compte en fin de run) sans les corriger. Arbitrage possible : joindre au finess
-géographique quand la source le fournit (plateforme B oui, A non) ; plafonner à 1 ; ou marquer
-en réserve.
+Les deux systèmes rangent parfois le *même trajet réel* sous des finess **différents** (la
+plateforme dit « site → groupe A », le référentiel « site → groupe B »). `reconcile` ré-clé
+donc les trajets sur **l'autorité du référentiel** (le finess juridique que le référentiel
+associe au site géographique, pas celui déclaré par la source) — décision actée. Les deux
+plateformes à finess fournissent bien un finess **géographique** (~99 % des lignes ; l'idée
+répandue « plateforme A sans géo » est **fausse** sur la donnée réelle).
+
+Ce ré-clé **répare les cas spectaculaires** (réseaux nationaux), mais ne fait **pas** tomber
+`part>1` à zéro : deux systèmes indépendants ne s'emboîtent jamais parfaitement (périmètre,
+calendrier, reclassement véhicule). Le résidu est **assumé et exposé** via `alerte_qualite =
+"part>1"` (signal de qualité), jamais plafonné ni supprimé — décision actée.
+
+Effet du grain (contre-intuitif) : **plus le grain est fin, plus il y a de `part>1`** — la
+comparaison au grain géographique en produit le plus, le grain GHT le moins (les désaccords
+intra-GHT se réconcilient). C'est pourquoi `mart_ght` est le livrable le plus fiable.
 
 ### 2. Le GHT ne couvre que les **hôpitaux publics** ⇒ ~91 % des finess non rattachés
 
@@ -150,13 +165,13 @@ GHT ne représentent qu'une petite part des finess de l'univers transport. **À 
 porteur** : périmètre « public en GHT » seulement, ou prévoir un regroupement « hors GHT » à
 côté ?
 
-### 3. Article 80 : dénominateur = 100 % **par construction**
+### 3. Article 80 : dénominateur = 100 % **par construction** → `mart_article80` dédié
 
 Le remboursement national ne couvre **pas** l'Article 80 ⇒ pas de source indépendante donnant
-le total art. 80. Le dénominateur art. 80 est donc la **somme des plateformes elles-mêmes**, si
-bien que « part via plateforme » vaut trivialement **100 %**. L'information utile n'est pas ce
-ratio mais le **volume** et la **part de chaque plateforme** dans ce total : `mart_ght`
-exposera les volumes, pas seulement le ratio. (Présentation à valider avec le porteur.)
+le total art. 80. Un ratio « via plateforme » vaudrait trivialement **100 %**. L'information
+utile est donc le **volume** et la **part de chaque plateforme** dans ce total : c'est l'objet
+du livrable séparé **`mart_article80.csv`** (`part_plateforme = source / Σ plateformes`), aux
+grains juridique et GHT. Les quatre marts « ratio » restent, eux, **hors Article 80**.
 
 ### 4. Fenêtre du dénominateur : `part = NULL` hors 2024-2025
 
