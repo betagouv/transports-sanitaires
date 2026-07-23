@@ -5,7 +5,9 @@
 > `reconcile` ré-clé les trajets sur l'autorité du référentiel + rattache au GHT ; **5 marts**
 > (`mart_geographique`, `mart_juridique`, `mart_ght`, `mart_hors_ght`, `mart_article80`).
 > **Décisions actées** : autorité = référentiel ; `part>1` exposé (non corrigé) ; art. 80 en mart
-> dédié. Reste à faire : intégrer la plateforme au niveau GHT (mapping manuel), exploitation des livrables.
+> dédié ; la plateforme au niveau GHT (sans finess) est rattachée via le mapping manuel
+> `ref/plateforme-ght-mapping.csv` (23 libellés relus), et l'AP-HP traitée comme un GHT via un
+> override finess (`ref/finess-ght-manuel.csv`). Reste à faire : exploitation des livrables.
 
 > **Confidentialité.** Le monorepo est public ; ni les données ni l'identité des
 > fournisseurs ne le sont. Cette spec, comme le code, est **anonyme** : elle parle de
@@ -156,10 +158,13 @@ Concatène les sorties `extract/trajets/*.csv` et agrège au grain canonique (ex
   plus gros volume (`score`) comme libellé représentatif.
 - **finess → GHT** via `build/extract/ght.csv` (source `referentiel-ght`), rattaché à chaque
   trajet (`ght_code`, vide si l'établissement n'est dans aucun GHT).
-- **Plateforme C → GHT** (à venir) via un mapping **manuel commité** `ref/plateforme-ght-mapping.csv`
-  (≈ 24 entrées, noms libres bruités, dont des **établissements isolés et non des GHT**). Un
-  rapprochement flou contre les libellés de `build/extract/ght.csv` sert à **pré-remplir** ;
-  la table fait foi. Entrée `Total` ignorée.
+- **Plateforme C → GHT** via un mapping **manuel commité** `ref/plateforme-ght-mapping.csv`
+  (23 entrées, noms libres bruités, dont des **établissements isolés et non des GHT**). Un
+  rapprochement flou contre les libellés + raisons sociales de `build/extract/ght.csv` a servi à
+  **pré-remplir** ; la table (relue par le porteur) fait foi. `reconcile` joint sur le libellé
+  nettoyé de ses notes. Cas particuliers : **AP-HP** = GHT à part entière via override finess
+  `ref/finess-ght-manuel.csv` (finess juridique 750712184 → code `AP-HP`, dénominateur réel) ;
+  FOCH/CGFL rattachés par territoire (non-membres) ; entrée `Total` ignorée.
 
 ### 4. `marts` — cinq livrables (même calcul, grains différents)
 Sur `build/reconcile/trajets.csv`. Quatre marts « ratio » **hors art. 80** (`part = Σ

@@ -29,7 +29,7 @@ export class Reconcile {
   execute(): void {
     const etablissements = this.#readEtablissements();
     this.#writeDimension(etablissements);
-    this.#writeTrajets(this.#geoToJuridique(etablissements), this.#juridiqueToGht());
+    this.#writeTrajets(this.#geoToJuridique(etablissements), this.#juridiqueToGht(), this.#libelleToGht());
   }
 
   // --- Dimension établissements (un libellé représentatif par finess juridique) ---
@@ -63,18 +63,37 @@ export class Reconcile {
 
   // --- Trajets réconciliés (ré-clé sur l'autorité du référentiel + rattachement GHT) ---
 
-  #writeTrajets(geoToJuridique: Map<string, string>, juridiqueToGht: Map<string, string>): void {
-    const trajets = this.#readTrajets().map((t) => this.#recle(t, geoToJuridique, juridiqueToGht));
+  #writeTrajets(
+    geoToJuridique: Map<string, string>,
+    juridiqueToGht: Map<string, string>,
+    libelleToGht: Map<string, string>,
+  ): void {
+    const trajets = this.#readTrajets().map((t) => this.#recle(t, geoToJuridique, juridiqueToGht, libelleToGht));
     const reagreges = this.#reagreger(trajets);
     Csv.write(join(Paths.RECONCILE, "trajets.csv"), reagreges as unknown as Row[]);
     const rattaches = reagreges.filter((t) => t.ght_code).length;
     console.log(`reconcile trajets            : ${reagreges.length} lignes (${rattaches} rattachées à un GHT)`);
   }
 
-  #recle(t: TrajetRow, geoToJuridique: Map<string, string>, juridiqueToGht: Map<string, string>): TrajetReconcilieRow {
+  // Rattachement au GHT : par finess (référentiel) ; à défaut, par libellé libre (plateforme
+  // au niveau GHT, sans finess) via le mapping manuel commité `ref/plateforme-ght-mapping.csv`.
+  #recle(
+    t: TrajetRow,
+    geoToJuridique: Map<string, string>,
+    juridiqueToGht: Map<string, string>,
+    libelleToGht: Map<string, string>,
+  ): TrajetReconcilieRow {
     const geo = t.finess_geographique;
     const juridique = (this.#usable(geo) && geoToJuridique.get(geo)) || t.finess_juridique;
-    return { ...t, finess_juridique: juridique, ght_code: juridiqueToGht.get(juridique) ?? "" };
+    const ghtParFiness = juridiqueToGht.get(juridique) ?? "";
+    const ght_code = ghtParFiness || (t.ght_libelle ? (libelleToGht.get(this.#normaliserLibelle(t.ght_libelle)) ?? "") : "");
+    return { ...t, finess_juridique: juridique, ght_code };
+  }
+
+  // Le libellé de la plateforme porte des notes entre parenthèses (non versionnées) ; la clé
+  // de rapprochement est le libellé nettoyé, tel que stocké dans le mapping manuel.
+  #normaliserLibelle(libelle: string): string {
+    return libelle.split("(")[0]!.trim();
   }
 
   // La ré-clé peut faire coïncider des lignes jusque-là distinctes : on re-somme.
@@ -103,14 +122,27 @@ export class Reconcile {
     return map;
   }
 
+  // finess juridique → GHT : l'open data (build/extract/ght.csv) complété par des overrides
+  // manuels (ref/finess-ght-manuel.csv) pour les entités hors référentiel — ex. l'AP-HP,
+  // absente des 135 GHT mais dont le référentiel porte les trajets sous un finess juridique.
   #juridiqueToGht(): Map<string, string> {
-    const path = join(Paths.EXTRACT, "ght.csv");
-    if (!existsSync(path)) {
-      console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght`)");
-      return new Map();
-    }
-    const rows = Csv.read(path) as unknown as GhtRattachementRow[];
-    return new Map(rows.map((r) => [r.finess_juridique, r.ght_code]));
+    const map = new Map<string, string>();
+    const openData = join(Paths.EXTRACT, "ght.csv");
+    if (existsSync(openData))
+      for (const r of Csv.read(openData) as unknown as GhtRattachementRow[]) map.set(r.finess_juridique, r.ght_code);
+    else console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght`)");
+    const manuel = join(Paths.REF, "finess-ght-manuel.csv");
+    if (existsSync(manuel))
+      for (const r of Csv.read(manuel)) if (r.finess_juridique && r.ght_code) map.set(r.finess_juridique, r.ght_code);
+    return map;
+  }
+
+  // Mapping manuel « libellé libre de la plateforme au niveau GHT » → GHT (relu par le porteur).
+  #libelleToGht(): Map<string, string> {
+    const path = join(Paths.REF, "plateforme-ght-mapping.csv");
+    if (!existsSync(path)) return new Map();
+    const rows = Csv.read(path);
+    return new Map(rows.filter((r) => r.ght_code).map((r) => [r.libelle!, r.ght_code!]));
   }
 
   // --- Lecture ---

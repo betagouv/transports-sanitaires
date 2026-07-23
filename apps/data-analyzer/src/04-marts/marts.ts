@@ -113,12 +113,25 @@ export class Marts {
   #ghtDimension(): Map<string, GhtRattachementRow> {
     const map = new Map<string, GhtRattachementRow>();
     const path = join(Paths.EXTRACT, "ght.csv");
-    if (!existsSync(path)) return map;
-    for (const raw of Csv.read(path)) {
-      const g = raw as unknown as GhtRattachementRow;
-      if (!map.has(g.ght_code)) map.set(g.ght_code, g);
-    }
+    if (existsSync(path))
+      for (const raw of Csv.read(path)) {
+        const g = raw as unknown as GhtRattachementRow;
+        if (!map.has(g.ght_code)) map.set(g.ght_code, g);
+      }
+    this.#completerAvecMappingManuel(map);
     return map;
+  }
+
+  // Les mappings manuels peuvent introduire des codes hors référentiel (ex. « AP-HP ») : on
+  // les habille avec leur libellé (colonne ght_officiel) pour qu'ils s'affichent proprement.
+  #completerAvecMappingManuel(map: Map<string, GhtRattachementRow>): void {
+    for (const fichier of ["plateforme-ght-mapping.csv", "finess-ght-manuel.csv"]) {
+      const path = join(Paths.REF, fichier);
+      if (!existsSync(path)) continue;
+      for (const r of Csv.read(path))
+        if (r.ght_code && !map.has(r.ght_code))
+          map.set(r.ght_code, { ght_code: r.ght_code, ght_libelle: r.ght_officiel ?? r.ght_code, region: "", finess_juridique: "", raison_sociale: "" });
+    }
   }
 
   #loadTrajets(): TrajetReconcilieRow[] {

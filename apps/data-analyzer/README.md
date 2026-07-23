@@ -93,6 +93,22 @@ Nomenclature : `vehicule_canonique` ∈ {Ambulance, Assis, Autre, Total}. Dans l
 `part = nb_plateforme / nb_reference`, vide (NULL) si pas de dénominateur, et
 `alerte_qualite = "part>1"` quand le numérateur dépasse le dénominateur (signal assumé).
 
+## Référentiels figés (`ref/`)
+
+Le dossier `ref/` ne contient que des référentiels **publics et non identifiants**, versionnés
+pour la reproductibilité (mappings manuels relus par le porteur). Ils ne portent que des noms
+d'établissements/GHT **publics** — aucune donnée ni identité de fournisseur.
+
+| Fichier | Rôle | Colonnes | Jointure `reconcile` | Contenu |
+|---|---|---|---|---|
+| `plateforme-ght-mapping.csv` | Rattache les **libellés GHT libres** de la plateforme au niveau GHT (sans finess) à un GHT. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 23 entrées relues par le porteur ; cas particuliers (AP-HP, FOCH, CGFL) au **point 6** ci-dessous. |
+| `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | Aujourd'hui l'**AP-HP** (750712184 → `AP-HP`), absente des 135 GHT mais dont le référentiel porte les trajets → dénominateur réel. |
+
+Le référentiel **finess → GHT** ne vit **pas** dans `ref/` : c'est de l'open data volumineux
+(bundles FHIR data.gouv `etablissements-de-sante-par-ght`), déclaré comme source `referentiel-ght`,
+aspiré par `npm run fetch-ght` dans `data/ght/` (non versionné) puis transformé en
+`build/extract/ght.csv` (régénérable).
+
 ## Confidentialité
 
 Le monorepo est public ; les données et l'identité des fournisseurs ne le sont pas. Ne
@@ -121,15 +137,14 @@ partagent les colonnes `… annee, vehicule, nb_plateforme, nb_reference, part, 
 |---|---|---|
 | `mart_geographique.csv` | finess **géographique** | Le plus fin, mais **beaucoup de `part` NULL** : le référentiel n'a pas toujours de valeur sur *le même site* que la plateforme (dénominateur absent). Exclut les sources sans finess géographique. |
 | `mart_juridique.csv` | finess **juridique** (autorité référentiel) | Livrable établissement principal. Résidu de `part>1` (divergence réelle entre les deux systèmes, cf. point 1). |
-| `mart_ght.csv` | **GHT** | **Le plus propre** : les désaccords d'attribution intra-GHT se réconcilient (0 `part>1` observé). Ne couvre que les établissements **publics en GHT** (cf. point 2). La plateforme au niveau GHT (sans finess) **pas encore incluse** (cf. point 6). |
+| `mart_ght.csv` | **GHT** | **Le plus propre** : les désaccords d'attribution intra-GHT se réconcilient (quasi 0 `part>1` sur les GHT à finess). Couvre les établissements **publics en GHT** (cf. point 2) **et** la plateforme au niveau GHT via le mapping manuel (cf. point 6). |
 | `mart_hors_ght.csv` | finess **juridique**, hors GHT | Complément de `mart_ght` : les établissements **sans GHT** (~91 % : cliniques privées, imagerie…). |
-| `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national — cf. point 3). Colonne `grain` = `juridique`/`ght`. Plateforme au niveau GHT pas encore incluse. |
+| `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national — cf. point 3). Colonne `grain` = `juridique`/`ght`. Inclut la plateforme au niveau GHT. |
 
 Référentiel GHT : `build/extract/ght.csv` (source `referentiel-ght`, open data data.gouv
-`etablissements-de-sante-par-ght`) rattache **888 finess juridiques** à **135 GHT**.
-
-À venir : intégrer **la plateforme au niveau GHT** (sans finess) à `mart_ght` et
-`mart_article80` via le mapping manuel `ref/plateforme-ght-mapping.csv` (à relire par le porteur).
+`etablissements-de-sante-par-ght`) rattache **888 finess juridiques** à **135 GHT**. La plateforme
+au niveau GHT (sans finess) est rattachée via le mapping manuel `ref/plateforme-ght-mapping.csv`
+(23 libellés, relu par le porteur).
 
 ## Points d'attention métier
 
@@ -186,11 +201,26 @@ granularité **commune à toutes les sources** est donc **Ambulance / Assis / Au
 pour l'art. 80 des plateformes au niveau GHT). C'est ce grain canonique qui garantit la
 comparabilité numérateur ↔ dénominateur ; le détail fin (taxi/VSL) pourra venir en itération.
 
-### 6. Référentiel GHT — millésime **2018** et libellés libres de la plateforme C
+### 6. Rattachement au GHT de la plateforme sans finess — mapping manuel + cas particuliers
 
 Le référentiel finess → GHT date de **2018** (carte des 135 GHT stable depuis 2016, mais des
-fusions/rattachements ont pu bouger depuis) : les finess non reconnus seront **signalés** par
-`reconcile`, pas inventés. Par ailleurs la plateforme au niveau GHT fournit des **libellés
-libres bruités** (mêlant vrais GHT et établissements isolés), à rapprocher manuellement d'un
-GHT via `ref/plateforme-ght-mapping.csv` (relu par le porteur ; un fuzzy match ne fait que
-pré-remplir).
+fusions/rattachements ont pu bouger) : les finess non reconnus sont **signalés** par `reconcile`,
+pas inventés. La plateforme au niveau GHT fournit, elle, des **libellés libres** (vrais GHT et
+établissements isolés) rapprochés d'un GHT via le mapping manuel commité **`ref/plateforme-ght-mapping.csv`**
+(23 libellés, relu par le porteur ; un fuzzy match pré-remplit, la table fait foi). Trois cas
+méritent attention :
+
+- **AP-HP** (~18 % du volume de cette plateforme) n'est **pas dans les 135 GHT** du référentiel
+  open data (entité à part). Elle est traitée comme un **GHT à part entière** (code `AP-HP`) via
+  un **override manuel** `ref/finess-ght-manuel.csv` : le référentiel porte les trajets des
+  ~59 sites AP-HP sous le finess juridique **750712184**, rattaché au code `AP-HP`. Numérateur
+  (plateforme) **et** dénominateur (référentiel) se rejoignent donc → `part` calculable
+  (ex. 2024 Ambulance ≈ 0,07). `part` NULL seulement hors fenêtre référentiel (2024-2025).
+- **FOCH** (ESPIC) et **CGFL Dijon** (centre de lutte contre le cancer) ne sont **pas membres**
+  d'un GHT. Choix de gestion assumé : rattachés **par territoire** (Foch → Hauts-de-Seine,
+  CGFL → Dijon). ⚠️ Conséquence : leur volume plateforme **gonfle le numérateur** de ce GHT sans
+  dénominateur correspondant (le référentiel ne les y compte pas) — cela peut tirer la `part` du
+  GHT vers le haut.
+- Sur les GHT ainsi rattachés, un `part>1` peut apparaître si le périmètre « GHT » de la
+  plateforme est plus large que le GHT officiel (observé : **GHT Vendée**, `part ≈ 2,9`) — exposé
+  via `alerte_qualite`, à investiguer côté plateforme.
