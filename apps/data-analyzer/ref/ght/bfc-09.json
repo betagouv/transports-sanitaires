@@ -1,0 +1,1635 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-ght-BFC-09",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "ght-BFC-09",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">GHT Nord Franche-Comt\u00e9 - R\u00e9gion Bourgogne - Franche-Comt\u00e9 - 2 \u00e9tablissements juridiques</div>"
+        },
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante:ght",
+            "value": "ght-BFC-09"
+          }
+        ],
+        "name": "GHT Nord franche-comt\u00e9",
+        "address": [
+          {
+            "state": "Bourgogne - Franche-Comt\u00e9"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-185",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 Juridique - finess 900000365</div>"
+        },
+        "name": "HOPITAL NORD FRANCHE COMTE",
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:ej",
+            "value": "900000365"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/ght-BFC-09"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250000114",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "CH BOULLOCHE HNFC MONTBELIARD",
+        "meta": {
+          "lastUpdated": "2017-10-18T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250000114",
+            "period": {
+              "start": "1901-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300027"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "2 R DR FLAMAND"
+            ],
+            "postalCode": "25209",
+            "city": "MONTBELIARD CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250000114-loc",
+        "position": {
+          "longitude": 6.793665207934537,
+          "latitude": 47.51752833245525
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250000114"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250003985",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "EHPAD LES MAGNOLIAS PONT DE ROIDE",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "44",
+              "display": "ARS/PCD, Tarif partiel, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250003985",
+            "period": {
+              "start": "1985-03-05"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300068"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "96 RTE DE MONTBELIARD"
+            ],
+            "postalCode": "25150",
+            "city": "PONT DE ROIDE VERMONDANS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250003985-loc",
+        "position": {
+          "longitude": 6.772192855935102,
+          "latitude": 47.39022731516805
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250003985"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250004009",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "LE MITTAN ANNEXE DU HNFC",
+        "meta": {
+          "lastUpdated": "2017-10-18T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250004009",
+            "period": {
+              "start": "1974-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300050"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "1 R HENRI BECQUEREL"
+            ],
+            "postalCode": "25209",
+            "city": "MONTBELIARD CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250004009-loc",
+        "position": {
+          "longitude": 6.782765154095494,
+          "latitude": 47.526592799940836
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250004009"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250004033",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "INST FORMATION AUX METIERS DE LA SANTE",
+        "meta": {
+          "lastUpdated": "2018-02-05T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8542Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "436",
+              "display": "Ecoles Formant aux Professions Sanitaires et Sociales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "6301",
+              "display": "Etablissements de Formation Polyvalente"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "99",
+              "display": "Ind\u00e9termin\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250004033",
+            "period": {
+              "start": "1966-10-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300167"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "2 R DU DOCTEUR FLAMAND"
+            ],
+            "postalCode": "25209",
+            "city": "MONTBELIARD CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250004033-loc",
+        "position": {
+          "longitude": 6.793665207934537,
+          "latitude": 47.51752833245525
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250004033"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250007242",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "USLD MAISON JOLY HNFC",
+        "meta": {
+          "lastUpdated": "2015-10-19T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "362",
+              "display": "Etablissement de Soins Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1109",
+              "display": "Etablissements de Soins de Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "22",
+              "display": "Autorit\u00e9 mixte ARS PCD  ESLD tripartite DG global"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250007242",
+            "period": {
+              "start": "1978-12-07"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300076"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 R PIERRE ET MARIE CURIE"
+            ],
+            "postalCode": "25209",
+            "city": "MONTBELIARD CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250007242-loc",
+        "position": {
+          "longitude": 6.787207050457111,
+          "latitude": 47.52598256257572
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250007242"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-250017233",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "EHPAD MAISON JOLY HNFC",
+        "meta": {
+          "lastUpdated": "2017-07-25T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "40",
+              "display": "ARS/PCD, Tarif global, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "250017233",
+            "period": {
+              "start": "2009-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300175"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 R PIERRE ET MARIE CURIE"
+            ],
+            "postalCode": "25209",
+            "city": "MONTBELIARD CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-250017233-loc",
+        "position": {
+          "longitude": 6.787207050457111,
+          "latitude": 47.52598256257572
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-250017233"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-900000167",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "CH HNFC SITE DE BELFORT",
+        "meta": {
+          "lastUpdated": "2017-01-13T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900000167",
+            "period": {
+              "start": "1901-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300019"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "14 R DE MULHOUSE"
+            ],
+            "postalCode": "90016",
+            "city": "BELFORT CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-900000167-loc",
+        "position": {
+          "longitude": 6.85359290706032,
+          "latitude": 47.6429758232521
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-900000167"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-900003039",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "HNFC SITE TREVENANS",
+        "meta": {
+          "lastUpdated": "2017-11-24T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900003039",
+            "period": {
+              "start": "2017-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300209"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "100 RTE DE MOVAL"
+            ],
+            "postalCode": "90400",
+            "city": "TREVENANS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-900003039-loc",
+        "position": {
+          "longitude": 6.869573876839177,
+          "latitude": 47.57619151692552
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-900003039"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-900003070",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "SSR SITE PIERRE ENGEL HNFC BAVILLIERS",
+        "meta": {
+          "lastUpdated": "2017-10-18T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900003070",
+            "period": {
+              "start": "1968-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300126"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "RTE DE FROIDEVAL"
+            ],
+            "postalCode": "90800",
+            "city": "BAVILLIERS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-900003070-loc",
+        "position": {
+          "longitude": 6.83988092264947,
+          "latitude": 47.61577439888765
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-900003070"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900000365-900003088",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900000365</div>"
+        },
+        "name": "INST FORMATION AUX METIERS DE LA SANTE",
+        "meta": {
+          "lastUpdated": "2018-02-05T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8542Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "436",
+              "display": "Ecoles Formant aux Professions Sanitaires et Sociales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "6301",
+              "display": "Etablissements de Formation Polyvalente"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "99",
+              "display": "Ind\u00e9termin\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900003088",
+            "period": {
+              "start": "1977-11-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900129300118"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "11 R JEAN ROSTAND"
+            ],
+            "postalCode": "90000",
+            "city": "BELFORT"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900000365-185"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900000365-900003088-loc",
+        "position": {
+          "longitude": 6.854237183912774,
+          "latitude": 47.64035918710256
+        },
+        "managingOrganization": {
+          "reference": "Organization/900000365-900003088"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-186",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 Juridique - finess 900004698</div>"
+        },
+        "name": "CHSLD CHENOIS",
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:ej",
+            "value": "900004698"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/ght-BFC-09"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-900000647",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900004698</div>"
+        },
+        "name": "CHSLD LE CHENOIS",
+        "meta": {
+          "lastUpdated": "2014-03-14T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "362",
+              "display": "Etablissement de Soins Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1109",
+              "display": "Etablissements de Soins de Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "22",
+              "display": "Autorit\u00e9 mixte ARS PCD  ESLD tripartite DG global"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900000647",
+            "period": {
+              "start": "1985-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900003000115"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "16 R ALFRED ENGEL"
+            ],
+            "postalCode": "90800",
+            "city": "BAVILLIERS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900004698-186"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900004698-900000647-loc",
+        "position": {
+          "longitude": 6.842155494040527,
+          "latitude": 47.6211345049763
+        },
+        "managingOrganization": {
+          "reference": "Organization/900004698-900000647"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-900000779",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900004698</div>"
+        },
+        "name": "SSIAD LES QUATRE SAISONS DELLE",
+        "meta": {
+          "lastUpdated": "2017-07-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8690D"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "354",
+              "display": "Service de Soins Infirmiers A Domicile (S.S.I.A.D)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4605",
+              "display": "Etablissements et services multi-client\u00e8les"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "54",
+              "display": "Tarif AM - Services de Soins Infirmiers A Domicile"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900000779",
+            "period": {
+              "start": "2002-09-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900003000073"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 R DE DERIDE"
+            ],
+            "postalCode": "90100",
+            "city": "DELLE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900004698-186"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900004698-900000779-loc",
+        "position": {
+          "longitude": 7.001236560122177,
+          "latitude": 47.50467439049452
+        },
+        "managingOrganization": {
+          "reference": "Organization/900004698-900000779"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-900002056",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900004698</div>"
+        },
+        "name": "EHPAD LE CHENOIS BAVILLIERS",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "40",
+              "display": "ARS/PCD, Tarif global, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900002056",
+            "period": {
+              "start": "1950-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900003000057"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "16 R ALFRED ENGEL"
+            ],
+            "postalCode": "90800",
+            "city": "BAVILLIERS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900004698-186"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900004698-900002056-loc",
+        "position": {
+          "longitude": 6.842155494040527,
+          "latitude": 47.6211345049763
+        },
+        "managingOrganization": {
+          "reference": "Organization/900004698-900002056"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-900003328",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900004698</div>"
+        },
+        "name": "EHPAD LES QUATRE SAISONS LE CHENOIS",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "40",
+              "display": "ARS/PCD, Tarif global, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900003328",
+            "period": {
+              "start": "1987-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900003000065"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 R DE DERIDE"
+            ],
+            "postalCode": "90100",
+            "city": "DELLE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900004698-186"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900004698-900003328-loc",
+        "position": {
+          "longitude": 7.001236560122177,
+          "latitude": 47.50467439049452
+        },
+        "managingOrganization": {
+          "reference": "Organization/900004698-900003328"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "900004698-900003427",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 900004698</div>"
+        },
+        "name": "EHPAD MARCEL BRAUN BAVILLIERS",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "40",
+              "display": "ARS/PCD, Tarif global, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "900003427",
+            "period": {
+              "start": "1966-02-17"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26900003000107"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "6 R B ALFRED ENGEL"
+            ],
+            "postalCode": "90800",
+            "city": "BAVILLIERS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/900004698-186"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "900004698-900003427-loc",
+        "position": {
+          "longitude": 6.841938754791389,
+          "latitude": 47.622067144242386
+        },
+        "managingOrganization": {
+          "reference": "Organization/900004698-900003427"
+        }
+      }
+    }
+  ],
+  "type": "document"
+}

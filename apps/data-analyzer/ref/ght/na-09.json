@@ -1,0 +1,2785 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-ght-NA-09",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "ght-NA-09",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">GHT Navarre-C\u00f4te Basque  - R\u00e9gion Nouvelle Aquitaine - 2 \u00e9tablissements juridiques</div>"
+        },
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante:ght",
+            "value": "ght-NA-09"
+          }
+        ],
+        "name": "GHT Navarre-c\u00f4te basque ",
+        "address": [
+          {
+            "state": "Nouvelle Aquitaine"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-593",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 Juridique - finess 640780417</div>"
+        },
+        "name": "CENTRE HOSPITALIER DE LA COTE BASQUE",
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:ej",
+            "value": "640780417"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/ght-NA-09"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640000162",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CH DE LA COTE BASQUE - BAYONNE",
+        "meta": {
+          "lastUpdated": "2015-11-05T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640000162",
+            "period": {
+              "start": "1901-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900017"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "13 AV DE L'INTERNE JACQUES LOEB"
+            ],
+            "postalCode": "64109",
+            "city": "BAYONNE CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640000162-loc",
+        "position": {
+          "longitude": -1.482314130781507,
+          "latitude": 43.48229565409138
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640000162"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640009288",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "SAMSAD  DU CHCB",
+        "meta": {
+          "lastUpdated": "2012-05-09T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "379",
+              "display": "Etablissement Exp\u00e9rimental pour Adultes Handicap\u00e9s"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4304",
+              "display": "Etab.Exp\u00e9rimentaux en Faveur des Adultes Handicap\u00e9s"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "05",
+              "display": "ARS \u00e9tablissements m\u00e9dico-soc. non financ\u00e9s dotation globale"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640009288",
+            "period": {
+              "start": "2005-09-12"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900108"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "19 AV ITHURRALDE"
+            ],
+            "postalCode": "64502",
+            "city": "ST JEAN DE LUZ CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640009288-loc",
+        "position": {
+          "longitude": -1.6537011551160676,
+          "latitude": 43.392220058802714
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640009288"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640014122",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CAMSP DU CHCB",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "190",
+              "display": "Centre Action M\u00e9dico-Sociale Pr\u00e9coce (C.A.M.S.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4106",
+              "display": "Services \u00e0 Domicile ou Ambulatoires pour Handicap\u00e9s"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "10",
+              "display": "Autorit\u00e9 Conjointe Pr\u00e9fet ou ARS et PCD (1 arr\u00eat\u00e9)"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640014122",
+            "period": {
+              "start": "1999-02-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900017"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "16 CHE DE L'ABB\u00c9 EDOUARD CESTAC"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640014122-loc",
+        "position": {
+          "longitude": -1.485174623676565,
+          "latitude": 43.484235463459655
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640014122"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640018214",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "EHPAD LE PRISSE - CHCB BAYONNE",
+        "meta": {
+          "lastUpdated": "2017-08-31T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "44",
+              "display": "ARS/PCD, Tarif partiel, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640018214",
+            "period": {
+              "start": "2014-11-06"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900355"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "CHE D'IBOS"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640018214-loc",
+        "position": {
+          "longitude": -1.4582469735737806,
+          "latitude": 43.48166590633403
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640018214"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640018412",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CH DE LA COTE BASQUE - SITE LORMAND",
+        "meta": {
+          "lastUpdated": "2015-11-05T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640018412",
+            "period": {
+              "start": "1901-01-01"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "CHE DE L'ABBE EDOUARD CESTAC"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640018412-loc",
+        "position": {
+          "longitude": -1.4846786911192795,
+          "latitude": 43.48520670236805
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640018412"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640018420",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CHCB - HOPITAL JOUR ENFANTS LA FLORIDE",
+        "meta": {
+          "lastUpdated": "2015-11-06T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640018420",
+            "period": {
+              "start": "1901-01-01"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "ALL FLORIDE"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640018420-loc",
+        "position": {
+          "longitude": -1.4745453111926405,
+          "latitude": 43.48072986025762
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640018420"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640018636",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2016-12-19T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640018636",
+            "period": {
+              "start": "1904-04-04"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "17 AV RENAUD"
+            ],
+            "postalCode": "64220",
+            "city": "ST JEAN PIED DE PORT"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640018636-loc",
+        "position": {
+          "longitude": -1.2379528231418226,
+          "latitude": 43.164638690241475
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640018636"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640019303",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640019303",
+            "period": {
+              "start": "2018-03-07"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "4 R DE QUESNEL"
+            ],
+            "postalCode": "64600",
+            "city": "ANGLET"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640019303-loc",
+        "position": {
+          "longitude": -1.522626284308198,
+          "latitude": 43.479459350654224
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640019303"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640019311",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640019311",
+            "period": {
+              "start": "2018-03-07"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "5 ALL DES CHENES"
+            ],
+            "postalCode": "64200",
+            "city": "BIARRITZ"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640019311-loc",
+        "position": {
+          "longitude": -1.5432532614854673,
+          "latitude": 43.48109779854508
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640019311"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640019329",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640019329",
+            "period": {
+              "start": "2018-03-07"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "nan nan"
+            ],
+            "postalCode": "64240",
+            "city": "HASPARREN"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640019329-loc",
+        "position": {
+          "longitude": -1.3052739727812173,
+          "latitude": 43.38393213225348
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640019329"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640780755",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "C.H.I.C. COTE BASQUE - ST JEAN DE LUZ",
+        "meta": {
+          "lastUpdated": "2014-10-23T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640780755",
+            "period": {
+              "start": "1901-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900108"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "19 AV ANDRE ITHURRALDE"
+            ],
+            "postalCode": "64502",
+            "city": "ST JEAN DE LUZ CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640780755-loc",
+        "position": {
+          "longitude": -1.6537011551160676,
+          "latitude": 43.392220058802714
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640780755"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640784278",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CH COTE BASQUE - SITE CAM DE PRATS",
+        "meta": {
+          "lastUpdated": "2015-12-16T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640784278",
+            "period": {
+              "start": "1901-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900033"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV CAM DE PRATS"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640784278-loc",
+        "position": {
+          "longitude": -1.4631536664568812,
+          "latitude": 43.48410145578435
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640784278"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640785424",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "EHPAD GOXOKI LES MAISONS DE L'ARRAYDE",
+        "meta": {
+          "lastUpdated": "2018-07-30T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "44",
+              "display": "ARS/PCD, Tarif partiel, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640785424",
+            "period": {
+              "start": "1967-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900041"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV DE CAM DE PRATS"
+            ],
+            "postalCode": "64109",
+            "city": "BAYONNE CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640785424-loc",
+        "position": {
+          "longitude": -1.4631536664568812,
+          "latitude": 43.48410145578435
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640785424"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640785432",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "ECOLE DE SANTE DU CH DE BAYONNE",
+        "meta": {
+          "lastUpdated": "2012-02-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "300",
+              "display": "Ecoles Formant aux Professions Sanitaires"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "6101",
+              "display": "Etablissements de Formation des Personnels Sanitaires"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "99",
+              "display": "Ind\u00e9termin\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640785432",
+            "period": {
+              "start": "1901-01-01"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "nan nan"
+            ],
+            "postalCode": "64109",
+            "city": "BAYONNE CEDEX"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640785432-loc",
+        "position": {
+          "longitude": -1.4550029958818227,
+          "latitude": 43.49069077299291
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640785432"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790762",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2006-12-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790762",
+            "period": {
+              "start": "1904-04-04"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 AV LAHUBIAGUE"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790762-loc",
+        "position": {
+          "longitude": -1.4829322177631281,
+          "latitude": 43.48344426386723
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790762"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790770",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2016-11-24T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790770",
+            "period": {
+              "start": "1904-04-04"
+            }
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "6 R BLANCHE HENNEBUTTE"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790770-loc",
+        "position": {
+          "longitude": -1.473465551491342,
+          "latitude": 43.506366894246035
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790770"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790804",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790804",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900298"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV D'ESPAGNE"
+            ],
+            "postalCode": "64250",
+            "city": "CAMBO LES BAINS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790804-loc",
+        "position": {
+          "longitude": -1.41024766282658,
+          "latitude": 43.356971457630394
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790804"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790887",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790887",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900314"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "19 AV ANDRE ITHURRALDE"
+            ],
+            "postalCode": "64500",
+            "city": "ST JEAN DE LUZ"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790887-loc",
+        "position": {
+          "longitude": -1.6537011551160676,
+          "latitude": 43.392220058802714
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790887"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790895",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790895",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900330"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "3 RTE DE SAINT MICHEL"
+            ],
+            "postalCode": "64220",
+            "city": "ST JEAN PIED DE PORT"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790895-loc",
+        "position": {
+          "longitude": -1.2385813694756473,
+          "latitude": 43.15930396174315
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790895"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640790903",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640790903",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900199"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "33 AV DE NAVARRE"
+            ],
+            "postalCode": "64120",
+            "city": "ST PALAIS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640790903-loc",
+        "position": {
+          "longitude": -1.0261733731372562,
+          "latitude": 43.31892322113245
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640790903"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791034",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE PLANIFICATION EDUC FAMI",
+        "meta": {
+          "lastUpdated": "2013-11-14T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791034",
+            "period": {
+              "start": "1981-12-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900231"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "nan nan"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791034-loc",
+        "position": {
+          "longitude": -1.4748658881447616,
+          "latitude": 43.49292974989119
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791034"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791042",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE PLANIFICATION",
+        "meta": {
+          "lastUpdated": "2006-07-04T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "359",
+              "display": "Centre Circonscription Sanitaire et Sociale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "5104",
+              "display": "Etablissements ou Services Divers d'Aide \u00e0 la Famille"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791042",
+            "period": {
+              "start": "1981-12-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900249"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "12 AV ANDRE ITHURRALDE"
+            ],
+            "postalCode": "64500",
+            "city": "ST JEAN DE LUZ"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791042-loc",
+        "position": {
+          "longitude": -1.6554366381209853,
+          "latitude": 43.39120271906405
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791042"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791273",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "CENTRE MEDICO-PSYCHOLOGIQUE",
+        "meta": {
+          "lastUpdated": "2018-03-07T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "156",
+              "display": "Centre M\u00e9dico-Psychologique (C.M.P.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1111",
+              "display": "Autres Etablissements de Lutte contre les Maladies Mentales"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791273",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900306"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "18 R GASTAGNALDE"
+            ],
+            "postalCode": "64700",
+            "city": "HENDAYE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791273-loc",
+        "position": {
+          "longitude": -1.7607740584393647,
+          "latitude": 43.36129695520543
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791273"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791901",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "EHPAD - USLD TRIKALDI CHIC DE BAYONNE",
+        "meta": {
+          "lastUpdated": "2014-10-23T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "362",
+              "display": "Etablissement de Soins Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1109",
+              "display": "Etablissements de Soins de Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "22",
+              "display": "Autorit\u00e9 mixte ARS PCD  ESLD tripartite DG global"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791901",
+            "period": {
+              "start": "1976-07-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900116"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "38 AV ANDRE ITHURRALDE"
+            ],
+            "postalCode": "64500",
+            "city": "ST JEAN DE LUZ"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791901-loc",
+        "position": {
+          "longitude": -1.64626929111625,
+          "latitude": 43.3961524595571
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791901"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791919",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "EHPAD UDAZKENA - CHCB DE BAYONNE",
+        "meta": {
+          "lastUpdated": "2017-04-21T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8710A"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "500",
+              "display": "Etablissement d'h\u00e9bergement pour personnes \u00e2g\u00e9es d\u00e9pendantes"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "4401",
+              "display": "Etablissements d'H\u00e9bergement pour Personnes \u00c2g\u00e9es"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "44",
+              "display": "ARS/PCD, Tarif partiel, habilit\u00e9 aide sociale, recours PUI"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791919",
+            "period": {
+              "start": "1971-01-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900124"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV ANDRE ITHURRALDE"
+            ],
+            "postalCode": "64500",
+            "city": "ST JEAN DE LUZ"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791919-loc",
+        "position": {
+          "longitude": -1.645339508948488,
+          "latitude": 43.39678988623276
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791919"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640780417-640791927",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640780417</div>"
+        },
+        "name": "EHPAD - USLD ARRAYADE CHIC BAYONNE",
+        "meta": {
+          "lastUpdated": "2016-11-24T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "362",
+              "display": "Etablissement de Soins Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1109",
+              "display": "Etablissements de Soins de Longue Dur\u00e9e"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "22",
+              "display": "Autorit\u00e9 mixte ARS PCD  ESLD tripartite DG global"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640791927",
+            "period": {
+              "start": "1904-04-04"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "26640567900090"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV CAM DE PRATS"
+            ],
+            "postalCode": "64100",
+            "city": "BAYONNE"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640780417-593"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640780417-640791927-loc",
+        "position": {
+          "longitude": -1.4631536664568812,
+          "latitude": 43.48410145578435
+        },
+        "managingOrganization": {
+          "reference": "Organization/640780417-640791927"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640017638-594",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 Juridique - finess 640017638</div>"
+        },
+        "name": "CENTRE HOSPITALIER DE SAINT-PALAIS",
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:ej",
+            "value": "640017638"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/ght-NA-09"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "640017638-640017646",
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Entit\u00e9 G\u00e9ographique - finess 640017638</div>"
+        },
+        "name": "CENTRE HOSPITALIER DE SAINT-PALAIS",
+        "meta": {
+          "lastUpdated": "2013-05-02T00:00:00Z"
+        },
+        "extension": [
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-insee-APE",
+            "valueCoding": {
+              "system": "http://insee.fr/valuesets/APE",
+              "code": "8610Z"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_ETAB",
+              "code": "355",
+              "display": "Centre Hospitalier (C.H.)"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-cat-agr-etab",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/CAT_AGR_ETAB",
+              "code": "1102",
+              "display": "Centres Hospitaliers"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-MFT",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/MFT",
+              "code": "03",
+              "display": "ARS \u00e9tablissements Publics de sant\u00e9 dotation globale"
+            }
+          },
+          {
+            "url": "https://opikanoba.org/fhir/StructureDefinition/fr-gouv-sante-finess-SPH",
+            "valueCoding": {
+              "system": "http://finess.sante.gouv.fr/valuesets/SPH",
+              "code": "1",
+              "display": "Etablissement public de sant\u00e9"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "urn:fr-gouv-sante-finess:eg",
+            "value": "640017646",
+            "period": {
+              "start": "2013-05-01"
+            }
+          },
+          {
+            "use": "official",
+            "system": "urn:fr-insee:SIRET",
+            "value": "20003754700011"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "line": [
+              "AV FREDERIC DE SAINT-JAYME"
+            ],
+            "postalCode": "64120",
+            "city": "ST PALAIS"
+          }
+        ],
+        "partOf": {
+          "reference": "Organization/640017638-594"
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "640017638-640017646-loc",
+        "position": {
+          "longitude": -1.0294101402306826,
+          "latitude": 43.32600770090679
+        },
+        "managingOrganization": {
+          "reference": "Organization/640017638-640017646"
+        }
+      }
+    }
+  ],
+  "type": "document"
+}

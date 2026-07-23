@@ -17,16 +17,17 @@ Spec de cadrage : [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-pa
 ```bash
 npm install
 cp mapping.example.json mapping.json   # puis renseigner vos fichiers (voir ci-dessous)
-npm run fetch-ght  # aspire le référentiel GHT open data (data.gouv) dans data/ght/
 npm run etl        # enchaîne les 4 étapes ; régénère build/
 # ou étape par étape :
 npm run extract && npm run staging && npm run reconcile && npm run marts
 npm test           # tests unitaires (vitest)
 ```
 
-Node 24 (exécution TypeScript native, aucun build). SheetJS pour les `.xlsx`.
+Node 24 (exécution TypeScript native, aucun build). SheetJS pour les `.xlsx`. **Aucune étape
+réseau** : tous les référentiels publics (dont l'open data GHT) sont **versionnés** dans `ref/`.
 
-`fetch-ght` télécharge le référentiel public **finess → GHT** (data.gouv `etablissements-de-sante-par-ght`, ODbL) dans `data/ght/` (non versionné). Il est **séparé de l'ETL** pour que `npm run etl` reste déterministe et hors-ligne ; à relancer seulement pour rafraîchir le référentiel.
+`npm run fetch-ght` sert uniquement à **rafraîchir** le référentiel GHT commité (`ref/ght/`)
+depuis data.gouv (`etablissements-de-sante-par-ght`, ODbL) — pas nécessaire au fonctionnement.
 
 ## Configuration des entrées — `mapping.json`
 
@@ -101,13 +102,12 @@ d'établissements/GHT **publics** — aucune donnée ni identité de fournisseur
 
 | Fichier | Rôle | Colonnes | Jointure `reconcile` | Contenu |
 |---|---|---|---|---|
+| `ght/*.json` | Référentiel **finess → GHT** open data (source `referentiel-ght`) : 135 bundles FHIR data.gouv `etablissements-de-sante-par-ght` (ODbL), 1 par GHT. | — (FHIR) | — (lu par l'adaptateur `ght-fhir-datagouv` → `build/extract/ght.csv`) | ~24 Mo versionnés ⇒ ETL autonome, aucun pull. `npm run fetch-ght` **rafraîchit** ce dossier. |
 | `plateforme-ght-mapping.csv` | Rattache les **libellés GHT libres** de la plateforme au niveau GHT (sans finess) à un GHT. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 23 entrées relues par le porteur ; cas particuliers (AP-HP, FOCH, CGFL) au **point 6** ci-dessous. |
 | `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | Aujourd'hui l'**AP-HP** (750712184 → `AP-HP`), absente des 135 GHT mais dont le référentiel porte les trajets → dénominateur réel. |
 
-Le référentiel **finess → GHT** ne vit **pas** dans `ref/` : c'est de l'open data volumineux
-(bundles FHIR data.gouv `etablissements-de-sante-par-ght`), déclaré comme source `referentiel-ght`,
-aspiré par `npm run fetch-ght` dans `data/ght/` (non versionné) puis transformé en
-`build/extract/ght.csv` (régénérable).
+Les bundles `ght/*.json` sont transformés à chaque `extract` en `build/extract/ght.csv`
+(régénérable, non versionné) ; c'est ce CSV que `reconcile` consomme.
 
 ## Confidentialité
 
@@ -118,14 +118,14 @@ sont **jamais** versionnés :
 - `build/` — **tous** les artefacts (dont le mart, qui contient de vrais établissements) ;
 - `mapping.json` — lie fichiers réels + fournisseurs aux formats/rôles.
 
-Sont versionnés (publics, non identifiants) : `src/` (code générique), `ref/`
-(référentiels open data figés — mappings manuels), `mapping.example.json` (gabarit neutre).
-Les libellés de véhicule et noms de colonnes présents dans les adaptateurs décrivent des
-**formats**, pas des fournisseurs.
+Sont versionnés (publics, non identifiants) : `src/` (code générique), `ref/` (référentiels
+open data figés — bundles GHT `ref/ght/` + mappings manuels), `mapping.example.json` (gabarit
+neutre). Les libellés de véhicule et noms de colonnes présents dans les adaptateurs décrivent
+des **formats**, pas des fournisseurs.
 
-Le référentiel GHT (`data/ght/`, produit `build/extract/ght.csv`) est de l'open data public
-(ODbL) ; il n'est **pas** versionné mais **régénérable** via `npm run fetch-ght` (réseau),
-conformément au principe « `build/` régénérable ».
+Le référentiel GHT `ref/ght/` (open data ODbL) est **versionné** : l'ETL est autonome, sans
+étape réseau. Il ne porte que des noms d'établissements/GHT publics — aucune donnée ni identité
+de fournisseur.
 
 ## Livrables (marts)
 

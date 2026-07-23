@@ -1,12 +1,11 @@
-// fetch-ght — aspire le référentiel GHT open data dans data/ght/ (non versionné).
+// fetch-ght — (re)télécharge le référentiel GHT open data dans ref/ght/ (versionné).
 //
 // Source : data.gouv.fr, dataset `etablissements-de-sante-par-ght` (licence ODbL). Le
 // dataset expose un bundle FHIR JSON par GHT, en plusieurs versions ; on ne garde que la
 // plus récente de chaque titre. L'adaptateur `ght-fhir-datagouv` lit ensuite ce dossier.
 //
-// Séparé du pipeline (réseau) pour que `npm run etl` reste déterministe et hors-ligne :
-//   npm run fetch-ght   # une fois (puis à chaque rafraîchissement voulu du référentiel)
-//   npm run etl
+// Les bundles sont **versionnés** (ref/ght/) : `npm run etl` fonctionne hors-ligne sans
+// aucune étape préalable. Ce script ne sert qu'à **rafraîchir** le référentiel commité.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -25,15 +24,17 @@ interface Ressource {
 export class FetchGht {
   async execute(): Promise<void> {
     const ressources = this.#dernieresVersions(await this.#listerJson());
-    mkdirSync(Paths.DATA_GHT, { recursive: true });
-    console.log(`fetch-ght : ${ressources.length} bundles GHT → ${Paths.DATA_GHT}`);
+    mkdirSync(Paths.REF_GHT, { recursive: true });
+    console.log(`fetch-ght : ${ressources.length} bundles GHT → ${Paths.REF_GHT}`);
     await this.#telechargerTout(ressources);
     console.log("fetch-ght : terminé.");
   }
 
+  // Certaines ressources JSON de data.gouv portent un titre en « .xml » (doublons mal
+  // étiquetés) : on les écarte pour ne garder que des fichiers .json propres.
   async #listerJson(): Promise<Ressource[]> {
     const dataset = (await this.#getJson(DATASET)) as { resources: Ressource[] };
-    return dataset.resources.filter((r) => r.format === "json");
+    return dataset.resources.filter((r) => r.format === "json" && r.title.endsWith(".json"));
   }
 
   // Plusieurs versions par titre : on retient la plus récemment modifiée.
@@ -62,7 +63,7 @@ export class FetchGht {
   async #telecharger(r: Ressource): Promise<void> {
     const reponse = await fetch(r.url);
     if (!reponse.ok) throw new Error(`Téléchargement échoué (${reponse.status}) : ${r.url}`);
-    writeFileSync(join(Paths.DATA_GHT, r.title), await reponse.text());
+    writeFileSync(join(Paths.REF_GHT, r.title), await reponse.text());
   }
 
   async #getJson(url: string): Promise<unknown> {

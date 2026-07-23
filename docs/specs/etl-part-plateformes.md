@@ -47,11 +47,12 @@ non identifiante). Les plateformes A et B partagent un même format (adaptateur 
 vers un GHT, et (b) rapprocher les entrées de la plateforme C (noms libres) d'un GHT.
 
 Il est traité comme une **source déclarée** du pipeline (rôle `referentiel-ght`, format
-`ght-fhir-datagouv`), et non figé dans `ref/` : le dataset expose un bundle **FHIR JSON par
-GHT** (identifiants finess `ej`/`eg`), aspiré par `npm run fetch-ght` dans `data/ght/` (non
-versionné), puis transformé par `extract` en `build/extract/ght.csv` (grain finess juridique →
-GHT, régénérable). Réserve : un GHT ne regroupe que les **hôpitaux publics** ⇒ seule une
-minorité des finess des sources (≈ 9 %) s'y rattache — cf. Points ouverts.
+`ght-fhir-datagouv`) : le dataset expose un bundle **FHIR JSON par GHT** (identifiants finess
+`ej`/`eg`), **versionné** dans `ref/ght/` (135 bundles, ~24 Mo, ODbL) — l'ETL est donc autonome,
+sans étape réseau (`npm run fetch-ght` ne sert qu'à rafraîchir). `extract` les transforme en
+`build/extract/ght.csv` (grain finess juridique → GHT, régénérable). Réserve : un GHT ne regroupe
+que les **hôpitaux publics** ⇒ seule une minorité des finess des sources (≈ 9 %) s'y rattache —
+cf. Points ouverts.
 
 ## Le point dur : le dénominateur dépend de l'enveloppe
 
@@ -203,8 +204,8 @@ et exemples dans « Points d'attention métier » du README.
 
 ## Vérification
 
-1. `npm --prefix apps/data-analyzer run fetch-ght` (une fois) puis `run etl` : les 4 étapes
-   s'enchaînent sans erreur et régénèrent `build/` (dont les 5 marts).
+1. `npm --prefix apps/data-analyzer run etl` (aucune étape réseau, référentiels dans `ref/`) :
+   les 4 étapes s'enchaînent sans erreur et régénèrent `build/` (dont les 5 marts).
 2. Contrôles de cohérence : totaux par source conservés extract → staging ; cellules `part > 1`
    **comptées et signalées** (`alerte_qualite`), décroissantes du grain géo au grain GHT.
 3. `mart_ght.csv` : `part` hors art. 80 dans [0, 1] (plateformes ⊆ national au grain GHT) ;

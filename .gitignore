@@ -12,10 +12,9 @@ dist
 tmp
 
 # apps/data-analyzer : le code de l'ETL est public, mais ni les données ni l'identité
-# des fournisseurs ne le sont. On versionne uniquement les référentiels publics (ref/,
-# ex. open data GHT). Restent ignorés (dossiers entiers, quel que soit le format —
-# les bundles JSON de l'open data GHT ne seraient pas couverts par *.csv / *.xlsx) :
-#  - data/ : sources brutes (dont data/ght/ aspiré de data.gouv) ;
+# des fournisseurs ne le sont. On versionne les référentiels publics (ref/, dont l'open
+# data GHT ref/ght/). Restent ignorés :
+#  - data/ : sources brutes des fournisseurs ;
 #  - build/ : tous les artefacts, dont le mart (contient de vrais établissements) ;
 #  - mapping.json : lie fichiers réels + fournisseurs aux formats (mapping.example.json
 #    versionné sert de gabarit neutre).

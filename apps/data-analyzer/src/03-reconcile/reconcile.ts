@@ -9,7 +9,7 @@
 //     d'attention métier du README). On rattache aussi chaque trajet à son GHT.
 //
 // Le référentiel finess → GHT vient de `build/extract/ght.csv` (source `referentiel-ght`,
-// open data data.gouv `etablissements-de-sante-par-ght`, aspiré par `npm run fetch-ght`).
+// open data data.gouv `etablissements-de-sante-par-ght`, bundles versionnés dans `ref/ght/`).
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -130,7 +130,7 @@ export class Reconcile {
     const openData = join(Paths.EXTRACT, "ght.csv");
     if (existsSync(openData))
       for (const r of Csv.read(openData) as unknown as GhtRattachementRow[]) map.set(r.finess_juridique, r.ght_code);
-    else console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght`)");
+    else console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run extract`)");
     const manuel = join(Paths.REF, "finess-ght-manuel.csv");
     if (existsSync(manuel))
       for (const r of Csv.read(manuel)) if (r.finess_juridique && r.ght_code) map.set(r.finess_juridique, r.ght_code);
