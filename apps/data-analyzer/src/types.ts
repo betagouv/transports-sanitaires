@@ -2,7 +2,7 @@
 //
 // Les DTO échangés entre étapes de la pipeline sont, eux, dans contrats.ts.
 
-import type { EtablissementRow, TrajetRow } from "./contrats.ts";
+import type { EtablissementRow, GhtRattachementRow, TrajetRow } from "./contrats.ts";
 
 /** Enveloppe de financement, normalisée. */
 export type Enveloppe = "Article 80" | "Hors Article 80";
@@ -16,9 +16,10 @@ export type VehiculeCanonique = "Ambulance" | "Assis" | "Autre" | "Total";
 /**
  * Rôle d'un fichier dans l'analyse — porte la sémantique du calcul :
  *  - `referentiel-national` : dénominateur hors art. 80 (trajets remboursés au national) ;
- *  - `plateforme` : numérateur (trajets commandés/réalisés via une plateforme).
+ *  - `plateforme` : numérateur (trajets commandés/réalisés via une plateforme) ;
+ *  - `referentiel-ght` : rattachement finess → GHT (open data), pour remonter au GHT.
  */
-export type Role = "plateforme" | "referentiel-national";
+export type Role = "plateforme" | "referentiel-national" | "referentiel-ght";
 
 /** Une entrée de mapping.json : quel fichier réel, quel rôle, quel format. */
 export interface MappingEntry {
@@ -29,10 +30,15 @@ export interface MappingEntry {
   options: Record<string, unknown>; // paramètres propres au format (ex. index de colonnes)
 }
 
-/** Sortie d'un adaptateur : lignes de trajets + éventuelle dimension établissements. */
+/**
+ * Sortie d'un adaptateur. La plupart des sources émettent des `trajets` ; les référentiels
+ * émettent en plus une dimension (`etablissements` pour le national, `ght` pour l'open data
+ * GHT). Une source de référentiel GHT n'émet donc aucun trajet (`trajets: []`).
+ */
 export interface AdapterOutput {
   trajets: TrajetRow[];
   etablissements?: EtablissementRow[];
+  ght?: GhtRattachementRow[];
 }
 
 /** Un adaptateur de format : instancié avec un fichier, produit des lignes normalisées. */

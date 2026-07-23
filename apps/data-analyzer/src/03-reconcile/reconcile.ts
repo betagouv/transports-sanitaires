@@ -5,8 +5,9 @@
 // référentiels : un finess juridique regroupe plusieurs sites ; on retient l'identité du
 // site au plus gros volume (`score`) comme libellé représentatif.
 //
-// Le rattachement finess → GHT (pour mart_ght) dépendra du référentiel data.gouv
-// `etablissements-de-sante-par-ght` (ref/ght.csv) : voir la spec.
+// Le rattachement finess → GHT (pour mart_ght) s'appuiera sur `build/extract/ght.csv`,
+// produit par la source `referentiel-ght` (open data data.gouv `etablissements-de-sante-par-ght`,
+// aspiré par `npm run fetch-ght`) : voir la spec.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -55,8 +56,10 @@ export class Reconcile {
   }
 
   #warnIfGhtManquant(): void {
-    if (!existsSync(join(Paths.REF, "ght.csv")))
-      console.log("reconcile ght                : différé (ref/ght.csv absent — cf. spec, mart_ght)");
+    if (!existsSync(join(Paths.EXTRACT, "ght.csv")))
+      console.log(
+        "reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run fetch-ght` ; cf. spec, mart_ght)",
+      );
   }
 }
 

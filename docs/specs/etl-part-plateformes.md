@@ -1,9 +1,10 @@
 # Spec — ETL versionné : part des trajets réalisés via les plateformes
 
 > Statut : **itération 1 réalisée** (mart_etablissement). Cadrage validé avec le porteur
-> le 2026-07-22. Code : `apps/data-analyzer` (voir son README). Reste à faire :
-> `mart_ght` (dépend du rattachement finess → GHT), et l'arbitrage du grain finess
-> juridique (cf. « Limite connue » ci-dessous / README).
+> le 2026-07-22. Code : `apps/data-analyzer` (voir son README). Le **référentiel finess → GHT**
+> est intégré (source `referentiel-ght`, open data data.gouv → `build/extract/ght.csv`,
+> 888 finess / 135 GHT). Reste à faire : `reconcile` + `mart_ght` (remontée au GHT), et
+> l'arbitrage du grain finess juridique (cf. « Limite connue » ci-dessous / README).
 
 > **Confidentialité.** Le monorepo est public ; ni les données ni l'identité des
 > fournisseurs ne le sont. Cette spec, comme le code, est **anonyme** : elle parle de
@@ -38,9 +39,16 @@ non identifiante). Les plateformes A et B partagent un même format (adaptateur 
 | plateforme C | `plateforme-ght-xlsx` — xlsx, en-têtes multi-niveaux | **GHT, nom libre, sans finess** | Art. 80 (total seul) + Hors art. 80 (détail véhicule) | 2023, 2024 | Taxi, VSL, Ambulance, TPMR (hors art. 80) | **aucun** |
 
 **Référentiel externe (open data, public)** : `etablissements-de-sante-par-ght`
-(https://www.data.gouv.fr/datasets/etablissements-de-sante-par-ght) — associe chaque
-établissement (finess) à son GHT. Sert à (a) remonter les sources à finess vers un GHT, et
-(b) rapprocher les entrées de la plateforme C (noms libres) d'un GHT.
+(https://www.data.gouv.fr/datasets/etablissements-de-sante-par-ght, ODbL, millésime **2018**)
+— associe chaque établissement (finess) à son GHT. Sert à (a) remonter les sources à finess
+vers un GHT, et (b) rapprocher les entrées de la plateforme C (noms libres) d'un GHT.
+
+Il est traité comme une **source déclarée** du pipeline (rôle `referentiel-ght`, format
+`ght-fhir-datagouv`), et non figé dans `ref/` : le dataset expose un bundle **FHIR JSON par
+GHT** (identifiants finess `ej`/`eg`), aspiré par `npm run fetch-ght` dans `data/ght/` (non
+versionné), puis transformé par `extract` en `build/extract/ght.csv` (grain finess juridique →
+GHT, régénérable). Réserve : un GHT ne regroupe que les **hôpitaux publics** ⇒ seule une
+minorité des finess des sources (≈ 9 %) s'y rattache — cf. Points ouverts.
 
 ## Le point dur : le dénominateur dépend de l'enveloppe
 
@@ -143,10 +151,12 @@ Concatène les sorties `extract/trajets/*.csv` et agrège au grain canonique (ex
   plateforme A est souvent `0`). À confirmer contre la granularité du référentiel externe.
 - **Dimension établissements** : dédupliquée au finess juridique, en retenant le site au
   plus gros volume (`score`) comme libellé représentatif.
-- **finess → GHT** (à venir) via `ref/ght.csv` pour le référentiel et les plateformes A/B.
-- **Plateforme C → GHT** (à venir) via un mapping **manuel commité** (≈ 24 entrées, noms
-  libres bruités, dont des **établissements isolés et non des GHT**). Un rapprochement flou
-  sert à **pré-remplir** ; la table fait foi. Entrée `Total` ignorée.
+- **finess → GHT** (à venir) via `build/extract/ght.csv` (source `referentiel-ght`) pour le
+  référentiel et les plateformes A/B.
+- **Plateforme C → GHT** (à venir) via un mapping **manuel commité** `ref/plateforme-ght-mapping.csv`
+  (≈ 24 entrées, noms libres bruités, dont des **établissements isolés et non des GHT**). Un
+  rapprochement flou contre les libellés de `build/extract/ght.csv` sert à **pré-remplir** ;
+  la table fait foi. Entrée `Total` ignorée.
 
 ### 4. `marts` — calcul des parts (sur les rôles)
 - `mart_etablissement` : jointure plateformes (rôle `plateforme`, à finess) ↔ référentiel
@@ -168,6 +178,13 @@ Concatène les sorties `extract/trajets/*.csv` et agrège au grain canonique (ex
   récupérer et inspecter). Voir la limite ci-dessous.
 - **Qualité du mapping GHT de la plateforme C** : noms libres mêlant GHT et établissements
   isolés ; à relire par le porteur.
+- **Couverture du référentiel GHT** : un GHT ne regroupe que les **hôpitaux publics** (888
+  finess juridiques, 135 GHT) ; or les transports remboursés concernent aussi cliniques
+  privées, centres d'imagerie, etc. ⇒ seule une minorité des finess des sources (≈ 9 %) se
+  rattache à un GHT. `mart_ght` ne couvrira donc que ce sous-ensemble public : est-ce le
+  périmètre attendu, ou faut-il aussi un regroupement « hors GHT » ? À trancher avec le porteur.
+- **Millésime du référentiel GHT** : 2018 (carte des 135 GHT stable depuis 2016, mais des
+  fusions/rattachements ont pu bouger) ; les finess non reconnus seront signalés par `reconcile`.
 
 ## Limite connue — grain finess juridique
 

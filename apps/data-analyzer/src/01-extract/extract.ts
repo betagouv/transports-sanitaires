@@ -28,6 +28,7 @@ export class Extract {
     const results = Mapping.load().map((entry) => this.#runAdapter(entry));
     this.#writeTrajets(results);
     this.#writeEtablissements(results);
+    this.#writeGht(results);
   }
 
   #runAdapter(entry: MappingEntry): Result {
@@ -47,6 +48,13 @@ export class Extract {
     const etablissements = results.flatMap((r) => r.output.etablissements ?? []);
     Csv.write(join(Paths.EXTRACT, "etablissements.csv"), etablissements as unknown as Row[]);
     console.log(`extract etablissements       : ${etablissements.length} lignes`);
+  }
+
+  #writeGht(results: Result[]): void {
+    const ght = results.flatMap((r) => r.output.ght ?? []);
+    if (ght.length === 0) return; // aucune source referentiel-ght déclarée
+    Csv.write(join(Paths.EXTRACT, "ght.csv"), ght as unknown as Row[]);
+    console.log(`extract ght                  : ${ght.length} finess juridiques rattachés`);
   }
 }
 

@@ -29,6 +29,20 @@ export interface TrajetRow {
 }
 
 /**
+ * Rattachement d'un établissement (finess juridique) à son GHT.
+ * Produit par : extract (source `referentiel-ght`) → `build/extract/ght.csv`.
+ * Consommé par : reconcile (à venir, pour remonter trajets et référentiel au GHT — mart_ght).
+ * Dérivé de l'open data data.gouv `etablissements-de-sante-par-ght` (voir l'adaptateur).
+ */
+export interface GhtRattachementRow {
+  finess_juridique: string;
+  ght_code: string; // identifiant stable du GHT (ex. « ght-ARA-01 »)
+  ght_libelle: string;
+  region: string; // préfixe région du code GHT (ex. « ARA »)
+  raison_sociale: string; // libellé de l'entité juridique (aide au rapprochement plateforme GHT)
+}
+
+/**
  * Établissement « brut », un par site (finess géographique), porteur de l'identité.
  * Produit par : extract (référentiels uniquement) → `build/extract/etablissements.csv`.
  * Consommé par : reconcile.

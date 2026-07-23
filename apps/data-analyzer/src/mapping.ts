@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, isAbsolute, join } from "node:path";
 import type { MappingEntry, Role } from "./types.ts";
 
-const ROLES: readonly Role[] = ["plateforme", "referentiel-national"];
+const ROLES: readonly Role[] = ["plateforme", "referentiel-national", "referentiel-ght"];
 
 export class Mapping {
   static load(): MappingEntry[] {

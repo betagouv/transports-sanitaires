@@ -6,6 +6,7 @@
   "description": "ETL versionné : part des trajets réalisés via les plateformes (numérateur) rapportée au référentiel national de remboursement (dénominateur)",
   "scripts": {
     "etl": "node src/run.ts",
+    "fetch-ght": "node src/fetch-ght.ts",
     "extract": "node src/01-extract/extract.ts",
     "staging": "node src/02-staging/staging.ts",
     "reconcile": "node src/03-reconcile/reconcile.ts",

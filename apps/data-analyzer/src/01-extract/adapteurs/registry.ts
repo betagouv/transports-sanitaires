@@ -5,9 +5,11 @@ import type { FormatRegistry } from "../../types.ts";
 import { AdapterReferentielRemboursementXlsx } from "./adapteur-referentiel-remboursement-xlsx.ts";
 import { AdapterPlateformeFinessTsv } from "./adapteur-plateforme-finess-tsv.ts";
 import { AdapterPlateformeGhtXlsx } from "./adapteur-plateforme-ght-xlsx.ts";
+import { AdapterGhtFhirDatagouv } from "./adapteur-ght-fhir-datagouv.ts";
 
 export const FORMATS: FormatRegistry = {
   "referentiel-remboursement-xlsx": AdapterReferentielRemboursementXlsx,
   "plateforme-finess-tsv": AdapterPlateformeFinessTsv,
   "plateforme-ght-xlsx": AdapterPlateformeGhtXlsx,
+  "ght-fhir-datagouv": AdapterGhtFhirDatagouv,
 };
