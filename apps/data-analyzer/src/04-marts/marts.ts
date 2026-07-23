@@ -2,12 +2,13 @@
 // connaît que des rôles ; chaque mart n'est qu'un choix de **grain** sur les trajets
 // réconciliés (build/reconcile/trajets.csv), habillé par une dimension d'identité.
 //
-// Cinq livrables (cf. « Points d'attention métier » du README pour les spécificités) :
+// Six livrables (cf. « Points d'attention métier » du README pour les spécificités) :
 //   - mart_geographique — grain finess géographique (le plus fin ; beaucoup de part NULL) ;
 //   - mart_juridique    — grain finess juridique (autorité référentiel) ;
 //   - mart_ght          — grain GHT (le plus propre ; établissements publics only) ;
 //   - mart_hors_ght     — grain finess juridique, restreint aux établissements sans GHT ;
-//   - mart_article80    — volumes + part par plateforme (pas de dénominateur national).
+//   - mart_article80    — volumes + part par plateforme (pas de dénominateur national) ;
+//   - mart_ght_2024     — rollup du mart GHT : ratio annuel plateforme/CNAM par GHT, tous transports.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -15,6 +16,7 @@ import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 import { MartRatio } from "./mart-ratio.ts";
 import { MartArticle80 } from "./mart-article80.ts";
+import { MartGht2024 } from "./mart-ght-2024.ts";
 import type {
   EtablissementDimensionRow,
   EtablissementRow,
@@ -37,6 +39,7 @@ export class Marts {
       (cle) => this.#juridique.get(cle)?.nom ?? "",
       (cle) => this.#ght.get(cle)?.ght_libelle ?? "",
     ).execute(trajets);
+    new MartGht2024().execute(); // rollup dérivé du mart_ght.csv écrit ci-dessus
   }
 
   #martsRatio(): MartRatio[] {

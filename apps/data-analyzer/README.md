@@ -31,6 +31,7 @@ et le [point 1](#1-divergence-dattribution-entre-sources--cellules-part--1-expos
 | `mart_ght.csv` | **GHT** | **Le plus fiable** : les désaccords d'attribution intra-GHT se réconcilient (quasi 0 `part>1`). Couvre les établissements **publics en GHT** (cf. point 2) **et** la plateforme au niveau GHT (cf. point 6). |
 | `mart_hors_ght.csv` | finess **juridique**, hors GHT | Complément de `mart_ght` : les établissements **sans GHT** (~91 % : cliniques privées, imagerie…). |
 | `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national, cf. point 3). Colonne `grain` = `juridique`/`ght`. |
+| `mart_ght_2024.csv` | **GHT**, année 2024, **tous transports** | **Rollup du mart GHT** : une ligne par GHT (136), somme des véhicules pour 2024. Colonnes `nb_plateforme`, `nb_cnam` (= référentiel CNAM), `ratio = nb_plateforme / nb_cnam`. Vue de synthèse « taux réel de recours aux plateformes par GHT ». |
 
 **Colonnes des marts « ratio »** (`geographique`, `juridique`, `ght`, `hors_ght`) :
 `… annee, vehicule, nb_plateforme, nb_reference, part, alerte_qualite`, avec
@@ -120,6 +121,7 @@ npm run etl        # enchaîne les 4 étapes ; régénère build/
 # ou étape par étape :
 npm run extract && npm run staging && npm run reconcile && npm run marts
 npm test           # tests unitaires (vitest)
+npm run publish-grist  # optionnel : publie les marts dans Grist (voir Publication)
 ```
 
 Node 24 (exécution TypeScript native, aucun build). SheetJS pour les `.xlsx`. **Aucune étape
@@ -184,7 +186,39 @@ sont entièrement génériques et ne raisonnent que sur les rôles.
 | `build/staging/trajets.csv` | staging | Toutes les sources réunies et agrégées au grain canonique. | idem `trajets/<label>.csv` |
 | `build/reconcile/etablissements.csv` | reconcile | Libellé représentatif de chaque établissement, pour habiller les marts. | `finess_juridique, nom, ville, departement, categorie` |
 | `build/reconcile/trajets.csv` | reconcile | Trajets **ré-clés** (autorité référentiel) et **rattachés au GHT**. Base commune des marts. | idem staging + `ght_code` |
-| `build/marts/mart_*.csv` | marts | Les **5 [livrables](#livrables-marts)**. | selon le mart |
+| `build/marts/mart_*.csv` | marts | Les **6 [livrables](#livrables-marts)** (dont `mart_ght_2024`, rollup dérivé de `mart_ght`). | selon le mart |
+
+## Publication (dataviz)
+
+Étape **optionnelle**, hors des 4 étapes ETL et **seule étape réseau** (en écriture) : pousse les
+marts dans **Grist** pour les explorer et bâtir la dataviz. But premier : révéler le **taux réel
+de recours aux plateformes par GHT** (`Mart_Ght`, colonne `part` ; `Mart_Ght_2024`, colonne `ratio`).
+
+```bash
+npm run publish-grist              # tous les marts publiables
+npm run publish-grist -- ght_2024  # un seul (par son nom court)
+```
+
+Config (env ; `.env` lu automatiquement s'il existe, sinon variables du shell) :
+
+| Variable | Rôle |
+|---|---|
+| `GRIST_DOC_URL` | Base API du doc **dédié dataviz** (≠ doc d'identification), ex. `https://…/api/docs/<docId>` |
+| `GRIST_API_KEY` | Clé API Grist |
+
+Chaque mart publiable déclare sa table et ses colonnes dans `MARTS` (`src/05-publish/publish.ts`) ;
+**ajouter un mart = ajouter une entrée**. Pour chacun, la publication **garantit** la table (la crée
+avec ses colonnes si absente, complète les colonnes manquantes) puis **remplace** tout son contenu
+(vide + réinsère). Sémantique de **snapshot** : idempotent, sans lignes périmées — relançable après
+chaque `npm run marts`.
+
+| Mart | Table Grist |
+|---|---|
+| `mart_ght.csv` (`ght`) | `Mart_Ght` |
+| `mart_ght_2024.csv` (`ght_2024`) | `Mart_Ght_2024` |
+
+⚠️ Le mart contient de **vrais établissements** (cf. [Confidentialité](#confidentialité)) : le
+doc Grist cible doit rester **privé**.
 
 ## Référentiels (`ref/`)
 
@@ -210,6 +244,9 @@ Le monorepo est public ; les données et l'identité des fournisseurs ne le sont
   formats/rôles).
 - **Versionnés** (publics, non identifiants) : `src/` (code générique), `ref/` (open data figé
   `ref/ght/` + mappings manuels), `mapping.example.json` (gabarit neutre).
+- **Publication Grist** (cf. [Publication](#publication-dataviz)) : les marts publiés contiennent
+  de vrais établissements ⇒ le doc cible doit rester **privé**, et sa clé (`GRIST_API_KEY`) hors
+  du dépôt (`.env` non versionné).
 
 Les libellés de véhicule et noms de colonnes des adaptateurs décrivent des **formats**, pas des
 fournisseurs. Comme `ref/` est versionné, l'ETL tourne sans étape réseau.

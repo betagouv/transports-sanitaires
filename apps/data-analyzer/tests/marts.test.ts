@@ -4,6 +4,7 @@
 import { describe, it, expect } from "vitest";
 import { MartRatio } from "../src/04-marts/mart-ratio.ts";
 import { MartArticle80 } from "../src/04-marts/mart-article80.ts";
+import { MartGht2024 } from "../src/04-marts/mart-ght-2024.ts";
 import type { TrajetReconcilieRow } from "../src/contrats.ts";
 import type { Enveloppe, Role, VehiculeCanonique } from "../src/types.ts";
 
@@ -72,5 +73,25 @@ describe("MartArticle80.calculer", () => {
       { grain: "juridique", cle: "J1", libelle: "CH Test", annee: "2024", vehicule: "Ambulance", plateforme: "b", nb: 10, part_plateforme: 0.25 },
     ]);
     expect(rows.filter((r) => r.grain === "ght").map((r) => r.part_plateforme)).toEqual([0.75, 0.25]);
+  });
+});
+
+describe("MartGht2024.calculer", () => {
+  // Lignes au format du mart GHT (build/marts/mart_ght.csv) : valeurs en chaînes.
+  function ghtRow(p: Record<string, string>): Record<string, string> {
+    return { ght_code: "", region: "", ght_libelle: "", annee: "2024", vehicule: "Ambulance", nb_plateforme: "0", nb_reference: "0", part: "", alerte_qualite: "", ...p };
+  }
+
+  it("somme les véhicules par GHT pour 2024, ignore les autres années, et calcule ratio = plateforme / cnam", () => {
+    const rows = new MartGht2024().calculer([
+      ghtRow({ ght_code: "G1", region: "ARA", ght_libelle: "GHT Un", vehicule: "Ambulance", nb_plateforme: "30", nb_reference: "100" }),
+      ghtRow({ ght_code: "G1", region: "ARA", ght_libelle: "GHT Un", vehicule: "Assis", nb_plateforme: "20", nb_reference: "50" }),
+      ghtRow({ ght_code: "G1", region: "ARA", ght_libelle: "GHT Un", annee: "2023", vehicule: "Ambulance", nb_plateforme: "999", nb_reference: "0" }), // autre année → ignorée
+      ghtRow({ ght_code: "G2", region: "BFC", ght_libelle: "GHT Deux", vehicule: "Ambulance", nb_plateforme: "7", nb_reference: "0" }), // pas de dénominateur → ratio NULL
+    ]);
+    expect(rows).toEqual([
+      { ght_code: "G1", region: "ARA", ght_libelle: "GHT Un", annee: "2024", nb_plateforme: 50, nb_cnam: 150, ratio: 0.3333 },
+      { ght_code: "G2", region: "BFC", ght_libelle: "GHT Deux", annee: "2024", nb_plateforme: 7, nb_cnam: 0, ratio: "" },
+    ]);
   });
 });
