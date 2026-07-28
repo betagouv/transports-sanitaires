@@ -110,6 +110,35 @@ dans [Référentiels](#référentiels-ref)). Trois conséquences à connaître �
   même, un `part>1` apparaît si le périmètre « GHT » de la plateforme dépasse le GHT officiel
   (observé : **GHT Vendée**, `part ≈ 2,9`) — exposé via `alerte_qualite`, à investiguer.
 
+### 7. Établissements hors GHT rattachés **par territoire**
+
+Certains établissements présents dans les sources **plateforme au niveau finess** ne sont
+**membres d'aucun** des 135 GHT — non par oubli, mais par **construction** : les **CLCC** (centres
+de lutte contre le cancer, privés à but non lucratif), les **EFS** (établissements de transfusion
+sanguine) et les établissements **d'outre-mer** échappent au découpage GHT métropolitain. Plutôt
+que de les laisser sans rattachement (et donc invisibles dans `mart_ght`), ils sont rattachés
+**au GHT de leur territoire de santé** via `ref/finess-ght-manuel.csv` :
+
+| Finess | Établissement | Territoire | GHT retenu (le plus proche) |
+|---|---|---|---|
+| 630781110 | CLCC Jean Perrin | Clermont-Ferrand (63) | `ght-ARA-01` — GHT Territoire d'Auvergne |
+| 130784127 | Institut Paoli-Calmettes (CLCC) | Marseille (13) | `ght-PACA-04` — GHT Bouches-du-Rhône |
+| 930019229 | EFS Centre–Pays de la Loire | Le Mans (72) | `ght-PDL-04` — GHT Sarthe |
+| 970211207 | CHU de Martinique | Martinique (972) | `ght-MAR-01` — GHT Centre Sud |
+
+Ces quatre rattachements sont **sans ambiguïté** : l'établissement est sur le **même territoire
+de santé** que le GHT retenu. Comme pour FOCH/CGFL ([point 6](#6-plateforme-au-niveau-ght-sans-finess--cas-particuliers)),
+ils **gonflent le numérateur** du GHT d'accueil sans dénominateur en face (ces établissements ne
+sont pas dans le référentiel national du GHT) → peuvent tirer la `part` vers le haut.
+
+**Cas exclu — CH de Cayenne (970302022, Guyane).** La **Guyane n'a aucun GHT** dans l'open data,
+et le GHT le plus proche traverse **~1 400 km d'océan** (Martinique ou Guadeloupe, quasi
+équidistantes) : aucun « territoire de santé » commun ne justifie un rattachement. Le forcer vers
+un GHT antillais serait un **artefact géographique** qui fausserait sa `part`. Il est donc
+**laissé hors GHT** : ses trajets restent visibles dans `mart_juridique` / `mart_geographique` /
+`mart_hors_ght`, mais **pas dans `mart_ght`**. À rouvrir avec le porteur si un rattachement
+outre-mer devient pertinent (il suffit d'ajouter une ligne à `ref/finess-ght-manuel.csv`).
+
 ---
 
 ## Lancer
@@ -155,8 +184,11 @@ générique quels que soient les fichiers fournis.
 - **`role`** — `referentiel-national` (dénominateur, hors art. 80), `plateforme` (numérateur)
   ou `referentiel-ght` (rattachement finess → GHT open data ; cf. [Référentiels](#référentiels-ref)).
 - **`format`** — un adaptateur enregistré (`src/01-extract/adapteurs/registry.ts`) :
-  `referentiel-remboursement-xlsx`, `plateforme-finess-tsv`, `plateforme-ght-xlsx`,
-  `ght-fhir-datagouv` (dont la `location` est le **dossier** `ref/ght/`).
+  `referentiel-remboursement-xlsx`, `plateforme-finess-tsv`, `plateforme-finess-xlsx`,
+  `plateforme-ght-xlsx`, `ght-fhir-datagouv` (dont la `location` est le **dossier** `ref/ght/`).
+  Le format `plateforme-finess-xlsx` (établissement, en-têtes multi-niveaux, une colonne par
+  année) porte l'art. 80 en total et le hors art. 80 en détail partiel (taxi/VSL/ambulance) ;
+  le reliquat `total − détail` est imputé à `Autre` pour boucler le total annoncé.
 - **`location`** — chemin du fichier (absolu ou relatif à la racine de l'app).
 - **`label`** — identifiant neutre, unique (nomme les artefacts de traçabilité).
 - **`options`** — paramètres propres au format (ex. index de colonnes finess pour le TSV),
@@ -216,6 +248,10 @@ chaque `npm run marts`.
 |---|---|
 | `mart_ght.csv` (`ght`) | `Mart_Ght` |
 | `mart_ght_2024.csv` (`ght_2024`) | `Mart_Ght_2024` |
+| `mart_juridique.csv` (`juridique`) | `Mart_Juridique` |
+| `mart_geographique.csv` (`geographique`) | `Mart_Geographique` |
+| `mart_hors_ght.csv` (`hors_ght`) | `Mart_Hors_Ght` |
+| `mart_article80.csv` (`article80`) | `Mart_Article80` |
 
 ⚠️ Le mart contient de **vrais établissements** (cf. [Confidentialité](#confidentialité)) : le
 doc Grist cible doit rester **privé**.
@@ -230,10 +266,11 @@ des noms d'établissements/GHT **publics** — aucune donnée ni identité de fo
 |---|---|---|---|---|
 | `ght/*.json` | Référentiel **finess → GHT** open data (source `referentiel-ght`). | — (FHIR) | via l'adaptateur `ght-fhir-datagouv` → `build/extract/ght.csv` | 135 bundles FHIR data.gouv `etablissements-de-sante-par-ght` (ODbL), 1 par GHT, ~24 Mo. Rattache **888 finess juridiques à 135 GHT**. `npm run fetch-ght` les rafraîchit. |
 | `plateforme-ght-mapping.csv` | Rattache les **libellés GHT libres** de la plateforme au niveau GHT (sans finess) à un GHT. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 23 entrées ; un fuzzy match pré-remplit, la table relue **fait foi**. |
-| `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | Aujourd'hui l'**AP-HP** (750712184 → `AP-HP`), absente des 135 GHT mais dont le référentiel porte les trajets. |
+| `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | L'**AP-HP** (750712184 → `AP-HP`, GHT à part entière) ; et **4 établissements structurellement hors des 135 GHT** (CLCC, EFS, Martinique) rencontrés dans les sources plateforme, rattachés au **GHT de leur territoire** (cf. [point 7](#7-établissements-hors-ght-rattachés-par-territoire), qui documente aussi le CH de Cayenne, laissé **hors GHT**). |
 
 Conséquences métier de ces rattachements manuels (AP-HP, FOCH, CGFL, millésime) : voir
-[point 6](#6-plateforme-au-niveau-ght-sans-finess--cas-particuliers).
+[point 6](#6-plateforme-au-niveau-ght-sans-finess--cas-particuliers) ; rattachements par
+territoire des établissements hors GHT : [point 7](#7-établissements-hors-ght-rattachés-par-territoire).
 
 ## Confidentialité
 
