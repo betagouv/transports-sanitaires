@@ -20,10 +20,14 @@ import {
   type Referentiel,
   type Service,
 } from "../../shared/referentiel";
+import { estServiceLabo } from "../labo/labo";
 
 type Props = {
   referentiel?: Referentiel;
   onValide: (saisie: IdentiteSaisie) => void;
+  // Ouvre le mode test des règles (labo). Proposé uniquement quand le service
+  // « Transport Sanitaire » est sélectionné (garde d'accès, cf. `estServiceLabo`).
+  onAccesLabo?: () => void;
   // Raccourci dev (fourni uniquement en mode dev) : ouvre directement une page
   // de résultat sans passer par le formulaire — résultat médical (favorable /
   // défavorable) ou résultat final (succès / refus).
@@ -53,6 +57,7 @@ const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
 export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
+  onAccesLabo,
   onAccesDirectDev,
 }: Props) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
@@ -108,6 +113,10 @@ export function Identification({
   );
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
   const identiteLibre = serviceChoisi && prescripteurHorsListe;
+  // Le mode test des règles (labo) n'est proposé que pour le service dédié.
+  const serviceSelectionne = services.find((s) => s.id === serviceId);
+  const afficherLabo =
+    !!onAccesLabo && !!serviceSelectionne && estServiceLabo(serviceSelectionne);
 
   function buildSaisie(): IdentiteSaisie {
     const saisie: IdentiteSaisie = { etabId };
@@ -260,6 +269,15 @@ export function Identification({
           <button type="submit" className="fr-btn" disabled={!valide}>
             Accéder au simulateur
           </button>
+          {afficherLabo && (
+            <button
+              type="button"
+              className="fr-btn fr-btn--secondary"
+              onClick={onAccesLabo}
+            >
+              Mode test des règles
+            </button>
+          )}
           {onAccesDirectDev && (
             <>
               <button

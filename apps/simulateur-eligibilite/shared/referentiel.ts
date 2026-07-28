@@ -55,6 +55,9 @@ const SERVICES: SnapshotService[] = [
   { id: "s_belledonne_autre", etabId: "e_clinique_belledonne", libelle: "Autre" },
   { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
   { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
+  // Service dédié au produit : déverrouille le « mode test des règles » (labo).
+  // Correspond au service Grist `Id2 = 4` en production (cf. front/labo/labo.ts).
+  { id: "s_transport_sanitaire", etabId: "e_liberal_cnam", libelle: "Transport Sanitaire" },
   { id: "s_liberal_autre", etabId: "e_liberal_cnam", libelle: "Autre" },
 ];
 

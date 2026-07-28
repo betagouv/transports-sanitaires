@@ -16,6 +16,8 @@
 import { useState } from "react";
 import type { Situation } from "publicodes";
 import { Identification } from "../identification/Identification";
+import { Labo } from "../labo/Labo";
+import { BandeauLabo } from "../labo/BandeauLabo";
 import { Prescripteur } from "../prescripteur/Prescripteur";
 import { Secretariat } from "../secretariat/Secretariat";
 import { referentielHttp } from "../identification/referentiel-http";
@@ -49,6 +51,8 @@ export function App({
   pseudonymiser = pseudonymiserViaApi,
 }: Props = {}) {
   const [identifie, setIdentifie] = useState(false);
+  // Écran labo (mode test des règles) affiché à la place de l'identification.
+  const [labo, setLabo] = useState(false);
   const [outil, setOutil] = useState<Outil>(outilInitial);
   // Remonté à chaque nouvelle simulation pour remonter (remount) l'outil et
   // repartir d'un parcours vierge.
@@ -82,11 +86,19 @@ export function App({
 
   if (!identifie) {
     return (
-      <Identification
-        referentiel={referentiel}
-        onValide={handleValide}
-        onAccesDirectDev={import.meta.env.DEV ? accesDirectDev : undefined}
-      />
+      <>
+        <BandeauLabo />
+        {labo ? (
+          <Labo onRetour={() => setLabo(false)} />
+        ) : (
+          <Identification
+            referentiel={referentiel}
+            onValide={handleValide}
+            onAccesLabo={() => setLabo(true)}
+            onAccesDirectDev={import.meta.env.DEV ? accesDirectDev : undefined}
+          />
+        )}
+      </>
     );
   }
 
@@ -110,11 +122,14 @@ export function App({
     );
 
   return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-    >
-      {contenu}
-    </main>
+    <>
+      <BandeauLabo />
+      <main
+        className="fr-container"
+        style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
+      >
+        {contenu}
+      </main>
+    </>
   );
 }

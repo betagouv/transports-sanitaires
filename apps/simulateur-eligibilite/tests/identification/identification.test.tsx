@@ -30,6 +30,23 @@ describe("parcours d'identification", () => {
     });
   });
 
+  it("propose le mode test des règles seulement pour le service « Transport Sanitaire »", async () => {
+    const onAccesLabo = vi.fn();
+    render(<Identification onValide={vi.fn()} onAccesLabo={onAccesLabo} />);
+
+    const labo = { name: "Mode test des règles" };
+
+    await choisir(/Établissement/, "CHU Grenoble Alpes");
+    await choisir(/Nom du service/, "Cardiologie");
+    expect(screen.queryByRole("button", labo)).toBeNull();
+
+    await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
+    await choisir(/Nom du service/, "Transport Sanitaire");
+    await userEvent.click(screen.getByRole("button", labo));
+
+    expect(onAccesLabo).toHaveBeenCalledOnce();
+  });
+
   it("prescripteur hors liste → saisie nom/prénom", async () => {
     const onValide = vi.fn();
     render(<Identification onValide={onValide} />);

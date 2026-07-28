@@ -60,6 +60,28 @@ front).
 | `VITE_MATOMO_URL` | front | non | instance mutualisée beta.gouv | URL de l'instance Matomo. |
 | `VITE_MATOMO_SITE_ID` | front | non | `275` | Identifiant du site Matomo. |
 
+## Mode test des règles (labo)
+
+Permet au **produit** de tester en autonomie une nouvelle version du fichier de règles
+(`.publicodes`) sans passer par un développeur ni un déploiement. Le test est **local au
+navigateur** (`localStorage`) : il n'affecte ni la production ni les autres utilisateurs.
+
+Parcours PM :
+
+| Étape | Action |
+| --- | --- |
+| 1 | S'identifier en choisissant le service **« Transport Sanitaire »** (garde d'accès, service Grist `Id2 = 4`) |
+| 2 | Cliquer **« Mode test des règles »** (n'apparaît que pour ce service) |
+| 3 | Déposer le fichier `.publicodes` → validation immédiate (erreurs YAML/publicodes affichées inline) |
+| 4 | **« Activer et tester »** → l'app recharge et le simulateur tourne sur les nouvelles règles |
+| 5 | Un **bandeau permanent** rappelle le mode test ; **« Revenir aux règles officielles »** le quitte |
+
+Les versions chargées sont conservées en historique local (rebascule en un clic).
+Implémentation : `front/labo/` (`labo.ts` état + validation, `Labo.tsx`, `BandeauLabo.tsx`) ;
+le moteur consomme les règles labo au boot (`front/simulateur/engine.ts`). Les règles
+**officielles** restent embarquées dans le build (`regles/*.publicodes`) — publier une
+version reste un geste explicite (commit + déploiement).
+
 ## Structure (feature-first)
 
 Trois racines de *runtime* — `front/` (front, bundlé par Vite), `server/` (backend Node,
@@ -81,6 +103,7 @@ front/                   front (bundlé par Vite)
   identification/        Identification.tsx  referentiel-http.ts
   identite/              pseudonymisation-http.ts (pseudonymiserViaApi)  session.ts
   simulateur/            Simulateur.tsx  FormField.tsx  Resultats.tsx  engine.ts
+  labo/                  Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
   analytics/             analytics.ts
 ```
 
