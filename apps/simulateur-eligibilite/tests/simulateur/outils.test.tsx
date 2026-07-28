@@ -539,8 +539,12 @@ describe("secrétariat — parcours administratif", () => {
           p1_critere_aucune_situation_encadree: "non",
           p2_patient_hospitalise: "non",
           p2_convocation_ou_avis: "non",
+          // v8.10 : A2.3 (prestation prise en charge) applicable hors motif déjà
+          // qualifiant → doit être répondue pour trancher le cas final.
+          p2_prestation_prise_en_charge_assurance_maladie: "oui",
           p2_distance_aller_superieure_150km: "non",
-          p2_transport_en_serie: "oui",
+          // v8.10 : série calculée depuis le nombre (>=4) + distance de chaque trajet.
+          p2_chaque_trajet_aller_superieur_50km: "oui",
           p2_avion_ou_bateau: "non",
           p2_camsp_cmpp: "non",
           p2_maternite_eloignee: "non",

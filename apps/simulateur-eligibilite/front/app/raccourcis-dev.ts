@@ -88,8 +88,11 @@ const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
   p1_critere_aucune_situation_encadree: "non",
   p2_patient_hospitalise: "non",
   p2_convocation_ou_avis: "non",
+  // v8.10 : A2.3 (prestation prise en charge) — répondue pour trancher le cas final.
+  p2_prestation_prise_en_charge_assurance_maladie: "oui",
   p2_distance_aller_superieure_150km: "non",
-  p2_transport_en_serie: "oui",
+  // v8.10 : série calculée (nombre >= 4 + chaque trajet aller > 50 km).
+  p2_chaque_trajet_aller_superieur_50km: "oui",
   p2_avion_ou_bateau: "non",
   p2_camsp_cmpp: "non",
   p2_maternite_eloignee: "non",
@@ -130,6 +133,8 @@ const SITUATION_DEMO_DEV_FINAL_REFUS: Situation<string> = {
   p1_critere_asepsie: "non",
   p1_critere_aucune_situation_encadree: "non",
   p2_patient_hospitalise: "oui",
+  // v8.10 : A2.3 (prestation prise en charge) — répondue pour trancher le cas final.
+  p2_prestation_prise_en_charge_assurance_maladie: "oui",
   // v8.9 : `p2_exception_restant_assurance_maladie` est désormais dérivé du type
   // d'exception A0.2-A0.3 ; on ne renseigne plus que ce dernier.
   p2_exception_type: "'Retour en HAD (Hospitalisation À Domicile).'",

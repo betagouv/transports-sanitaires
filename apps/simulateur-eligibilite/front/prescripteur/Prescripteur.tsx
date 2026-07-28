@@ -36,17 +36,17 @@ export function Prescripteur({
           // posées, car applicables mais hors du graphe des cibles). Toutes sont
           // P1 (aucune dépendance p2_*), donc aucune question Partie 2 ici.
           cibles={[
-            "transport_sanitaire_prescrit",
-            "partie_2_requise",
-            "sortie_transport_partage_incompatible",
-            "sortie_autonomie_patient",
-            "sortie_accompagnant_necessaire",
+            "cible_transport_sanitaire_prescrit",
+            "cible_partie_2_requise",
+            "cible_transport_partage_incompatible",
+            "cible_autonomie_patient",
+            "cible_accompagnant_necessaire",
           ]}
           labelFin="Voir le résultat médical"
           onTermine={(s) => {
             setSituation(s);
             const r = String(
-              engine.setSituation(s).evaluate("resultat_medical").nodeValue ?? ""
+              engine.setSituation(s).evaluate("cible_resultat_medical").nodeValue ?? ""
             );
             trackResultat(r, "prescripteur");
           }}

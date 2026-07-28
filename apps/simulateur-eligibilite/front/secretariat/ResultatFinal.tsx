@@ -20,6 +20,7 @@ const TEINTE: Record<string, "success" | "info" | "warning" | "error"> = {
   "demande accord préalable": "info",
   "convocation ou avis audience": "success",
   "transport charge établissement": "warning",
+  "prestation non prise en charge par assurance maladie": "error",
   SMUR: "warning",
   "bariatrique seul": "error",
   "permission sortie sans motif médical": "error",
@@ -103,6 +104,23 @@ function Bloc1({
               <p>
                 Document à remettre au patient :{" "}
                 <strong>formulaire établissement ou document interne</strong>.
+              </p>
+            </>
+          ),
+        };
+      case "prestation non prise en charge par assurance maladie":
+        return {
+          titre:
+            "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
+          corps: (
+            <>
+              <p>
+                Transport médicalement retenu : <strong>{transport}</strong>.
+              </p>
+              <p>
+                Aucune Prescription Médicale de Transport ni Demande d’Accord
+                Préalable ouvrant droit à une prise en charge ne doit être établie
+                dans ce parcours.
               </p>
             </>
           ),
@@ -195,6 +213,8 @@ const RESTE_A_CHARGE: Record<string, string> = {
     "La convocation ou l’avis d’audience sert de document patient pour votre transport. La prise en charge dépend des règles applicables à cette convocation ou à cet avis. Un reste à charge peut exister selon votre situation.",
   "transport charge établissement":
     "Ce transport est à la charge de l’établissement de santé. Le service ou le secrétariat de l’établissement vous indiquera les modalités d’organisation applicables.",
+  "prestation non prise en charge par assurance maladie":
+    "La prestation à l’origine du déplacement n’étant pas prise en charge par l’Assurance Maladie, le transport ne peut pas être pris en charge, même si un mode de transport est médicalement adapté. N’adressez aucune demande de remboursement à votre caisse pour ce déplacement.",
   SMUR: "Ce transport est organisé dans le cadre de l’urgence médicale. Les éventuelles informations de facturation ou de prise en charge sont communiquées par l’établissement concerné.",
   "bariatrique seul":
     "Aucune prise en charge par l’Assurance Maladie n’est ouverte au titre du seul motif bariatrique. Les solutions éventuelles et leur coût doivent être vus avec le service médical ou le secrétariat.",
@@ -463,6 +483,25 @@ function EtapesPatient({
           </li>
         </ol>
       );
+    case "prestation non prise en charge par assurance maladie":
+      return (
+        <ol>
+          <li>
+            La consultation, le soin, l’examen ou la prestation à l’origine de
+            votre déplacement n’est pas pris en charge par l’Assurance Maladie.
+          </li>
+          <li>
+            Dans cette situation, le transport ne peut pas être pris en charge par
+            l’Assurance Maladie, même si un mode de transport particulier est
+            médicalement adapté.
+          </li>
+          <li>
+            N’adressez aucune Prescription Médicale de Transport, Demande d’Accord
+            Préalable ou demande de remboursement à votre caisse pour ce
+            déplacement.
+          </li>
+        </ol>
+      );
     case "non éligible assurance maladie dans ce parcours":
       return transportPrescrit ? (
         <ol>
@@ -497,20 +536,116 @@ function EtapesPatient({
   }
 }
 
+// Article 80 (transport à charge de l'établissement) — contenus différenciés v8.10
+// selon le mode retenu et les situations spécifiques (détenu/UHSA-UHSI…). Repris de
+// tmp/8.10/transports-sanitaires.ui.v8-10.yaml → result_pages.resultat_2.blocks.article_80.
+export type Article80 = {
+  // "transport professionnel" | "véhicule personnel ou transports en commun" | "non applicable"
+  mode: string;
+  situationSpecifique: boolean;
+  permissionTherapeutique: boolean;
+};
+
+// Volet patient. La variante « situation spécifique » (détenu/UHSA-UHSI) n'évoque
+// jamais le véhicule personnel ni les transports en commun (contrainte ui.yaml).
+function Article80Patient({ article80 }: { article80: Article80 }) {
+  const perso =
+    article80.mode === "véhicule personnel ou transports en commun";
+  return (
+    <>
+      {article80.permissionTherapeutique && (
+        <p>
+          La permission de sortie est accordée pour un motif thérapeutique. Le
+          transport est à la charge de l’établissement.
+        </p>
+      )}
+      {article80.situationSpecifique ? (
+        <ul>
+          <li>
+            Le transport est organisé dans le cadre de votre prise en charge par
+            l’établissement.
+          </li>
+          <li>
+            Vous n’avez aucune demande de remboursement à adresser directement à
+            votre caisse d’Assurance Maladie.
+          </li>
+        </ul>
+      ) : perso ? (
+        <ul>
+          <li>
+            N’adressez pas directement vos justificatifs de transport à votre
+            caisse d’Assurance Maladie.
+          </li>
+          <li>
+            Avant d’organiser le trajet ou d’avancer des frais, rapprochez-vous de
+            l’établissement pour connaître les conditions d’autorisation, les
+            justificatifs à conserver et les éventuelles modalités de défraiement
+            applicables.
+          </li>
+        </ul>
+      ) : (
+        <ul>
+          <li>
+            Vous n’avez aucune demande de remboursement à adresser à votre caisse
+            d’Assurance Maladie.
+          </li>
+          <li>L’établissement organise le transport selon sa procédure interne.</li>
+        </ul>
+      )}
+    </>
+  );
+}
+
+// Volet corps médical.
+function Article80CorpsMedical({ article80 }: { article80: Article80 }) {
+  const perso =
+    article80.mode === "véhicule personnel ou transports en commun";
+  return (
+    <>
+      <p>
+        Ce transport est à la charge de l’établissement chargé de la prescription.
+        Il ne relève pas d’une facturation directe à la caisse d’Assurance Maladie.
+      </p>
+      {article80.situationSpecifique ? (
+        <p>
+          Le transport doit être organisé selon la procédure interne de
+          l’établissement et les règles spécifiques applicables à la situation du
+          patient.
+        </p>
+      ) : perso ? (
+        <p>
+          Avant que le patient organise le trajet ou avance des frais, il doit être
+          orienté vers le service compétent de l’établissement afin de vérifier les
+          conditions d’autorisation et de défraiement applicables au véhicule
+          personnel ou aux transports en commun.
+        </p>
+      ) : (
+        <p>
+          Le transporteur doit adresser sa facture à l’établissement chargé de la
+          prescription, selon la procédure applicable dans l’établissement.
+        </p>
+      )}
+    </>
+  );
+}
+
 function Bloc2({
   e,
   casFinal,
   transport,
   transportPrescrit,
+  article80,
 }: {
   e: typeof engine;
   casFinal: string;
   transport: string;
   transportPrescrit: boolean;
+  article80: Article80;
 }) {
   const criteresRetenus = transportPrescrit ? retenus(e, CRITERES) : [];
   const motifsRetenus = transportPrescrit ? retenus(e, MOTIFS) : [];
   const resteACharge = RESTE_A_CHARGE[casFinal] ?? "";
+  const estArticle80 = casFinal === "transport charge établissement";
 
   return (
     <div className="fr-callout" style={{ marginBottom: "2rem" }}>
@@ -552,6 +687,15 @@ function Bloc2({
           transport={transport}
           transportPrescrit={transportPrescrit}
         />
+
+        {estArticle80 && (
+          <>
+            <SousTitre icone="fr-icon-bank-line">
+              Organisation et défraiement
+            </SousTitre>
+            <Article80Patient article80={article80} />
+          </>
+        )}
       </div>
     </div>
   );
@@ -569,6 +713,8 @@ const CAS_RETENU: Record<string, string> = {
   "convocation ou avis audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
   "transport charge établissement": "Transport à charge de l’établissement de santé",
+  "prestation non prise en charge par assurance maladie":
+    "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
   SMUR: "Transport par équipe SMUR",
   "bariatrique seul":
     "Contrainte bariatrique seule insuffisante pour une prise en charge Assurance Maladie",
@@ -625,7 +771,7 @@ const MODE_TRANSPORT_ITEMS: CaseItem[] = [
   },
   {
     text: "Transport partagé incompatible.",
-    visible: (e) => vrai(e, "sortie_transport_partage_incompatible"),
+    visible: (e) => vrai(e, "cible_transport_partage_incompatible"),
   },
   {
     text: "Moyen de transport individuel.",
@@ -637,7 +783,7 @@ const MODE_TRANSPORT_ITEMS: CaseItem[] = [
   },
   {
     text: "Personne accompagnante si nécessaire.",
-    visible: (e) => vrai(e, "sortie_accompagnant_necessaire"),
+    visible: (e) => vrai(e, "cible_accompagnant_necessaire"),
   },
 ];
 
@@ -753,10 +899,49 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
+  "prestation non prise en charge par assurance maladie": [],
   "bariatrique seul": [],
   "permission sortie sans motif médical": [],
   "non éligible assurance maladie dans ce parcours": [],
 };
+
+// Note corps médical propre à certains cas (v8.10) : rendue en complément de la
+// checklist. Contenus repris de ui.yaml → result_pages.resultat_2.blocks.
+function NoteCorpsMedical({
+  casFinal,
+  article80,
+}: {
+  casFinal: string;
+  article80: Article80;
+}) {
+  if (casFinal === "prestation non prise en charge par assurance maladie") {
+    return (
+      <div className="fr-mt-2w">
+        <p>
+          L’absence de prise en charge de la consultation, du soin, de l’examen ou
+          de la prestation à l’origine du déplacement exclut la prise en charge du
+          transport dans ce parcours.
+        </p>
+        <p>
+          Cette règle est prioritaire sur le mode de transport retenu, y compris
+          lorsqu’une ambulance est médicalement justifiée.
+        </p>
+        <p>
+          Ne pas établir de PMT ou de DAP ouvrant droit à une prise en charge par
+          l’Assurance Maladie pour ce déplacement.
+        </p>
+      </div>
+    );
+  }
+  if (casFinal === "transport charge établissement") {
+    return (
+      <div className="fr-mt-2w">
+        <Article80CorpsMedical article80={article80} />
+      </div>
+    );
+  }
+  return null;
+}
 
 function texteItem(item: CaseItem): string {
   return typeof item === "string" ? item : item.text;
@@ -767,11 +952,13 @@ function Bloc3({
   casFinal,
   transport,
   doc,
+  article80,
 }: {
   e: typeof engine;
   casFinal: string;
   transport: string;
   doc: string;
+  article80: Article80;
 }) {
   const casRetenu = CAS_RETENU[casFinal] ?? casFinal;
   // Ne conserve que les cases établies par la simulation ; un groupe entièrement
@@ -802,6 +989,8 @@ function Bloc3({
         <p>
           <strong>Document à remettre au patient :</strong> {doc}
         </p>
+
+        <NoteCorpsMedical casFinal={casFinal} article80={article80} />
 
         {groupes.length > 0 && (
           <>
@@ -851,14 +1040,23 @@ function Bloc3({
 
 export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
   const e = engine.setSituation(situation);
-  const casFinal = String(e.evaluate("cas_final").nodeValue ?? "");
+  const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
   const doc = String(
-    e.evaluate("document_a_remettre_au_patient").nodeValue ?? ""
+    e.evaluate("cible_document_a_remettre_au_patient").nodeValue ?? ""
   );
   const transport = String(
-    e.evaluate("transport_sanitaire_prescrit").nodeValue ?? ""
+    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? ""
   );
   const transportPrescrit = transport !== "" && transport !== "aucun";
+
+  const article80: Article80 = {
+    mode: String(e.evaluate("cible_article_80_mode").nodeValue ?? ""),
+    situationSpecifique:
+      e.evaluate("cible_article_80_situation_specifique").nodeValue === true,
+    permissionTherapeutique:
+      e.evaluate("cible_article_80_permission_sortie_therapeutique").nodeValue ===
+      true,
+  };
 
   return (
     <div>
@@ -874,8 +1072,15 @@ export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
         casFinal={casFinal}
         transport={transport}
         transportPrescrit={transportPrescrit}
+        article80={article80}
       />
-      <Bloc3 e={e} casFinal={casFinal} transport={transport} doc={doc} />
+      <Bloc3
+        e={e}
+        casFinal={casFinal}
+        transport={transport}
+        doc={doc}
+        article80={article80}
+      />
 
       <div className="fr-btns-group fr-btns-group--inline">
         <button
@@ -890,9 +1095,9 @@ export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
         titre="résultat administratif"
         situation={situation}
         sorties={[
-          "cas_final",
-          "transport_sanitaire_prescrit",
-          "document_a_remettre_au_patient",
+          "cible_cas_final",
+          "cible_transport_sanitaire_prescrit",
+          "cible_document_a_remettre_au_patient",
         ]}
       />
     </div>

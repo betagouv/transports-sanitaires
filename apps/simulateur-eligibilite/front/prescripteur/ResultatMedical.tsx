@@ -18,11 +18,11 @@ type Props = {
 // pose aucune question de Partie 1).
 export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props) {
   const e = engine.setSituation(situation);
-  const favorable = e.evaluate("resultat_medical").nodeValue === "favorable";
+  const favorable = e.evaluate("cible_resultat_medical").nodeValue === "favorable";
   const transport = String(
-    e.evaluate("transport_sanitaire_prescrit").nodeValue ?? ""
+    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? ""
   );
-  const partie2Requise = e.evaluate("partie_2_requise").nodeValue === "oui";
+  const partie2Requise = e.evaluate("cible_partie_2_requise").nodeValue === "oui";
 
   const criteresRetenus = favorable ? retenus(e, CRITERES) : [];
   const motifsRetenus = favorable ? retenus(e, MOTIFS) : [];
@@ -102,10 +102,10 @@ export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props
         titre="résultat médical"
         situation={situation}
         sorties={[
-          "resultat_medical",
-          "transport_sanitaire_prescrit",
-          "partie_2_requise",
-          "cas_final",
+          "cible_resultat_medical",
+          "cible_transport_sanitaire_prescrit",
+          "cible_partie_2_requise",
+          "cible_cas_final",
         ]}
       />
     </div>
