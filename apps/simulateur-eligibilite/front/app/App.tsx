@@ -28,13 +28,12 @@ import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee"
 import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { OptionsGénération } from "../cerfa/cerfa";
+import type { Outil } from "./outil";
 import {
   OUTILS_DEV,
   SITUATIONS_DEV,
   type VarianteDev,
 } from "./raccourcis-dev";
-
-export type Outil = "prescripteur" | "secretariat";
 
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).

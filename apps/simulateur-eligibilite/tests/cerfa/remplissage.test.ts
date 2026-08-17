@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
 import { BASE_NEUTRE, makeEngine } from "../simulateur/engine.ts";
+import { SITUATIONS_DEV } from "../../front/app/raccourcis-dev.ts";
 import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
   "../../front/cerfa/champs-cerfa.ts";
 import { remplirCerfa } from "../../front/cerfa/remplir-cerfa.ts";
@@ -194,6 +195,36 @@ describe("saisiesDepuisSituation", () => {
 
     const lu = await relire(await remplirCerfa(GABARIT, saisiesDepuisSituation(engine(), série)));
     expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
+  });
+
+  it("produit un CERFA fourni depuis la situation du raccourci dev", async () => {
+    // Le raccourci « Secrétariat — prescription (CERFA) » sert à voir le
+    // pré-remplissage : un document presque vide n'apprendrait rien. On verrouille
+    // donc ce que sa situation doit couvrir.
+    const saisies = saisiesDepuisSituation(
+      engine(),
+      SITUATIONS_DEV["secretariat-prescription"],
+    );
+    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+
+    expect(lu).toMatchObject({
+      // Deux motifs ouvrant droit cumulés.
+      [SITUATION.entréeSortieHospitalisation.nom]: "/NON", // état d'export
+      [SITUATION.accidentTravailMaladiePro.nom]: "/On",
+      // Les cinq justifications d'ambulance.
+      [MODE_TRANSPORT.positionAllongéeDemiAssise.nom]: "/On",
+      [MODE_TRANSPORT.brancardagePortage.nom]: "/On",
+      [MODE_TRANSPORT.surveillancePersonneQualifiée.nom]: "/On",
+      [MODE_TRANSPORT.oxygène.nom]: "/On",
+      [MODE_TRANSPORT.asepsieRigoureuse.nom]: "/On",
+      // Trajet, urgence, accident, volumétrie.
+      [TRAJET.allerRetour.nom]: "/On",
+      [TRAJET.départDomicile.nom]: "/On",
+      [TRAJET.nombreTransportsItératifs]: "3",
+      [PRESCRIPTION.urgenceSamu.nom]: "/On",
+      [SITUATION.accidentTiersOui.nom]: "/OUI",
+    });
+    expect(saisies).toHaveLength(12);
   });
 
   it("refuse de produire ce CERFA quand le cas final relève d'un autre document", () => {

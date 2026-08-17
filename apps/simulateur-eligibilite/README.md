@@ -198,8 +198,15 @@ parcours reste exploitable sans le PDF.
 En dev (`npm run dev:front`), la première page du parcours prescripteur affiche, dans
 l'encadré **« Raccourcis de développement »**, le bouton **« Secrétariat — prescription
 (CERFA) »** : le questionnaire est court-circuité et la Page Résultat 2 s'ouvre sur la
-variante `secretariat-prescription` de `raccourcis-dev.ts` (ALD + position allongée
-⇒ ambulance), seule dont le cas final propose le CERFA.
+variante `secretariat-prescription` de `raccourcis-dev.ts`, seule dont le cas final
+propose le CERFA.
+
+Cette situation est volontairement **chargée** — deux motifs ouvrant droit, les cinq
+justifications d'ambulance, aller-retour depuis le domicile, urgence SAMU, accident
+causé par un tiers, transport répété : **12 champs déduits**, pour voir d'un coup
+d'œil l'étendue du pré-remplissage et, par contraste, ce qui reste vierge. Elle évite
+en revanche les déclencheurs d'accord préalable et le transport en série, qui
+relèvent d'un autre formulaire.
 
 L'écran d'identification porte le même encadré, avec les quatre raccourcis. Chaque
 libellé nomme **d'abord l'écran d'atterrissage, puis ce qu'on y voit** — c'est l'écran
@@ -224,11 +231,9 @@ situation fabriquée.
 ### Commandes
 
 ```
-npx vitest run tests/cerfa    # 24 tests : gabarit, remplissage, mapping, UI, raccourci dev
-npm run apercu-cerfa          # écrit apercu-cerfa.pdf depuis une situation d'exemple
+npx vitest run tests/cerfa    # 25 tests : gabarit, remplissage, mapping, UI, raccourci dev
+npm run apercu-cerfa          # écrit apercu-cerfa.pdf sans passer par le navigateur
 ```
 
-La situation d'exemple d'`apercu-cerfa` est volontairement chargée — deux motifs
-ouvrant droit, les cinq justifications d'ambulance, aller-retour depuis le domicile,
-urgence SAMU, accident causé par un tiers, transport répété — pour voir d'un coup
-d'œil **12 champs déduits** et, par contraste, tout ce qui reste vierge.
+`apercu-cerfa` rejoue **la situation du raccourci dev** ci-dessus : le script et le
+bouton produisent le même document, et il n'y a qu'une situation à faire évoluer.
