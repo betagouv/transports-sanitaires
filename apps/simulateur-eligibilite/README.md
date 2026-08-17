@@ -169,7 +169,8 @@ d'être tronquée — un NIR tronqué sur un document opposable est pire qu'un �
 | ❷ Véhicule personnel *vs* transports en commun | — | le simulateur fusionne les deux, le CERFA les sépare |
 | Trajet : aller-retour, départ/arrivée « domicile » | `p2_trajet_*` | déduite (type de lieu seulement) |
 | Trajet : adresses et noms de structures | — | à saisir |
-| Urgence, accident causé par un tiers, nb de transports | `p2_transport_urgence`, `p2_accident_cause_par_tiers`, `p2_nombre_transports_prevus` | déduite |
+| Urgence, accident causé par un tiers | `p2_transport_urgence`, `p2_accident_cause_par_tiers` | déduite |
+| Nombre de transports itératifs | `p2_nombre_transports_prevus` | déduite **hors transport en série** — la notice réserve la rubrique à ce cas |
 | Identité du patient et de l'assuré (9 champs) | — | à saisir (cf. ci-dessus) |
 | Identité du prescripteur (6 champs) | — | à saisir (cf. ci-dessus) |
 | Éléments d'ordre médical, ticket modérateur, pension militaire | — | rédaction / décision du prescripteur |
@@ -223,6 +224,11 @@ situation fabriquée.
 ### Commandes
 
 ```
-npx vitest run tests/cerfa    # 23 tests : gabarit, remplissage, mapping, UI, raccourci dev
+npx vitest run tests/cerfa    # 24 tests : gabarit, remplissage, mapping, UI, raccourci dev
 npm run apercu-cerfa          # écrit apercu-cerfa.pdf depuis une situation d'exemple
 ```
+
+La situation d'exemple d'`apercu-cerfa` est volontairement chargée — deux motifs
+ouvrant droit, les cinq justifications d'ambulance, aller-retour depuis le domicile,
+urgence SAMU, accident causé par un tiers, transport répété — pour voir d'un coup
+d'œil **12 champs déduits** et, par contraste, tout ce qui reste vierge.

@@ -174,6 +174,28 @@ describe("saisiesDepuisSituation", () => {
     expect(lu).not.toHaveProperty(TRAJET.arrivéeStructureSoins);
   });
 
+  it("laisse « transports itératifs » vide pour un transport en série", async () => {
+    // La notice réserve cette rubrique aux transports répétés **ne correspondant
+    // pas** à la définition du transport en série (≥ 4 sur deux mois, chacun à
+    // plus de 50 km). Une série n'exige un accord préalable que si l'ALD n'est pas
+    // validée : sous ALD validée elle reste une prescription, et arrive donc ici.
+    const série = situation({
+      p1_motif_ald: "oui",
+      p1_ald_lien_avec_ald_reconnue: "oui",
+      p1_ald_incapacite_ou_deficience: "oui",
+      p1_critere_position_allongee_demi_assise: "oui",
+      p2_nombre_transports_prevus: "4",
+      p2_chaque_trajet_aller_superieur_50km: "oui",
+    });
+
+    // Le garde `CerfaNonApplicable` ne l'écarte pas : c'est bien une prescription.
+    const moteur = engine();
+    expect(moteur.setSituation(série).evaluate("p2_transport_en_serie").nodeValue).toBe(true);
+
+    const lu = await relire(await remplirCerfa(GABARIT, saisiesDepuisSituation(engine(), série)));
+    expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
+  });
+
   it("refuse de produire ce CERFA quand le cas final relève d'un autre document", () => {
     // Transport en série : le simulateur conclut à une demande d'accord préalable
     // (formulaire S3139), pas à cette prescription.

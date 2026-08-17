@@ -133,12 +133,16 @@ function saisiesTrajet(valeur: Lecteur): Saisie[] {
     saisies.push({ case: SITUATION.accidentTiersNon });
   }
 
-  // `p2_nombre_transports_prevus` compte les transports sur deux mois, tandis que
-  // le CERFA demande les « transports itératifs ». Les deux ne coïncident que hors
-  // transport en série — or le transport en série bascule sur le formulaire S3139,
-  // donc hors de ce CERFA (cf. le garde `CerfaNonApplicable`). Le report est ici sûr.
+  // La notice réserve « nombre de transports itératifs » aux transports répétés
+  // **ne correspondant pas** à la définition du transport en série (≥ 4 transports
+  // sur deux mois, chacun à plus de 50 km). Y reporter le compte d'une série
+  // remplirait une rubrique que la notice interdit dans ce cas.
+  //
+  // Le garde `CerfaNonApplicable` ne suffit pas à l'écarter : une série n'exige un
+  // accord préalable que si l'ALD n'est pas validée (`p2_transport_serie_declenche_dap`),
+  // si bien qu'une série sous ALD validée reste bien une prescription — et arrive ici.
   const nombre = valeur("p2_nombre_transports_prevus");
-  if (typeof nombre === "number" && nombre > 1) {
+  if (typeof nombre === "number" && nombre > 1 && valeur("p2_transport_en_serie") !== true) {
     saisies.push({ champ: TRAJET.nombreTransportsItératifs, texte: String(nombre) });
   }
 
