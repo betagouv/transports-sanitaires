@@ -4,6 +4,7 @@ import { Parcours } from "../simulateur/Parcours";
 import { ResultatMedical } from "./ResultatMedical";
 import { engine } from "../simulateur/engine";
 import { trackResultat } from "../analytics/analytics";
+import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
 
 type Props = {
   // Passe la main au secrétariat en emportant la situation de Partie 1.
@@ -33,15 +34,6 @@ export function Prescripteur({
     return (
       <>
         <h1 className="fr-h3">Évaluation médicale du transport</h1>
-        {onAllerAuCerfaDev && (
-          <button
-            type="button"
-            className="fr-btn fr-btn--tertiary fr-btn--sm fr-mb-3w"
-            onClick={onAllerAuCerfaDev}
-          >
-            Aller à la génération du CERFA (dev)
-          </button>
-        )}
         <Parcours
           outil="prescripteur"
           // Décision médicale + sorties Partie 1 destinées au document : cibler
@@ -64,6 +56,13 @@ export function Prescripteur({
             trackResultat(r, "prescripteur");
           }}
         />
+        {onAllerAuCerfaDev && (
+          <RaccourcisDev>
+            <BoutonDev onClick={onAllerAuCerfaDev}>
+              Aller à la génération du CERFA
+            </BoutonDev>
+          </RaccourcisDev>
+        )}
       </>
     );
   }

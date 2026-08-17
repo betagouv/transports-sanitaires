@@ -21,6 +21,7 @@ import {
   type Service,
 } from "../../shared/referentiel";
 import { estServiceLabo } from "../labo/labo";
+import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
 
 type Props = {
   referentiel?: Referentiel;
@@ -278,39 +279,24 @@ export function Identification({
               Mode test des règles
             </button>
           )}
-          {onAccesDirectDev && (
-            <>
-              <button
-                type="button"
-                className="fr-btn fr-btn--secondary"
-                onClick={() => onAccesDirectDev("favorable")}
-              >
-                Résultat favorable (dev)
-              </button>
-              <button
-                type="button"
-                className="fr-btn fr-btn--secondary"
-                onClick={() => onAccesDirectDev("defavorable")}
-              >
-                Résultat défavorable (dev)
-              </button>
-              <button
-                type="button"
-                className="fr-btn fr-btn--tertiary"
-                onClick={() => onAccesDirectDev("final-succes")}
-              >
-                Résultat final — succès (dev)
-              </button>
-              <button
-                type="button"
-                className="fr-btn fr-btn--tertiary"
-                onClick={() => onAccesDirectDev("final-refus")}
-              >
-                Résultat final — refus (dev)
-              </button>
-            </>
-          )}
         </div>
+
+        {onAccesDirectDev && (
+          <RaccourcisDev>
+            <BoutonDev onClick={() => onAccesDirectDev("favorable")}>
+              Résultat favorable
+            </BoutonDev>
+            <BoutonDev onClick={() => onAccesDirectDev("defavorable")}>
+              Résultat défavorable
+            </BoutonDev>
+            <BoutonDev onClick={() => onAccesDirectDev("final-succes")}>
+              Résultat final — succès
+            </BoutonDev>
+            <BoutonDev onClick={() => onAccesDirectDev("final-refus")}>
+              Résultat final — refus
+            </BoutonDev>
+          </RaccourcisDev>
+        )}
       </form>
     </main>
   );

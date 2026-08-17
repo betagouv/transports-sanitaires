@@ -194,11 +194,17 @@ parcours reste exploitable sans le PDF.
 
 ### Y accéder rapidement (dev)
 
-En dev (`npm run dev:front`), la première page du parcours prescripteur affiche
-**« Aller à la génération du CERFA (dev) »** : le questionnaire est court-circuité et
-la Page Résultat 2 s'ouvre sur la situation `final-succes` de `raccourcis-dev.ts`
-(ALD + position allongée ⇒ ambulance), seule variante dont le cas final propose le
-CERFA. L'écran d'identification offre par ailleurs les quatre raccourcis habituels.
+En dev (`npm run dev:front`), la première page du parcours prescripteur affiche, dans
+l'encadré **« Raccourcis de développement »**, le bouton **« Aller à la génération du
+CERFA »** : le questionnaire est court-circuité et la Page Résultat 2 s'ouvre sur la
+situation `final-succes` de `raccourcis-dev.ts` (ALD + position allongée ⇒ ambulance),
+seule variante dont le cas final propose le CERFA. L'écran d'identification porte le
+même encadré, avec les quatre raccourcis habituels.
+
+Cet encadré (`front/app/RaccourcisDev.tsx`) isole visuellement tout ce qui
+court-circuite le parcours, pour qu'aucun de ces boutons ne se confonde avec une
+action nominale — « Mode test des règles » (labo) reste, lui, une vraie fonctionnalité
+produit et donc hors de l'encadré.
 
 Le bouton est câblé **uniquement** sous `import.meta.env.DEV` : en production le
 parcours ne peut pas être sauté, une prescription ne devant jamais reposer sur une
