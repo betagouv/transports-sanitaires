@@ -11,6 +11,9 @@ type Props = {
   onNouvelleSimulation: () => void;
   // Raccourci dev : pré-remplit le parcours pour ouvrir directement le résultat.
   situationInitiale?: Situation<string> | null;
+  // Raccourci dev : saute tout le questionnaire pour ouvrir la Page Résultat 2
+  // sur un cas menant au CERFA. Absent hors dev (cf. `App`).
+  onAllerAuCerfaDev?: () => void;
 };
 
 // Outil 1 — parcours médical du prescripteur : Partie 1 → Résultat 1.
@@ -20,6 +23,7 @@ export function Prescripteur({
   onPasserAuSecretariat,
   onNouvelleSimulation,
   situationInitiale = null,
+  onAllerAuCerfaDev,
 }: Props) {
   const [situation, setSituation] = useState<Situation<string> | null>(
     situationInitiale
@@ -29,6 +33,15 @@ export function Prescripteur({
     return (
       <>
         <h1 className="fr-h3">Évaluation médicale du transport</h1>
+        {onAllerAuCerfaDev && (
+          <button
+            type="button"
+            className="fr-btn fr-btn--tertiary fr-btn--sm fr-mb-3w"
+            onClick={onAllerAuCerfaDev}
+          >
+            Aller à la génération du CERFA (dev)
+          </button>
+        )}
         <Parcours
           outil="prescripteur"
           // Décision médicale + sorties Partie 1 destinées au document : cibler

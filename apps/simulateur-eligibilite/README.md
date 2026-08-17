@@ -192,9 +192,21 @@ front/cerfa/
 Un échec de génération affiche une alerte sans masquer le résultat déjà affiché : le
 parcours reste exploitable sans le PDF.
 
+### Y accéder rapidement (dev)
+
+En dev (`npm run dev:front`), la première page du parcours prescripteur affiche
+**« Aller à la génération du CERFA (dev) »** : le questionnaire est court-circuité et
+la Page Résultat 2 s'ouvre sur la situation `final-succes` de `raccourcis-dev.ts`
+(ALD + position allongée ⇒ ambulance), seule variante dont le cas final propose le
+CERFA. L'écran d'identification offre par ailleurs les quatre raccourcis habituels.
+
+Le bouton est câblé **uniquement** sous `import.meta.env.DEV` : en production le
+parcours ne peut pas être sauté, une prescription ne devant jamais reposer sur une
+situation fabriquée.
+
 ### Commandes
 
 ```
-npx vitest run tests/cerfa    # 18 tests : gabarit, remplissage, mapping, UI de fin de parcours
+npx vitest run tests/cerfa    # 23 tests : gabarit, remplissage, mapping, UI, raccourci dev
 npm run apercu-cerfa          # écrit apercu-cerfa.pdf depuis une situation d'exemple
 ```

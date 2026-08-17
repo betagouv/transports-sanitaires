@@ -116,6 +116,11 @@ export function App({
           setOutil("secretariat");
         }}
         onNouvelleSimulation={recommencer}
+        // Raccourci dev depuis le début du parcours : ouvre la Page Résultat 2 sur
+        // le cas « prescription médicale de transport », seul à proposer le CERFA.
+        onAllerAuCerfaDev={
+          import.meta.env.DEV ? () => accesDirectDev("final-succes") : undefined
+        }
       />
     ) : (
       <Secretariat
