@@ -105,5 +105,95 @@ front/                   front (bundlé par Vite)
   simulateur/            Simulateur.tsx  FormField.tsx  Resultats.tsx  engine.ts
   labo/                  Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
   analytics/             analytics.ts
+experiments/             expérimentations, hors chemin de production
+  cerfa-pmt/             pré-remplissage du CERFA de prescription (cf. ci-dessous)
 ```
+
+## Pré-remplissage du CERFA (expérimentation)
+
+> **Statut : expérimentation.** `experiments/cerfa-pmt/` n'est branché sur aucun écran.
+> Le code est validé par `tests/cerfa-pmt/` et par `demo.ts` ; l'intégration produit
+> reste à cadrer (voir *Questions ouvertes*).
+
+Objet : produire une **prescription médicale de transport** (CERFA n° 11574\*07, réf.
+S3138g) pré-remplie à partir des réponses données au simulateur.
+
+### Le gabarit
+
+Les deux candidats évalués (`pmt.pdf`, `pmt_interactif.pdf`) sont **le même fichier**
+(MD5 identique). Il n'y avait donc pas d'arbitrage à faire : le CERFA officiel est un
+**AcroForm** de 4 pages (notice p1–p2, Volet 1 p3, Volet 2 p4) portant **53 champs
+nommés**, tous inscriptibles. Il est versionné sous `gabarit/cerfa-11574-07.pdf` —
+document public, aucune donnée personnelle.
+
+L'écriture se fait avec **`pdf-lib`**, qui tourne à l'identique dans Node et dans le
+navigateur.
+
+| Propriété | Conséquence |
+| --- | --- |
+| 46 champs sur 53 portent un widget sur **chaque volet** | Écrire une fois remplit les deux volets ; ils ne peuvent pas diverger. |
+| `comm évent` (éléments d'ordre médical) n'existe **que** sur le Volet 1 | La donnée médicale ne part pas à l'organisme de remboursement : le formulaire porte déjà la séparation. |
+| Le bloc transporteur n'existe que sur le Volet 2 | Rempli à la main par le transporteur — le simulateur n'y écrit rien. |
+| Les champs restent éditables après remplissage | Le prescripteur corrige ce qu'il veut (option `verrouiller` disponible, non retenue par défaut). |
+
+### Trois pièges du gabarit
+
+Relevés par introspection, chacun produisant un document silencieusement faux :
+
+1. **`ALD exo`, `oui1`, `oui2` sont des radios déguisés en case à cocher.** Un même
+   champ porte 4 widgets (2 par volet), d'états d'export `/OUI` et `/NON`. Le
+   `check()` de `pdf-lib` retient le premier état venu et coche donc la mauvaise
+   moitié une fois sur deux. `remplir-cerfa.ts` impose l'état explicitement.
+2. **L'état d'export n'est pas la sémantique.** Cocher « entrée ou sortie
+   d'hospitalisation » s'écrit `/NON`. Ne jamais inférer le sens du nom ou de l'état.
+3. **Certains champs déclarés multilignes n'affichent qu'une ligne** (`adresse`) :
+   un `\n` y rogne le reste à l'impression. Ces champs sont aplatis.
+
+Par ailleurs, une valeur dépassant le `maxLength` d'un champ lève une erreur au lieu
+d'être tronquée — un NIR tronqué sur un document opposable est pire qu'un échec.
+
+### Ce que le simulateur sait déduire
+
+| Rubrique CERFA | Source | Couverture |
+| --- | --- | --- |
+| ❶ Situation (hospitalisation, AT/MP) | `p1_motif_*` | déduite |
+| ❶ ALD **exonérante** vs non exonérante | — | **non modélisé**, à saisir |
+| ❷ Mode de transport + justifications | `cible_transport_sanitaire_prescrit`, `p1_critere_*` | déduite |
+| ❷ Véhicule personnel *vs* transports en commun | — | le simulateur fusionne les deux, le CERFA les sépare |
+| Trajet : aller-retour, départ/arrivée « domicile » | `p2_trajet_*` | déduite (type de lieu seulement) |
+| Trajet : adresses et noms de structures | — | **à saisir** |
+| Urgence, accident causé par un tiers, nb de transports | `p2_transport_urgence`, `p2_accident_cause_par_tiers`, `p2_nombre_transports_prevus` | déduite |
+| Identité du patient / de l'assuré (9 champs) | — | **à saisir** — voir ci-dessous |
+| Identité du prescripteur (6 champs) | — | **à saisir** — le référentiel ne porte que des libellés |
+| Éléments d'ordre médical, ticket modérateur, pension militaire | — | rédaction / décision du prescripteur |
+
+`saisiesDepuisSituation` ne rend **que** ce que les règles justifient : aucune valeur
+inventée, aucun défaut arbitraire. Elle refuse par ailleurs de produire ce CERFA quand
+`cible_cas_final` conclut à autre chose — un accord préalable relève du formulaire
+S3139, une prise en charge par l'établissement ne donne lieu à aucun CERFA.
+
+### Questions ouvertes
+
+- **Où faire tourner le remplissage.** Le CERFA exige nom, NIR, date de naissance et
+  adresse du patient — des données de santé nominatives, qu'aucune partie de l'app ne
+  manipule aujourd'hui (le simulateur est anonyme, l'identification prescripteur est
+  pseudonymisée par HMAC côté serveur). `pdf-lib` fonctionnant dans le navigateur,
+  générer le PDF **entièrement côté front** garde ces données sur le poste : rien à
+  transmettre, à journaliser ni à héberger. C'est la seule option qui n'introduit pas
+  de traitement de données de santé dans le backend.
+- **Étendre ou non le référentiel d'identification.** Pré-remplir le bloc prescripteur
+  suppose d'y ajouter RPPS, FINESS/SIRET et adresse de structure, aujourd'hui absents
+  (`shared/referentiel.ts` ne porte que `{ id, libelle }`).
+- **Où placer l'étape** dans le parcours prescripteur → secrétariat.
+
+### Commandes
+
+```
+npx vitest run tests/cerfa-pmt          # 10 tests : gabarit, remplissage, mapping
+node --experimental-strip-types experiments/cerfa-pmt/demo.ts [sortie.pdf]
+```
+
+`demo.ts` produit un CERFA rempli depuis une situation d'exemple (ambulance,
+aller-retour depuis le domicile) : le médical est renseigné, les blocs d'identité
+restent visiblement vierges.
 
