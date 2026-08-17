@@ -5,17 +5,17 @@ import { describe, it, expect } from "vitest";
 import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
 import { BASE_NEUTRE, makeEngine } from "../simulateur/engine.ts";
 import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
-  "../../experiments/cerfa-pmt/champs-cerfa.ts";
-import { remplirCerfa } from "../../experiments/cerfa-pmt/remplir-cerfa.ts";
+  "../../front/cerfa/champs-cerfa.ts";
+import { remplirCerfa } from "../../front/cerfa/remplir-cerfa.ts";
 import {
   CerfaNonApplicable,
   saisiesDepuisSituation,
-} from "../../experiments/cerfa-pmt/depuis-simulateur.ts";
+} from "../../front/cerfa/depuis-simulateur.ts";
 
 const GABARIT = readFileSync(
   join(
     dirname(fileURLToPath(import.meta.url)),
-    "../../experiments/cerfa-pmt/gabarit/cerfa-11574-07.pdf",
+    "../../front/cerfa/gabarit/cerfa-11574-07.pdf",
   ),
 );
 

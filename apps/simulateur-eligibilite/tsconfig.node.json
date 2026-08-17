@@ -14,5 +14,7 @@
     "strict": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "experiments/**/demo.ts"]
+  // `scripts/` : outils de développement exécutés par Node (`node --experimental-
+  // strip-types`), hors du bundle front.
+  "include": ["vite.config.ts", "scripts"]
 }

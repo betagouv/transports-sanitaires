@@ -19,10 +19,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  // `experiments/cerfa-pmt` est typé ici — avec les seules libs du navigateur —
-  // pour garantir qu'il reste exécutable côté front (cf. README, § « Où faire
-  // tourner le remplissage »). Les scripts Node de ces dossiers (`demo.ts`) sont
-  // exclus et relèvent de `tsconfig.node.json`.
-  "include": ["front", "shared", "experiments"],
-  "exclude": ["experiments/**/demo.ts"]
+  "include": ["front", "shared"]
 }

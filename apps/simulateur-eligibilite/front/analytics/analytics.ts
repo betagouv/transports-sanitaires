@@ -124,6 +124,10 @@ export const trackResultat = (statut: string, outil?: string): void =>
   track(prefixe(outil, `resultat:${statut}`));
 export const trackSimulationAbandon = (lastStep: number, outil?: string): void =>
   track(prefixe(outil, "simulation_abandon"), lastStep);
+// Téléchargement du CERFA pré-rempli : mesure l'usage réel du document produit en
+// fin de parcours. Émis par le secrétariat uniquement (seul outil qui l'expose).
+export const trackCerfaTelecharge = (): void =>
+  track(prefixe("secretariat", "cerfa_telecharge"));
 
 // Émet un événement quand le traceur est activé, en portant l'identité
 // pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).

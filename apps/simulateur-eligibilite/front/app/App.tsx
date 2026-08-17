@@ -27,6 +27,7 @@ import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
+import type { OptionsGénération } from "../cerfa/cerfa";
 import {
   OUTIL_DEV,
   SITUATIONS_DEMO_DEV,
@@ -39,6 +40,8 @@ type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
   pseudonymiser?: (saisie: IdentiteSaisie) => Promise<IdentitePseudonymisee | null>;
+  /** Gabarit CERFA (défaut = asset servi par l'application, chargé au clic). */
+  chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
 
 function outilInitial(): Outil {
@@ -49,6 +52,7 @@ function outilInitial(): Outil {
 export function App({
   referentiel = referentielHttp,
   pseudonymiser = pseudonymiserViaApi,
+  chargerGabarit,
 }: Props = {}) {
   const [identifie, setIdentifie] = useState(false);
   // Écran labo (mode test des règles) affiché à la place de l'identification.
@@ -118,6 +122,7 @@ export function App({
         key={cle}
         situationFinale={situationDev}
         onNouvelleSimulation={recommencer}
+        chargerGabarit={chargerGabarit}
       />
     );
 

@@ -8,10 +8,14 @@ import {
   PourquoiCeTransport,
   SousTitre,
 } from "../simulateur/information-patient";
+import { BoutonCerfa } from "../cerfa/BoutonCerfa";
+import type { OptionsGénération } from "../cerfa/cerfa";
 
 type Props = {
   situation: Situation<string>;
   onNouvelleSimulation: () => void;
+  /** Injectable pour les tests (défaut = asset servi par l'application). */
+  chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
 
 // Teinte DSFR de l'alerte selon le cas final déterminé par le moteur.
@@ -1038,7 +1042,11 @@ function Bloc3({
 // Page Résultat 2 — document à imprimer et à remettre au patient.
 // ————————————————————————————————————————————————————————————————
 
-export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
+export function ResultatFinal({
+  situation,
+  onNouvelleSimulation,
+  chargerGabarit,
+}: Props) {
   const e = engine.setSituation(situation);
   const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
   const doc = String(
@@ -1081,6 +1089,17 @@ export function ResultatFinal({ situation, onNouvelleSimulation }: Props) {
         doc={doc}
         article80={article80}
       />
+
+      {/* Le CERFA n'est proposé que pour le cas qui lui correspond : un accord
+          préalable relève du formulaire S3139, une prise en charge par
+          l'établissement ne donne lieu à aucun CERFA. */}
+      {casFinal === "prescription médicale de transport" && (
+        <BoutonCerfa
+          moteur={engine}
+          situation={situation}
+          chargerGabarit={chargerGabarit}
+        />
+      )}
 
       <div className="fr-btns-group fr-btns-group--inline">
         <button

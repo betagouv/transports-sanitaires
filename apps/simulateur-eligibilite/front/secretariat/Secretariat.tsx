@@ -5,12 +5,15 @@ import { ResultatFinal } from "./ResultatFinal";
 import { reprendrePassation } from "../simulateur/passation";
 import { engine } from "../simulateur/engine";
 import { trackResultat } from "../analytics/analytics";
+import type { OptionsGénération } from "../cerfa/cerfa";
 
 type Props = {
   onNouvelleSimulation: () => void;
   // Raccourci dev : situation complète (P1 + P2) ouvrant directement la Page
   // Résultat 2, sans passation ni parcours administratif.
   situationFinale?: Situation<string> | null;
+  /** Injectable pour les tests (défaut = asset servi par l'application). */
+  chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
 
 // Outil 2 — parcours administratif du secrétariat : reprend la Partie 1 puis
@@ -20,6 +23,7 @@ type Props = {
 export function Secretariat({
   onNouvelleSimulation,
   situationFinale = null,
+  chargerGabarit,
 }: Props) {
   const situationP1 = reprendrePassation();
   const [situation, setSituation] = useState<Situation<string> | null>(
@@ -33,6 +37,7 @@ export function Secretariat({
       <ResultatFinal
         situation={situation}
         onNouvelleSimulation={onNouvelleSimulation}
+        chargerGabarit={chargerGabarit}
       />
     );
   }

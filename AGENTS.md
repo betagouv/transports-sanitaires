@@ -28,7 +28,9 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   (`server/`, front + `/api/*`), deployed to **Scalingo** — not static. **Feature-first
   layout** across three runtime roots: `front/` (browser, bundled by Vite), `server/`
   (backend, holds secrets), `shared/` (front⇄back contract). See
-  `docs/architecture/identification.md`.
+  `docs/architecture/identification.md`. End of journey: `front/cerfa/` fills the
+  official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form carries
+  nominative health data, so no filled document must ever reach the backend.
 - **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
   with `npm run zip`.
 

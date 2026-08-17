@@ -1,6 +1,6 @@
-// Démonstration de bout en bout : une situation du simulateur → un CERFA rempli.
+// Aperçu de bout en bout : une situation du simulateur → un CERFA rempli.
 //
-//   node --experimental-strip-types experiments/cerfa-pmt/demo.ts [sortie.pdf]
+//   npm run apercu-cerfa -- [sortie.pdf]
 //
 // Le PDF produit montre ce que le simulateur sait déduire (cases ❶ et ❷, trajet,
 // urgence) et, par contraste, tout ce qui reste vierge — patient, adresses,
@@ -12,12 +12,12 @@ import { fileURLToPath } from "node:url";
 import Engine from "publicodes";
 import type { RawPublicodes, Situation } from "publicodes";
 import yaml from "js-yaml";
-import { saisiesDepuisSituation } from "./depuis-simulateur.ts";
-import { remplirCerfa } from "./remplir-cerfa.ts";
+import { saisiesDepuisSituation } from "../front/cerfa/depuis-simulateur.ts";
+import { remplirCerfa } from "../front/cerfa/remplir-cerfa.ts";
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const règles = yaml.load(
-  readFileSync(join(ici, "../../regles/regles.publicodes"), "utf-8"),
+  readFileSync(join(ici, "../regles/regles.publicodes"), "utf-8"),
 ) as RawPublicodes<string>;
 
 // Situation d'exemple : sortie d'hospitalisation, patient nécessitant brancardage
@@ -76,7 +76,7 @@ for (const saisie of saisies) {
   console.log("  " + ("case" in saisie ? `[x] ${saisie.case.nom}` : `    ${saisie.champ} = ${saisie.texte}`));
 }
 
-const sortie = process.argv[2] ?? join(ici, "demo-rempli.pdf");
-const gabarit = readFileSync(join(ici, "gabarit/cerfa-11574-07.pdf"));
+const sortie = process.argv[2] ?? join(ici, "../apercu-cerfa.pdf");
+const gabarit = readFileSync(join(ici, "../front/cerfa/gabarit/cerfa-11574-07.pdf"));
 writeFileSync(sortie, await remplirCerfa(gabarit, saisies));
 console.log(`\nPDF écrit : ${sortie}`);
