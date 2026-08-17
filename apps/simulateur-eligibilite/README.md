@@ -197,8 +197,8 @@ parcours reste exploitable sans le PDF.
 En dev (`npm run dev:front`), la première page du parcours prescripteur affiche, dans
 l'encadré **« Raccourcis de développement »**, le bouton **« Secrétariat — prescription
 (CERFA) »** : le questionnaire est court-circuité et la Page Résultat 2 s'ouvre sur la
-situation `final-succes` de `raccourcis-dev.ts` (ALD + position allongée ⇒ ambulance),
-seule variante dont le cas final propose le CERFA.
+variante `secretariat-prescription` de `raccourcis-dev.ts` (ALD + position allongée
+⇒ ambulance), seule dont le cas final propose le CERFA.
 
 L'écran d'identification porte le même encadré, avec les quatre raccourcis. Chaque
 libellé nomme **d'abord l'écran d'atterrissage, puis ce qu'on y voit** — c'est l'écran
@@ -206,10 +206,10 @@ qui les distingue vraiment, l'issue seule donnant des libellés jumeaux :
 
 | Bouton | Variante | Ce qu'on obtient |
 | --- | --- | --- |
-| Prescripteur — ambulance justifiée | `favorable` | Page Résultat 1, résultat médical favorable |
-| Prescripteur — transport non justifié | `defavorable` | Page Résultat 1, aucun transport justifié |
-| Secrétariat — prescription (CERFA) | `final-succes` | Page Résultat 2, prescription médicale de transport |
-| Secrétariat — non éligible | `final-refus` | Page Résultat 2, non éligible assurance maladie |
+| Prescripteur — ambulance justifiée | `prescripteur-ambulance` | Page Résultat 1, résultat médical favorable |
+| Prescripteur — transport non justifié | `prescripteur-non-justifie` | Page Résultat 1, aucun transport justifié |
+| Secrétariat — prescription (CERFA) | `secretariat-prescription` | Page Résultat 2, prescription médicale de transport |
+| Secrétariat — non éligible | `secretariat-non-eligible` | Page Résultat 2, non éligible assurance maladie |
 
 Cet encadré (`front/app/RaccourcisDev.tsx`) isole visuellement tout ce qui
 court-circuite le parcours, pour qu'aucun de ces boutons ne se confonde avec une

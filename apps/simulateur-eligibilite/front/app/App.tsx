@@ -29,8 +29,8 @@ import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { OptionsGénération } from "../cerfa/cerfa";
 import {
-  OUTIL_DEV,
-  SITUATIONS_DEMO_DEV,
+  OUTILS_DEV,
+  SITUATIONS_DEV,
   type VarianteDev,
 } from "./raccourcis-dev";
 
@@ -76,8 +76,8 @@ export function App({
   // situation type — résultat médical (prescripteur) ou résultat final
   // (secrétariat) selon la variante.
   function accesDirectDev(variante: VarianteDev) {
-    setSituationDev(SITUATIONS_DEMO_DEV[variante]);
-    setOutil(OUTIL_DEV[variante]);
+    setSituationDev(SITUATIONS_DEV[variante]);
+    setOutil(OUTILS_DEV[variante]);
     setIdentifie(true);
   }
 
@@ -119,7 +119,7 @@ export function App({
         // Raccourci dev depuis le début du parcours : ouvre la Page Résultat 2 sur
         // le cas « prescription médicale de transport », seul à proposer le CERFA.
         onAllerAuCerfaDev={
-          import.meta.env.DEV ? () => accesDirectDev("final-succes") : undefined
+          import.meta.env.DEV ? () => accesDirectDev("secretariat-prescription") : undefined
         }
       />
     ) : (

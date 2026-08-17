@@ -2,19 +2,26 @@
 // de résultat sans passer par le parcours. Utilisées uniquement en dev (voir
 // `accesDirectDev` dans App.tsx, gardé derrière `import.meta.env.DEV`).
 //
-// Les deux premières variantes ouvrent la Page Résultat 1 (prescripteur,
-// situation de Partie 1) ; les deux dernières ouvrent directement la Page
-// Résultat 2 finale (secrétariat, situation complète P1 + P2).
+// Les variantes `prescripteur-*` ouvrent la Page Résultat 1 (situation de Partie 1) ;
+// les variantes `secretariat-*` ouvrent directement la Page Résultat 2 finale
+// (situation complète P1 + P2).
 
 import type { Situation } from "publicodes";
 import type { Outil } from "./App";
 
-export type VarianteDev = "favorable" | "defavorable" | "final-succes" | "final-refus";
+// Chaque variante est nommée « écran d'atterrissage » + « ce qu'on y voit », comme
+// les boutons qu'elle sert : c'est l'écran qui distingue vraiment ces raccourcis,
+// l'issue seule donnant des noms jumeaux (favorable / succès, défavorable / refus).
+export type VarianteDev =
+  | "prescripteur-ambulance"
+  | "prescripteur-non-justifie"
+  | "secretariat-prescription"
+  | "secretariat-non-eligible";
 
 // Cas favorable riche : motif hospitalisation + critère « position allongée »
 // (⇒ ambulance). Ouvre directement le résultat prescripteur avec critères et
 // motifs retenus renseignés.
-const SITUATION_DEMO_DEV_FAVORABLE: Situation<string> = {
+const SITUATION_PRESCRIPTEUR_AMBULANCE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   p1_situation_permission_sans_motif_medical: "'Non'",
@@ -38,7 +45,7 @@ const SITUATION_DEMO_DEV_FAVORABLE: Situation<string> = {
 
 // Cas défavorable : aucun motif ouvrant droit et aucune situation encadrée
 // (⇒ transport non justifié médicalement).
-const SITUATION_DEMO_DEV_DEFAVORABLE: Situation<string> = {
+const SITUATION_PRESCRIPTEUR_NON_JUSTIFIE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   p1_situation_permission_sans_motif_medical: "'Non'",
@@ -63,7 +70,7 @@ const SITUATION_DEMO_DEV_DEFAVORABLE: Situation<string> = {
 // Page Résultat 2 finale, cas succès : P1 favorable (motif ALD validé + critère
 // « position allongée » ⇒ ambulance) puis P2 complète menant à cas_final =
 // « prescription médicale de transport ».
-const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
+const SITUATION_SECRETARIAT_PRESCRIPTION: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   p1_situation_permission_sans_motif_medical: "'Non'",
@@ -109,7 +116,7 @@ const SITUATION_DEMO_DEV_FINAL_SUCCES: Situation<string> = {
 // Page Résultat 2 finale, cas refus : même P1 favorable (⇒ ambulance) puis P2
 // (patient détenu hospitalisé, hors exceptions) menant à cas_final =
 // « non éligible assurance maladie dans ce parcours ».
-const SITUATION_DEMO_DEV_FINAL_REFUS: Situation<string> = {
+const SITUATION_SECRETARIAT_NON_ELIGIBLE: Situation<string> = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   p1_situation_permission_sans_motif_medical: "'Non'",
@@ -144,18 +151,20 @@ const SITUATION_DEMO_DEV_FINAL_REFUS: Situation<string> = {
   p2_detenu_retour_etablissement_penitentiaire: "non",
 };
 
-export const SITUATIONS_DEMO_DEV: Record<VarianteDev, Situation<string>> = {
-  favorable: SITUATION_DEMO_DEV_FAVORABLE,
-  defavorable: SITUATION_DEMO_DEV_DEFAVORABLE,
-  "final-succes": SITUATION_DEMO_DEV_FINAL_SUCCES,
-  "final-refus": SITUATION_DEMO_DEV_FINAL_REFUS,
+export const SITUATIONS_DEV: Record<VarianteDev, Situation<string>> = {
+  "prescripteur-ambulance": SITUATION_PRESCRIPTEUR_AMBULANCE,
+  "prescripteur-non-justifie": SITUATION_PRESCRIPTEUR_NON_JUSTIFIE,
+  "secretariat-prescription": SITUATION_SECRETARIAT_PRESCRIPTION,
+  "secretariat-non-eligible": SITUATION_SECRETARIAT_NON_ELIGIBLE,
 };
 
-// Outil ciblé par chaque raccourci dev : résultat médical (prescripteur) pour les
-// variantes P1, résultat final (secrétariat) pour les variantes P2.
-export const OUTIL_DEV: Record<VarianteDev, Outil> = {
-  favorable: "prescripteur",
-  defavorable: "prescripteur",
-  "final-succes": "secretariat",
-  "final-refus": "secretariat",
+// Outil ciblé par chaque raccourci : résultat médical (prescripteur) pour les
+// variantes P1, résultat final (secrétariat) pour les variantes P2. Redondant avec
+// le préfixe du nom de variante, mais explicite et vérifié par le typage — plutôt
+// que déduit d'une convention de nommage qu'un renommage casserait en silence.
+export const OUTILS_DEV: Record<VarianteDev, Outil> = {
+  "prescripteur-ambulance": "prescripteur",
+  "prescripteur-non-justifie": "prescripteur",
+  "secretariat-prescription": "secretariat",
+  "secretariat-non-eligible": "secretariat",
 };

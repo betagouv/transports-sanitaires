@@ -57,7 +57,7 @@ export function Prescripteur({
           }}
         />
         {/* Même destination — et donc même libellé — que le raccourci homonyme
-            de l'écran-porte : la variante `final-succes`. */}
+            de l'écran-porte : la variante `secretariat-prescription`. */}
         {onAllerAuCerfaDev && (
           <RaccourcisDev>
             <BoutonDev onClick={onAllerAuCerfaDev}>

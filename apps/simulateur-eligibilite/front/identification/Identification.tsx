@@ -22,6 +22,7 @@ import {
 } from "../../shared/referentiel";
 import { estServiceLabo } from "../labo/labo";
 import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
+import type { VarianteDev } from "../app/raccourcis-dev";
 
 type Props = {
   referentiel?: Referentiel;
@@ -29,12 +30,10 @@ type Props = {
   // Ouvre le mode test des règles (labo). Proposé uniquement quand le service
   // « Transport Sanitaire » est sélectionné (garde d'accès, cf. `estServiceLabo`).
   onAccesLabo?: () => void;
-  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement une page
-  // de résultat sans passer par le formulaire — résultat médical (favorable /
-  // défavorable) ou résultat final (succès / refus).
-  onAccesDirectDev?: (
-    variante: "favorable" | "defavorable" | "final-succes" | "final-refus"
-  ) => void;
+  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement une page de
+  // résultat sans passer par le formulaire. Le type vient de `raccourcis-dev.ts` :
+  // le réécrire ici laisserait les deux listes diverger en silence.
+  onAccesDirectDev?: (variante: VarianteDev) => void;
 };
 
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
@@ -283,19 +282,19 @@ export function Identification({
 
         {/* Le premier mot dit l'écran d'atterrissage, le second ce qu'on y voit :
             c'est l'écran qui distingue vraiment ces raccourcis, l'issue seule
-            donnant des libellés jumeaux (« favorable » / « succès »). */}
+            donnant des libellés jumeaux. Les variantes portent les mêmes noms. */}
         {onAccesDirectDev && (
           <RaccourcisDev>
-            <BoutonDev onClick={() => onAccesDirectDev("favorable")}>
+            <BoutonDev onClick={() => onAccesDirectDev("prescripteur-ambulance")}>
               Prescripteur — ambulance justifiée
             </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("defavorable")}>
+            <BoutonDev onClick={() => onAccesDirectDev("prescripteur-non-justifie")}>
               Prescripteur — transport non justifié
             </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("final-succes")}>
+            <BoutonDev onClick={() => onAccesDirectDev("secretariat-prescription")}>
               Secrétariat — prescription (CERFA)
             </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("final-refus")}>
+            <BoutonDev onClick={() => onAccesDirectDev("secretariat-non-eligible")}>
               Secrétariat — non éligible
             </BoutonDev>
           </RaccourcisDev>
