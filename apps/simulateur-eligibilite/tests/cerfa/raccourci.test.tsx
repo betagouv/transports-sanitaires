@@ -38,7 +38,7 @@ async function sIdentifier(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
 }
 
-const RACCOURCI = { name: /Aller à la génération du CERFA/i } as const;
+const RACCOURCI = { name: /Secrétariat — prescription \(CERFA\)/ } as const;
 const TELECHARGER = { name: /Télécharger la prescription pré-remplie/i } as const;
 
 beforeEach(() => sessionStorage.clear());
@@ -60,9 +60,11 @@ describe("raccourci « aller à la génération du CERFA »", () => {
 
     // Page Résultat 2, sur un cas « prescription médicale de transport ».
     expect(
-      await screen.findByRole("heading", { name: /Document à imprimer/i }),
+      await screen.findByRole("heading", { name: /Document à imprimer/i }, { timeout: 10_000 }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", TELECHARGER)).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", TELECHARGER, { timeout: 10_000 }),
+    ).toBeInTheDocument();
     // Plus aucune question du parcours n'est affichée.
     expect(screen.queryByRole("group", { name: /équipe SMUR/i })).toBeNull();
   });
@@ -71,9 +73,17 @@ describe("raccourci « aller à la génération du CERFA »", () => {
     const { user } = setup();
     await sIdentifier(user);
     await user.click(screen.getByRole("button", RACCOURCI));
-    await user.click(await screen.findByRole("button", TELECHARGER));
 
-    await screen.findByRole("button", TELECHARGER);
+    // Timeouts élargis sur toute la fin de ce test : la Page Résultat 2 est un
+    // gros DOM (la recherche par nom accessible y coûte cher) et la génération
+    // relit puis réécrit un gabarit de 767 ko. La seconde par défaut ne suffit
+    // pas quand la suite tourne en parallèle.
+    const attendreBouton = () =>
+      screen.findByRole("button", TELECHARGER, { timeout: 10_000 });
+
+    await user.click(await attendreBouton());
+    // Le bouton reprend son libellé une fois le PDF produit.
+    await attendreBouton();
     expect(screen.queryByRole("alert")).toBeNull();
   });
 

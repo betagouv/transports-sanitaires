@@ -12,11 +12,12 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 
 const ENCADRE = { name: "Raccourcis de développement" } as const;
 
+// Chaque libellé nomme d'abord l'écran d'atterrissage, puis ce qu'on y voit.
 const DEV_IDENTIFICATION = [
-  "Résultat favorable",
-  "Résultat défavorable",
-  "Résultat final — succès",
-  "Résultat final — refus",
+  "Prescripteur — ambulance justifiée",
+  "Prescripteur — transport non justifié",
+  "Secrétariat — prescription (CERFA)",
+  "Secrétariat — non éligible",
 ];
 
 describe("encadré des raccourcis dev — écran d'identification", () => {
@@ -93,7 +94,7 @@ describe("encadré des raccourcis dev — début du parcours prescripteur", () =
 
     const encadre = screen.getByRole("region", ENCADRE);
     expect(
-      within(encadre).getByRole("button", { name: /Aller à la génération du CERFA/i }),
+      within(encadre).getByRole("button", { name: /Secrétariat — prescription \(CERFA\)/ }),
     ).toBeInTheDocument();
     // Le bouton de navigation du parcours reste au-dehors.
     expect(encadre).not.toContainElement(

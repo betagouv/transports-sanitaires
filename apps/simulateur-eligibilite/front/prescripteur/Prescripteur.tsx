@@ -56,10 +56,12 @@ export function Prescripteur({
             trackResultat(r, "prescripteur");
           }}
         />
+        {/* Même destination — et donc même libellé — que le raccourci homonyme
+            de l'écran-porte : la variante `final-succes`. */}
         {onAllerAuCerfaDev && (
           <RaccourcisDev>
             <BoutonDev onClick={onAllerAuCerfaDev}>
-              Aller à la génération du CERFA
+              Secrétariat — prescription (CERFA)
             </BoutonDev>
           </RaccourcisDev>
         )}

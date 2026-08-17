@@ -153,7 +153,11 @@ describe("fin de parcours — téléchargement du CERFA", () => {
     expect(screen.getByRole("button", { name: /Génération en cours/i })).toBeDisabled();
     // …puis revient à son état initial, sans alerte : le PDF a bien été produit
     // et remis au navigateur (l'échec, lui, est couvert par le test suivant).
-    await waitFor(() => expect(screen.getByRole("button", BOUTON)).not.toBeDisabled());
+    // Timeout élargi : charger puis réécrire un gabarit de 767 ko dépasse la
+    // seconde par défaut quand la suite tourne en parallèle.
+    await waitFor(() => expect(screen.getByRole("button", BOUTON)).not.toBeDisabled(), {
+      timeout: 10_000,
+    });
     expect(screen.queryByRole("alert")).toBeNull();
   });
 

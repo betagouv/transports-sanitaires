@@ -281,19 +281,22 @@ export function Identification({
           )}
         </div>
 
+        {/* Le premier mot dit l'écran d'atterrissage, le second ce qu'on y voit :
+            c'est l'écran qui distingue vraiment ces raccourcis, l'issue seule
+            donnant des libellés jumeaux (« favorable » / « succès »). */}
         {onAccesDirectDev && (
           <RaccourcisDev>
             <BoutonDev onClick={() => onAccesDirectDev("favorable")}>
-              Résultat favorable
+              Prescripteur — ambulance justifiée
             </BoutonDev>
             <BoutonDev onClick={() => onAccesDirectDev("defavorable")}>
-              Résultat défavorable
+              Prescripteur — transport non justifié
             </BoutonDev>
             <BoutonDev onClick={() => onAccesDirectDev("final-succes")}>
-              Résultat final — succès
+              Secrétariat — prescription (CERFA)
             </BoutonDev>
             <BoutonDev onClick={() => onAccesDirectDev("final-refus")}>
-              Résultat final — refus
+              Secrétariat — non éligible
             </BoutonDev>
           </RaccourcisDev>
         )}
