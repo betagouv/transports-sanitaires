@@ -19,7 +19,14 @@ jobs:
           cache: npm
           cache-dependency-path: apps/simulateur-eligibilite/package-lock.json
       - run: npm ci
-      # Lint d'abord : c'est la vérification la plus rapide, et la plus souvent
+      # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
+      # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
+      - run: npm audit --omit=dev --audit-level=high
+      # La chaîne de build : signalé, non bloquant — une alerte sur un paquet
+      # transitif de Vite ne doit pas coincer une correction sans rapport.
+      - run: npm audit --audit-level=high
+        continue-on-error: true
+      # Lint ensuite : c'est la vérification la plus rapide, et la plus souvent
       # en défaut sur du code fraîchement écrit.
       - run: npm run lint
       - run: npm run valider-regles
