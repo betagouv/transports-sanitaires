@@ -34,10 +34,15 @@ const LIBELLE_CIBLE: Record<CibleSeed, string> = {
   cible_document_a_remettre_au_patient: "Document",
   cible_regime_financement: "Qui paie",
   cible_article_80_situation_specifique: "Article 80 — situation spécifique",
-  cible_article_80_permission_sortie_therapeutique: "Article 80 — permission thérapeutique",
+  cible_article_80_permission_sortie_therapeutique:
+    "Article 80 — permission thérapeutique",
 };
 
-const SECTIONS: ReadonlyArray<{ outil: Outil; titre: string; sousTitre: string }> = [
+const SECTIONS: ReadonlyArray<{
+  outil: Outil;
+  titre: string;
+  sousTitre: string;
+}> = [
   {
     outil: "prescripteur",
     titre: "Page Résultat 1 — résultat médical",
@@ -60,15 +65,21 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
     [],
   );
 
-  const enEcart = SEEDS.filter((s) => (evaluations.get(s.id)?.ecarts.length ?? 0) > 0);
+  const enEcart = SEEDS.filter(
+    (s) => (evaluations.get(s.id)?.ecarts.length ?? 0) > 0,
+  );
 
   return (
-    <main className="fr-container" style={{ paddingTop: "2rem", paddingBottom: "4rem" }}>
+    <main
+      className="fr-container"
+      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
+    >
       <h1 className="fr-h3">Galerie de seeds</h1>
       <p className="fr-text--sm">
-        Les {SEEDS.length} situations de référence du simulateur (<code>seeds/</code>),
-        celles-là mêmes que rejouent les tests. Ouvrez-en une pour consulter son
-        résultat — et, pour un cas de prescription, le CERFA pré-rempli.
+        Les {SEEDS.length} situations de référence du simulateur (
+        <code>seeds/</code>), celles-là mêmes que rejouent les tests. Ouvrez-en
+        une pour consulter son résultat — et, pour un cas de prescription, le
+        CERFA pré-rempli.
       </p>
 
       <div
@@ -164,17 +175,23 @@ function Ligne({
             .filter(([cible]) => cible !== "cible_regime_financement")
             .map(([cible, valeur]) => (
               <li key={cible}>
-                {LIBELLE_CIBLE[cible as CibleSeed]} : <strong>{String(valeur)}</strong>
+                {LIBELLE_CIBLE[cible as CibleSeed]} :{" "}
+                <strong>{String(valeur)}</strong>
               </li>
             ))}
         </ul>
       </td>
       <td>
-        <p className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}>
+        <p
+          className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}
+        >
           {conforme ? "conforme" : "écart"}
         </p>
         {!conforme && (
-          <ul className="fr-text--xs" style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}>
+          <ul
+            className="fr-text--xs"
+            style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
+          >
             {evaluation.ecarts.map((e) => (
               <li key={e.cible}>
                 {LIBELLE_CIBLE[e.cible]} : {String(e.obtenu)}

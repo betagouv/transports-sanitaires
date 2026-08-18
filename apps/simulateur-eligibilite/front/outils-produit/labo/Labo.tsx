@@ -30,7 +30,11 @@ export function Labo({ onRetour }: Props) {
   async function chargerFichier(fichier: File | undefined) {
     if (!fichier) return;
     const contenu = await fichier.text();
-    setCandidat({ nom: fichier.name, yaml: contenu, validation: validerRegles(contenu) });
+    setCandidat({
+      nom: fichier.name,
+      yaml: contenu,
+      validation: validerRegles(contenu),
+    });
   }
 
   // Active une version puis recharge : le moteur (singleton construit au boot) est
@@ -59,7 +63,9 @@ export function Labo({ onRetour }: Props) {
 
       {active && (
         <div className="fr-alert fr-alert--info fr-mb-3w">
-          <p className="fr-alert__title">Règles de test actives : {active.nom}</p>
+          <p className="fr-alert__title">
+            Règles de test actives : {active.nom}
+          </p>
           <p>Chargées le {formatDate(active.date)}.</p>
           <button
             type="button"

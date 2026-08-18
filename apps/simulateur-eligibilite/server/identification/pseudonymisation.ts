@@ -32,7 +32,7 @@ import {
 export function pseudonymiser(
   secret: string,
   saisie: IdentiteSaisie,
-  enClair = false
+  enClair = false,
 ): IdentitePseudonymisee {
   const identite: IdentitePseudonymisee = { v: VERSION };
 
@@ -43,18 +43,30 @@ export function pseudonymiser(
 
   // Service.
   if (saisie.serviceId) {
-    identite.serviceRef = empreinte(secret, `service:${saisie.serviceId}`, enClair);
+    identite.serviceRef = empreinte(
+      secret,
+      `service:${saisie.serviceId}`,
+      enClair,
+    );
   }
 
   // Prescripteur (réel, ou identité libre si hors liste).
-  if (saisie.prescripteurId && saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
+  if (
+    saisie.prescripteurId &&
+    saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE
+  ) {
     identite.prescripteurRef = empreinte(
       secret,
       `prescripteur:${saisie.prescripteurId}`,
-      enClair
+      enClair,
     );
   } else if (saisie.nom && saisie.prenom) {
-    identite.prescripteurRef = refIdentite(secret, saisie.nom, saisie.prenom, enClair);
+    identite.prescripteurRef = refIdentite(
+      secret,
+      saisie.nom,
+      saisie.prenom,
+      enClair,
+    );
   }
 
   return identite;
@@ -65,7 +77,11 @@ export function pseudonymiser(
  * debug (`enClair`, cf. en-tête du module) renvoie la valeur préfixée en clair
  * pour faciliter la lecture dans Matomo en phase de test — jamais en production.
  */
-export function empreinte(secret: string, value: string, enClair = false): string {
+export function empreinte(
+  secret: string,
+  value: string,
+  enClair = false,
+): string {
   if (enClair) return value;
   return createHmac("sha256", secret)
     .update(value)
@@ -80,6 +96,6 @@ const refIdentite = (
   secret: string,
   nom: string,
   prenom: string,
-  enClair = false
+  enClair = false,
 ): string =>
   empreinte(secret, `identite:${normalise(nom)}|${normalise(prenom)}`, enClair);

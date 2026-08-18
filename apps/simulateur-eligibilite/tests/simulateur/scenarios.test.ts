@@ -16,7 +16,9 @@ describe("modèle v8.10 — le moteur confirme les attendus des seeds", () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
       // La base neutre répond à tout le questionnaire : aucune cible ne doit
       // rester indécise, sans quoi les attendus porteraient sur du vide.
-      expect(manquantes, `${seed.id} — cibles à variables manquantes`).toEqual([]);
+      expect(manquantes, `${seed.id} — cibles à variables manquantes`).toEqual(
+        [],
+      );
       expect(ecarts, `${seed.id} — écarts avec les attendus`).toEqual([]);
     });
   }
@@ -36,7 +38,9 @@ describe("modèle v8.10 — couverture des cas finaux", () => {
       "non éligible assurance maladie dans ce parcours",
     ];
     const couverts = new Set(
-      SEEDS.map((seed) => evaluerSeed(moteur, seed).valeurs.cible_cas_final as string)
+      SEEDS.map(
+        (seed) => evaluerSeed(moteur, seed).valeurs.cible_cas_final as string,
+      ),
     );
     for (const cas of attendus) expect(couverts).toContain(cas);
   });
@@ -54,7 +58,9 @@ describe("modèle v8.10 — couverture des régimes de financement", () => {
       "à qualifier",
     ];
     const couverts = new Set(
-      SEEDS.map((seed) => evaluerSeed(moteur, seed).valeurs.cible_regime_financement)
+      SEEDS.map(
+        (seed) => evaluerSeed(moteur, seed).valeurs.cible_regime_financement,
+      ),
     );
     for (const régime of attendus) expect(couverts).toContain(régime);
   });
@@ -69,9 +75,18 @@ describe("modèle v8.10 — couverture des régimes de financement", () => {
         valeurs.cible_article_80_permission_sortie_therapeutique,
       ];
     };
-    expect(drapeaux("secretariat-detenu-inter-etablissements")).toEqual([true, false]);
-    expect(drapeaux("secretariat-permission-therapeutique")).toEqual([false, true]);
-    expect(drapeaux("secretariat-charge-etablissement")).toEqual([false, false]);
+    expect(drapeaux("secretariat-detenu-inter-etablissements")).toEqual([
+      true,
+      false,
+    ]);
+    expect(drapeaux("secretariat-permission-therapeutique")).toEqual([
+      false,
+      true,
+    ]);
+    expect(drapeaux("secretariat-charge-etablissement")).toEqual([
+      false,
+      false,
+    ]);
   });
 });
 

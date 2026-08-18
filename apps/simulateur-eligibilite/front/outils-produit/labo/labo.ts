@@ -26,7 +26,9 @@ const CLE_ACTIVE = "labo:regles-active";
 const CLE_HISTORIQUE = "labo:historique";
 const MAX_HISTORIQUE = 10;
 
-const OPTIONS_ENGINE = { flag: { filterNotApplicablePossibilities: true } } as const;
+const OPTIONS_ENGINE = {
+  flag: { filterNotApplicablePossibilities: true },
+} as const;
 
 // ---- Validation ----
 
@@ -42,11 +44,17 @@ export function validerRegles(contenu: string): ResultatValidation {
   try {
     rules = yaml.load(contenu) as RawPublicodes<string>;
   } catch (e) {
-    const err = e as { message?: string; mark?: { line: number; column: number } };
+    const err = e as {
+      message?: string;
+      mark?: { line: number; column: number };
+    };
     const position = err.mark
       ? ` (ligne ${err.mark.line + 1}, colonne ${err.mark.column + 1})`
       : "";
-    return { ok: false, erreur: `Erreur YAML${position} : ${err.message ?? e}` };
+    return {
+      ok: false,
+      erreur: `Erreur YAML${position} : ${err.message ?? e}`,
+    };
   }
 
   if (rules == null || typeof rules !== "object") {

@@ -19,7 +19,12 @@ function fmt(v: string | number): string {
 }
 
 // Clés d'`expect` qui ne sont pas des règles Publicodes (assertions UI) : ignorées.
-const CLES_UI = new Set(["next", "next_after_m21", "forbid_ui_variant", "forbidden_content"]);
+const CLES_UI = new Set([
+  "next",
+  "next_after_m21",
+  "forbid_ui_variant",
+  "forbidden_content",
+]);
 
 // Compare la valeur évaluée d'une règle à la valeur attendue de la matrice.
 // Mappe `oui`/`non` → booléens, `non applicable` → valeur nulle.
@@ -33,8 +38,7 @@ function verifie(rule: string, attendu: string | number, id: string): void {
     expect(nodeValue, `${id} — ${rule}`).toBeNull();
     return;
   }
-  const cible =
-    attendu === "oui" ? true : attendu === "non" ? false : attendu;
+  const cible = attendu === "oui" ? true : attendu === "non" ? false : attendu;
   expect(nodeValue, `${id} — ${rule}`).toBe(cible);
 }
 
@@ -129,7 +133,8 @@ const matrice: Cas[] = [
     id: "ARTICLE80-PERSO",
     given: {
       cible_cas_final: "transport charge établissement",
-      cible_transport_sanitaire_prescrit: "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit:
+        "véhicule personnel ou transport en commun",
       cible_article_80_situation_specifique: "non",
     },
     expect: {

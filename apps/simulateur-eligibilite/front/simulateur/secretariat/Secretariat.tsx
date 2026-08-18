@@ -30,7 +30,7 @@ export function Secretariat({
 }: Props) {
   const situationP1 = reprendrePassation();
   const [situation, setSituation] = useState<Situation<string> | null>(
-    situationFinale
+    situationFinale,
   );
 
   // Situation complète déjà connue (parcours P2 terminé, ou seed ouverte) :
@@ -49,7 +49,10 @@ export function Secretariat({
   if (!situationP1) {
     return (
       <div>
-        <div className="fr-alert fr-alert--info" style={{ marginBottom: "2rem" }}>
+        <div
+          className="fr-alert fr-alert--info"
+          style={{ marginBottom: "2rem" }}
+        >
           <h3 className="fr-alert__title">Aucune prescription en attente</h3>
           <p>Commencez par l'évaluation médicale du transport.</p>
         </div>
@@ -71,7 +74,7 @@ export function Secretariat({
         onTermine={(s) => {
           setSituation(s);
           const cas = String(
-            engine.setSituation(s).evaluate("cible_cas_final").nodeValue ?? ""
+            engine.setSituation(s).evaluate("cible_cas_final").nodeValue ?? "",
           );
           trackResultat(cas, "secretariat");
         }}

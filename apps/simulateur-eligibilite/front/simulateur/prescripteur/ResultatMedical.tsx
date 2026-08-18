@@ -16,13 +16,19 @@ type Props = {
 // Page Résultat 1 — résultat médical du transport. Le transport prescrit est
 // figé ici : le secrétariat ne peut plus le modifier (verrou structurel — il ne
 // pose aucune question de Partie 1).
-export function ResultatMedical({ situation, onContinuer, onRecommencer }: Props) {
+export function ResultatMedical({
+  situation,
+  onContinuer,
+  onRecommencer,
+}: Props) {
   const e = engine.setSituation(situation);
-  const favorable = e.evaluate("cible_resultat_medical").nodeValue === "favorable";
+  const favorable =
+    e.evaluate("cible_resultat_medical").nodeValue === "favorable";
   const transport = String(
-    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? ""
+    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? "",
   );
-  const partie2Requise = e.evaluate("cible_partie_2_requise").nodeValue === "oui";
+  const partie2Requise =
+    e.evaluate("cible_partie_2_requise").nodeValue === "oui";
 
   const criteresRetenus = favorable ? retenus(e, CRITERES) : [];
   const motifsRetenus = favorable ? retenus(e, MOTIFS) : [];

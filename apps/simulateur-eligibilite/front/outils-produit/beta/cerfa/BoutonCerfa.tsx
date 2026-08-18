@@ -7,7 +7,12 @@
 import { useState } from "react";
 import type { Situation } from "publicodes";
 import type Engine from "publicodes";
-import { genererCerfa, nomFichier, telecharger, type OptionsGénération } from "./cerfa";
+import {
+  genererCerfa,
+  nomFichier,
+  telecharger,
+  type OptionsGénération,
+} from "./cerfa";
 import { trackCerfaTelecharge } from "../../../analytics/analytics";
 
 type Props = {
@@ -46,19 +51,22 @@ export function BoutonCerfa({ moteur, situation, chargerGabarit }: Props) {
     <section className="fr-mt-4w">
       <h3 className="fr-h5">Prescription médicale de transport</h3>
       <p>
-        Le CERFA n° 11574*07 pré-rempli à partir de cette simulation : la situation
-        ouvrant droit, le mode de transport et sa justification, le trajet et le
-        contexte d'urgence y sont déjà cochés, sur les deux volets.
+        Le CERFA n° 11574*07 pré-rempli à partir de cette simulation : la
+        situation ouvrant droit, le mode de transport et sa justification, le
+        trajet et le contexte d'urgence y sont déjà cochés, sur les deux volets.
       </p>
       <p className="fr-text--sm fr-mb-2w">
         <span className="fr-icon-edit-line fr-mr-1w" aria-hidden="true" />
         Restent à compléter et à signer : l'identité du patient et de l'assuré,
-        celle du prescripteur, les adresses de départ et d'arrivée, ainsi que les
-        éléments d'ordre médical. Tous les champs restent modifiables.
+        celle du prescripteur, les adresses de départ et d'arrivée, ainsi que
+        les éléments d'ordre médical. Tous les champs restent modifiables.
       </p>
 
       {erreur && (
-        <div className="fr-alert fr-alert--error fr-alert--sm fr-mb-2w" role="alert">
+        <div
+          className="fr-alert fr-alert--error fr-alert--sm fr-mb-2w"
+          role="alert"
+        >
           <p>{erreur}</p>
         </div>
       )}
@@ -68,7 +76,9 @@ export function BoutonCerfa({ moteur, situation, chargerGabarit }: Props) {
         onClick={telechargerCerfa}
         disabled={enCours}
       >
-        {enCours ? "Génération en cours…" : "Télécharger la prescription pré-remplie"}
+        {enCours
+          ? "Génération en cours…"
+          : "Télécharger la prescription pré-remplie"}
       </button>
     </section>
   );

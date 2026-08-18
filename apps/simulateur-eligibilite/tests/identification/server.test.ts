@@ -9,7 +9,10 @@ import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { createApp } from "../../server/app.ts";
 import { empreinte } from "../../server/identification/pseudonymisation.ts";
-import { snapshotReferentiel, type Referentiel } from "../../shared/referentiel.ts";
+import {
+  snapshotReferentiel,
+  type Referentiel,
+} from "../../shared/referentiel.ts";
 import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
 
 const SECRET = "secret-de-test";
@@ -64,13 +67,13 @@ describe("API référentiel", () => {
       libelle: "Cardiologie",
     });
     expect(body).not.toContainEqual(
-      expect.objectContaining({ id: "s_chambery_urgences" })
+      expect.objectContaining({ id: "s_chambery_urgences" }),
     );
   });
 
   it("ne renvoie les prescripteurs que pour le service demandé", async () => {
     const { status, body } = await get(
-      "/api/prescripteurs?serviceId=s_grenoble_cardio"
+      "/api/prescripteurs?serviceId=s_grenoble_cardio",
     );
     expect(status).toBe(200);
     expect(body).toEqual([
@@ -113,7 +116,10 @@ describe("POST /api/identite-pseudonymisee", () => {
   };
 
   it("renvoie une identité pseudonymisée (refs HMAC préfixées), sans identifiant brut", async () => {
-    const { status, body: ctx } = await post("/api/identite-pseudonymisee", selection);
+    const { status, body: ctx } = await post(
+      "/api/identite-pseudonymisee",
+      selection,
+    );
     expect(status).toBe(200);
 
     expect(Object.keys(ctx).sort()).toEqual([
@@ -126,9 +132,11 @@ describe("POST /api/identite-pseudonymisee", () => {
 
     // Les refs sont le HMAC de la valeur **préfixée par sa nature** — jamais l'id brut.
     expect(ctx.prescripteurRef).toBe(
-      empreinte(SECRET, `prescripteur:${selection.prescripteurId}`)
+      empreinte(SECRET, `prescripteur:${selection.prescripteurId}`),
     );
-    expect(ctx.serviceRef).toBe(empreinte(SECRET, `service:${selection.serviceId}`));
+    expect(ctx.serviceRef).toBe(
+      empreinte(SECRET, `service:${selection.serviceId}`),
+    );
     expect(JSON.stringify(ctx)).not.toContain(selection.prescripteurId);
   });
 
@@ -148,7 +156,7 @@ describe("POST /api/identite-pseudonymisee", () => {
     });
     expect(status).toBe(200);
     expect(ctx.prescripteurRef).toBe(
-      empreinte(SECRET, "identite:dupont|marie")
+      empreinte(SECRET, "identite:dupont|marie"),
     );
     // normalisation (casse/espaces) → même bucket
     const variante = await post("/api/identite-pseudonymisee", {
@@ -208,7 +216,7 @@ describe("POST /api/identite-pseudonymisee", () => {
 // Démarre une app dédiée sur un référentiel injecté, sans mock (vraie requête HTTP).
 async function demarrer(
   referentiel: Referentiel,
-  pseudonymesEnClair = false
+  pseudonymesEnClair = false,
 ): Promise<{ base: string; close: () => Promise<void> }> {
   const app = createApp(referentiel, { secret: SECRET, pseudonymesEnClair });
   const srv = await new Promise<Server>((resolve) => {
@@ -219,7 +227,7 @@ async function demarrer(
     base: `http://127.0.0.1:${port}`,
     close: () =>
       new Promise<void>((resolve, reject) =>
-        srv.close((err) => (err ? reject(err) : resolve()))
+        srv.close((err) => (err ? reject(err) : resolve())),
       ),
   };
 }
@@ -239,7 +247,8 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
   const referentiel: Referentiel = {
     getEtablissements: () => snapshotReferentiel.getEtablissements(),
     getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-    getPrescripteurs: (serviceId) => snapshotReferentiel.getPrescripteurs(serviceId),
+    getPrescripteurs: (serviceId) =>
+      snapshotReferentiel.getPrescripteurs(serviceId),
     async enrichirDepuisSaisie(sel) {
       appels.push(sel);
     },
@@ -297,21 +306,28 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
     const { base: baseKo, close: closeKo } = await demarrer({
       getEtablissements: () => snapshotReferentiel.getEtablissements(),
       getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-      getPrescripteurs: (serviceId) => snapshotReferentiel.getPrescripteurs(serviceId),
+      getPrescripteurs: (serviceId) =>
+        snapshotReferentiel.getPrescripteurs(serviceId),
       async enrichirDepuisSaisie() {
         throw new Error("Grist indisponible");
       },
     });
     try {
-      const { status, body: ctx } = await postTo(baseKo, "/api/identite-pseudonymisee", {
-        etabId: "e_chu_grenoble",
-        serviceId: "s_grenoble_cardio",
-        prescripteurId: "prescripteur_hors_liste",
-        nom: "Dupont",
-        prenom: "Marie",
-      });
+      const { status, body: ctx } = await postTo(
+        baseKo,
+        "/api/identite-pseudonymisee",
+        {
+          etabId: "e_chu_grenoble",
+          serviceId: "s_grenoble_cardio",
+          prescripteurId: "prescripteur_hors_liste",
+          nom: "Dupont",
+          prenom: "Marie",
+        },
+      );
       expect(status).toBe(200);
-      expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:dupont|marie"));
+      expect(ctx.prescripteurRef).toBe(
+        empreinte(SECRET, "identite:dupont|marie"),
+      );
     } finally {
       await closeKo();
     }
@@ -323,15 +339,21 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
 describe("POST /api/identite-pseudonymisee — mode debug (refs en clair)", () => {
   let base: string;
   let close: () => Promise<void>;
-  beforeAll(async () => ({ base, close } = await demarrer(snapshotReferentiel, true)));
+  beforeAll(
+    async () => ({ base, close } = await demarrer(snapshotReferentiel, true)),
+  );
   afterAll(() => close());
 
   it("renvoie les refs en clair (valeur préfixée), pas le HMAC", async () => {
-    const { status, body: ctx } = await postTo(base, "/api/identite-pseudonymisee", {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "p_grenoble_cardio_1",
-    });
+    const { status, body: ctx } = await postTo(
+      base,
+      "/api/identite-pseudonymisee",
+      {
+        etabId: "e_chu_grenoble",
+        serviceId: "s_grenoble_cardio",
+        prescripteurId: "p_grenoble_cardio_1",
+      },
+    );
     expect(status).toBe(200);
     expect(ctx.etabRef).toBe("etab:e_chu_grenoble");
     expect(ctx.serviceRef).toBe("service:s_grenoble_cardio");

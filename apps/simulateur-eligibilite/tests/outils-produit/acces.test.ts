@@ -11,12 +11,14 @@ describe("estServiceProduit", () => {
   });
 
   it("reconnaît le service par libellé (insensible à la casse)", () => {
-    expect(estServiceProduit({ id: "s_x", libelle: "transport sanitaire" })).toBe(true);
+    expect(
+      estServiceProduit({ id: "s_x", libelle: "transport sanitaire" }),
+    ).toBe(true);
   });
 
   it("ignore les autres services", () => {
-    expect(estServiceProduit({ id: "s_grenoble_cardio", libelle: "Cardiologie" })).toBe(
-      false
-    );
+    expect(
+      estServiceProduit({ id: "s_grenoble_cardio", libelle: "Cardiologie" }),
+    ).toBe(false);
   });
 });

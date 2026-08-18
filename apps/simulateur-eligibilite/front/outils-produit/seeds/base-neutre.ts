@@ -36,7 +36,8 @@ export const BASE_NEUTRE: Record<string, string> = {
   p1_critere_asepsie: "non",
   p1_critere_aucune_situation_encadree: "non",
   p2_patient_hospitalise: "non",
-  p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
+  p2_exception_type:
+    "'Non, le transport ne fait pas partie de ces exceptions.'",
   p2_detenu_hospitalise: "non",
   p2_detenu_inter_etablissements: "non",
   p2_detenu_uhsa_uhsi: "non",

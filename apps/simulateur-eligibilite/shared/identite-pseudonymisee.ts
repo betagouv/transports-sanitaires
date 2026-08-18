@@ -23,7 +23,7 @@ export type IdentitePseudonymisee = {
 
 /** Valide la forme d'une identité pseudonymisée reçue de l'API (`POST /api/identite-pseudonymisee`). */
 export function estIdentitePseudonymisee(
-  value: unknown
+  value: unknown,
 ): value is IdentitePseudonymisee {
   if (typeof value !== "object" || value === null) return false;
   const candidat = value as Record<string, unknown>;

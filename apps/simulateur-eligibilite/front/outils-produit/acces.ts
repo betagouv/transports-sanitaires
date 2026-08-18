@@ -15,7 +15,10 @@ export const SERVICE_PRODUIT_ID = "4";
 export const SERVICE_PRODUIT_LIBELLE = "Transport Sanitaire";
 
 /** Vrai quand le service sélectionné déverrouille les outils produit. */
-export function estServiceProduit(service: { id: string; libelle: string }): boolean {
+export function estServiceProduit(service: {
+  id: string;
+  libelle: string;
+}): boolean {
   return (
     service.id === SERVICE_PRODUIT_ID ||
     normalise(service.libelle) === normalise(SERVICE_PRODUIT_LIBELLE)

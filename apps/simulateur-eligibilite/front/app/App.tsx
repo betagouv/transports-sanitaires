@@ -46,7 +46,9 @@ const GalerieSeeds = lazy(() =>
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
-  pseudonymiser?: (saisie: IdentiteSaisie) => Promise<IdentitePseudonymisee | null>;
+  pseudonymiser?: (
+    saisie: IdentiteSaisie,
+  ) => Promise<IdentitePseudonymisee | null>;
   /** Gabarit CERFA (défaut = asset servi par l'application, chargé au clic). */
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
@@ -77,10 +79,13 @@ export function App({
   const [cle, setCle] = useState(0);
   // Situation issue d'une seed, pour ouvrir directement la page de résultat.
   const [situationDev, setSituationDev] = useState<Situation<string> | null>(
-    null
+    null,
   );
 
-  async function handleValide(saisie: IdentiteSaisie, acces: AccesIdentification) {
+  async function handleValide(
+    saisie: IdentiteSaisie,
+    acces: AccesIdentification,
+  ) {
     setIdentite(await pseudonymiser(saisie));
     setOutilsProduit(acces.outilsProduit);
     setIdentifie(true);
@@ -125,7 +130,10 @@ export function App({
       <>
         <BandeauLabo />
         <Suspense fallback={null}>
-          <GalerieSeeds onOuvrir={ouvrirSeed} onRetour={() => setGalerie(false)} />
+          <GalerieSeeds
+            onOuvrir={ouvrirSeed}
+            onRetour={() => setGalerie(false)}
+          />
         </Suspense>
       </>
     );

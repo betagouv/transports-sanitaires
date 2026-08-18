@@ -37,17 +37,29 @@ const situation = situationDe(seed);
 
 console.log(`seed           : ${seed.id} — ${seed.libelle}`);
 
-const moteur = new Engine(règles, { flag: { filterNotApplicablePossibilities: true } });
+const moteur = new Engine(règles, {
+  flag: { filterNotApplicablePossibilities: true },
+});
 const saisies = saisiesDepuisSituation(moteur, situation);
 
-console.log(`mode prescrit  : ${moteur.setSituation(situation).evaluate("cible_transport_sanitaire_prescrit").nodeValue}`);
+console.log(
+  `mode prescrit  : ${moteur.setSituation(situation).evaluate("cible_transport_sanitaire_prescrit").nodeValue}`,
+);
 console.log(`champs déduits : ${saisies.length}`);
 for (const saisie of saisies) {
-  console.log("  " + ("case" in saisie ? `[x] ${saisie.case.nom}` : `    ${saisie.champ} = ${saisie.texte}`));
+  console.log(
+    "  " +
+      ("case" in saisie
+        ? `[x] ${saisie.case.nom}`
+        : `    ${saisie.champ} = ${saisie.texte}`),
+  );
 }
 
 const sortie =
-  process.argv.slice(2).find((a) => a.endsWith(".pdf")) ?? join(ici, "../apercu-cerfa.pdf");
-const gabarit = readFileSync(join(ici, "../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"));
+  process.argv.slice(2).find((a) => a.endsWith(".pdf")) ??
+  join(ici, "../apercu-cerfa.pdf");
+const gabarit = readFileSync(
+  join(ici, "../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
+);
 writeFileSync(sortie, await remplirCerfa(gabarit, saisies));
 console.log(`\nPDF écrit : ${sortie}`);

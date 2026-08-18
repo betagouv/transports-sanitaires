@@ -13,7 +13,7 @@ import {
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 
 export async function pseudonymiserViaApi(
-  saisie: IdentiteSaisie
+  saisie: IdentiteSaisie,
 ): Promise<IdentitePseudonymisee | null> {
   try {
     const res = await fetch("/api/identite-pseudonymisee", {

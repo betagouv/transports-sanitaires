@@ -1,7 +1,10 @@
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import type { EvaluatedFormElement, FormPageElementProp } from "@publicodes/forms";
+import type {
+  EvaluatedFormElement,
+  FormPageElementProp,
+} from "@publicodes/forms";
 
 type Props = {
   field: EvaluatedFormElement & FormPageElementProp;

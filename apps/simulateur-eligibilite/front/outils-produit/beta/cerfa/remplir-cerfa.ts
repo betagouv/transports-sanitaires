@@ -5,7 +5,13 @@
 // de générer la prescription **sans que les données patient quittent le poste**
 // (cf. README, § « Où faire tourner le remplissage »).
 
-import { PDFDocument, PDFCheckBox, PDFDict, PDFName, PDFTextField } from "pdf-lib";
+import {
+  PDFDocument,
+  PDFCheckBox,
+  PDFDict,
+  PDFName,
+  PDFTextField,
+} from "pdf-lib";
 import { MULTILIGNES_ROGNÉS, type ChampCase } from "./champs-cerfa.ts";
 
 /** Une valeur à écrire : soit un texte dans un champ nommé, soit une case à cocher. */
@@ -103,4 +109,7 @@ function cocher(formulaire: Formulaire, { nom, coché }: ChampCase): void {
 
 /** Les champs de `MULTILIGNES_ROGNÉS` n'affichent qu'une ligne : on aplatit. */
 const aplatir = (texte: string): string =>
-  texte.replace(/\s*\n+\s*/g, " - ").replace(/\s+/g, " ").trim();
+  texte
+    .replace(/\s*\n+\s*/g, " - ")
+    .replace(/\s+/g, " ")
+    .trim();

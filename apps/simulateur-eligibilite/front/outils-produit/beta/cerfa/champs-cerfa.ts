@@ -22,7 +22,10 @@ export type ÉtatCoché = "On" | "OUI" | "NON";
 
 export type ChampCase = { readonly nom: string; readonly coché: ÉtatCoché };
 
-const case_ = (nom: string, coché: ÉtatCoché = "On"): ChampCase => ({ nom, coché });
+const case_ = (nom: string, coché: ÉtatCoché = "On"): ChampCase => ({
+  nom,
+  coché,
+});
 
 /** Bénéficiaire du transport et assuré(e) — en-tête des deux volets. */
 export const IDENTITÉ = {
@@ -61,12 +64,16 @@ export const SITUATION = {
 export const MODE_TRANSPORT = {
   // Justifications de l'ambulance (au moins une requise pour prescrire une ambulance).
   positionAllongéeDemiAssise: case_("position allongée ou demiassise"),
-  surveillancePersonneQualifiée: case_("surveillance par une personne qualifiée"),
+  surveillancePersonneQualifiée: case_(
+    "surveillance par une personne qualifiée",
+  ),
   oxygène: case_("dadministration doxygène"),
   brancardagePortage: case_("brancardage ou dun portage"),
   asepsieRigoureuse: case_("aseptie rigoureuse"),
 
-  assisProfessionnalisé: case_("transport assis professionnalisé VSL taxi conventionné"),
+  assisProfessionnalisé: case_(
+    "transport assis professionnalisé VSL taxi conventionné",
+  ),
   transportPartagéIncompatible: case_(
     "létat de santé du patient nest pas compatible avec un transport partagé cochez la case",
   ),
@@ -134,4 +141,6 @@ export const TRANSPORTEUR_NE_PAS_REMPLIR = [
  * qu'une ligne : y écrire un `\n` rogne silencieusement le reste à l'impression.
  * Les valeurs destinées à ces champs doivent être aplaties sur une seule ligne.
  */
-export const MULTILIGNES_ROGNÉS: readonly string[] = [IDENTITÉ.bénéficiaireAdresse];
+export const MULTILIGNES_ROGNÉS: readonly string[] = [
+  IDENTITÉ.bénéficiaireAdresse,
+];

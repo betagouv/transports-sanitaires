@@ -8,13 +8,23 @@ import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { engine } from "../../front/simulateur/engine";
-import { genererCerfa, nomFichier } from "../../front/outils-produit/beta/cerfa/cerfa";
-import { MODE_TRANSPORT, SITUATION, TRAJET } from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+import {
+  genererCerfa,
+  nomFichier,
+} from "../../front/outils-produit/beta/cerfa/cerfa";
+import {
+  MODE_TRANSPORT,
+  SITUATION,
+  TRAJET,
+} from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
 
 // Le vrai gabarit, lu sur disque : en test il n'y a pas de serveur pour le
 // `fetch` de l'asset. C'est le même fichier que celui servi en production.
 const GABARIT = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
+  join(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf",
+  ),
 );
 const chargerGabarit = async () => GABARIT.buffer.slice(0) as ArrayBuffer;
 
@@ -70,7 +80,9 @@ describe("genererCerfa", () => {
     const blob = await genererCerfa(engine, PRESCRIPTION, { chargerGabarit });
     expect(blob.type).toBe("application/pdf");
 
-    const formulaire = (await PDFDocument.load(await blob.arrayBuffer())).getForm();
+    const formulaire = (
+      await PDFDocument.load(await blob.arrayBuffer())
+    ).getForm();
     const état = (nom: string) => {
       const champ = formulaire.getField(nom);
       return champ instanceof PDFCheckBox
@@ -88,9 +100,16 @@ describe("genererCerfa", () => {
 
   it("laisse vierges les blocs d'identité, que le simulateur ne connaît pas", async () => {
     const blob = await genererCerfa(engine, PRESCRIPTION, { chargerGabarit });
-    const formulaire = (await PDFDocument.load(await blob.arrayBuffer())).getForm();
+    const formulaire = (
+      await PDFDocument.load(await blob.arrayBuffer())
+    ).getForm();
 
-    for (const nom of ["N et P bénéficiaire", "N° immat bénéf", "Date Nais", "N et P prescript"]) {
+    for (const nom of [
+      "N et P bénéficiaire",
+      "N° immat bénéf",
+      "Date Nais",
+      "N et P prescript",
+    ]) {
       expect(formulaire.getTextField(nom).getText()).toBeUndefined();
     }
   });
@@ -124,7 +143,9 @@ describe("fin de parcours — téléchargement du CERFA", () => {
         chargerGabarit={chargerGabarit}
       />,
     );
-    expect(screen.getByText(/l'identité du patient et de l'assuré/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/l'identité du patient et de l'assuré/i),
+    ).toBeInTheDocument();
   });
 
   it("ne le propose pas quand le cas relève d'un autre formulaire", () => {
@@ -170,14 +191,19 @@ describe("fin de parcours — téléchargement du CERFA", () => {
     await user.click(screen.getByRole("button", BOUTON));
 
     // Le bouton se verrouille le temps de la génération…
-    expect(screen.getByRole("button", { name: /Génération en cours/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /Génération en cours/i }),
+    ).toBeDisabled();
     // …puis revient à son état initial, sans alerte : le PDF a bien été produit
     // et remis au navigateur (l'échec, lui, est couvert par le test suivant).
     // Timeout élargi : charger puis réécrire un gabarit de 767 ko dépasse la
     // seconde par défaut quand la suite tourne en parallèle.
-    await waitFor(() => expect(screen.getByRole("button", BOUTON)).not.toBeDisabled(), {
-      timeout: 10_000,
-    });
+    await waitFor(
+      () => expect(screen.getByRole("button", BOUTON)).not.toBeDisabled(),
+      {
+        timeout: 10_000,
+      },
+    );
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
@@ -200,6 +226,8 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       /n'a pas pu être généré/i,
     );
     // Le résultat de la simulation reste lisible.
-    expect(screen.getByRole("heading", { name: /Document à imprimer/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Document à imprimer/i }),
+    ).toBeInTheDocument();
   });
 });

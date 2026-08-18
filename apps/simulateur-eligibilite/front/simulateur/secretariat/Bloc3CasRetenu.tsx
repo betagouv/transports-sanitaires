@@ -12,7 +12,8 @@ const CAS_RETENU: Record<string, string> = {
   "demande accord préalable": "Demande d’Accord Préalable",
   "convocation ou avis audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
-  "transport charge établissement": "Transport à charge de l’établissement de santé",
+  "transport charge établissement":
+    "Transport à charge de l’établissement de santé",
   "prestation non prise en charge par assurance maladie":
     "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
   SMUR: "Transport par équipe SMUR",
@@ -33,7 +34,8 @@ type CaseItem =
 
 type Groupe = { titre?: string; icone?: string; items: CaseItem[] };
 
-const vrai = (e: typeof engine, id: string) => e.evaluate(id).nodeValue === true;
+const vrai = (e: typeof engine, id: string) =>
+  e.evaluate(id).nodeValue === true;
 
 // Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
 // affichée que si la simulation l'a validée — conditions reprises du mapping
@@ -218,17 +220,17 @@ function NoteCorpsMedical({
     return (
       <div className="fr-mt-2w">
         <p>
-          L’absence de prise en charge de la consultation, du soin, de l’examen ou
-          de la prestation à l’origine du déplacement exclut la prise en charge du
-          transport dans ce parcours.
+          L’absence de prise en charge de la consultation, du soin, de l’examen
+          ou de la prestation à l’origine du déplacement exclut la prise en
+          charge du transport dans ce parcours.
         </p>
         <p>
           Cette règle est prioritaire sur le mode de transport retenu, y compris
           lorsqu’une ambulance est médicalement justifiée.
         </p>
         <p>
-          Ne pas établir de PMT ou de DAP ouvrant droit à une prise en charge par
-          l’Assurance Maladie pour ce déplacement.
+          Ne pas établir de PMT ou de DAP ouvrant droit à une prise en charge
+          par l’Assurance Maladie pour ce déplacement.
         </p>
       </div>
     );
@@ -267,7 +269,7 @@ export function Bloc3CasRetenu({
     .map((groupe) => ({
       ...groupe,
       items: groupe.items.filter(
-        (item) => typeof item === "string" || item.visible(e, transport)
+        (item) => typeof item === "string" || item.visible(e, transport),
       ),
     }))
     .filter((groupe) => groupe.items.length > 0);
@@ -305,7 +307,7 @@ export function Bloc3CasRetenu({
                 <div
                   key={groupe.titre ?? "sans-titre"}
                   className={`fr-col-12 fr-col-md-${Math.floor(
-                    12 / groupes.length
+                    12 / groupes.length,
                   )}`}
                 >
                   {groupe.titre && (

@@ -17,7 +17,9 @@ function main(): void {
   const fichiers = globSync(`${reglesDir}/*.publicodes`).sort();
 
   if (fichiers.length === 0) {
-    throw new Error(`Aucun fichier .publicodes trouvé dans ${relative(racine, reglesDir)}`);
+    throw new Error(
+      `Aucun fichier .publicodes trouvé dans ${relative(racine, reglesDir)}`,
+    );
   }
 
   const rules = validerYaml(fichiers);
@@ -32,13 +34,22 @@ function validerYaml(fichiers: string[]): RawPublicodes<string> {
   for (const fichier of fichiers) {
     const chemin = relative(racine, fichier);
     try {
-      const parsed = yaml.load(readFileSync(fichier, "utf8")) as RawPublicodes<string>;
+      const parsed = yaml.load(
+        readFileSync(fichier, "utf8"),
+      ) as RawPublicodes<string>;
       rules = { ...rules, ...parsed };
       console.log(`✓ YAML valide : ${chemin}`);
     } catch (e) {
-      const err = e as { message?: string; mark?: { line: number; column: number } };
-      const position = err.mark ? ` (ligne ${err.mark.line + 1}, colonne ${err.mark.column + 1})` : "";
-      throw new Error(`Erreur YAML dans ${chemin}${position}\n  ${err.message ?? e}`);
+      const err = e as {
+        message?: string;
+        mark?: { line: number; column: number };
+      };
+      const position = err.mark
+        ? ` (ligne ${err.mark.line + 1}, colonne ${err.mark.column + 1})`
+        : "";
+      throw new Error(
+        `Erreur YAML dans ${chemin}${position}\n  ${err.message ?? e}`,
+      );
     }
   }
 
@@ -52,7 +63,9 @@ function validerPublicodes(rules: RawPublicodes<string>): void {
     flag: { filterNotApplicablePossibilities: true },
   });
   const nb = Object.keys(rules).length;
-  console.log(`\n✓ Document publicodes valide : ${nb} règles compilées sans erreur.`);
+  console.log(
+    `\n✓ Document publicodes valide : ${nb} règles compilées sans erreur.`,
+  );
 }
 
 try {

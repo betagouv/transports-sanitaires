@@ -24,7 +24,7 @@ export type AppOptions = {
 
 export function createApp(
   referentiel: Referentiel,
-  { secret, pseudonymesEnClair = false, distDir }: AppOptions
+  { secret, pseudonymesEnClair = false, distDir }: AppOptions,
 ): Express {
   const app = express();
   app.use(express.json());
@@ -41,7 +41,10 @@ export function createApp(
     res.type("text/plain").send("User-agent: *\nDisallow: /\n");
   });
 
-  app.use("/api", identificationRoutes(referentiel, secret, pseudonymesEnClair));
+  app.use(
+    "/api",
+    identificationRoutes(referentiel, secret, pseudonymesEnClair),
+  );
   // Toute autre route sous /api → 404 JSON (évite de servir index.html).
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "route inconnue" });

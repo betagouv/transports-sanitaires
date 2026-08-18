@@ -31,7 +31,8 @@ export function Bloc1Resultat({
     switch (casFinal) {
       case "prescription médicale de transport":
         return {
-          titre: "Vous êtes éligible à une prise en charge par l’Assurance Maladie",
+          titre:
+            "Vous êtes éligible à une prise en charge par l’Assurance Maladie",
           corps: (
             <>
               <p>
@@ -69,7 +70,8 @@ export function Bloc1Resultat({
                 Transport sanitaire prescrit : <strong>{transport}</strong>.
               </p>
               <p>
-                Document patient : <strong>convocation ou avis d’audience</strong>.
+                Document patient :{" "}
+                <strong>convocation ou avis d’audience</strong>.
               </p>
             </>
           ),
@@ -83,8 +85,8 @@ export function Bloc1Resultat({
                 Transport sanitaire prescrit : <strong>{transport}</strong>.
               </p>
               <p>
-                Le transport doit être organisé ou encadré par l’établissement de
-                santé.
+                Le transport doit être organisé ou encadré par l’établissement
+                de santé.
               </p>
               <p>
                 Document à remettre au patient :{" "}
@@ -104,8 +106,8 @@ export function Bloc1Resultat({
               </p>
               <p>
                 Aucune Prescription Médicale de Transport ni Demande d’Accord
-                Préalable ouvrant droit à une prise en charge ne doit être établie
-                dans ce parcours.
+                Préalable ouvrant droit à une prise en charge ne doit être
+                établie dans ce parcours.
               </p>
             </>
           ),
@@ -121,8 +123,8 @@ export function Bloc1Resultat({
                 <strong>transport par équipe SMUR</strong>.
               </p>
               <p>
-                Le transport est organisé dans le cadre de l’urgence médicale, par
-                l’équipe médicale ou l’établissement concerné.
+                Le transport est organisé dans le cadre de l’urgence médicale,
+                par l’équipe médicale ou l’établissement concerné.
               </p>
             </>
           ),
@@ -132,7 +134,9 @@ export function Bloc1Resultat({
           titre:
             "Aucun mode de transport n’est éligible à une prise en charge par l’Assurance Maladie au titre du seul motif « bariatrique ».",
           corps: (
-            <p>Aucun transport sanitaire ne peut être prescrit par votre médecin.</p>
+            <p>
+              Aucun transport sanitaire ne peut être prescrit par votre médecin.
+            </p>
           ),
         };
       case "permission sortie sans motif médical":
@@ -145,7 +149,8 @@ export function Bloc1Resultat({
         return transportPrescrit
           ? {
               // Variante B — transport prescrit mais non pris en charge ici.
-              titre: "Vous n’êtes pas éligible à une prise en charge dans ce parcours",
+              titre:
+                "Vous n’êtes pas éligible à une prise en charge dans ce parcours",
               corps: (
                 <>
                   <p>
@@ -158,7 +163,8 @@ export function Bloc1Resultat({
             }
           : {
               // Variante A — aucun transport sanitaire prescrit.
-              titre: "Aucun transport sanitaire ne peut être prescrit par votre médecin.",
+              titre:
+                "Aucun transport sanitaire ne peut être prescrit par votre médecin.",
               corps: (
                 <p>
                   Le transport reste à votre charge si vous décidez de

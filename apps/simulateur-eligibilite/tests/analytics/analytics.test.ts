@@ -73,9 +73,9 @@ describe("resolveConfig", () => {
   });
 
   it("activable en local via VITE_MATOMO_ENABLED", () => {
-    expect(resolveConfig({ PROD: false, VITE_MATOMO_ENABLED: "true" }).enabled).toBe(
-      true
-    );
+    expect(
+      resolveConfig({ PROD: false, VITE_MATOMO_ENABLED: "true" }).enabled,
+    ).toBe(true);
   });
 
   it("défauts beta.gouv, surchargeables", () => {
@@ -84,7 +84,11 @@ describe("resolveConfig", () => {
       siteId: "275",
     });
     expect(
-      resolveConfig({ PROD: true, VITE_MATOMO_URL: "https://x/", VITE_MATOMO_SITE_ID: "9" })
+      resolveConfig({
+        PROD: true,
+        VITE_MATOMO_URL: "https://x/",
+        VITE_MATOMO_SITE_ID: "9",
+      }),
     ).toMatchObject({ url: "https://x/", siteId: "9" });
   });
 });
@@ -93,7 +97,10 @@ describe("initAnalytics + événements", () => {
   it("amorce le tracker quand activé, en cookieless", () => {
     initAnalytics(config);
     expect(window._paq).toContainEqual(["disableCookies"]);
-    expect(window._paq).toContainEqual(["setTrackerUrl", "https://matomo.test/matomo.php"]);
+    expect(window._paq).toContainEqual([
+      "setTrackerUrl",
+      "https://matomo.test/matomo.php",
+    ]);
     expect(window._paq).toContainEqual(["setSiteId", "275"]);
     expect(window._paq).toContainEqual(["trackPageView"]);
   });
@@ -116,7 +123,9 @@ describe("initAnalytics + événements", () => {
     initAnalytics(config);
     window._paq = [];
     trackSimulationStart();
-    expect(window._paq).toEqual([["trackEvent", "simulateur", "simulation_start"]]);
+    expect(window._paq).toEqual([
+      ["trackEvent", "simulateur", "simulation_start"],
+    ]);
   });
 
   it("est un no-op quand désactivé", () => {

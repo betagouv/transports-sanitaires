@@ -7,8 +7,13 @@ import { makeEngine } from "../simulateur/engine.ts";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
-import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
-  "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+import {
+  IDENTITÉ,
+  MODE_TRANSPORT,
+  PRESCRIPTION,
+  SITUATION,
+  TRAJET,
+} from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
 import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import {
   CerfaNonApplicable,
@@ -39,7 +44,10 @@ async function relire(pdf: Uint8Array): Promise<Record<string, string>> {
 }
 
 const engine = () => makeEngine();
-const situation = (entrées: Record<string, string>) => ({ ...BASE_NEUTRE, ...entrées });
+const situation = (entrées: Record<string, string>) => ({
+  ...BASE_NEUTRE,
+  ...entrées,
+});
 
 describe("gabarit CERFA n° 11574*07", () => {
   it("est un formulaire interactif dont les champs couvrent les deux volets", async () => {
@@ -58,9 +66,13 @@ describe("gabarit CERFA n° 11574*07", () => {
   it("n'expose les éléments d'ordre médical que sur le Volet 1", async () => {
     const document = await PDFDocument.load(GABARIT);
     const pages = document.getPages().map((p) => p.ref);
-    const champ = document.getForm().getField(PRESCRIPTION.élémentsOrdreMédical);
+    const champ = document
+      .getForm()
+      .getField(PRESCRIPTION.élémentsOrdreMédical);
 
-    const numéros = champ.acroField.getWidgets().map((w) => pages.indexOf(w.P()) + 1);
+    const numéros = champ.acroField
+      .getWidgets()
+      .map((w) => pages.indexOf(w.P()) + 1);
     expect(numéros).toEqual([3]); // jamais sur le Volet 2, envoyé à l'organisme
   });
 });
@@ -81,8 +93,12 @@ describe("remplirCerfa", () => {
   });
 
   it("distingue les deux états d'un faux-radio partageant un même champ", async () => {
-    const exonérante = await remplirCerfa(GABARIT, [{ case: SITUATION.aldExonérante }]);
-    const nonExonérante = await remplirCerfa(GABARIT, [{ case: SITUATION.aldNonExonérante }]);
+    const exonérante = await remplirCerfa(GABARIT, [
+      { case: SITUATION.aldExonérante },
+    ]);
+    const nonExonérante = await remplirCerfa(GABARIT, [
+      { case: SITUATION.aldNonExonérante },
+    ]);
 
     // Même nom de champ, sémantique opposée : c'est l'état d'export qui tranche.
     expect(SITUATION.aldExonérante.nom).toBe(SITUATION.aldNonExonérante.nom);
@@ -94,13 +110,18 @@ describe("remplirCerfa", () => {
     // `clé` accepte 2 caractères : tronquer produirait une clé NIR fausse sur un
     // document opposable.
     await expect(
-      remplirCerfa(GABARIT, [{ champ: IDENTITÉ.bénéficiaireClé, texte: "421" }]),
+      remplirCerfa(GABARIT, [
+        { champ: IDENTITÉ.bénéficiaireClé, texte: "421" },
+      ]),
     ).rejects.toThrow(/accepte 2 caractères/);
   });
 
   it("aplatit les champs dont le cadre ne montre qu'une ligne", async () => {
     const pdf = await remplirCerfa(GABARIT, [
-      { champ: IDENTITÉ.bénéficiaireAdresse, texte: "12 rue des Lilas\n35000 RENNES" },
+      {
+        champ: IDENTITÉ.bénéficiaireAdresse,
+        texte: "12 rue des Lilas\n35000 RENNES",
+      },
     ]);
     // Un `\n` ici rognerait silencieusement la seconde ligne à l'impression.
     expect((await relire(pdf))[IDENTITÉ.bénéficiaireAdresse]).toBe(
@@ -193,9 +214,13 @@ describe("saisiesDepuisSituation", () => {
 
     // Le garde `CerfaNonApplicable` ne l'écarte pas : c'est bien une prescription.
     const moteur = engine();
-    expect(moteur.setSituation(série).evaluate("p2_transport_en_serie").nodeValue).toBe(true);
+    expect(
+      moteur.setSituation(série).evaluate("p2_transport_en_serie").nodeValue,
+    ).toBe(true);
 
-    const lu = await relire(await remplirCerfa(GABARIT, saisiesDepuisSituation(engine(), série)));
+    const lu = await relire(
+      await remplirCerfa(GABARIT, saisiesDepuisSituation(engine(), série)),
+    );
     expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
   });
 
@@ -237,6 +262,8 @@ describe("saisiesDepuisSituation", () => {
       p2_distance_aller_superieure_150km: "oui",
     });
 
-    expect(() => saisiesDepuisSituation(engine(), accordPréalable)).toThrow(CerfaNonApplicable);
+    expect(() => saisiesDepuisSituation(engine(), accordPréalable)).toThrow(
+      CerfaNonApplicable,
+    );
   });
 });

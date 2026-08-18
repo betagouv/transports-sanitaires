@@ -8,13 +8,16 @@
 
 import express, { type Router, type Request, type Response } from "express";
 import type { Referentiel } from "../../shared/referentiel.ts";
-import { saisieComplete, type IdentiteSaisie } from "../../shared/identite-saisie.ts";
+import {
+  saisieComplete,
+  type IdentiteSaisie,
+} from "../../shared/identite-saisie.ts";
 import { pseudonymiser } from "./pseudonymisation.ts";
 
 export function identificationRoutes(
   referentiel: Referentiel,
   secret: string,
-  pseudonymesEnClair = false
+  pseudonymesEnClair = false,
 ): Router {
   const router = express.Router();
 
@@ -22,7 +25,7 @@ export function identificationRoutes(
     "/etablissements",
     handle(async (_req, res) => {
       res.json(await referentiel.getEtablissements());
-    })
+    }),
   );
 
   router.get(
@@ -34,7 +37,7 @@ export function identificationRoutes(
         return;
       }
       res.json(await referentiel.getServices(etabId));
-    })
+    }),
   );
 
   router.get(
@@ -46,7 +49,7 @@ export function identificationRoutes(
         return;
       }
       res.json(await referentiel.getPrescripteurs(serviceId));
-    })
+    }),
   );
 
   // Pseudonymise l'identité saisie (refs HMAC). Reçoit la saisie brute, renvoie
@@ -57,7 +60,9 @@ export function identificationRoutes(
     handle(async (req, res) => {
       const saisie = (req.body ?? {}) as IdentiteSaisie;
       if (!saisieComplete(saisie)) {
-        res.status(400).json({ error: "sélection d'identification incomplète" });
+        res
+          .status(400)
+          .json({ error: "sélection d'identification incomplète" });
         return;
       }
       // Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
@@ -70,7 +75,7 @@ export function identificationRoutes(
         console.error("[simulateur] enrichissement référentiel échoué:", err);
       }
       res.json(pseudonymiser(secret, saisie, pseudonymesEnClair));
-    })
+    }),
   );
 
   return router;

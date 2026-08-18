@@ -40,12 +40,12 @@ describe("écran de galerie", () => {
       SEEDS.filter((s) => s.outil === outil).length;
 
     const [p1, p2] = screen.getAllByRole("table");
-    expect(within(p1).getAllByRole("button", { name: /^Ouvrir :/ })).toHaveLength(
-      compte("prescripteur"),
-    );
-    expect(within(p2).getAllByRole("button", { name: /^Ouvrir :/ })).toHaveLength(
-      compte("secretariat"),
-    );
+    expect(
+      within(p1).getAllByRole("button", { name: /^Ouvrir :/ }),
+    ).toHaveLength(compte("prescripteur"));
+    expect(
+      within(p2).getAllByRole("button", { name: /^Ouvrir :/ }),
+    ).toHaveLength(compte("secretariat"));
   });
 
   it("donne à chaque seed son régime de financement, non-conformités comprises", () => {
@@ -61,8 +61,12 @@ describe("écran de galerie", () => {
     expect(ligne("secretariat-detenu-inter-etablissements")).toHaveTextContent(
       "établissement prescripteur",
     );
-    expect(ligne("prescripteur-ald-sans-lien")).toHaveTextContent("à qualifier");
-    expect(ligne("secretariat-prescription")).toHaveTextContent("assurance maladie");
+    expect(ligne("prescripteur-ald-sans-lien")).toHaveTextContent(
+      "à qualifier",
+    );
+    expect(ligne("secretariat-prescription")).toHaveTextContent(
+      "assurance maladie",
+    );
   });
 
   it("annonce que le moteur confirme les attendus du catalogue", () => {
@@ -79,11 +83,16 @@ describe("écran de galerie", () => {
     const user = userEvent.setup();
     const ouvertes: string[] = [];
     render(
-      <GalerieSeeds onOuvrir={(seed) => ouvertes.push(seed.id)} onRetour={() => {}} />,
+      <GalerieSeeds
+        onOuvrir={(seed) => ouvertes.push(seed.id)}
+        onRetour={() => {}}
+      />,
     );
 
     const seed = seedParId("secretariat-convocation");
-    await user.click(screen.getByRole("button", { name: `Ouvrir : ${seed.libelle}` }));
+    await user.click(
+      screen.getByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
+    );
     expect(ouvertes).toEqual([seed.id]);
   });
 });
@@ -91,12 +100,19 @@ describe("écran de galerie", () => {
 describe("galerie branchée sur l'App", () => {
   it("ouvre une seed de Partie 1 sur la page de résultat médical", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
 
     await ouvrirGalerie(user);
     const seed = seedParId("prescripteur-ambulance");
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
-    await user.click(await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }));
+    await user.click(
+      await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
+    );
 
     // Page Résultat 1 : le transport retenu est celui qu'annonce la seed, sans
     // avoir répondu à une seule question.
@@ -111,24 +127,42 @@ describe("galerie branchée sur l'App", () => {
 
   it("ouvre une seed de Partie 2 sur la page de résultat final", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
 
     await ouvrirGalerie(user);
     const seed = seedParId("secretariat-accord-prealable-distance");
-    await user.click(await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }));
+    await user.click(
+      await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
+    );
 
     expect(
-      await screen.findByRole("heading", { name: /Document à imprimer/i }, { timeout: 10_000 }),
+      await screen.findByRole(
+        "heading",
+        { name: /Document à imprimer/i },
+        { timeout: 10_000 },
+      ),
     ).toBeInTheDocument();
     // Ce cas relève du S3139 : pas de CERFA de prescription proposé.
     expect(
-      screen.queryByRole("button", { name: /Télécharger la prescription pré-remplie/i }),
+      screen.queryByRole("button", {
+        name: /Télécharger la prescription pré-remplie/i,
+      }),
     ).toBeNull();
   });
 
   it("est aussi accessible depuis le début du parcours, et sait revenir", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
     await sIdentifierProduit(user);
 
     await user.click(screen.getByRole("button", GALERIE));

@@ -36,10 +36,10 @@ export function ResultatFinal({
   const e = engine.setSituation(situation);
   const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
   const doc = String(
-    e.evaluate("cible_document_a_remettre_au_patient").nodeValue ?? ""
+    e.evaluate("cible_document_a_remettre_au_patient").nodeValue ?? "",
   );
   const transport = String(
-    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? ""
+    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? "",
   );
   const transportPrescrit = transport !== "" && transport !== "aucun";
 
@@ -48,8 +48,8 @@ export function ResultatFinal({
     situationSpecifique:
       e.evaluate("cible_article_80_situation_specifique").nodeValue === true,
     permissionTherapeutique:
-      e.evaluate("cible_article_80_permission_sortie_therapeutique").nodeValue ===
-      true,
+      e.evaluate("cible_article_80_permission_sortie_therapeutique")
+        .nodeValue === true,
   };
 
   return (

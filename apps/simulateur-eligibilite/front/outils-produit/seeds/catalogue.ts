@@ -40,7 +40,8 @@ export const SEEDS: readonly Seed[] = [
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
     },
   },
   {
@@ -129,7 +130,8 @@ export const SEEDS: readonly Seed[] = [
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
     },
   },
   {
@@ -145,11 +147,13 @@ export const SEEDS: readonly Seed[] = [
     },
     attendu: {
       cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit:
+        "véhicule personnel ou transport en commun",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
     },
   },
 
@@ -192,7 +196,8 @@ export const SEEDS: readonly Seed[] = [
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
     },
   },
   {
@@ -264,7 +269,8 @@ export const SEEDS: readonly Seed[] = [
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
     },
   },
   {
@@ -300,7 +306,8 @@ export const SEEDS: readonly Seed[] = [
       p1_motif_hospitalisation: "oui",
       p1_critere_regles_hygiene: "oui",
       p2_patient_hospitalise: "oui",
-      p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
+      p2_exception_type:
+        "'Non, le transport ne fait pas partie de ces exceptions.'",
     },
     attendu: {
       cible_resultat_medical: "favorable",
@@ -365,9 +372,9 @@ export const SEEDS: readonly Seed[] = [
     id: "prescripteur-ald-sans-lien",
     libelle: "Prescripteur — ALD sans lien avec le transport",
     description:
-      "La non-conformité la plus courante : une ALD est reconnue, mais le transport "
-      + "n'est pas en lien avec elle (M2.1 = non) et aucune situation encadrée ne le "
-      + "justifie. L'ALD ne suffit jamais à elle seule.",
+      "La non-conformité la plus courante : une ALD est reconnue, mais le transport " +
+      "n'est pas en lien avec elle (M2.1 = non) et aucune situation encadrée ne le " +
+      "justifie. L'ALD ne suffit jamais à elle seule.",
     outil: "prescripteur",
     entrees: {
       p1_motif_ald: "oui",
@@ -387,9 +394,9 @@ export const SEEDS: readonly Seed[] = [
     id: "prescripteur-ald-sans-incapacite",
     libelle: "Prescripteur — ALD en lien, mais sans incapacité",
     description:
-      "Variante plus fine : le lien avec l'ALD est établi, mais il ne s'agit ni d'une "
-      + "séance spécifique ni d'une incapacité ou déficience (M2.3, déduite de Q1 et "
-      + "des critères). Le motif ALD n'est donc pas validé.",
+      "Variante plus fine : le lien avec l'ALD est établi, mais il ne s'agit ni d'une " +
+      "séance spécifique ni d'une incapacité ou déficience (M2.3, déduite de Q1 et " +
+      "des critères). Le motif ALD n'est donc pas validé.",
     outil: "prescripteur",
     entrees: {
       p1_motif_ald: "oui",
@@ -409,9 +416,9 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-detenu-inter-etablissements",
     libelle: "Secrétariat — détenu, transport inter-établissements",
     description:
-      "Patient détenu hospitalisé, transport entre deux établissements (A1.2) : la "
-      + "charge revient à l'établissement, pas à l'Assurance Maladie. Article 80 — "
-      + "situation spécifique, incompatible avec un véhicule personnel.",
+      "Patient détenu hospitalisé, transport entre deux établissements (A1.2) : la " +
+      "charge revient à l'établissement, pas à l'Assurance Maladie. Article 80 — " +
+      "situation spécifique, incompatible avec un véhicule personnel.",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",
@@ -436,8 +443,8 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-detenu-uhsa-uhsi",
     libelle: "Secrétariat — détenu, aller sans consentement UHSA/UHSI",
     description:
-      "Même branche, autre porte (A1.3) : l'aller sans consentement vers une UHSA ou "
-      + "une UHSI relève lui aussi de la charge de l'établissement.",
+      "Même branche, autre porte (A1.3) : l'aller sans consentement vers une UHSA ou " +
+      "une UHSI relève lui aussi de la charge de l'établissement.",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",
@@ -462,10 +469,10 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-detenu-retour-penitentiaire",
     libelle: "Secrétariat — détenu, retour en établissement pénitentiaire",
     description:
-      "Le contre-exemple de la branche détenu (A1.4) : le retour vers l'établissement "
-      + "pénitentiaire rebascule dans le parcours standard et reste pris en charge. "
-      + "Avec les deux seeds précédentes et « non éligible », les quatre issues de la "
-      + "branche sont couvertes.",
+      "Le contre-exemple de la branche détenu (A1.4) : le retour vers l'établissement " +
+      "pénitentiaire rebascule dans le parcours standard et reste pris en charge. " +
+      "Avec les deux seeds précédentes et « non éligible », les quatre issues de la " +
+      "branche sont couvertes.",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",
@@ -481,7 +488,8 @@ export const SEEDS: readonly Seed[] = [
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "assurance maladie",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
+      cible_document_a_remettre_au_patient:
+        "Prescription Médicale de Transport",
       cible_article_80_situation_specifique: false,
     },
   },
@@ -489,17 +497,18 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-permission-therapeutique",
     libelle: "Secrétariat — permission de sortie thérapeutique",
     description:
-      "Une permission de sortie est en jeu, avec motif médical (M0.3 = Non), pour un "
-      + "patient hospitalisé hors exceptions : charge de l'établissement, au titre de "
-      + "l'Article 80 — permission de sortie thérapeutique. C'est la valeur `Non` de "
-      + "M0.3 qui distingue cette seed de « charge de l'établissement ».",
+      "Une permission de sortie est en jeu, avec motif médical (M0.3 = Non), pour un " +
+      "patient hospitalisé hors exceptions : charge de l'établissement, au titre de " +
+      "l'Article 80 — permission de sortie thérapeutique. C'est la valeur `Non` de " +
+      "M0.3 qui distingue cette seed de « charge de l'établissement ».",
     outil: "secretariat",
     entrees: {
       p1_situation_permission_sans_motif_medical: "'Non'",
       p1_motif_hospitalisation: "oui",
       p1_critere_regles_hygiene: "oui",
       p2_patient_hospitalise: "oui",
-      p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
+      p2_exception_type:
+        "'Non, le transport ne fait pas partie de ces exceptions.'",
     },
     attendu: {
       cible_resultat_medical: "favorable",
@@ -516,9 +525,9 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-avion-bateau",
     libelle: "Secrétariat — avion ou bateau de ligne régulière",
     description:
-      "Premier des cinq déclencheurs d'accord préalable indépendants de la distance "
-      + "(A3.4) : le transport reste pris en charge, mais sous réserve de l'accord de "
-      + "l'Assurance Maladie.",
+      "Premier des cinq déclencheurs d'accord préalable indépendants de la distance " +
+      "(A3.4) : le transport reste pris en charge, mais sous réserve de l'accord de " +
+      "l'Assurance Maladie.",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",
@@ -537,7 +546,8 @@ export const SEEDS: readonly Seed[] = [
   {
     id: "secretariat-camsp-cmpp",
     libelle: "Secrétariat — CAMSP ou CMPP",
-    description: "Déclencheur d'accord préalable A3.5 (structure médico-sociale).",
+    description:
+      "Déclencheur d'accord préalable A3.5 (structure médico-sociale).",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",
@@ -595,8 +605,8 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-accompagnement-tiers",
     libelle: "Secrétariat — accompagnement par un tiers",
     description:
-      "Dernier déclencheur d'accord préalable (A3.8) : il ferme le questionnaire A3, "
-      + "et c'est sa réponse — oui comme non — qui autorise la conclusion.",
+      "Dernier déclencheur d'accord préalable (A3.8) : il ferme le questionnaire A3, " +
+      "et c'est sa réponse — oui comme non — qui autorise la conclusion.",
     outil: "secretariat",
     entrees: {
       p1_motif_hospitalisation: "oui",

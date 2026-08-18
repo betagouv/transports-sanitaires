@@ -42,15 +42,23 @@ export function createGristReferentiel({
   return {
     async getEtablissements(): Promise<Etablissement[]> {
       return (await records(TABLE.etablissements))
-        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
+        .map((r) => ({
+          id: str(r.fields[COL.id]),
+          libelle: str(r.fields[COL.nom]),
+        }))
         .filter((e) => e.id && e.libelle);
     },
 
     async getServices(etabId: string): Promise<Service[]> {
       const rowId = await rowIdForId(TABLE.etablissements, etabId);
       if (rowId == null) return [];
-      return (await records(TABLE.services, { [COL.refEtablissement]: [rowId] }))
-        .map((r) => ({ id: str(r.fields[COL.id]), libelle: str(r.fields[COL.nom]) }))
+      return (
+        await records(TABLE.services, { [COL.refEtablissement]: [rowId] })
+      )
+        .map((r) => ({
+          id: str(r.fields[COL.id]),
+          libelle: str(r.fields[COL.nom]),
+        }))
         .filter((s) => s.id && s.libelle);
     },
 
@@ -60,7 +68,8 @@ export function createGristReferentiel({
       return (await records(TABLE.prescripteurs, { [COL.refService]: [rowId] }))
         .map((r) => ({
           id: str(r.fields[COL.id]),
-          libelle: `${str(r.fields[COL.prenom])} ${str(r.fields[COL.nom])}`.trim(),
+          libelle:
+            `${str(r.fields[COL.prenom])} ${str(r.fields[COL.nom])}`.trim(),
         }))
         .filter((p) => p.id && p.libelle);
     },
@@ -76,18 +85,25 @@ export function createGristReferentiel({
       if (saisie.serviceEstAutre && saisie.serviceLibre?.trim()) {
         const etabRowId = await rowIdForId(TABLE.etablissements, saisie.etabId);
         if (etabRowId == null) return;
-        const serviceReelRowId = await assurerService(etabRowId, saisie.serviceLibre);
+        const serviceReelRowId = await assurerService(
+          etabRowId,
+          saisie.serviceLibre,
+        );
 
         if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
           // Nouveau prescripteur : on le crée directement sous le vrai service.
           if (!saisie.nom || !saisie.prenom) return;
-          await assurerPrescripteur(serviceReelRowId, saisie.nom, saisie.prenom);
+          await assurerPrescripteur(
+            serviceReelRowId,
+            saisie.nom,
+            saisie.prenom,
+          );
         } else if (saisie.prescripteurId) {
           // Prescripteur déjà listé sous « Autre » : on le **déplace** vers son
           // vrai service (met à jour sa référence de service).
           const prescRowId = await rowIdForId(
             TABLE.prescripteurs,
-            saisie.prescripteurId
+            saisie.prescripteurId,
           );
           if (prescRowId != null) {
             await update(TABLE.prescripteurs, prescRowId, {
@@ -116,7 +132,7 @@ export function createGristReferentiel({
 
   async function records(
     table: string,
-    filter?: Record<string, Array<string | number>>
+    filter?: Record<string, Array<string | number>>,
   ): Promise<GristRecord[]> {
     const url = new URL(`${base}/tables/${table}/records`);
     if (filter) url.searchParams.set("filter", JSON.stringify(filter));
@@ -139,7 +155,7 @@ export function createGristReferentiel({
   // Crée une ligne et renvoie son rowId interne Grist.
   async function create(
     table: string,
-    fields: Record<string, unknown>
+    fields: Record<string, unknown>,
   ): Promise<number> {
     const res = await fetch(`${base}/tables/${table}/records`, {
       method: "POST",
@@ -163,7 +179,7 @@ export function createGristReferentiel({
   async function update(
     table: string,
     rowId: number,
-    fields: Record<string, unknown>
+    fields: Record<string, unknown>,
   ): Promise<void> {
     const res = await fetch(`${base}/tables/${table}/records`, {
       method: "PATCH",
@@ -184,7 +200,7 @@ export function createGristReferentiel({
     const recs = await records(table);
     const max = recs.reduce(
       (m, r) => Math.max(m, Number(r.fields[COL.id]) || 0),
-      0
+      0,
     );
     return max + 1;
   }
@@ -192,13 +208,15 @@ export function createGristReferentiel({
   // Réutilise le service homonyme (Nom normalisé) de l'établissement, sinon le crée.
   async function assurerService(
     etabRowId: number,
-    nom: string
+    nom: string,
   ): Promise<number> {
     const cn = normalise(nom);
     const existants = await records(TABLE.services, {
       [COL.refEtablissement]: [etabRowId],
     });
-    const deja = existants.find((r) => normalise(str(r.fields[COL.nom])) === cn);
+    const deja = existants.find(
+      (r) => normalise(str(r.fields[COL.nom])) === cn,
+    );
     if (deja) return deja.id;
     return create(TABLE.services, {
       [COL.id]: await nextId2(TABLE.services),
@@ -212,7 +230,7 @@ export function createGristReferentiel({
   async function assurerPrescripteur(
     serviceRowId: number,
     nom: string,
-    prenom: string
+    prenom: string,
   ): Promise<number> {
     const cn = normalise(nom);
     const cp = normalise(prenom);
@@ -222,7 +240,7 @@ export function createGristReferentiel({
     const deja = existants.find(
       (r) =>
         normalise(str(r.fields[COL.nom])) === cn &&
-        normalise(str(r.fields[COL.prenom])) === cp
+        normalise(str(r.fields[COL.prenom])) === cp,
     );
     if (deja) return deja.id;
     return create(TABLE.prescripteurs, {

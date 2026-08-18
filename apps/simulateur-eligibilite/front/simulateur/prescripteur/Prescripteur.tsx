@@ -27,7 +27,7 @@ export function Prescripteur({
   onGalerieSeeds,
 }: Props) {
   const [situation, setSituation] = useState<Situation<string> | null>(
-    situationInitiale
+    situationInitiale,
   );
 
   if (!situation) {
@@ -51,7 +51,8 @@ export function Prescripteur({
           onTermine={(s) => {
             setSituation(s);
             const r = String(
-              engine.setSituation(s).evaluate("cible_resultat_medical").nodeValue ?? ""
+              engine.setSituation(s).evaluate("cible_resultat_medical")
+                .nodeValue ?? "",
             );
             trackResultat(r, "prescripteur");
           }}

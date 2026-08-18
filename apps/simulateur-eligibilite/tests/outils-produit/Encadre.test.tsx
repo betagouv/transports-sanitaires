@@ -5,7 +5,11 @@ import { App } from "../../front/app/App";
 import { Identification } from "../../front/identification/Identification";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { remplirIdentite, remplirIdentiteProduit, sIdentifierProduit } from "../porte";
+import {
+  remplirIdentite,
+  remplirIdentiteProduit,
+  sIdentifierProduit,
+} from "../porte";
 
 // Les outils produit (galerie de seeds, mode test des règles) court-circuitent le
 // parcours : ils doivent être regroupés dans un encadré à part, impossible à
@@ -20,7 +24,9 @@ const LABO = { name: "Mode test des règles" } as const;
 describe("encadré des outils produit — écran d'identification", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
     const user = userEvent.setup();
-    render(<Identification referentiel={snapshotReferentiel} onValide={() => {}} />);
+    render(
+      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+    );
 
     await remplirIdentite(user);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
@@ -28,7 +34,9 @@ describe("encadré des outils produit — écran d'identification", () => {
 
   it("apparaît pour le service n° 4, avec les deux outils et eux seuls", async () => {
     const user = userEvent.setup();
-    render(<Identification referentiel={snapshotReferentiel} onValide={() => {}} />);
+    render(
+      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+    );
 
     await remplirIdentiteProduit(user);
 
@@ -40,11 +48,15 @@ describe("encadré des outils produit — écran d'identification", () => {
 
   it("laisse l'action nominale hors de l'encadré", async () => {
     const user = userEvent.setup();
-    render(<Identification referentiel={snapshotReferentiel} onValide={() => {}} />);
+    render(
+      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+    );
 
     await remplirIdentiteProduit(user);
     const encadre = screen.getByRole("region", ENCADRE);
-    const acceder = screen.getByRole("button", { name: "Accéder au simulateur" });
+    const acceder = screen.getByRole("button", {
+      name: "Accéder au simulateur",
+    });
     expect(encadre).not.toContainElement(acceder);
   });
 
@@ -52,10 +64,14 @@ describe("encadré des outils produit — écran d'identification", () => {
     // Y entrer reste une entrée dans l'application : elle passe par la porte
     // (ADR-1), quelle que soit la destination.
     const user = userEvent.setup();
-    render(<Identification referentiel={snapshotReferentiel} onValide={() => {}} />);
+    render(
+      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+    );
 
     const select = screen.getByRole("combobox", { name: /Établissement/ });
-    await screen.findByRole("option", { name: "Libéral / CNAM / CPAM / Autre" });
+    await screen.findByRole("option", {
+      name: "Libéral / CNAM / CPAM / Autre",
+    });
     await user.selectOptions(select, "Libéral / CNAM / CPAM / Autre");
     const service = screen.getByRole("combobox", { name: /Nom du service/ });
     await screen.findByRole("option", { name: "Transport Sanitaire" });
@@ -69,15 +85,20 @@ describe("encadré des outils produit — écran d'identification", () => {
   it("remonte la destination choisie avec l'identité et l'accès", async () => {
     const user = userEvent.setup();
     const onValide = vi.fn();
-    render(<Identification referentiel={snapshotReferentiel} onValide={onValide} />);
+    render(
+      <Identification referentiel={snapshotReferentiel} onValide={onValide} />,
+    );
 
     await remplirIdentiteProduit(user);
     await user.click(screen.getByRole("button", LABO));
 
-    expect(onValide).toHaveBeenCalledWith(expect.objectContaining({ nom: "Durand" }), {
-      destination: "labo",
-      outilsProduit: true,
-    });
+    expect(onValide).toHaveBeenCalledWith(
+      expect.objectContaining({ nom: "Durand" }),
+      {
+        destination: "labo",
+        outilsProduit: true,
+      },
+    );
   });
 });
 
@@ -101,7 +122,10 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
 
   it("n'apparaît pas quand l'accès n'est pas fourni", () => {
     render(
-      <Prescripteur onPasserAuSecretariat={() => {}} onNouvelleSimulation={() => {}} />,
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />,
     );
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
@@ -110,7 +134,12 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
 describe("App câble les outils produit", () => {
   it("les reproposent au début du parcours après une identification service n° 4", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
 
     await sIdentifierProduit(user);
 
@@ -121,13 +150,22 @@ describe("App câble les outils produit", () => {
 
   it("ne les propose pas après une identification ordinaire", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
 
     await remplirIdentite(user);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
+    await user.click(
+      screen.getByRole("button", { name: "Accéder au simulateur" }),
+    );
 
-    expect(await screen.findByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("group", { name: /équipe SMUR/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 });

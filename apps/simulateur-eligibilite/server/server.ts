@@ -18,7 +18,7 @@ function pseudonymisationSecret(): string {
   const secret = process.env.PSEUDONYMISATION_SECRET?.trim();
   if (secret) return secret;
   console.warn(
-    "[simulateur] PSEUDONYMISATION_SECRET absente — secret de dev (non sécurisé)."
+    "[simulateur] PSEUDONYMISATION_SECRET absente — secret de dev (non sécurisé).",
   );
   return "dev-secret-non-securise";
 }
@@ -31,7 +31,7 @@ function pseudonymesEnClair(): boolean {
   const actif = flag === "true" || flag === "1" || flag === "oui";
   if (actif) {
     console.warn(
-      "[simulateur] PSEUDONYMISATION_EN_CLAIR active — refs Matomo en clair (debug, hors prod)."
+      "[simulateur] PSEUDONYMISATION_EN_CLAIR active — refs Matomo en clair (debug, hors prod).",
     );
   }
   return actif;

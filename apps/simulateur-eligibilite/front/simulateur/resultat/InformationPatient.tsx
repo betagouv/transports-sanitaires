@@ -48,14 +48,18 @@ export function PourquoiCeTransport({
 
       {criteres.length > 0 && (
         <>
-          <SousTitre icone="fr-icon-stethoscope-line">{titreCriteres}</SousTitre>
+          <SousTitre icone="fr-icon-stethoscope-line">
+            {titreCriteres}
+          </SousTitre>
           <ListeVulgarisee items={criteres} />
         </>
       )}
 
       {motifs.length > 0 && (
         <>
-          <SousTitre icone="fr-icon-checkbox-circle-line">{titreMotifs}</SousTitre>
+          <SousTitre icone="fr-icon-checkbox-circle-line">
+            {titreMotifs}
+          </SousTitre>
           <ListeVulgarisee items={motifs} />
         </>
       )}
@@ -74,7 +78,9 @@ export function ExplicationTransportImpossible() {
         votre médecin de prescrire un transport sanitaire.
       </p>
 
-      <SousTitre icone="fr-icon-lightbulb-line">Quelques explications</SousTitre>
+      <SousTitre icone="fr-icon-lightbulb-line">
+        Quelques explications
+      </SousTitre>
       <p className="fr-mb-2w">
         Pour qu’un transport sanitaire puisse être prescrit, deux éléments
         doivent être réunis :
@@ -96,8 +102,8 @@ export function ExplicationTransportImpossible() {
         niveau d’aide compatible avec votre état de santé.
       </p>
       <p>
-        Dans les informations indiquées, au moins l’un de ces deux éléments n’est
-        pas suffisamment établi.
+        Dans les informations indiquées, au moins l’un de ces deux éléments
+        n’est pas suffisamment établi.
       </p>
     </>
   );

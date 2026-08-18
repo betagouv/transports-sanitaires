@@ -36,7 +36,10 @@ export function OutilsProduit({ children }: { children: ReactNode }) {
     >
       <p
         className="fr-text--xs fr-mb-1w"
-        style={{ color: "var(--text-mention-grey)", textTransform: "uppercase" }}
+        style={{
+          color: "var(--text-mention-grey)",
+          textTransform: "uppercase",
+        }}
       >
         <span className="fr-icon-flashlight-line fr-mr-1w" aria-hidden="true" />
         Outils produit — service Transport Sanitaire

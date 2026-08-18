@@ -11,7 +11,10 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 import { sIdentifierProduit } from "../porte";
 
 const GABARIT = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
+  join(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf",
+  ),
 );
 
 function setup() {
@@ -29,7 +32,9 @@ function setup() {
 const GALERIE = { name: "Galerie de seeds" } as const;
 const SEED_CERFA = seedParId("secretariat-prescription");
 const OUVRIR_SEED = { name: `Ouvrir : ${SEED_CERFA.libelle}` } as const;
-const TELECHARGER = { name: /Télécharger la prescription pré-remplie/i } as const;
+const TELECHARGER = {
+  name: /Télécharger la prescription pré-remplie/i,
+} as const;
 
 beforeEach(() => sessionStorage.clear());
 
@@ -39,7 +44,9 @@ describe("accès au CERFA via la galerie de seeds", () => {
     await sIdentifierProduit(user);
 
     // Le parcours est bien à sa première question, et la galerie est offerte.
-    expect(await screen.findByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("group", { name: /équipe SMUR/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", GALERIE)).toBeInTheDocument();
   });
 
@@ -52,7 +59,11 @@ describe("accès au CERFA via la galerie de seeds", () => {
 
     // Page Résultat 2, sur un cas « prescription médicale de transport ».
     expect(
-      await screen.findByRole("heading", { name: /Document à imprimer/i }, { timeout: 10_000 }),
+      await screen.findByRole(
+        "heading",
+        { name: /Document à imprimer/i },
+        { timeout: 10_000 },
+      ),
     ).toBeInTheDocument();
     expect(
       await screen.findByRole("button", TELECHARGER, { timeout: 10_000 }),
@@ -98,9 +109,14 @@ describe("accès au CERFA via la galerie de seeds", () => {
     // couvre le mécanisme (prop absente ⇒ pas de bouton), la garde d'accès
     // elle-même étant vérifiée dans `tests/outils-produit/Encadre.test.tsx`.
     render(
-      <Prescripteur onPasserAuSecretariat={() => {}} onNouvelleSimulation={() => {}} />,
+      <Prescripteur
+        onPasserAuSecretariat={() => {}}
+        onNouvelleSimulation={() => {}}
+      />,
     );
-    expect(screen.getByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: /équipe SMUR/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("button", GALERIE)).toBeNull();
   });
 });

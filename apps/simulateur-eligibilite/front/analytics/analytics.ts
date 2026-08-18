@@ -49,7 +49,7 @@ const DEFAULT_SITE_ID = "275";
 export function buildEvent(
   identite: IdentitePseudonymisee | null,
   action: string,
-  value?: number
+  value?: number,
 ): unknown[] {
   const event: unknown[] = ["trackEvent", CATEGORY, action];
   const name = identite?.prescripteurRef;
@@ -122,8 +122,10 @@ export const trackSimulationComplete = (outil?: string): void =>
   track(prefixe(outil, "simulation_complete"));
 export const trackResultat = (statut: string, outil?: string): void =>
   track(prefixe(outil, `resultat:${statut}`));
-export const trackSimulationAbandon = (lastStep: number, outil?: string): void =>
-  track(prefixe(outil, "simulation_abandon"), lastStep);
+export const trackSimulationAbandon = (
+  lastStep: number,
+  outil?: string,
+): void => track(prefixe(outil, "simulation_abandon"), lastStep);
 // Téléchargement du CERFA pré-rempli : mesure l'usage réel du document produit en
 // fin de parcours. Émis par le secrétariat uniquement (seul outil qui l'expose).
 export const trackCerfaTelecharge = (): void =>

@@ -5,7 +5,10 @@
 //   local et les tests sans configuration ni secret. Voir
 //   docs/architecture/identification.md — §7 (incréments).
 
-import { snapshotReferentiel, type Referentiel } from "../../shared/referentiel.ts";
+import {
+  snapshotReferentiel,
+  type Referentiel,
+} from "../../shared/referentiel.ts";
 import { createGristReferentiel } from "./referentiel-grist.ts";
 
 const DEFAULT_DOC_URL =
@@ -15,7 +18,7 @@ export function chooseReferentiel(env = process.env): Referentiel {
   const apiKey = env.GRIST_API_KEY?.trim();
   if (!apiKey) {
     console.warn(
-      "[simulateur] GRIST_API_KEY absente — référentiel snapshot (dev/fallback)."
+      "[simulateur] GRIST_API_KEY absente — référentiel snapshot (dev/fallback).",
     );
     return snapshotReferentiel;
   }

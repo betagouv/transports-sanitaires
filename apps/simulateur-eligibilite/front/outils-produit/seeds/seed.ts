@@ -81,7 +81,10 @@ export type EvaluationSeed = {
  * seul (`front/simulateur/engine.ts`, qui peut porter les règles du labo) et les
  * tests le fabriquent depuis le disque.
  */
-export function evaluerSeed(moteur: Engine<string>, seed: Seed): EvaluationSeed {
+export function evaluerSeed(
+  moteur: Engine<string>,
+  seed: Seed,
+): EvaluationSeed {
   const évalué = moteur.setSituation(situationDe(seed));
 
   const valeurs = {} as Record<CibleSeed, unknown>;
@@ -89,7 +92,8 @@ export function evaluerSeed(moteur: Engine<string>, seed: Seed): EvaluationSeed 
   for (const cible of CIBLES_SEED) {
     const résultat = évalué.evaluate(cible);
     valeurs[cible] = résultat.nodeValue;
-    if (Object.keys(résultat.missingVariables ?? {}).length > 0) manquantes.push(cible);
+    if (Object.keys(résultat.missingVariables ?? {}).length > 0)
+      manquantes.push(cible);
   }
 
   const ecarts = Object.entries(seed.attendu)

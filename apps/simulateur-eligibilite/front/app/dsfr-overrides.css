@@ -8,6 +8,10 @@
    laisse le label épouser son contenu. `.fr-label` en plus = spécificité
    supérieure au sélecteur DSFR, l'override gagne quel que soit l'ordre de
    chargement des feuilles de style. */
-.fr-fieldset .fr-fieldset__content .fr-radio-rich input[type="radio"] + label.fr-label {
+.fr-fieldset
+  .fr-fieldset__content
+  .fr-radio-rich
+  input[type="radio"]
+  + label.fr-label {
   min-height: auto;
 }

@@ -1,11 +1,14 @@
-import type { EvaluatedFormElement, FormPageElementProp } from "@publicodes/forms";
+import type {
+  EvaluatedFormElement,
+  FormPageElementProp,
+} from "@publicodes/forms";
 import { reglesBrutes } from "../engine";
 
 // Valeur booléenne d'un champ d'option, à trois états (vrai / faux / indéfini —
 // non répondu). Selon le rendu, `@publicodes/forms` expose `checked` (case) ou
 // `value` (radio oui/non). On distingue `false` (répondu non) de `undefined`.
 export function valeurBool(
-  el: EvaluatedFormElement & FormPageElementProp
+  el: EvaluatedFormElement & FormPageElementProp,
 ): boolean | undefined {
   const v = "checked" in el ? el.checked : el.value;
   return typeof v === "boolean" ? v : undefined;
@@ -68,4 +71,5 @@ for (const m of mosaiques) {
   if (m.aucun) parOption.set(m.aucun.id, m);
 }
 
-export const mosaiqueDe = (id: string): Mosaique | undefined => parOption.get(id);
+export const mosaiqueDe = (id: string): Mosaique | undefined =>
+  parOption.get(id);

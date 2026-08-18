@@ -43,7 +43,8 @@ function EtapesPatient({
   transport: string;
   transportPrescrit: boolean;
 }) {
-  const vehiculePerso = transport === "véhicule personnel ou transport en commun";
+  const vehiculePerso =
+    transport === "véhicule personnel ou transport en commun";
   const vslTaxi = transport === "VSL ou taxi conventionné";
   const vslTaxiTpmr = transport === "VSL TPMR ou taxi conventionné TPMR";
   const ambulance = transport === "ambulance";
@@ -53,12 +54,12 @@ function EtapesPatient({
       return (
         <>
           <li>
-            Organisez votre trajet avec votre véhicule personnel ou les transports
-            en commun.
+            Organisez votre trajet avec votre véhicule personnel ou les
+            transports en commun.
           </li>
           <li>
-            Conservez les justificatifs nécessaires : billets, reçus, justificatifs
-            de trajet ou de distance selon le cas.
+            Conservez les justificatifs nécessaires : billets, reçus,
+            justificatifs de trajet ou de distance selon le cas.
           </li>
           <li>
             Transmettez les justificatifs à votre organisme d’Assurance Maladie
@@ -81,12 +82,16 @@ function EtapesPatient({
       return (
         <>
           <li>
-            Organisez le transport avec un transporteur adapté au fauteuil roulant,
-            ou avec l’aide du secrétariat médical selon l’organisation prévue.
+            Organisez le transport avec un transporteur adapté au fauteuil
+            roulant, ou avec l’aide du secrétariat médical selon l’organisation
+            prévue.
           </li>
           <li>
             Précisez que le transport doit se faire{" "}
-            <strong>sans quitter votre fauteuil roulant manuel ou électrique</strong>.
+            <strong>
+              sans quitter votre fauteuil roulant manuel ou électrique
+            </strong>
+            .
           </li>
           <li>Présentez la prescription au transporteur avant le transport.</li>
         </>
@@ -95,9 +100,9 @@ function EtapesPatient({
       return (
         <>
           <li>
-            Organisez le transport avec le secrétariat médical, l’établissement de
-            santé ou une société d’ambulance, selon l’organisation prévue pour votre
-            situation.
+            Organisez le transport avec le secrétariat médical, l’établissement
+            de santé ou une société d’ambulance, selon l’organisation prévue
+            pour votre situation.
           </li>
           <li>
             Présentez la prescription au transporteur avant le transport, sauf
@@ -117,8 +122,8 @@ function EtapesPatient({
             personnel ou les transports en commun.
           </li>
           <li>
-            Conservez les justificatifs nécessaires : billets, reçus, justificatifs
-            de trajet ou de distance selon le cas.
+            Conservez les justificatifs nécessaires : billets, reçus,
+            justificatifs de trajet ou de distance selon le cas.
           </li>
           <li>
             Transmettez les justificatifs à votre organisme d’Assurance Maladie
@@ -131,8 +136,8 @@ function EtapesPatient({
         <>
           <li>
             Une fois l’accord obtenu, organisez le transport avec un{" "}
-            <strong>VSL</strong> ou un <strong>taxi conventionné</strong>, ou avec
-            l’aide du secrétariat médical selon l’organisation prévue.
+            <strong>VSL</strong> ou un <strong>taxi conventionné</strong>, ou
+            avec l’aide du secrétariat médical selon l’organisation prévue.
           </li>
           <li>Présentez la demande au transporteur.</li>
         </>
@@ -141,13 +146,16 @@ function EtapesPatient({
       return (
         <>
           <li>
-            Une fois l’accord obtenu, organisez le transport avec un transporteur
-            adapté au fauteuil roulant, ou avec l’aide du secrétariat médical selon
-            l’organisation prévue.
+            Une fois l’accord obtenu, organisez le transport avec un
+            transporteur adapté au fauteuil roulant, ou avec l’aide du
+            secrétariat médical selon l’organisation prévue.
           </li>
           <li>
             Précisez que le transport doit se faire{" "}
-            <strong>sans quitter votre fauteuil roulant manuel ou électrique</strong>.
+            <strong>
+              sans quitter votre fauteuil roulant manuel ou électrique
+            </strong>
+            .
           </li>
           <li>Présentez la demande au transporteur.</li>
         </>
@@ -160,7 +168,9 @@ function EtapesPatient({
             médical, l’établissement de santé ou une société d’ambulance, selon
             l’organisation prévue pour votre situation.
           </li>
-          <li>Présentez la demande au transporteur, sauf situation d’urgence.</li>
+          <li>
+            Présentez la demande au transporteur, sauf situation d’urgence.
+          </li>
         </>
       );
     return null;
@@ -175,10 +185,13 @@ function EtapesPatient({
             <strong>Prescription Médicale de Transport</strong>.
           </li>
           <li>
-            Vérifiez que le transport indiqué correspond bien au transport retenu :{" "}
-            <strong>{transport}</strong>.
+            Vérifiez que le transport indiqué correspond bien au transport
+            retenu : <strong>{transport}</strong>.
           </li>
-          <li>Utilisez uniquement le mode de transport indiqué sur la prescription.</li>
+          <li>
+            Utilisez uniquement le mode de transport indiqué sur la
+            prescription.
+          </li>
           {modaliteTransportPMT()}
         </ol>
       );
@@ -191,15 +204,16 @@ function EtapesPatient({
           </li>
           <li>Cette demande vaut aussi prescription médicale de transport.</li>
           <li>
-            Vérifiez que le transport demandé correspond bien au transport retenu :{" "}
-            <strong>{transport}</strong>.
+            Vérifiez que le transport demandé correspond bien au transport
+            retenu : <strong>{transport}</strong>.
           </li>
           <li>
-            Envoyez la demande à l’Assurance Maladie, à l’attention du médecin-conseil.
+            Envoyez la demande à l’Assurance Maladie, à l’attention du
+            médecin-conseil.
           </li>
           <li>
-            Attendez la réponse de l’Assurance Maladie avant d’organiser le transport,
-            sauf urgence.
+            Attendez la réponse de l’Assurance Maladie avant d’organiser le
+            transport, sauf urgence.
           </li>
           <li>
             En cas de refus, le transport ne sera pas pris en charge dans les
@@ -217,12 +231,14 @@ function EtapesPatient({
             <strong>véhicule personnel ou transport en commun</strong>.
           </li>
           <li>
-            Organisez votre trajet selon les indications figurant sur la convocation,
-            l’avis ou les consignes données par le service concerné.
+            Organisez votre trajet selon les indications figurant sur la
+            convocation, l’avis ou les consignes données par le service
+            concerné.
           </li>
           <li>Conservez les justificatifs de trajet nécessaires.</li>
           <li>
-            Présentez la convocation ou l’avis si un justificatif vous est demandé.
+            Présentez la convocation ou l’avis si un justificatif vous est
+            demandé.
           </li>
         </ol>
       ) : (
@@ -232,8 +248,9 @@ function EtapesPatient({
             Le transport retenu est : <strong>{transport}</strong>.
           </li>
           <li>
-            Organisez le transport selon les indications figurant sur la convocation,
-            l’avis ou les consignes données par le service concerné.
+            Organisez le transport selon les indications figurant sur la
+            convocation, l’avis ou les consignes données par le service
+            concerné.
           </li>
           <li>Présentez la convocation ou l’avis au transporteur.</li>
         </ol>
@@ -245,9 +262,12 @@ function EtapesPatient({
             Le transport retenu est : <strong>{transport}</strong>.
           </li>
           <li>
-            Le transport doit être organisé ou encadré par l’établissement de santé.
+            Le transport doit être organisé ou encadré par l’établissement de
+            santé.
           </li>
-          <li>Rapprochez-vous du service ou du secrétariat de l’établissement.</li>
+          <li>
+            Rapprochez-vous du service ou du secrétariat de l’établissement.
+          </li>
           <li>
             L’établissement vous indiquera le document interne ou la procédure à
             suivre.
@@ -258,26 +278,29 @@ function EtapesPatient({
       return (
         <ol>
           <li>
-            Ce transport relève d’une prise en charge médicale urgente par une équipe
-            SMUR — Structure Mobile d’Urgence et de Réanimation.
+            Ce transport relève d’une prise en charge médicale urgente par une
+            équipe SMUR — Structure Mobile d’Urgence et de Réanimation.
           </li>
           <li>
             L’organisation du transport relève de l’équipe médicale ou de
             l’établissement concerné.
           </li>
-          <li>Suivez les consignes données par l’équipe médicale ou l’établissement.</li>
+          <li>
+            Suivez les consignes données par l’équipe médicale ou
+            l’établissement.
+          </li>
         </ol>
       );
     case "bariatrique seul":
       return (
         <ol>
           <li>
-            Aucun transport sanitaire ne peut être prescrit par votre médecin sur la
-            base du seul motif bariatrique.
+            Aucun transport sanitaire ne peut être prescrit par votre médecin
+            sur la base du seul motif bariatrique.
           </li>
           <li>
-            Rapprochez-vous du service médical ou du secrétariat pour connaître les
-            solutions possibles selon votre situation.
+            Rapprochez-vous du service médical ou du secrétariat pour connaître
+            les solutions possibles selon votre situation.
           </li>
         </ol>
       );
@@ -285,7 +308,9 @@ function EtapesPatient({
       return (
         <ol>
           <li>Le transport reste à votre charge.</li>
-          <li>Vous pouvez organiser vous-même le transport adapté à votre sortie.</li>
+          <li>
+            Vous pouvez organiser vous-même le transport adapté à votre sortie.
+          </li>
           <li>
             En cas de changement de situation ou de motif médical, une nouvelle
             évaluation médicale peut être nécessaire.
@@ -300,14 +325,14 @@ function EtapesPatient({
             votre déplacement n’est pas pris en charge par l’Assurance Maladie.
           </li>
           <li>
-            Dans cette situation, le transport ne peut pas être pris en charge par
-            l’Assurance Maladie, même si un mode de transport particulier est
-            médicalement adapté.
+            Dans cette situation, le transport ne peut pas être pris en charge
+            par l’Assurance Maladie, même si un mode de transport particulier
+            est médicalement adapté.
           </li>
           <li>
-            N’adressez aucune Prescription Médicale de Transport, Demande d’Accord
-            Préalable ou demande de remboursement à votre caisse pour ce
-            déplacement.
+            N’adressez aucune Prescription Médicale de Transport, Demande
+            d’Accord Préalable ou demande de remboursement à votre caisse pour
+            ce déplacement.
           </li>
         </ol>
       );
@@ -315,28 +340,31 @@ function EtapesPatient({
       return transportPrescrit ? (
         <ol>
           <li>
-            Le transport retenu par le médecin est : <strong>{transport}</strong>.
+            Le transport retenu par le médecin est :{" "}
+            <strong>{transport}</strong>.
           </li>
           <li>
-            Ce résultat signifie que le transport ne relève pas d’une prise en charge
-            par l’Assurance Maladie dans ce cadre.
+            Ce résultat signifie que le transport ne relève pas d’une prise en
+            charge par l’Assurance Maladie dans ce cadre.
           </li>
           <li>Le transport reste à votre charge.</li>
           <li>
-            Rapprochez-vous du secrétariat médical ou de l’établissement pour connaître
-            la suite à donner.
+            Rapprochez-vous du secrétariat médical ou de l’établissement pour
+            connaître la suite à donner.
           </li>
         </ol>
       ) : (
         <ol>
           <li>
-            Aucun transport sanitaire ne peut être prescrit par votre médecin sur la
-            base des informations indiquées.
+            Aucun transport sanitaire ne peut être prescrit par votre médecin
+            sur la base des informations indiquées.
           </li>
-          <li>Le transport reste à votre charge si vous décidez de l’organiser.</li>
           <li>
-            Rapprochez-vous du secrétariat médical ou de l’établissement pour connaître
-            la suite à donner.
+            Le transport reste à votre charge si vous décidez de l’organiser.
+          </li>
+          <li>
+            Rapprochez-vous du secrétariat médical ou de l’établissement pour
+            connaître la suite à donner.
           </li>
         </ol>
       );
@@ -366,7 +394,10 @@ export function Bloc2Etapes({
   return (
     <div className="fr-callout" style={{ marginBottom: "2rem" }}>
       <h3 className="fr-callout__title">
-        <span className="fr-icon-information-line fr-mr-1w" aria-hidden="true" />
+        <span
+          className="fr-icon-information-line fr-mr-1w"
+          aria-hidden="true"
+        />
         Information destinée au patient
       </h3>
 

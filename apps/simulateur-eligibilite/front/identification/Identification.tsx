@@ -89,7 +89,9 @@ export function Identification({
     setServices([]);
     setPrescripteurs([]);
     if (etabId) {
-      referentiel.getServices(etabId).then((l) => setServices(triParLibelle(l)));
+      referentiel
+        .getServices(etabId)
+        .then((l) => setServices(triParLibelle(l)));
     }
   }, [referentiel, etabId]);
 
@@ -111,14 +113,15 @@ export function Identification({
   const serviceChoisi = serviceId !== "";
   // « Autre » sélectionné → saisie du service/unité réel obligatoire.
   const serviceEstAutre = estAutre(
-    services.find((s) => s.id === serviceId)?.libelle ?? ""
+    services.find((s) => s.id === serviceId)?.libelle ?? "",
   );
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
   const identiteLibre = serviceChoisi && prescripteurHorsListe;
   // Les outils produit (galerie de seeds, mode test des règles) ne sont proposés
   // que pour le service dédié du référentiel — sur tous les environnements.
   const serviceSelectionne = services.find((s) => s.id === serviceId);
-  const outilsProduit = !!serviceSelectionne && estServiceProduit(serviceSelectionne);
+  const outilsProduit =
+    !!serviceSelectionne && estServiceProduit(serviceSelectionne);
 
   function buildSaisie(): IdentiteSaisie {
     const saisie: IdentiteSaisie = { etabId };
@@ -234,7 +237,9 @@ export function Identification({
                   {prescripteur.libelle}
                 </option>
               ))}
-              <option value={PRESCRIPTEUR_HORS_LISTE}>{OPTION_HORS_LISTE}</option>
+              <option value={PRESCRIPTEUR_HORS_LISTE}>
+                {OPTION_HORS_LISTE}
+              </option>
             </select>
           </div>
         )}

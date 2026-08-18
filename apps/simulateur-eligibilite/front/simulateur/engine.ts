@@ -17,7 +17,7 @@ const reglesOfficielles = Object.values(modules).reduce<RawPublicodes<string>>(
     const parsed = yaml.load(content as string) as RawPublicodes<string>;
     return { ...acc, ...parsed };
   },
-  {}
+  {},
 );
 
 // Choisit les règles à charger : celles du **mode labo** (test de règles par le
@@ -34,12 +34,15 @@ function initMoteur(): { rules: RawPublicodes<string>; engine: Engine } {
     } catch (err) {
       console.error(
         "[labo] Règles de test invalides — retour aux règles officielles.",
-        err
+        err,
       );
       desactiverLabo();
     }
   }
-  return { rules: reglesOfficielles, engine: new Engine(reglesOfficielles, OPTIONS) };
+  return {
+    rules: reglesOfficielles,
+    engine: new Engine(reglesOfficielles, OPTIONS),
+  };
 }
 
 const moteur = initMoteur();

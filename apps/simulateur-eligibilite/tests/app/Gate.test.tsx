@@ -9,7 +9,9 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 // en test).
 function setup() {
   const user = userEvent.setup();
-  render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
+  render(
+    <App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />,
+  );
   return { user };
 }
 
@@ -25,11 +27,9 @@ describe("écran-porte d'identification", () => {
     // Pas de titre (app en iframe) : l'écran d'identification se reconnaît à son
     // premier champ, et le formulaire du simulateur est absent.
     expect(
-      screen.getByRole("combobox", { name: /Établissement/ })
+      screen.getByRole("combobox", { name: /Établissement/ }),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("group", { name: /équipe SMUR/i })
-    ).toBeNull();
+    expect(screen.queryByRole("group", { name: /équipe SMUR/i })).toBeNull();
   });
 
   it("passe au simulateur une fois le prescripteur validé", async () => {
@@ -39,12 +39,12 @@ describe("écran-porte d'identification", () => {
     await choisir(/Nom du service/, "Cardiologie");
     await choisir(/Vous êtes/, "Dr Amina Berger");
     await user.click(
-      screen.getByRole("button", { name: "Accéder au simulateur" })
+      screen.getByRole("button", { name: "Accéder au simulateur" }),
     );
 
     // Le simulateur est monté : une question de Partie 1 apparaît (plus de titre h1).
     expect(
-      await screen.findByRole("group", { name: /équipe SMUR/i })
+      await screen.findByRole("group", { name: /équipe SMUR/i }),
     ).toBeInTheDocument();
   });
 });

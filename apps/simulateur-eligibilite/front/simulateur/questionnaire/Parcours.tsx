@@ -59,7 +59,7 @@ export function Parcours({
   onTermine,
 }: Props) {
   const [formState, setFormState] = useState<FormState<string>>(() =>
-    formBuilder.start(FormBuilder.newState(situationInitiale), ...cibles)
+    formBuilder.start(FormBuilder.newState(situationInitiale), ...cibles),
   );
 
   const { current, pageCount, hasNextPage, hasPreviousPage } =
@@ -116,7 +116,8 @@ export function Parcours({
     if (aucuneQuestion) return;
     trackSimulationStart(outil);
     const onLeave = () => {
-      if (!termineRef.current) trackSimulationAbandon(currentRef.current, outil);
+      if (!termineRef.current)
+        trackSimulationAbandon(currentRef.current, outil);
     };
     window.addEventListener("pagehide", onLeave);
     return () => window.removeEventListener("pagehide", onLeave);
@@ -129,8 +130,8 @@ export function Parcours({
       formBuilder.handleInputChange(
         formState,
         id,
-        value as string | number | boolean | undefined
-      )
+        value as string | number | boolean | undefined,
+      ),
     );
   }
 
@@ -139,7 +140,8 @@ export function Parcours({
   // options du groupe (sinon indéfinies → le moteur les considère non répondues).
   function appliquerMosaique(updates: Array<[string, boolean | undefined]>) {
     let s = formState;
-    for (const [id, val] of updates) s = formBuilder.handleInputChange(s, id, val);
+    for (const [id, val] of updates)
+      s = formBuilder.handleInputChange(s, id, val);
     setFormState(s);
   }
 
@@ -147,7 +149,7 @@ export function Parcours({
   // présent, sinon par évaluation (cas d'une règle « aucun » inerte, hors page).
   function valeurRegle(
     id: string,
-    champ?: EvaluatedFormElement & FormPageElementProp
+    champ?: EvaluatedFormElement & FormPageElementProp,
   ): boolean {
     if (champ) return valeurBool(champ) === true;
     return (
@@ -193,9 +195,7 @@ export function Parcours({
 
   // Plan de rendu : une case-à-cocher groupée (Mosaique) pour les champs
   // appartenant à une mosaïque, un FormField pour les autres.
-  const parId = new Map(
-    currentPage.elements.map((e) => [e.id, e] as const)
-  );
+  const parId = new Map(currentPage.elements.map((e) => [e.id, e] as const));
   const groupesVus = new Set<string>();
   const champs = currentPage.elements
     .map((field) => {
@@ -223,7 +223,7 @@ export function Parcours({
         : false;
       // Écritures liées à « aucun » (exclusivité) ajoutées à chaque bascule.
       const ecrireAucun = (
-        v: boolean | undefined
+        v: boolean | undefined,
       ): Array<[string, boolean | undefined]> =>
         aucunId ? [[aucunId, v]] : [];
       return (
@@ -231,11 +231,13 @@ export function Parcours({
           key={m.parentId}
           question={m.question}
           options={opts}
-          aucun={m.aucun ? { label: m.aucun.label, coche: aucunCoche } : undefined}
+          aucun={
+            m.aucun ? { label: m.aucun.label, coche: aucunCoche } : undefined
+          }
           onToggleOption={(id, coche) =>
             appliquerMosaique([
               ...opts.map((o): [string, boolean | undefined] =>
-                o.id === id ? [o.id, coche] : [o.id, valeurBool(o) === true]
+                o.id === id ? [o.id, coche] : [o.id, valeurBool(o) === true],
               ),
               // Cocher/décocher une option exclut « aucun ».
               ...ecrireAucun(false),

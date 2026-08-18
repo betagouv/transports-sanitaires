@@ -7,7 +7,12 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
-import { MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from "./champs-cerfa.ts";
+import {
+  MODE_TRANSPORT,
+  PRESCRIPTION,
+  SITUATION,
+  TRAJET,
+} from "./champs-cerfa.ts";
 import type { Saisie } from "./remplir-cerfa.ts";
 
 type ModePrescrit =
@@ -52,12 +57,16 @@ export function saisiesDepuisSituation(
   const valeur = (règle: string) => évalué.evaluate(règle).nodeValue;
 
   const casFinal = valeur("cible_cas_final");
-  if (casFinal !== "prescription médicale de transport") throw new CerfaNonApplicable(casFinal);
+  if (casFinal !== "prescription médicale de transport")
+    throw new CerfaNonApplicable(casFinal);
 
   const saisies: Saisie[] = [];
 
   // ❶ Situation permettant la prise en charge (plusieurs choix possibles).
-  if (vrai("p1_motif_hospitalisation") || vrai("p1_motif_seance_chimio_radio_hemodialyse")) {
+  if (
+    vrai("p1_motif_hospitalisation") ||
+    vrai("p1_motif_seance_chimio_radio_hemodialyse")
+  ) {
     // Le CERFA réunit sur une seule case l'hospitalisation et les séances
     // (chimio / radio / hémodialyse) que le simulateur distingue.
     saisies.push({ case: SITUATION.entréeSortieHospitalisation });
@@ -74,9 +83,15 @@ export function saisiesDepuisSituation(
 
   if (mode === "ambulance") {
     const justifications = [
-      ["p1_critere_position_allongee_demi_assise", MODE_TRANSPORT.positionAllongéeDemiAssise],
+      [
+        "p1_critere_position_allongee_demi_assise",
+        MODE_TRANSPORT.positionAllongéeDemiAssise,
+      ],
       ["p1_critere_brancardage_portage", MODE_TRANSPORT.brancardagePortage],
-      ["p1_critere_surveillance_personne_qualifiee", MODE_TRANSPORT.surveillancePersonneQualifiée],
+      [
+        "p1_critere_surveillance_personne_qualifiee",
+        MODE_TRANSPORT.surveillancePersonneQualifiée,
+      ],
       ["p1_critere_oxygene", MODE_TRANSPORT.oxygène],
       ["p1_critere_asepsie", MODE_TRANSPORT.asepsieRigoureuse],
     ] as const;
@@ -85,7 +100,10 @@ export function saisiesDepuisSituation(
     }
   }
 
-  if (mode === "VSL ou taxi conventionné" || mode === "VSL TPMR ou taxi conventionné TPMR") {
+  if (
+    mode === "VSL ou taxi conventionné" ||
+    mode === "VSL TPMR ou taxi conventionné TPMR"
+  ) {
     saisies.push({ case: MODE_TRANSPORT.assisProfessionnalisé });
     if (mode === "VSL TPMR ou taxi conventionné TPMR") {
       saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
@@ -120,14 +138,21 @@ function saisiesTrajet(valeur: Lecteur): Saisie[] {
   // Seul le **type** de lieu est modélisé. « Domicile » se coche ; « structure de
   // soins » et « autre lieu » ouvrent un champ d'adresse que le simulateur ne
   // connaît pas — d'où leur présence dans `RESTE_A_SAISIR.trajet`.
-  if (valeur("p2_trajet_depart") === "Domicile") saisies.push({ case: TRAJET.départDomicile });
-  if (valeur("p2_trajet_arrivee") === "Domicile") saisies.push({ case: TRAJET.arrivéeDomicile });
+  if (valeur("p2_trajet_depart") === "Domicile")
+    saisies.push({ case: TRAJET.départDomicile });
+  if (valeur("p2_trajet_arrivee") === "Domicile")
+    saisies.push({ case: TRAJET.arrivéeDomicile });
 
   const urgence = valeur("p2_transport_urgence");
-  if (urgence === "Appel SAMU - Centre 15") saisies.push({ case: PRESCRIPTION.urgenceSamu });
-  if (urgence === "Autre urgence") saisies.push({ case: PRESCRIPTION.urgenceAutre });
+  if (urgence === "Appel SAMU - Centre 15")
+    saisies.push({ case: PRESCRIPTION.urgenceSamu });
+  if (urgence === "Autre urgence")
+    saisies.push({ case: PRESCRIPTION.urgenceAutre });
 
-  if (valeur("p2_accident_cause_par_tiers") === "Oui, en rapport avec un accident causé par un tiers") {
+  if (
+    valeur("p2_accident_cause_par_tiers") ===
+    "Oui, en rapport avec un accident causé par un tiers"
+  ) {
     saisies.push({ case: SITUATION.accidentTiersOui });
   } else if (valeur("p2_accident_cause_par_tiers") === "Non") {
     saisies.push({ case: SITUATION.accidentTiersNon });
@@ -142,8 +167,15 @@ function saisiesTrajet(valeur: Lecteur): Saisie[] {
   // accord préalable que si l'ALD n'est pas validée (`p2_transport_serie_declenche_dap`),
   // si bien qu'une série sous ALD validée reste bien une prescription — et arrive ici.
   const nombre = valeur("p2_nombre_transports_prevus");
-  if (typeof nombre === "number" && nombre > 1 && valeur("p2_transport_en_serie") !== true) {
-    saisies.push({ champ: TRAJET.nombreTransportsItératifs, texte: String(nombre) });
+  if (
+    typeof nombre === "number" &&
+    nombre > 1 &&
+    valeur("p2_transport_en_serie") !== true
+  ) {
+    saisies.push({
+      champ: TRAJET.nombreTransportsItératifs,
+      texte: String(nombre),
+    });
   }
 
   return saisies;
@@ -168,7 +200,12 @@ export const RESTE_A_SAISIR = {
     "clé 1",
   ],
   /** Le type de lieu est déduit ; l'adresse ou le nom de la structure, jamais. */
-  trajet: ["départ autre lieu", "départ struct soins", "arrivée autre lieu", "arrivée struct soins"],
+  trajet: [
+    "départ autre lieu",
+    "départ struct soins",
+    "arrivée autre lieu",
+    "arrivée struct soins",
+  ],
   /**
    * Le référentiel d'identification ne porte aujourd'hui que des libellés
    * (`{ id, libelle }`) : ni RPPS, ni FINESS/SIRET, ni adresse de structure.
