@@ -1,11 +1,11 @@
 import type { Situation } from "publicodes";
-import { engine } from "../simulateur/engine";
-import { TraceDebug } from "../simulateur/TraceDebug";
-import { CRITERES, MOTIFS, retenus } from "../simulateur/vulgarisation";
+import { engine } from "../engine";
+import { TraceDebug } from "../TraceDebug";
+import { CRITERES, MOTIFS, retenus } from "../vulgarisation";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
-} from "../simulateur/information-patient";
+} from "../information-patient";
 
 type Props = {
   situation: Situation<string>;

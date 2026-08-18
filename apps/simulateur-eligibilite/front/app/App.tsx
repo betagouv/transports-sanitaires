@@ -21,8 +21,8 @@ import {
 } from "../identification/Identification";
 import { Labo } from "../outils-produit/labo/Labo";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
-import { Prescripteur } from "../prescripteur/Prescripteur";
-import { Secretariat } from "../secretariat/Secretariat";
+import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
+import { Secretariat } from "../simulateur/secretariat/Secretariat";
 import { referentielHttp } from "../identification/referentiel-http";
 import { pseudonymiserViaApi } from "../identite/pseudonymisation-http";
 import { setIdentite } from "../identite/session";

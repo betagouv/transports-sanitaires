@@ -6,7 +6,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
-import { Secretariat } from "../../front/secretariat/Secretariat";
+import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { engine } from "../../front/simulateur/engine";
 import { genererCerfa, nomFichier } from "../../front/cerfa/cerfa";
 import { MODE_TRANSPORT, SITUATION, TRAJET } from "../../front/cerfa/champs-cerfa.ts";

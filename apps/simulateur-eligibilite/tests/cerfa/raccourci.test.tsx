@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
-import { Prescripteur } from "../../front/prescripteur/Prescripteur";
+import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import { sIdentifierProduit } from "../porte";

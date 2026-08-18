@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { Situation } from "publicodes";
-import { Parcours } from "../simulateur/Parcours";
+import { Parcours } from "../Parcours";
 import { ResultatFinal } from "./ResultatFinal";
-import { reprendrePassation } from "../simulateur/passation";
-import { engine } from "../simulateur/engine";
-import { trackResultat } from "../analytics/analytics";
-import type { OptionsGénération } from "../cerfa/cerfa";
+import { reprendrePassation } from "../passation";
+import { engine } from "../engine";
+import { trackResultat } from "../../analytics/analytics";
+import type { OptionsGénération } from "../../cerfa/cerfa";
 
 type Props = {
   onNouvelleSimulation: () => void;

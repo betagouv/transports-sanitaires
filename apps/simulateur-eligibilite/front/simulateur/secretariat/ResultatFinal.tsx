@@ -1,15 +1,15 @@
 
 import type { Situation } from "publicodes";
-import { engine } from "../simulateur/engine";
-import { TraceDebug } from "../simulateur/TraceDebug";
-import { CRITERES, MOTIFS, retenus } from "../simulateur/vulgarisation";
+import { engine } from "../engine";
+import { TraceDebug } from "../TraceDebug";
+import { CRITERES, MOTIFS, retenus } from "../vulgarisation";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
   SousTitre,
-} from "../simulateur/information-patient";
-import { BoutonCerfa } from "../cerfa/BoutonCerfa";
-import type { OptionsGénération } from "../cerfa/cerfa";
+} from "../information-patient";
+import { BoutonCerfa } from "../../cerfa/BoutonCerfa";
+import type { OptionsGénération } from "../../cerfa/cerfa";
 
 type Props = {
   situation: Situation<string>;

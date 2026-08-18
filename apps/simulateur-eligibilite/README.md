@@ -212,7 +212,13 @@ front/                   front (bundlé par Vite)
   app/                   main.tsx  App.tsx (écran-porte)  outil.ts
   identification/        Identification.tsx  referentiel-http.ts
   identite/              pseudonymisation-http.ts (pseudonymiserViaApi)  session.ts
-  simulateur/            Simulateur.tsx  FormField.tsx  Resultats.tsx  engine.ts
+  simulateur/            LES deux outils, sur un socle commun
+    engine.ts            moteur publicodes (règles officielles ou labo)
+    Parcours.tsx         flux générique : stepper + FormBuilder + navigation
+    FormField.tsx  Mosaique.tsx  mosaique.ts  passation.ts  TraceDebug.tsx
+    vulgarisation.tsx  information-patient.tsx
+    prescripteur/        Prescripteur.tsx  ResultatMedical.tsx (Partie 1 → Résultat 1)
+    secretariat/         Secretariat.tsx  ResultatFinal.tsx (Partie 2 → Résultat 2)
   outils-produit/        LA feature réservée au service n° 4 (cf. plus haut)
     acces.ts             estServiceProduit — la garde commune aux deux outils
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
