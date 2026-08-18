@@ -11,7 +11,7 @@ import {
   trackSimulationComplete,
   trackSimulationStart,
   trackSimulationStep,
-} from "../../analytics/analytics";
+} from "../../analytics/evenements";
 import { moteur, reglesBrutes } from "../moteur";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";

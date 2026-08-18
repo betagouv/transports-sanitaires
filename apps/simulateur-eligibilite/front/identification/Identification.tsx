@@ -20,7 +20,7 @@ import {
   type Service,
   snapshotReferentiel,
 } from "../../shared/referentiel";
-import { estServiceProduit } from "../outils-produit/acces";
+import { estServiceProduit } from "../outils-produit/deverrouillage";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
 
 /**

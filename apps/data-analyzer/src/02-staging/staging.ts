@@ -8,8 +8,6 @@ import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 import type { TrajetRow } from "../contrats.ts";
 
-type Row = Record<string, string | number>;
-
 export class Staging {
   execute(): void {
     const rows = this.#aggregate(this.#readAll());
@@ -48,3 +46,7 @@ export class Staging {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) new Staging().execute();
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;

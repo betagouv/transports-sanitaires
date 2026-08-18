@@ -7,8 +7,6 @@ import { fileURLToPath } from "node:url";
 import { dirname, isAbsolute, join } from "node:path";
 import type { MappingEntry, Role } from "./types.ts";
 
-const ROLES: readonly Role[] = ["plateforme", "referentiel-national", "referentiel-ght"];
-
 export class Mapping {
   static load(): MappingEntry[] {
     const raw = Mapping.#read();
@@ -59,3 +57,7 @@ export class Mapping {
     return join(dirname(fileURLToPath(import.meta.url)), "..");
   }
 }
+
+// ---- implémentation ----
+
+const ROLES: readonly Role[] = ["plateforme", "referentiel-national", "referentiel-ght"];

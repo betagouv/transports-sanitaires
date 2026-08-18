@@ -11,12 +11,6 @@ import { Mapping } from "../mapping.ts";
 import { FORMATS } from "./adapteurs/registry.ts";
 import type { AdapterOutput, FormatRegistry, MappingEntry } from "../types.ts";
 
-type Row = Record<string, string | number>;
-interface Result {
-  entry: MappingEntry;
-  output: AdapterOutput;
-}
-
 export class Extract {
   readonly #formats: FormatRegistry;
 
@@ -59,3 +53,11 @@ export class Extract {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) new Extract(FORMATS).execute();
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;
+interface Result {
+  entry: MappingEntry;
+  output: AdapterOutput;
+}

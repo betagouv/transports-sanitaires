@@ -1,10 +1,7 @@
-import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
+// L'identité pseudonymisée du prescripteur pour la durée de la session : rangée
+// par l'écran-porte, relue par le traceur d'analytics à chaque événement.
 
-// Identité pseudonymisée conservée en mémoire de session uniquement (pas de
-// localStorage) — voir docs/architecture/identification.md — ADR-4. Renseignée par
-// l'écran d'identification (App) une fois le prescripteur validé, puis lue par le
-// traceur d'analytics au moment d'émettre les événements.
-let identiteCourante: IdentitePseudonymisee | null = null;
+import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 
 export function rangerIdentite(identite: IdentitePseudonymisee | null): void {
   identiteCourante = identite;
@@ -13,3 +10,9 @@ export function rangerIdentite(identite: IdentitePseudonymisee | null): void {
 export function identiteEnSession(): IdentitePseudonymisee | null {
   return identiteCourante;
 }
+
+// ---- implémentation ----
+
+// En mémoire uniquement (pas de localStorage) — voir
+// docs/architecture/identification.md — ADR-4.
+let identiteCourante: IdentitePseudonymisee | null = null;

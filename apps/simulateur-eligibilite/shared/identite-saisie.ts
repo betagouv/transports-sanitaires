@@ -1,23 +1,17 @@
-// Identité **saisie** au formulaire d'identification (identifiants métier bruts +
-// éventuelle identité libre). Elle n'est jamais transmise telle quelle au
-// simulateur : le backend la convertit en identité pseudonymisée — les noms/prénoms
-// libres sont **HMAC**, jamais transmis en clair à l'analytics (voir
+// Ce que le formulaire d'identification collecte, et comment savoir qu'il est
+// complet. Identifiants métier **bruts** : cette forme n'atteint jamais le
+// simulateur — le backend la convertit en identité pseudonymisée (voir
 // server/identification/pseudonymisation.ts + ADR-4).
-//
-// Le workflow est linéaire (voir docs/architecture/identification.md — §4) :
-//   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
-// Le service « Autre » est une entrée du référentiel comme les autres (une par
-// établissement), avec ses propres prescripteurs et la même option « hors liste ».
-// **Cas particulier** : quand le prescripteur sélectionne « Autre », on lui demande
-// **obligatoirement** de saisir son service/unité réel (`serviceLibre`). Le backend
-// crée alors ce vrai service dans le référentiel et y rattache le prescripteur (au
-// lieu de « Autre »), pour qu'à la connexion suivante il soit listé sous son service
-// réel. Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM,
-// autre) sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre » du référentiel.
 
 /** Valeur sentinelle (hors référentiel) choisie dans la liste des prescripteurs. */
 export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
 
+// Le workflow est linéaire (docs/architecture/identification.md — §4) :
+//   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
+// Le service « Autre » est une entrée du référentiel comme les autres (une par
+// établissement), avec ses propres prescripteurs et la même option « hors liste ».
+// Les prescripteurs sans établissement de rattachement (libéral, CNAM/CPAM, autre)
+// sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre » du référentiel.
 export type IdentiteSaisie = {
   /** id établissement du référentiel. */
   etabId: string;
@@ -31,7 +25,9 @@ export type IdentiteSaisie = {
   serviceEstAutre?: boolean;
   /**
    * Service/unité réel saisi quand `serviceEstAutre` : **obligatoire** dans cette
-   * branche. Le backend crée/réutilise ce service et y rattache le prescripteur.
+   * branche. Le backend crée/réutilise ce vrai service et y rattache le
+   * prescripteur (au lieu de « Autre »), pour qu'à la connexion suivante il soit
+   * listé sous son service réel.
    */
   serviceLibre?: string;
   /** id prescripteur du référentiel, ou `PRESCRIPTEUR_HORS_LISTE`. */
@@ -68,4 +64,8 @@ export function saisieComplete(saisie: IdentiteSaisie): boolean {
   return true;
 }
 
-const rempli = (v: string | undefined): boolean => (v ?? "").trim() !== "";
+// ---- implémentation ----
+
+function rempli(v: string | undefined): boolean {
+  return (v ?? "").trim() !== "";
+}

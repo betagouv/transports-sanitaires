@@ -14,8 +14,6 @@ export type GristType = "Text" | "Int" | "Numeric";
 /** Descripteur d'une colonne : son id Grist et son type (pilote la coercition). */
 export type ColumnSpec = { id: string; type: GristType };
 
-type GristRecord = { id: number };
-
 export class GristDoc {
   readonly #base: string;
   readonly #apiKey: string;
@@ -78,7 +76,13 @@ export function coerce(value: string, type: GristType): string | number | null {
   return Number(value);
 }
 
-const colDef = (c: ColumnSpec) => ({ id: c.id, fields: { label: c.id, type: c.type } });
+// ---- implémentation ----
+
+type GristRecord = { id: number };
+
+function colDef(c: ColumnSpec) {
+  return { id: c.id, fields: { label: c.id, type: c.type } };
+}
 
 function chunk<T>(items: T[], size: number): T[][] {
   const lots: T[][] = [];

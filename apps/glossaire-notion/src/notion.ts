@@ -1,3 +1,6 @@
+// The glossary as it lives in Notion: fetching the page, and turning its
+// collection rows into flat entries.
+
 import { NotionAPI } from "notion-client";
 import { getBlockValue } from "notion-utils";
 import type { Collection, Decoration, ExtendedRecordMap, PageBlock } from "notion-types";
@@ -15,18 +18,13 @@ export interface GlossaryEntry {
   structureParente?: string;
 }
 
-type RowProperties = Record<string, Decoration[]>;
-
-function richTextToPlainText(richText: Decoration[] | undefined): string {
-  if (!richText) return "";
-  return richText.map((segment) => segment[0]).join("");
-}
-
-function findPropertyId(
-  schema: Record<string, { name: string }>,
-  name: string,
-): string | undefined {
-  return Object.keys(schema).find((propertyId) => schema[propertyId].name === name);
+export async function fetchGlossary(): Promise<GlossaryEntry[]> {
+  // notion-client defaults its requests to `mode: "no-cors"`, which is meaningless in
+  // Node but breaks the JSON Content-Type header in a real browser. Our extension's
+  // host_permissions already grant cross-origin access, so force a normal CORS request.
+  const api = new NotionAPI({ ofetchOptions: { mode: "cors" } });
+  const recordMap = await api.getPage(PAGE_ID, { signFileUrls: false });
+  return parseGlossaryEntries(recordMap);
 }
 
 export function parseGlossaryEntries(recordMap: ExtendedRecordMap): GlossaryEntry[] {
@@ -70,11 +68,18 @@ export function parseGlossaryEntries(recordMap: ExtendedRecordMap): GlossaryEntr
   return entries.sort((a, b) => a.terme.localeCompare(b.terme, "fr"));
 }
 
-export async function fetchGlossary(): Promise<GlossaryEntry[]> {
-  // notion-client defaults its requests to `mode: "no-cors"`, which is meaningless in
-  // Node but breaks the JSON Content-Type header in a real browser. Our extension's
-  // host_permissions already grant cross-origin access, so force a normal CORS request.
-  const api = new NotionAPI({ ofetchOptions: { mode: "cors" } });
-  const recordMap = await api.getPage(PAGE_ID, { signFileUrls: false });
-  return parseGlossaryEntries(recordMap);
+// ---- implementation ----
+
+type RowProperties = Record<string, Decoration[]>;
+
+function richTextToPlainText(richText: Decoration[] | undefined): string {
+  if (!richText) return "";
+  return richText.map((segment) => segment[0]).join("");
+}
+
+function findPropertyId(
+  schema: Record<string, { name: string }>,
+  name: string,
+): string | undefined {
+  return Object.keys(schema).find((propertyId) => schema[propertyId].name === name);
 }

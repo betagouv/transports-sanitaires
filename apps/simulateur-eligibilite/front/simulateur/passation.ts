@@ -1,11 +1,7 @@
-import type { Situation } from "publicodes";
-
 // Passation de la situation de Partie 1 (médical) du prescripteur vers le
-// secrétariat. Couture volontairement isolée : aujourd'hui un simple
-// `sessionStorage` (même poste, enchaînement), demain un jeton serveur pour une
-// reprise sur un autre poste — sans toucher aux deux outils.
+// secrétariat : émettre, reprendre, effacer.
 
-const CLE = "transports-sanitaires:passation-p1";
+import type { Situation } from "publicodes";
 
 export function emettrePassation(situation: Situation<string>): void {
   try {
@@ -32,3 +28,11 @@ export function effacerPassation(): void {
     // idem : rien à nettoyer si le stockage est indisponible.
   }
 }
+
+// ---- implémentation ----
+//
+// Couture volontairement isolée : aujourd'hui un simple `sessionStorage` (même
+// poste, enchaînement), demain un jeton serveur pour une reprise sur un autre
+// poste — sans toucher aux deux outils.
+
+const CLE = "transports-sanitaires:passation-p1";

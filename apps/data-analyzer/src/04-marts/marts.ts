@@ -24,8 +24,6 @@ import type {
   TrajetReconcilieRow,
 } from "../contrats.ts";
 
-type Row = Record<string, string | number>;
-
 export class Marts {
   #juridique = new Map<string, EtablissementDimensionRow>();
   #geo = new Map<string, EtablissementRow>();
@@ -149,3 +147,7 @@ export class Marts {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) new Marts().execute();
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;

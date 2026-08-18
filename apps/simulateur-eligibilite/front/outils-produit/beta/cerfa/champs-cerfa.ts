@@ -22,11 +22,6 @@ export type ÉtatCoché = "On" | "OUI" | "NON";
 
 export type ChampCase = { readonly nom: string; readonly coché: ÉtatCoché };
 
-const case_ = (nom: string, coché: ÉtatCoché = "On"): ChampCase => ({
-  nom,
-  coché,
-});
-
 /** Bénéficiaire du transport et assuré(e) — en-tête des deux volets. */
 export const IDENTITÉ = {
   bénéficiaireNomPrénom: "N et P bénéficiaire", // 50 car.
@@ -144,3 +139,11 @@ export const TRANSPORTEUR_NE_PAS_REMPLIR = [
 export const MULTILIGNES_ROGNÉS: readonly string[] = [
   IDENTITÉ.bénéficiaireAdresse,
 ];
+
+// ---- implémentation ----
+
+// Hoistée : les tables ci-dessus l'appellent au chargement du module, ce qu'un
+// `const` placé ici ne permettrait pas (TDZ).
+function case_(nom: string, coché: ÉtatCoché = "On"): ChampCase {
+  return { nom, coché };
+}

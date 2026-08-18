@@ -5,20 +5,25 @@ import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
 
-// Vérifie la validité d'un document publicodes : syntaxe YAML puis
-// cohérence des règles (références manquantes, cycles, etc.) via l'Engine.
-// Reproduit le chargement de front/simulateur/moteur.ts.
+// Vérifie la validité du document publicodes : syntaxe YAML puis cohérence des
+// règles (références manquantes, cycles, etc.) via l'Engine. Reproduit le
+// chargement de front/simulateur/moteur.ts.
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dossierRegles = resolve(__dirname, "../regles");
-const racine = resolve(__dirname, "..");
+try {
+  main();
+} catch (e) {
+  console.error(`\n✗ ${(e as Error).message}`);
+  process.exit(1);
+}
+
+// ---- implémentation ----
 
 function main(): void {
-  const fichiers = globSync(`${dossierRegles}/*.publicodes`).sort();
+  const fichiers = globSync(`${dossierRegles()}/*.publicodes`).sort();
 
   if (fichiers.length === 0) {
     throw new Error(
-      `Aucun fichier .publicodes trouvé dans ${relative(racine, dossierRegles)}`,
+      `Aucun fichier .publicodes trouvé dans ${relative(racine(), dossierRegles())}`,
     );
   }
 
@@ -32,7 +37,7 @@ function validerYaml(fichiers: string[]): RawPublicodes<string> {
   let rules: RawPublicodes<string> = {};
 
   for (const fichier of fichiers) {
-    const chemin = relative(racine, fichier);
+    const chemin = relative(racine(), fichier);
     try {
       const parsed = yaml.load(
         readFileSync(fichier, "utf8"),
@@ -68,9 +73,10 @@ function validerPublicodes(rules: RawPublicodes<string>): void {
   );
 }
 
-try {
-  main();
-} catch (e) {
-  console.error(`\n✗ ${(e as Error).message}`);
-  process.exit(1);
+function dossierRegles(): string {
+  return resolve(racine(), "regles");
+}
+
+function racine(): string {
+  return resolve(dirname(fileURLToPath(import.meta.url)), "..");
 }

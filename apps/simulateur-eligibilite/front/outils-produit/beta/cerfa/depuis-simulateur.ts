@@ -16,14 +16,6 @@ import {
 } from "./champs-cerfa.ts";
 import type { Saisie } from "./remplir-cerfa.ts";
 
-type ModePrescrit =
-  | "aucun"
-  | "véhicule personnel ou transport en commun"
-  | "VSL ou taxi conventionné"
-  | "VSL TPMR ou taxi conventionné TPMR"
-  | "ambulance"
-  | "transport par équipe SMUR";
-
 /** Levée quand la situation ne conduit pas à ce CERFA (autre document, ou aucun). */
 export class CerfaNonApplicable extends Error {
   readonly casFinal: unknown;
@@ -132,6 +124,65 @@ export function saisiesDepuisSituation(
   return saisies;
 }
 
+/**
+ * Champs du CERFA qu'aucune règle ne permet de déduire, groupés par origine.
+ * C'est la part qui reste à saisir — et elle détermine où le remplissage doit
+ * tourner (cf. README).
+ */
+export const RESTE_A_SAISIR = {
+  /** Données de santé nominatives — absentes du simulateur, anonyme par construction. */
+  patient: [
+    "N et P bénéficiaire",
+    "N° immat bénéf",
+    "clé",
+    "Date Nais",
+    "adresse",
+    "Nom et num centre paiement",
+    "N et P assuré",
+    "N° immat assuré",
+    "clé 1",
+  ],
+  /** Le type de lieu est déduit ; l'adresse ou le nom de la structure, jamais. */
+  trajet: [
+    "départ autre lieu",
+    "départ struct soins",
+    "arrivée autre lieu",
+    "arrivée struct soins",
+  ],
+  /**
+   * Le référentiel d'identification ne porte aujourd'hui que des libellés
+   * (`{ id, libelle }`) : ni RPPS, ni FINESS/SIRET, ni adresse de structure.
+   * Pré-remplir ce bloc suppose d'étendre le référentiel.
+   */
+  prescripteur: [
+    "N et P prescript",
+    "raison sociale prescript",
+    "identifiant",
+    "adresse precript",
+    "AM FINESS ou SIRET",
+    "date",
+  ],
+  /** Distinctions que les règles ne portent pas (encore). */
+  horsRègles: [
+    "ALD exo", // exonérante vs non exonérante : non modélisé
+    "date accident", // date de l'accident causé par un tiers
+    "date accid ATMP",
+    "oui1", // exonération du ticket modérateur
+    "oui2", // pension militaire d'invalidité
+    "comm évent", // éléments d'ordre médical : rédaction libre du prescripteur
+  ],
+} as const;
+
+// ---- implémentation ----
+
+type ModePrescrit =
+  | "aucun"
+  | "véhicule personnel ou transport en commun"
+  | "VSL ou taxi conventionné"
+  | "VSL TPMR ou taxi conventionné TPMR"
+  | "ambulance"
+  | "transport par équipe SMUR";
+
 type Lecteur = (règle: CleDeRegle) => unknown;
 
 /** Rubriques du trajet, de l'urgence et de l'accident — issues de la Partie 2. */
@@ -187,52 +238,3 @@ function saisiesTrajet(valeur: Lecteur): Saisie[] {
 
   return saisies;
 }
-
-/**
- * Champs du CERFA qu'aucune règle ne permet de déduire, groupés par origine.
- * C'est la part qui reste à saisir — et elle détermine où le remplissage doit
- * tourner (cf. README).
- */
-export const RESTE_A_SAISIR = {
-  /** Données de santé nominatives — absentes du simulateur, anonyme par construction. */
-  patient: [
-    "N et P bénéficiaire",
-    "N° immat bénéf",
-    "clé",
-    "Date Nais",
-    "adresse",
-    "Nom et num centre paiement",
-    "N et P assuré",
-    "N° immat assuré",
-    "clé 1",
-  ],
-  /** Le type de lieu est déduit ; l'adresse ou le nom de la structure, jamais. */
-  trajet: [
-    "départ autre lieu",
-    "départ struct soins",
-    "arrivée autre lieu",
-    "arrivée struct soins",
-  ],
-  /**
-   * Le référentiel d'identification ne porte aujourd'hui que des libellés
-   * (`{ id, libelle }`) : ni RPPS, ni FINESS/SIRET, ni adresse de structure.
-   * Pré-remplir ce bloc suppose d'étendre le référentiel.
-   */
-  prescripteur: [
-    "N et P prescript",
-    "raison sociale prescript",
-    "identifiant",
-    "adresse precript",
-    "AM FINESS ou SIRET",
-    "date",
-  ],
-  /** Distinctions que les règles ne portent pas (encore). */
-  horsRègles: [
-    "ALD exo", // exonérante vs non exonérante : non modélisé
-    "date accident", // date de l'accident causé par un tiers
-    "date accid ATMP",
-    "oui1", // exonération du ticket modérateur
-    "oui2", // pension militaire d'invalidité
-    "comm évent", // éléments d'ordre médical : rédaction libre du prescripteur
-  ],
-} as const;

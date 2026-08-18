@@ -1,21 +1,12 @@
+// The glossary as the popup consumes it: served from a local cache, refetched
+// from Notion when it goes stale or when the user asks for a refresh.
+
 import browser from "webextension-polyfill";
 import { fetchGlossary, type GlossaryEntry } from "./notion";
-
-const CACHE_KEY = "glossary-cache";
-const CACHE_TTL_MS = 60 * 60 * 1000;
 
 export interface CachedGlossary {
   entries: GlossaryEntry[];
   fetchedAt: number;
-}
-
-async function readCache(): Promise<CachedGlossary | undefined> {
-  const stored = await browser.storage.local.get(CACHE_KEY);
-  return stored[CACHE_KEY] as CachedGlossary | undefined;
-}
-
-async function writeCache(cache: CachedGlossary): Promise<void> {
-  await browser.storage.local.set({ [CACHE_KEY]: cache });
 }
 
 export async function getOrFetchGlossary({
@@ -33,3 +24,17 @@ export async function getOrFetchGlossary({
   await writeCache(fresh);
   return fresh;
 }
+
+// ---- implementation ----
+
+async function readCache(): Promise<CachedGlossary | undefined> {
+  const stored = await browser.storage.local.get(CACHE_KEY);
+  return stored[CACHE_KEY] as CachedGlossary | undefined;
+}
+
+async function writeCache(cache: CachedGlossary): Promise<void> {
+  await browser.storage.local.set({ [CACHE_KEY]: cache });
+}
+
+const CACHE_KEY = "glossary-cache";
+const CACHE_TTL_MS = 60 * 60 * 1000;

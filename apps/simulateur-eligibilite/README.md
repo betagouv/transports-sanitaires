@@ -132,11 +132,12 @@ front/                   front (bundlé par Vite)
   outils-produit/        LA feature réservée au service produit — se greffe sur le
                          simulateur, jamais l'inverse : c'est App.tsx qui compose
                          (`panneauOutilsProduit`, `documentTelechargeable`)
-    acces.ts             estServiceProduit — la garde, commune à tout ce dossier
+    deverrouillage.ts    estServiceProduit — la garde, commune à tout ce dossier
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
     labo/                Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
     seeds/               catalogue des situations de référence + GalerieSeeds.tsx
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
       cerfa/             prescription CERFA pré-remplie, générée dans le navigateur
-  analytics/             analytics.ts
+  analytics/             evenements.ts le vocabulaire mesuré, seul import du reste
+                         matomo.ts     le transport (tag `_paq`, config, émission)
 ```

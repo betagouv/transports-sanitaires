@@ -81,6 +81,8 @@ export function identificationRoutes(
   return router;
 }
 
+// ---- implémentation ----
+
 // Enrobe un handler async pour router les rejets vers une réponse d'erreur.
 function handle(handler: (req: Request, res: Response) => Promise<void>) {
   return (req: Request, res: Response) => {

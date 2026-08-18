@@ -1,12 +1,6 @@
-// Accès au référentiel établissement / service / prescripteur.
-//
-// L'accès est masqué derrière l'interface `Referentiel` (voir
-// docs/architecture/identification.md — §5) afin de pouvoir substituer la source
-// (le client HTTP same-origin `http-referentiel.ts` vers le backend Grist ; demain
-// FINESS/RPPS) sans toucher les composants consommateurs.
-//
-// `snapshotReferentiel` : données **factices** (aucune PII réelle), servant de
-// **défaut** en dev et dans les tests (front comme backend sans clé Grist).
+// Le référentiel établissement / service / prescripteur : son interface, et le
+// jeu de données factices qui sert de défaut quand aucune source réelle n'est
+// branchée.
 
 import type { IdentiteSaisie } from "./identite-saisie.ts";
 
@@ -14,6 +8,12 @@ export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
 export type Prescripteur = { id: string; libelle: string };
 
+/**
+ * L'accès est masqué derrière cette interface (docs/architecture/identification.md
+ * — §5) afin de pouvoir substituer la source — le client HTTP same-origin
+ * `front/identification/referentiel-http.ts` vers le backend Grist ; demain
+ * FINESS/RPPS — sans toucher les composants consommateurs.
+ */
 export interface Referentiel {
   getEtablissements(): Promise<Etablissement[]>;
   getServices(etabId: string): Promise<Service[]>;
@@ -26,6 +26,28 @@ export interface Referentiel {
    */
   enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
 }
+
+/**
+ * Données **factices** (aucune PII réelle), servant de **défaut** en dev et dans
+ * les tests — front comme backend sans clé Grist.
+ */
+export const snapshotReferentiel: Referentiel = {
+  async getEtablissements() {
+    return ETABLISSEMENTS;
+  },
+  async getServices(etabId) {
+    return SERVICES.filter((service) => service.etabId === etabId).map(
+      ({ id, libelle }) => ({ id, libelle }),
+    );
+  },
+  async getPrescripteurs(serviceId) {
+    return PRESCRIPTEURS.filter(
+      (prescripteur) => prescripteur.serviceId === serviceId,
+    ).map(({ id, libelle }) => ({ id, libelle }));
+  },
+};
+
+// ---- implémentation ----
 
 type SnapshotService = Service & { etabId: string };
 type SnapshotPrescripteur = Prescripteur & { serviceId: string };
@@ -72,7 +94,7 @@ const SERVICES: SnapshotService[] = [
   { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
   { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
   // Service dédié au produit : déverrouille le « mode test des règles » (labo).
-  // Correspond au service Grist `Id2 = 4` en production (cf. front/labo/labo.ts).
+  // Correspond au service Grist `Id2 = 4` en production (cf. front/outils-produit/labo/labo.ts).
   {
     id: "s_transport_sanitaire",
     etabId: "e_liberal_cnam",
@@ -123,19 +145,3 @@ const PRESCRIPTEURS: SnapshotPrescripteur[] = [
     libelle: "Dr Inès Lopez",
   },
 ];
-
-export const snapshotReferentiel: Referentiel = {
-  async getEtablissements() {
-    return ETABLISSEMENTS;
-  },
-  async getServices(etabId) {
-    return SERVICES.filter((service) => service.etabId === etabId).map(
-      ({ id, libelle }) => ({ id, libelle }),
-    );
-  },
-  async getPrescripteurs(serviceId) {
-    return PRESCRIPTEURS.filter(
-      (prescripteur) => prescripteur.serviceId === serviceId,
-    ).map(({ id, libelle }) => ({ id, libelle }));
-  },
-};

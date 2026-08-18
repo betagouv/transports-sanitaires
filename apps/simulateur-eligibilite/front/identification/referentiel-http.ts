@@ -18,10 +18,14 @@ export const referentielHttp: Referentiel = {
     get<Prescripteur[]>(`/api/prescripteurs?serviceId=${encoder(serviceId)}`),
 };
 
+// ---- implémentation ----
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(path);
   if (!res.ok) throw new Error(`API ${path} → HTTP ${res.status}`);
   return (await res.json()) as T;
 }
 
-const encoder = (valeur: string) => encodeURIComponent(valeur);
+function encoder(valeur: string): string {
+  return encodeURIComponent(valeur);
+}

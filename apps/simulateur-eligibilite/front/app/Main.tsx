@@ -7,7 +7,7 @@ import {
   chargerMatomo,
   configDepuisEnv,
   initAnalytics,
-} from "../analytics/analytics";
+} from "../analytics/matomo";
 
 startReactDsfr({ defaultColorScheme: "system" });
 

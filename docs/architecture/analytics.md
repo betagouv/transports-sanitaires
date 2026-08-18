@@ -128,7 +128,7 @@ une mesure d'audience sans bandeau.
 
 ## 6. Découpage en incréments (analytics)
 
-1. **Matomo funnel.** ✅ **Fait** (`front/analytics/analytics.ts`, site 275,
+1. **Matomo funnel.** ✅ **Fait** (`front/analytics/`, site 275,
    `https://stats.beta.gouv.fr/`). Traceur instrumenté dans le simulateur (5
    événements portant le `prescripteurRef` en Nom), **amorcé au boot en cookieless**
    (`disableCookies`), le `prescripteurRef` étant lu en session à l'émission de chaque

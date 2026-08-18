@@ -2,11 +2,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   configDepuisEnv,
   construireEvenement,
+  emettre,
   initAnalytics,
-  trackResultat,
-  trackSimulationStart,
-  trackSimulationStep,
-} from "../../front/analytics/analytics";
+} from "../../front/analytics/matomo";
 import { rangerIdentite } from "../../front/identification/session";
 import {
   type IdentitePseudonymisee,
@@ -93,7 +91,7 @@ describe("configDepuisEnv", () => {
   });
 });
 
-describe("initAnalytics + événements", () => {
+describe("initAnalytics", () => {
   it("amorce le tracker quand activé, en cookieless", () => {
     initAnalytics(config);
     expect(window._paq).toContainEqual(["disableCookies"]);
@@ -105,32 +103,19 @@ describe("initAnalytics + événements", () => {
     expect(window._paq).toContainEqual(["trackPageView"]);
   });
 
-  it("émet des événements portant le prescripteurRef de la session", () => {
+  it("émet en portant l'identité pseudonymisée de la session", () => {
     initAnalytics(config);
     rangerIdentite(identite); // identité connue après l'identification, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
-    trackSimulationStart();
-    trackSimulationStep(3);
-    trackResultat("Patient éligible");
+    emettre("simulation_start");
     expect(window._paq).toEqual([
       ["trackEvent", "simulateur", "simulation_start", "pRef"],
-      ["trackEvent", "simulateur", "simulation_step", "pRef", 3],
-      ["trackEvent", "simulateur", "resultat:Patient éligible", "pRef"],
-    ]);
-  });
-
-  it("émet sans Nom si l'identification n'a pas fourni de ref", () => {
-    initAnalytics(config);
-    window._paq = [];
-    trackSimulationStart();
-    expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "simulation_start"],
     ]);
   });
 
   it("est un no-op quand désactivé", () => {
     initAnalytics({ ...config, enabled: false });
-    trackSimulationStart();
+    emettre("simulation_start");
     expect(window._paq).toEqual([]);
   });
 });

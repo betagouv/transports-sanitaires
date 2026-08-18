@@ -39,7 +39,7 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   (same folder, dynamic import) and used by `npm run apercu-cerfa`.
   Add a reference situation there, not in a test file. The gallery and the rules **lab**
   are the two *outils produit*: same access gate on **every environment** (referential
-  service n° 4, `front/outils-produit/acces.ts`), same panel, both
+  service n° 4, `front/outils-produit/deverrouillage.ts`), same panel, both
   entered **after** identification — no `import.meta.env.DEV` gating.
 - **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
   with `npm run zip`.
@@ -67,6 +67,19 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   `useX` / `Props` (React), `track*` (Matomo's verb), `new FormBuilder({ engine })`
   (`@publicodes/forms` key), `Engine` (publicodes class). Everything else is domain
   vocabulary and reads in French: `moteur`, `regles`, `passation`, `identiteEnSession`.
+- **A file reads top-down as its contract, then its implementation.** In order:
+  a 1–3 line header saying *what this file lets you do* (the why, the history and the
+  constraints go down next to the code they explain, not in a preamble); the public
+  types; the exports, in the order a caller meets them; then `// ---- implémentation ----`
+  and everything private. Two consequences that are not cosmetic: private helpers are
+  hoisted `function` declarations, never arrow `const` (an arrow below its first use is
+  a TDZ error), and private constants sit at the bottom whenever they are only read
+  inside functions. No work at module load beyond one explicit entry point at the top.
+- **A file is named after a capability, not a category.** If the name needs `utils`,
+  `helpers`, `commun` or `acces` to work, the file has no intention and its contents
+  belong to its callers. Export only what another file imports — the file now called
+  `deverrouillage.ts` shipped two `export const` nobody read, sitting above the one
+  function that mattered.
 - **Style is not a discussion.** Biome owns formatting, import order and lint. Never
   hand-format, and never write a suppression comment for a linter the project does
   not run — a stray `eslint-disable` sat in `Parcours.tsx` for months, suppressing

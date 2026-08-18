@@ -12,15 +12,6 @@ import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 import type { TrajetReconcilieRow } from "../contrats.ts";
 
-type Row = Record<string, string | number>;
-type Libelle = (cle: string) => string;
-
-interface Grain {
-  nom: string; // valeur de la colonne `grain`
-  cle: (t: TrajetReconcilieRow) => string; // "" pour ignorer
-  libelle: Libelle;
-}
-
 export class MartArticle80 {
   readonly #grains: Grain[];
 
@@ -85,4 +76,15 @@ export class MartArticle80 {
       part_plateforme: total > 0 ? Number((nb / total).toFixed(4)) : "",
     };
   }
+}
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;
+type Libelle = (cle: string) => string;
+
+interface Grain {
+  nom: string; // valeur de la colonne `grain`
+  cle: (t: TrajetReconcilieRow) => string; // "" pour ignorer
+  libelle: Libelle;
 }

@@ -14,11 +14,6 @@ import { join } from "node:path";
 import type { GhtRattachementRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, MappingEntry } from "../../types.ts";
 
-const SUFFIXE_SYSTEME = { ght: ":ght", ej: ":ej" } as const; // urn:fr-gouv-sante[-finess]:{ght,ej}
-// FINESS = 9 caractères : 2 de département (dont 2A/2B pour la Corse) + 7 chiffres.
-// Écarte les identifiants cassés de la source (ex. « nan ») sans perdre la Corse.
-const FINESS_VALIDE = /^(\d{2}|2[AB])\d{7}$/;
-
 export class AdapterGhtFhirDatagouv implements Adapter {
   readonly #location: string;
 
@@ -79,6 +74,13 @@ export class AdapterGhtFhirDatagouv implements Adapter {
     return ghtCode.replace(/^ght-/, "").split("-")[0] ?? "";
   }
 }
+
+// ---- implémentation ----
+
+const SUFFIXE_SYSTEME = { ght: ":ght", ej: ":ej" } as const; // urn:fr-gouv-sante[-finess]:{ght,ej}
+// FINESS = 9 caractères : 2 de département (dont 2A/2B pour la Corse) + 7 chiffres.
+// Écarte les identifiants cassés de la source (ex. « nan ») sans perdre la Corse.
+const FINESS_VALIDE = /^(\d{2}|2[AB])\d{7}$/;
 
 // Sous-ensemble FHIR effectivement lu (le reste du bundle est ignoré).
 interface Bundle {

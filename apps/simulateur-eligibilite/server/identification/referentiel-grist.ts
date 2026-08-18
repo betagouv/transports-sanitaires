@@ -253,7 +253,7 @@ export function creerReferentielGrist({
   }
 }
 
-// ---- Détails d'implémentation privés au module (modèle Grist, coercition). ----
+// ---- implémentation ---- (modèle Grist, coercition)
 
 type GristRecord = { id: number; fields: Record<string, unknown> };
 
@@ -276,5 +276,6 @@ const COL = {
 // opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
 const ORIGINE_FORMULAIRE = "formulaire";
 
-const texte = (v: unknown): string =>
-  typeof v === "string" ? v.trim() : v == null ? "" : String(v);
+function texte(v: unknown): string {
+  return typeof v === "string" ? v.trim() : v == null ? "" : String(v);
+}

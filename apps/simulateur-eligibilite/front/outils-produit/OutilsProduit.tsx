@@ -5,7 +5,7 @@
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
 // disponibles sur tous les environnements, **production comprise**, mais seulement
 // pour le service dédié du référentiel (n° 4, « Transport Sanitaire » — cf.
-// `estServiceProduit`, cf. `acces.ts`). C'est le service qui garde l'accès, plus le
+// `estServiceProduit`, cf. `deverrouillage.ts`). C'est le service qui garde l'accès, plus le
 // build.
 //
 // Ils court-circuitent le parcours nominal (la galerie ouvre une situation

@@ -1,25 +1,11 @@
+// Les questions à **choix multiple** du parcours, que publicodes ne sait pas
+// modéliser nativement, et la lecture à trois états de leurs cases.
+
 import type {
   EvaluatedFormElement,
   FormPageElementProp,
 } from "@publicodes/forms";
 import { reglesBrutes } from "../moteur";
-
-// Valeur booléenne d'un champ d'option, à trois états (vrai / faux / indéfini —
-// non répondu). Selon le rendu, `@publicodes/forms` expose `checked` (case) ou
-// `value` (radio oui/non). On distingue `false` (répondu non) de `undefined`.
-export function valeurBool(
-  el: EvaluatedFormElement & FormPageElementProp,
-): boolean | undefined {
-  const v = "checked" in el ? el.checked : el.value;
-  return typeof v === "boolean" ? v : undefined;
-}
-
-// Publicodes ne sait pas modéliser une question à **choix multiple** : une règle
-// n'a qu'une valeur. Le cas multiple reste donc N règles booléennes indépendantes
-// (p1_motif_hospitalisation, …). Pour l'UX, on pose sur une règle parente une
-// métadonnée `mosaique` (convention reprise de nosgestesclimats) que le moteur
-// ignore mais que l'UI lit pour rendre UNE question avec N cases à cocher.
-// Ce module traduit ces métadonnées en descripteurs exploitables par le front.
 
 export type Mosaique = {
   parentId: string;
@@ -30,20 +16,50 @@ export type Mosaique = {
   aucun?: { id: string; label: string };
 };
 
+/**
+ * Valeur booléenne d'un champ d'option, à trois états (vrai / faux / indéfini —
+ * non répondu). Selon le rendu, `@publicodes/forms` expose `checked` (case) ou
+ * `value` (radio oui/non). On distingue `false` (répondu non) de `undefined`.
+ */
+export function valeurBool(
+  el: EvaluatedFormElement & FormPageElementProp,
+): boolean | undefined {
+  const v = "checked" in el ? el.checked : el.value;
+  return typeof v === "boolean" ? v : undefined;
+}
+
+/** La mosaïque à laquelle appartient une option (ou son « aucun »), s'il y en a une. */
+export function mosaiqueDe(id: string): Mosaique | undefined {
+  return indexParOption().get(id);
+}
+
+// ---- implémentation ----
+//
+// Une règle publicodes n'a qu'une valeur : un choix multiple reste donc N règles
+// booléennes indépendantes (p1_motif_hospitalisation, …). Pour l'UX, on pose sur
+// une règle parente une métadonnée `mosaique` (convention reprise de
+// nosgestesclimats) que le moteur ignore mais que l'UI lit pour rendre UNE
+// question avec N cases à cocher. Ce module traduit ces métadonnées en
+// descripteurs exploitables par le front.
+
 type CorpsRegle = {
   question?: string;
   titre?: string;
   mosaique?: { options?: string[]; "option aucun"?: string };
 };
 
-function corps(id: string): CorpsRegle | undefined {
-  const c = reglesBrutes[id as keyof typeof reglesBrutes];
-  return c && typeof c === "object" ? (c as CorpsRegle) : undefined;
-}
+let parOption: Map<string, Mosaique> | undefined;
 
-function libelle(id: string): string {
-  const c = corps(id);
-  return c?.question ?? c?.titre ?? id;
+// Index identifiant d'option (ou d'« aucun ») → mosaïque parente, construit au
+// premier accès : le balayage des règles n'a pas à courir au chargement du module.
+function indexParOption(): Map<string, Mosaique> {
+  if (parOption) return parOption;
+  parOption = new Map();
+  for (const mosaique of construire()) {
+    for (const id of mosaique.optionIds) parOption.set(id, mosaique);
+    if (mosaique.aucun) parOption.set(mosaique.aucun.id, mosaique);
+  }
+  return parOption;
 }
 
 function construire(): Mosaique[] {
@@ -62,14 +78,12 @@ function construire(): Mosaique[] {
   return res;
 }
 
-export const mosaiques = construire();
-
-// Index : identifiant d'option (ou d'« aucun ») → mosaïque parente.
-const parOption = new Map<string, Mosaique>();
-for (const m of mosaiques) {
-  for (const id of m.optionIds) parOption.set(id, m);
-  if (m.aucun) parOption.set(m.aucun.id, m);
+function corps(id: string): CorpsRegle | undefined {
+  const c = reglesBrutes[id as keyof typeof reglesBrutes];
+  return c && typeof c === "object" ? (c as CorpsRegle) : undefined;
 }
 
-export const mosaiqueDe = (id: string): Mosaique | undefined =>
-  parOption.get(id);
+function libelle(id: string): string {
+  const c = corps(id);
+  return c?.question ?? c?.titre ?? id;
+}

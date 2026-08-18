@@ -11,16 +11,6 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Paths } from "./paths.ts";
 
-const DATASET = "https://www.data.gouv.fr/api/1/datasets/etablissements-de-sante-par-ght/";
-const CONCURRENCE = 8;
-
-interface Ressource {
-  title: string;
-  format: string;
-  url: string;
-  last_modified: string;
-}
-
 export class FetchGht {
   async execute(): Promise<void> {
     const ressources = this.#dernieresVersions(await this.#listerJson());
@@ -74,3 +64,15 @@ export class FetchGht {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) await new FetchGht().execute();
+
+// ---- implémentation ----
+
+const DATASET = "https://www.data.gouv.fr/api/1/datasets/etablissements-de-sante-par-ght/";
+const CONCURRENCE = 8;
+
+interface Ressource {
+  title: string;
+  format: string;
+  url: string;
+  last_modified: string;
+}

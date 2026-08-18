@@ -1,15 +1,26 @@
 // Point d'entrée du serveur (production / dev) du simulateur : sert le front
-// (build Vite) et l'API référentiel/identité en same-origin. Sur Scalingo, `PORT`
-// est fourni par la plateforme et la clé Grist vit en variable d'environnement
-// (jamais dans un .env commité). Voir docs/architecture/identification.md — ADR-5.
+// (build Vite) et l'API référentiel/identité en same-origin.
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerApp } from "./app.ts";
 import { choisirReferentiel } from "./identification/referentiel-source.ts";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const dossierDist = path.resolve(here, "..", "dist");
+const app = creerApp(choisirReferentiel(), {
+  secret: pseudonymisationSecret(),
+  pseudonymesEnClair: pseudonymesEnClair(),
+  dossierDist: dossierDist(),
+});
+
+app.listen(port(), () => {
+  console.log(`[simulateur] à l'écoute sur le port ${port()}`);
+});
+
+// ---- implémentation ----
+//
+// Sur Scalingo, `PORT` est fourni par la plateforme et la clé Grist vit en
+// variable d'environnement (jamais dans un .env commité). Voir
+// docs/architecture/identification.md — ADR-5.
 
 // Secret de pseudonymisation (HMAC) de l'identité prescripteur. En production
 // (Scalingo) il vient d'une variable d'environnement dédiée ; en local sans
@@ -37,13 +48,11 @@ function pseudonymesEnClair(): boolean {
   return actif;
 }
 
-const app = creerApp(choisirReferentiel(), {
-  secret: pseudonymisationSecret(),
-  pseudonymesEnClair: pseudonymesEnClair(),
-  dossierDist,
-});
-const port = Number(process.env.PORT ?? 3000);
+function dossierDist(): string {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(here, "..", "dist");
+}
 
-app.listen(port, () => {
-  console.log(`[simulateur] à l'écoute sur le port ${port}`);
-});
+function port(): number {
+  return Number(process.env.PORT ?? 3000);
+}

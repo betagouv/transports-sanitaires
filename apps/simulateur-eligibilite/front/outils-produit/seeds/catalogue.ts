@@ -14,6 +14,19 @@
 
 import type { Seed } from "./seed.ts";
 
+/** Seed d'`id` donné. Lève plutôt que de rendre `undefined` : un id mort est un bug. */
+export function seedParId(id: string): Seed {
+  const seed = SEEDS.find((s) => s.id === id);
+  if (!seed) {
+    throw new Error(
+      `Seed inconnue : « ${id} ». Seeds disponibles : ${SEEDS.map((s) => s.id).join(", ")}.`,
+    );
+  }
+  return seed;
+}
+
+// ---- le catalogue ----
+
 // Exception A0.2-A0.3 qui laisse le transport dans le champ de l'Assurance Maladie :
 // c'est la réponse qui ouvre la branche « patient détenu » (A1.x) au lieu de conclure
 // tout de suite à une prise en charge par l'établissement.
@@ -623,14 +636,3 @@ export const SEEDS: readonly Seed[] = [
     },
   },
 ] as const;
-
-/** Seed d'`id` donné. Lève plutôt que de rendre `undefined` : un id mort est un bug. */
-export function seedParId(id: string): Seed {
-  const seed = SEEDS.find((s) => s.id === id);
-  if (!seed) {
-    throw new Error(
-      `Seed inconnue : « ${id} ». Seeds disponibles : ${SEEDS.map((s) => s.id).join(", ")}.`,
-    );
-  }
-  return seed;
-}

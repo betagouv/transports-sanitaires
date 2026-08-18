@@ -7,23 +7,6 @@ import { Csv } from "../../csv.ts";
 import type { TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
 
-// Index (0-based) des colonnes fixes de ce format.
-const COL_ENVELOPPE = 2;
-const COL_ANNEE = 3;
-const COL_VEHICULE = 4;
-const COL_NB_TRAJETS = 5;
-// Une ligne exploitable porte toutes les colonnes ci-dessus (la dernière est l'index 5).
-const NB_COLONNES_MIN = 6;
-// Sentinelle : un finess géographique valant « 0 » signifie « non renseigné ».
-const FINESS_GEOGRAPHIQUE_ABSENT = "0";
-
-const VEHICULE: Record<string, VehiculeCanonique> = {
-  Ambulance: "Ambulance",
-  Taxi: "Assis",
-  VSL: "Assis",
-  TAP: "Assis",
-};
-
 export class AdapterPlateformeFinessTsv implements Adapter {
   readonly #location: string;
   readonly #entry: MappingEntry;
@@ -89,3 +72,22 @@ export class AdapterPlateformeFinessTsv implements Adapter {
     return value;
   }
 }
+
+// ---- implémentation ----
+
+// Index (0-based) des colonnes fixes de ce format.
+const COL_ENVELOPPE = 2;
+const COL_ANNEE = 3;
+const COL_VEHICULE = 4;
+const COL_NB_TRAJETS = 5;
+// Une ligne exploitable porte toutes les colonnes ci-dessus (la dernière est l'index 5).
+const NB_COLONNES_MIN = 6;
+// Sentinelle : un finess géographique valant « 0 » signifie « non renseigné ».
+const FINESS_GEOGRAPHIQUE_ABSENT = "0";
+
+const VEHICULE: Record<string, VehiculeCanonique> = {
+  Ambulance: "Ambulance",
+  Taxi: "Assis",
+  VSL: "Assis",
+  TAP: "Assis",
+};

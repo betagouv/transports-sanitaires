@@ -1,14 +1,11 @@
-// Mode « labo » : permet au produit (PM) de **tester en autonomie** une nouvelle
-// version du fichier de règles, sans passer par un développeur ni un déploiement.
+// Mode « labo » : valider un jeu de règles de test, l'activer pour ce navigateur
+// seul, et retrouver les versions déjà essayées.
 //
-// Principe : les règles officielles sont embarquées dans le build
-// (`front/simulateur/moteur.ts`). Le labo stocke un jeu de règles **de test** dans
-// le `localStorage` du navigateur du PM ; au chargement, le moteur les utilise à la
-// place des règles embarquées (cf. moteur.ts). Rien n'est déployé, rien ne fuite aux
-// autres utilisateurs (le `localStorage` est propre à chaque navigateur).
-//
-// L'accès au labo est **gardé** derrière l'identification, comme celui de la galerie
-// de seeds : voir `../acces.ts`.
+// Il permet au produit (PM) de **tester en autonomie** une nouvelle version du
+// fichier de règles, sans passer par un développeur ni un déploiement. Rien n'est
+// déployé, rien ne fuite aux autres utilisateurs. L'accès est **gardé** derrière
+// l'identification, comme celui de la galerie de seeds : voir
+// `../deverrouillage.ts`.
 
 import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
@@ -22,23 +19,13 @@ export type VersionLabo = {
   yaml: string;
 };
 
-const CLE_ACTIVE = "labo:regles-active";
-const CLE_HISTORIQUE = "labo:historique";
-const MAX_HISTORIQUE = 10;
-
-const OPTIONS_MOTEUR = {
-  flag: { filterNotApplicablePossibilities: true },
-} as const;
-
-// ---- Validation ----
-
 export type ResultatValidation =
   | { ok: true; nbRegles: number }
   | { ok: false; erreur: string };
 
 // Valide un document publicodes : syntaxe YAML puis cohérence des règles
-// (références manquantes, cycles, etc.) via l'Engine — mêmes options que l'app.
-// Reproduit `scripts/valider-regles.ts` pour un contenu en mémoire.
+// (références manquantes, cycles, etc.) via l'Engine. Reproduit
+// `scripts/valider-regles.ts` pour un contenu en mémoire.
 export function validerRegles(contenu: string): ResultatValidation {
   let rules: RawPublicodes<string>;
   try {
@@ -70,9 +57,12 @@ export function validerRegles(contenu: string): ResultatValidation {
   return { ok: true, nbRegles: Object.keys(rules).length };
 }
 
-// ---- État actif (consommé par moteur.ts au boot) ----
-
-/** YAML des règles de test actives, ou `null` si le labo est inactif. */
+/**
+ * YAML des règles de test actives, ou `null` si le labo est inactif. Consommé par
+ * `front/simulateur/moteur.ts` au boot : les règles officielles sont embarquées
+ * dans le build, celles du labo vivent dans le `localStorage` de ce navigateur et
+ * les remplacent quand elles sont présentes.
+ */
 export function reglesLaboActives(): string | null {
   try {
     return lire()?.yaml ?? null;
@@ -101,8 +91,6 @@ export function desactiverLabo(): void {
   localStorage.removeItem(CLE_ACTIVE);
 }
 
-// ---- Historique ----
-
 export function historiqueLabo(): VersionLabo[] {
   try {
     const brut = localStorage.getItem(CLE_HISTORIQUE);
@@ -112,6 +100,8 @@ export function historiqueLabo(): VersionLabo[] {
     return [];
   }
 }
+
+// ---- implémentation ----
 
 // Ajoute (ou remonte) une version en tête de l'historique, dédupliquée par
 // contenu YAML, plafonnée à MAX_HISTORIQUE.
@@ -127,3 +117,13 @@ function lire(): VersionLabo | null {
   const v = JSON.parse(brut) as VersionLabo;
   return v && typeof v.yaml === "string" ? v : null;
 }
+
+const CLE_ACTIVE = "labo:regles-active";
+const CLE_HISTORIQUE = "labo:historique";
+const MAX_HISTORIQUE = 10;
+
+// Mêmes options que l'app (cf. `front/simulateur/moteur.ts`) : le labo doit valider
+// dans les conditions exactes où les règles tourneront.
+const OPTIONS_MOTEUR = {
+  flag: { filterNotApplicablePossibilities: true },
+} as const;

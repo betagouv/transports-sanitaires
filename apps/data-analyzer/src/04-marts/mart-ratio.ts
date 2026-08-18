@@ -11,8 +11,6 @@ import { Paths } from "../paths.ts";
 import type { CelluleRatio, TrajetReconcilieRow } from "../contrats.ts";
 import type { VehiculeCanonique } from "../types.ts";
 
-type Row = Record<string, string | number>;
-
 export interface MartRatioConfig {
   fichier: string; // nom du CSV produit dans build/marts/
   log: string; // libellé affiché
@@ -93,3 +91,7 @@ export class MartRatio {
     console.log(`marts ${this.#config.log.padEnd(15)}: ${rows.length} lignes (${sansDenominateur} sans dénominateur, ${anomalies} part>1)`);
   }
 }
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;

@@ -11,22 +11,6 @@ import { Xlsx } from "./shared.ts";
 import type { TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
 
-const PREMIERE_LIGNE_DONNEES = 2; // lignes 0-1 = en-têtes
-const COLONNE_FINESS = "A";
-
-const ANNEES = ["2023", "2024", "2025"] as const;
-
-// Article 80 : total (sans détail véhicule), une colonne par année.
-const COLONNES_ART80: Record<string, string> = { "2023": "C", "2024": "D", "2025": "E" };
-
-// Hors Article 80 : total, puis détail partiel par véhicule canonique, une colonne par année.
-const COLONNES_HORS_TOTAL: Record<string, string> = { "2023": "F", "2024": "G", "2025": "H" };
-const COLONNES_HORS_DETAIL: { vehicule: VehiculeCanonique; colonnes: Record<string, string> }[] = [
-  { vehicule: "Assis", colonnes: { "2023": "I", "2024": "J", "2025": "K" } }, // Taxi
-  { vehicule: "Assis", colonnes: { "2023": "L", "2024": "M", "2025": "N" } }, // VSL
-  { vehicule: "Ambulance", colonnes: { "2023": "O", "2024": "P", "2025": "Q" } },
-];
-
 export class AdapterPlateformeFinessXlsx implements Adapter {
   readonly #location: string;
   readonly #entry: MappingEntry;
@@ -93,5 +77,23 @@ export class AdapterPlateformeFinessXlsx implements Adapter {
     });
   }
 }
+
+// ---- implémentation ----
+
+const PREMIERE_LIGNE_DONNEES = 2; // lignes 0-1 = en-têtes
+const COLONNE_FINESS = "A";
+
+const ANNEES = ["2023", "2024", "2025"] as const;
+
+// Article 80 : total (sans détail véhicule), une colonne par année.
+const COLONNES_ART80: Record<string, string> = { "2023": "C", "2024": "D", "2025": "E" };
+
+// Hors Article 80 : total, puis détail partiel par véhicule canonique, une colonne par année.
+const COLONNES_HORS_TOTAL: Record<string, string> = { "2023": "F", "2024": "G", "2025": "H" };
+const COLONNES_HORS_DETAIL: { vehicule: VehiculeCanonique; colonnes: Record<string, string> }[] = [
+  { vehicule: "Assis", colonnes: { "2023": "I", "2024": "J", "2025": "K" } }, // Taxi
+  { vehicule: "Assis", colonnes: { "2023": "L", "2024": "M", "2025": "N" } }, // VSL
+  { vehicule: "Ambulance", colonnes: { "2023": "O", "2024": "P", "2025": "Q" } },
+];
 
 type XlsxSheet = ReturnType<typeof Xlsx.sheet>;

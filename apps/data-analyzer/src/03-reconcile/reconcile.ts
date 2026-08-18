@@ -23,8 +23,6 @@ import type {
   TrajetRow,
 } from "../contrats.ts";
 
-type Row = Record<string, string | number>;
-
 export class Reconcile {
   execute(): void {
     const etablissements = this.#readEtablissements();
@@ -163,3 +161,7 @@ export class Reconcile {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) new Reconcile().execute();
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;

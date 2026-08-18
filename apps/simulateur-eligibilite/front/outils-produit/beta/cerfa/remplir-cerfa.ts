@@ -63,6 +63,8 @@ export async function remplirCerfa(
   return document.save();
 }
 
+// ---- implémentation ----
+
 type Formulaire = ReturnType<PDFDocument["getForm"]>;
 
 function écrire(formulaire: Formulaire, nom: string, texte: string): void {
@@ -108,8 +110,9 @@ function cocher(formulaire: Formulaire, { nom, coché }: ChampCase): void {
 }
 
 /** Les champs de `MULTILIGNES_ROGNÉS` n'affichent qu'une ligne : on aplatit. */
-const aplatir = (texte: string): string =>
-  texte
+function aplatir(texte: string): string {
+  return texte
     .replace(/\s*\n+\s*/g, " - ")
     .replace(/\s+/g, " ")
     .trim();
+}

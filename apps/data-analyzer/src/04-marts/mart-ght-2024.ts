@@ -12,19 +12,6 @@ import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 
-type Row = Record<string, string | number>;
-
-// Seule année demandée. Le référentiel national ne couvre que 2024-2025 (cf. README,
-// point 4) : hors de cette fenêtre le ratio serait NULL partout.
-const ANNEE = "2024";
-
-interface Accu {
-  region: string;
-  ght_libelle: string;
-  nb_plateforme: number;
-  nb_cnam: number;
-}
-
 export class MartGht2024 {
   execute(): void {
     const rows = this.calculer(Csv.read(join(Paths.MARTS, "mart_ght.csv")));
@@ -67,3 +54,18 @@ export class MartGht2024 {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) new MartGht2024().execute();
+
+// ---- implémentation ----
+
+type Row = Record<string, string | number>;
+
+// Seule année demandée. Le référentiel national ne couvre que 2024-2025 (cf. README,
+// point 4) : hors de cette fenêtre le ratio serait NULL partout.
+const ANNEE = "2024";
+
+interface Accu {
+  region: string;
+  ght_libelle: string;
+  nb_plateforme: number;
+  nb_cnam: number;
+}

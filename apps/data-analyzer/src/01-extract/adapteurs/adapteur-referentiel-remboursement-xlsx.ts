@@ -11,33 +11,6 @@ import { Xlsx } from "./shared.ts";
 import type { EtablissementRow, TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, MappingEntry, VehiculeCanonique } from "../../types.ts";
 
-const LIGNE_PERIODES = 0; // en-tête haut : libellés de période fusionnés
-const LIGNE_COLONNES = 1; // en-tête bas : identité + véhicules répétés par période
-const PREMIERE_LIGNE_DONNEES = 2;
-const SIECLE = 2000; // les périodes notent l'année de fin sur 2 chiffres (« 24 » → 2024)
-const PERIODE_ANNEE = /\d{2}\/\d{2}-\d{2}\/(\d{2})/; // capture ces 2 chiffres
-
-const VEHICULE: Record<string, VehiculeCanonique> = {
-  Ambulance: "Ambulance",
-  VSL: "Assis",
-  TP_VSL: "Assis",
-  taxi: "Assis",
-  "autre mode": "Autre",
-};
-
-type IdKey = keyof Omit<EtablissementRow, "score">;
-const ID_LABELS: Record<IdKey, string> = {
-  finess_juridique: "finess juridique",
-  finess_geographique: "finess g",
-  nom: "nom de l",
-  ville: "ville",
-  departement: "département",
-  categorie: "catégorie",
-};
-
-type XlsxSheet = ReturnType<typeof Xlsx.sheet>;
-type ValueCol = { c: number; annee: string; vehicule: string };
-
 export class AdapterReferentielRemboursementXlsx implements Adapter {
   readonly #location: string;
   readonly #entry: MappingEntry;
@@ -136,3 +109,32 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     return c === undefined ? "" : Xlsx.str(ws, r, c);
   }
 }
+
+// ---- implémentation ----
+
+const LIGNE_PERIODES = 0; // en-tête haut : libellés de période fusionnés
+const LIGNE_COLONNES = 1; // en-tête bas : identité + véhicules répétés par période
+const PREMIERE_LIGNE_DONNEES = 2;
+const SIECLE = 2000; // les périodes notent l'année de fin sur 2 chiffres (« 24 » → 2024)
+const PERIODE_ANNEE = /\d{2}\/\d{2}-\d{2}\/(\d{2})/; // capture ces 2 chiffres
+
+const VEHICULE: Record<string, VehiculeCanonique> = {
+  Ambulance: "Ambulance",
+  VSL: "Assis",
+  TP_VSL: "Assis",
+  taxi: "Assis",
+  "autre mode": "Autre",
+};
+
+type IdKey = keyof Omit<EtablissementRow, "score">;
+const ID_LABELS: Record<IdKey, string> = {
+  finess_juridique: "finess juridique",
+  finess_geographique: "finess g",
+  nom: "nom de l",
+  ville: "ville",
+  departement: "département",
+  categorie: "catégorie",
+};
+
+type XlsxSheet = ReturnType<typeof Xlsx.sheet>;
+type ValueCol = { c: number; annee: string; vehicule: string };

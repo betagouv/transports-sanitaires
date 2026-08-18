@@ -1,6 +1,6 @@
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
-import { trackResultat } from "../../analytics/analytics";
+import { trackResultat } from "../../analytics/evenements";
 import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
