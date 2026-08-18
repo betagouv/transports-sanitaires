@@ -1,8 +1,8 @@
-// Galerie de seeds — écran **dev uniquement**, câblé sous `import.meta.env.DEV`
-// (cf. `App.tsx`). Il liste le catalogue de `seeds/` et ouvre, d'un clic, la page
-// de résultat correspondante : Page Résultat 1 pour les seeds de Partie 1, Page
-// Résultat 2 pour celles dont l'intérêt est le cas final — d'où l'on télécharge
-// le CERFA pré-rempli quand le cas s'y prête.
+// Galerie de seeds — écran réservé au **service produit** (n° 4), sur tous les
+// environnements (cf. `App.tsx`). Il liste le catalogue de `seeds/` et ouvre, d'un
+// clic, la page de résultat correspondante : Page Résultat 1 pour les seeds de
+// Partie 1, Page Résultat 2 pour celles dont l'intérêt est le cas final — d'où l'on
+// télécharge le CERFA pré-rempli quand le cas s'y prête.
 //
 // La galerie rejoue chaque seed dans le moteur **du navigateur** — donc, en mode
 // labo, sous les règles en cours de test : la colonne « État » dit alors tout de
@@ -10,10 +10,15 @@
 // même d'ouvrir un parcours.
 
 import { useMemo } from "react";
-import { engine } from "../simulateur/engine";
-import { SEEDS } from "../../seeds/catalogue";
-import { evaluerSeed, type CibleSeed, type EvaluationSeed, type Seed } from "../../seeds/seed";
-import type { Outil } from "../app/outil";
+import { engine } from "../../simulateur/engine";
+import { SEEDS } from "./catalogue";
+import {
+  evaluerSeed,
+  type CibleSeed,
+  type EvaluationSeed,
+  type Seed,
+} from "./seed";
+import type { Outil } from "../../app/outil";
 
 type Props = {
   onOuvrir: (seed: Seed) => void;

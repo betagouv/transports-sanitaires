@@ -9,8 +9,8 @@ import type { OptionsGénération } from "../cerfa/cerfa";
 
 type Props = {
   onNouvelleSimulation: () => void;
-  // Raccourci dev : situation complète (P1 + P2) ouvrant directement la Page
-  // Résultat 2, sans passation ni parcours administratif.
+  // Seed : situation complète (P1 + P2) ouvrant directement la Page Résultat 2,
+  // sans passation ni parcours administratif.
   situationFinale?: Situation<string> | null;
   /** Injectable pour les tests (défaut = asset servi par l'application). */
   chargerGabarit?: OptionsGénération["chargerGabarit"];
@@ -30,7 +30,7 @@ export function Secretariat({
     situationFinale
   );
 
-  // Situation complète déjà connue (parcours P2 terminé, ou raccourci dev) :
+  // Situation complète déjà connue (parcours P2 terminé, ou seed ouverte) :
   // affiche directement la Page Résultat 2.
   if (situation) {
     return (

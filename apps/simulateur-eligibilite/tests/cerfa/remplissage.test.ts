@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
 import { makeEngine } from "../simulateur/engine.ts";
-import { BASE_NEUTRE } from "../../seeds/base-neutre.ts";
-import { seedParId } from "../../seeds/catalogue.ts";
-import { situationDe } from "../../seeds/seed.ts";
+import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
+import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
   "../../front/cerfa/champs-cerfa.ts";
 import { remplirCerfa } from "../../front/cerfa/remplir-cerfa.ts";

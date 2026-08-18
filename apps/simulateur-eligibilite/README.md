@@ -60,9 +60,26 @@ front).
 | `VITE_MATOMO_URL` | front | non | instance mutualisée beta.gouv | URL de l'instance Matomo. |
 | `VITE_MATOMO_SITE_ID` | front | non | `275` | Identifiant du site Matomo. |
 
-## Mode test des règles (labo)
+## Outils produit
 
-Permet au **produit** de tester en autonomie une nouvelle version du fichier de règles
+Deux outils sont réservés au **produit** : le **mode test des règles** (labo) et la
+**galerie de seeds**. Ils partagent la même garde d'accès et le même encadré
+**« Outils produit »**, présent sur l'écran-porte d'identification et au début du
+parcours prescripteur.
+
+| | |
+| --- | --- |
+| **Où** | Encadré « Outils produit », à part des actions nominales (`front/outils-produit/OutilsProduit.tsx`) |
+| **Qui** | Le service **« Transport Sanitaire »** du référentiel (service Grist `Id2 = 4`, cf. `front/outils-produit/acces.ts`) |
+| **Quand** | Sur **tous les environnements**, production comprise — c'est le service qui garde l'accès, pas le build |
+| **Comment** | Après l'identification : les boutons restent désactivés tant qu'elle est incomplète (ADR-1 vaut pour toutes les destinations) |
+
+Ce service n'ayant pas de prescripteur dans le référentiel snapshot, on y entre par
+« Je ne suis pas dans la liste » puis nom / prénom.
+
+### Mode test des règles (labo)
+
+Permet au produit de tester en autonomie une nouvelle version du fichier de règles
 (`.publicodes`) sans passer par un développeur ni un déploiement. Le test est **local au
 navigateur** (`localStorage`) : il n'affecte ni la production ni les autres utilisateurs.
 
@@ -70,21 +87,23 @@ Parcours PM :
 
 | Étape | Action |
 | --- | --- |
-| 1 | S'identifier en choisissant le service **« Transport Sanitaire »** (garde d'accès, service Grist `Id2 = 4`) |
-| 2 | Cliquer **« Mode test des règles »** (n'apparaît que pour ce service) |
+| 1 | S'identifier en choisissant le service **« Transport Sanitaire »**, puis compléter l'identification |
+| 2 | Cliquer **« Mode test des règles »** dans l'encadré « Outils produit » |
 | 3 | Déposer le fichier `.publicodes` → validation immédiate (erreurs YAML/publicodes affichées inline) |
 | 4 | **« Activer et tester »** → l'app recharge et le simulateur tourne sur les nouvelles règles |
 | 5 | Un **bandeau permanent** rappelle le mode test ; **« Revenir aux règles officielles »** le quitte |
 
 Les versions chargées sont conservées en historique local (rebascule en un clic).
-Implémentation : `front/labo/` (`labo.ts` état + validation, `Labo.tsx`, `BandeauLabo.tsx`) ;
+Implémentation : `front/outils-produit/labo/` (`labo.ts` état + validation, `Labo.tsx`,
+`BandeauLabo.tsx`) ;
 le moteur consomme les règles labo au boot (`front/simulateur/engine.ts`). Les règles
 **officielles** restent embarquées dans le build (`regles/*.publicodes`) — publier une
 version reste un geste explicite (commit + déploiement).
 
 ## Seeds (situations de référence)
 
-`seeds/` est la **source unique** des situations de référence du simulateur. Une seed
+`front/outils-produit/seeds/` est la **source unique** des situations de référence du
+simulateur. Une seed
 est une situation nommée **avec ses attendus** :
 
 ```ts
@@ -110,11 +129,15 @@ Ajouter une situation au catalogue la rend donc du même geste **testée** et
 **consultable à l'écran** — c'est ce qui empêche les deux listes de diverger.
 
 ```
-seeds/
-  base-neutre.ts  BASE_NEUTRE : le questionnaire répondu « tout à non »
-  seed.ts         type Seed, situationDe(), evaluerSeed() (valeurs, manquantes, écarts)
-  catalogue.ts    SEEDS + seedParId() — le catalogue lui-même
+front/outils-produit/seeds/
+  base-neutre.ts    BASE_NEUTRE : le questionnaire répondu « tout à non »
+  seed.ts           type Seed, situationDe(), evaluerSeed() (valeurs, manquantes, écarts)
+  catalogue.ts      SEEDS + seedParId() — le catalogue lui-même
+  GalerieSeeds.tsx  l'écran qui l'affiche (cf. plus bas)
 ```
+
+Ces trois fichiers ne dépendent que de `publicodes` : ils sont lisibles par Node
+(`npm run apercu-cerfa`) autant que par le bundle. Seul `GalerieSeeds.tsx` est du front.
 
 Une seed ne déclare que **ce qui la distingue** (`entrees`), surchargé sur `BASE_NEUTRE` :
 l'ajout d'une question au modèle ne se paie qu'une fois, dans la base. Cette base garantit
@@ -145,11 +168,11 @@ elles seraient indiscernables (mêmes cas final, mode et document).
 Ces seeds restent **conformes** au moteur : le badge de la galerie reste vert. C'est la
 situation qui n'ouvre pas droit, pas la seed qui se trompe.
 
-### La galerie (dev)
+### La galerie
 
-En dev, l'encadré **« Raccourcis de développement »** — sur l'écran-porte **et** au début
-du parcours prescripteur — porte une seule action : **« Galerie de seeds »**. Elle liste
-tout le catalogue, séparé par écran d'atterrissage :
+**« Galerie de seeds »**, dans l'encadré « Outils produit » (cf. plus haut) — sur
+l'écran-porte **et** au début du parcours prescripteur. Elle liste tout le catalogue,
+séparé par écran d'atterrissage :
 
 - **Page Résultat 1** — situations tranchées en Partie 1 (le parcours reste franchissable
   jusqu'au résultat final) ;
@@ -161,17 +184,19 @@ Chaque ligne rejoue sa seed dans le moteur **du navigateur**, affiche `conforme`
 qu'`assurance maladie` signale une non-conformité. En **mode labo**, la galerie dit donc immédiatement quelles situations de
 référence les règles en cours de test font diverger — avant même d'ouvrir un parcours.
 
-L'écran (`front/seeds/GalerieSeeds.tsx`) est chargé par **import dynamique** : ni lui ni
-le catalogue n'entrent dans le bundle initial. Le bouton n'est câblé que sous
-`import.meta.env.DEV` : en production le parcours ne peut pas être court-circuité, une
-prescription ne devant jamais reposer sur une situation fabriquée.
+L'écran (`GalerieSeeds.tsx`) est chargé par **import dynamique** : ni lui ni le
+catalogue n'entrent dans le bundle initial, que seul le service produit fait charger.
+
+Une seed ouvre une situation **fabriquée** : un prescripteur ordinaire ne peut donc pas
+court-circuiter son parcours. Le service produit, lui, le peut — CERFA compris, ce qui
+est précisément l'usage de la seed `secretariat-prescription` ; le document sort vierge
+de toute identité et n'est pas signable en l'état.
 
 ## Structure (feature-first)
 
 Trois racines de *runtime* — `front/` (front, bundlé par Vite), `server/` (backend Node,
 détient la clé Grist + le secret), `shared/` (contrat commun) — chacune organisée **par
-feature** ; `seeds/` les complète, hors runtime, partagée par le front, les tests et les
-scripts :
+feature** :
 
 ```
 shared/                  contrat front ⇄ back (source unique)
@@ -184,15 +209,17 @@ server/                  backend (barrière de sécurité : secrets ici, jamais 
     routes.ts            /api/etablissements|services|prescripteurs + /api/identite-pseudonymisee
     referentiel-grist.ts  referentiel-source.ts  pseudonymisation.ts
 front/                   front (bundlé par Vite)
-  app/                   main.tsx  App.tsx (écran-porte)
+  app/                   main.tsx  App.tsx (écran-porte)  outil.ts
   identification/        Identification.tsx  referentiel-http.ts
   identite/              pseudonymisation-http.ts (pseudonymiserViaApi)  session.ts
   simulateur/            Simulateur.tsx  FormField.tsx  Resultats.tsx  engine.ts
-  labo/                  Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
+  outils-produit/        LA feature réservée au service n° 4 (cf. plus haut)
+    acces.ts             estServiceProduit — la garde commune aux deux outils
+    OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
+    labo/                Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
+    seeds/               le catalogue de situations + GalerieSeeds.tsx (cf. ci-dessus)
   analytics/             analytics.ts
   cerfa/                 prescription CERFA pré-remplie (cf. ci-dessous)
-  seeds/                 GalerieSeeds.tsx (écran dev, import dynamique)
-seeds/                   situations de référence (cf. ci-dessus) — tests, galerie, scripts
 ```
 
 ## Prescription pré-remplie (CERFA)
@@ -280,11 +307,11 @@ front/cerfa/
 Un échec de génération affiche une alerte sans masquer le résultat déjà affiché : le
 parcours reste exploitable sans le PDF.
 
-### Y accéder rapidement (dev)
+### Y accéder rapidement
 
-En dev (`npm run dev:front`), la **galerie de seeds** (cf. plus haut) marque d'un badge
-**CERFA** toute seed dont le cas final est une prescription médicale de transport.
-Celle à ouvrir pour regarder le document est `secretariat-prescription`.
+La **galerie de seeds** (cf. plus haut) marque d'un badge **CERFA** toute seed dont le
+cas final est une prescription médicale de transport. Celle à ouvrir pour regarder le
+document est `secretariat-prescription`.
 
 Cette situation est volontairement **chargée** — deux motifs ouvrant droit, les cinq
 justifications d'ambulance, aller-retour depuis le domicile, urgence SAMU, accident

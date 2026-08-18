@@ -6,8 +6,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
 import { Prescripteur } from "../../front/prescripteur/Prescripteur";
-import { seedParId } from "../../seeds/catalogue";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { snapshotReferentiel } from "../../shared/referentiel";
+import { sIdentifierProduit } from "../porte";
 
 const GABARIT = readFileSync(
   join(dirname(fileURLToPath(import.meta.url)), "../../front/cerfa/gabarit/cerfa-11574-07.pdf"),
@@ -25,20 +26,6 @@ function setup() {
   return { user };
 }
 
-async function choisir(labelSelect: RegExp, option: string) {
-  const select = screen.getByRole("combobox", { name: labelSelect });
-  await screen.findByRole("option", { name: option });
-  await userEvent.selectOptions(select, option);
-}
-
-/** Franchit l'écran-porte pour atteindre le début du parcours prescripteur. */
-async function sIdentifier(user: ReturnType<typeof userEvent.setup>) {
-  await choisir(/Établissement/, "CHU Grenoble Alpes");
-  await choisir(/Nom du service/, "Cardiologie");
-  await choisir(/Vous êtes/, "Dr Amina Berger");
-  await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
-}
-
 const GALERIE = { name: "Galerie de seeds" } as const;
 const SEED_CERFA = seedParId("secretariat-prescription");
 const OUVRIR_SEED = { name: `Ouvrir : ${SEED_CERFA.libelle}` } as const;
@@ -46,10 +33,10 @@ const TELECHARGER = { name: /Télécharger la prescription pré-remplie/i } as c
 
 beforeEach(() => sessionStorage.clear());
 
-describe("accès dev au CERFA via la galerie de seeds", () => {
+describe("accès au CERFA via la galerie de seeds", () => {
   it("est proposé dès le début du parcours prescripteur", async () => {
     const { user } = setup();
-    await sIdentifier(user);
+    await sIdentifierProduit(user);
 
     // Le parcours est bien à sa première question, et la galerie est offerte.
     expect(await screen.findByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
@@ -58,7 +45,7 @@ describe("accès dev au CERFA via la galerie de seeds", () => {
 
   it("saute le questionnaire et ouvre l'écran qui propose le CERFA", async () => {
     const { user } = setup();
-    await sIdentifier(user);
+    await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
     await user.click(await screen.findByRole("button", OUVRIR_SEED));
@@ -76,7 +63,7 @@ describe("accès dev au CERFA via la galerie de seeds", () => {
 
   it("permet de générer le CERFA dans la foulée", async () => {
     const { user } = setup();
-    await sIdentifier(user);
+    await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
     await user.click(await screen.findByRole("button", OUVRIR_SEED));
@@ -96,7 +83,7 @@ describe("accès dev au CERFA via la galerie de seeds", () => {
 
   it("disparaît une fois le parcours engagé sur la page de résultat", async () => {
     const { user } = setup();
-    await sIdentifier(user);
+    await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
     await user.click(await screen.findByRole("button", OUVRIR_SEED));
@@ -105,11 +92,11 @@ describe("accès dev au CERFA via la galerie de seeds", () => {
     expect(screen.queryByRole("button", GALERIE)).toBeNull();
   });
 
-  it("n'existe pas quand le raccourci n'est pas fourni", () => {
-    // `App` ne passe `onGalerieSeeds` que sous `import.meta.env.DEV` : en
-    // production le parcours ne peut pas être court-circuité, une prescription ne
-    // devant jamais reposer sur une situation fabriquée. Ce test couvre le
-    // mécanisme (prop absente ⇒ pas de bouton), le gating lui-même étant au build.
+  it("n'existe pas quand l'accès n'est pas fourni", () => {
+    // `App` ne passe `onGalerieSeeds` que pour le service produit (n° 4) : un
+    // prescripteur ordinaire ne peut pas court-circuiter son parcours. Ce test
+    // couvre le mécanisme (prop absente ⇒ pas de bouton), la garde d'accès
+    // elle-même étant vérifiée dans `tests/outils-produit/encadre.test.tsx`.
     render(
       <Prescripteur onPasserAuSecretariat={() => {}} onNouvelleSimulation={() => {}} />,
     );

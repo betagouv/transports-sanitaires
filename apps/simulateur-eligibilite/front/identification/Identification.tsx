@@ -20,18 +20,24 @@ import {
   type Referentiel,
   type Service,
 } from "../../shared/referentiel";
-import { estServiceLabo } from "../labo/labo";
-import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
+import { estServiceProduit } from "../outils-produit/acces";
+import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+
+/**
+ * Ce que la validation emporte, en plus de l'identité saisie : l'écran à ouvrir et
+ * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
+ * `onValide` — l'identification est obligatoire quelle que soit la destination
+ * (ADR-1), et il n'y a donc qu'un seul endroit qui pseudonymise.
+ */
+export type AccesIdentification = {
+  destination: "simulateur" | "galerie" | "labo";
+  /** Le service sélectionné déverrouille les outils produit (service n° 4). */
+  outilsProduit: boolean;
+};
 
 type Props = {
   referentiel?: Referentiel;
-  onValide: (saisie: IdentiteSaisie) => void;
-  // Ouvre le mode test des règles (labo). Proposé uniquement quand le service
-  // « Transport Sanitaire » est sélectionné (garde d'accès, cf. `estServiceLabo`).
-  onAccesLabo?: () => void;
-  // Raccourci dev (fourni uniquement en mode dev) : ouvre la galerie de seeds,
-  // d'où l'on saute directement à la page de résultat d'une situation type.
-  onGalerieSeeds?: () => void;
+  onValide: (saisie: IdentiteSaisie, acces: AccesIdentification) => void;
 };
 
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
@@ -55,8 +61,6 @@ const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
 export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
-  onAccesLabo,
-  onGalerieSeeds,
 }: Props) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -111,10 +115,10 @@ export function Identification({
   );
   const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
   const identiteLibre = serviceChoisi && prescripteurHorsListe;
-  // Le mode test des règles (labo) n'est proposé que pour le service dédié.
+  // Les outils produit (galerie de seeds, mode test des règles) ne sont proposés
+  // que pour le service dédié du référentiel — sur tous les environnements.
   const serviceSelectionne = services.find((s) => s.id === serviceId);
-  const afficherLabo =
-    !!onAccesLabo && !!serviceSelectionne && estServiceLabo(serviceSelectionne);
+  const outilsProduit = !!serviceSelectionne && estServiceProduit(serviceSelectionne);
 
   function buildSaisie(): IdentiteSaisie {
     const saisie: IdentiteSaisie = { etabId };
@@ -136,6 +140,10 @@ export function Identification({
   const saisie = buildSaisie();
   const valide = saisieComplete(saisie);
 
+  const entrer = (destination: AccesIdentification["destination"]) => {
+    if (valide) onValide(saisie, { destination, outilsProduit });
+  };
+
   return (
     <main
       className="fr-container"
@@ -145,7 +153,7 @@ export function Identification({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (valide) onValide(saisie);
+          entrer("simulateur");
         }}
       >
         <div className="fr-select-group">
@@ -267,24 +275,22 @@ export function Identification({
           <button type="submit" className="fr-btn" disabled={!valide}>
             Accéder au simulateur
           </button>
-          {afficherLabo && (
-            <button
-              type="button"
-              className="fr-btn fr-btn--secondary"
-              onClick={onAccesLabo}
-            >
-              Mode test des règles
-            </button>
-          )}
         </div>
 
-        {/* Un seul point d'entrée dev : la galerie de seeds. Les situations elles-
-            mêmes vivent dans `seeds/`, pas dans cet écran — les y égrener en boutons
-            obligeait à les redéclarer ici, et ne passait pas l'échelle. */}
-        {onGalerieSeeds && (
-          <RaccourcisDev>
-            <BoutonDev onClick={onGalerieSeeds}>Galerie de seeds</BoutonDev>
-          </RaccourcisDev>
+        {/* Les deux outils produit sont côte à côte, hors des actions nominales.
+            Ils restent désactivés tant que l'identification n'est pas complète :
+            y entrer reste une entrée dans l'application, elle passe par la porte.
+            Les situations de la galerie vivent dans `seeds/`, pas dans cet écran —
+            les y égrener en boutons ne passait pas l'échelle. */}
+        {outilsProduit && (
+          <OutilsProduit>
+            <BoutonOutil onClick={() => entrer("galerie")} disabled={!valide}>
+              Galerie de seeds
+            </BoutonOutil>
+            <BoutonOutil onClick={() => entrer("labo")} disabled={!valide}>
+              Mode test des règles
+            </BoutonOutil>
+          </OutilsProduit>
         )}
       </form>
     </main>

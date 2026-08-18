@@ -1,7 +1,7 @@
 import Engine from "publicodes";
 import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
-import { reglesLaboActives, desactiverLabo } from "../labo/labo";
+import { reglesLaboActives, desactiverLabo } from "../outils-produit/labo/labo";
 
 const OPTIONS = { flag: { filterNotApplicablePossibilities: true } } as const;
 
@@ -21,7 +21,8 @@ const reglesOfficielles = Object.values(modules).reduce<RawPublicodes<string>>(
 );
 
 // Choisit les règles à charger : celles du **mode labo** (test de règles par le
-// produit, cf. `front/labo/labo.ts`) si présentes et valides, sinon les officielles.
+// produit, cf. `front/outils-produit/labo/labo.ts`) si présentes et valides, sinon
+// les officielles.
 // Auto-réparation : des règles labo qui ne compilent pas sont désactivées et on
 // retombe sur les officielles plutôt que de bloquer toute l'app.
 function initMoteur(): { rules: RawPublicodes<string>; engine: Engine } {

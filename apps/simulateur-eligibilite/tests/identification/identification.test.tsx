@@ -27,12 +27,12 @@ describe("parcours d'identification", () => {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",
       prescripteurId: "p_grenoble_cardio_1",
-    });
+}, { destination: "simulateur", outilsProduit: false });
   });
 
-  it("propose le mode test des règles seulement pour le service « Transport Sanitaire »", async () => {
-    const onAccesLabo = vi.fn();
-    render(<Identification onValide={vi.fn()} onAccesLabo={onAccesLabo} />);
+  it("propose les outils produit seulement pour le service « Transport Sanitaire »", async () => {
+    // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
+    render(<Identification onValide={vi.fn()} />);
 
     const labo = { name: "Mode test des règles" };
 
@@ -42,9 +42,8 @@ describe("parcours d'identification", () => {
 
     await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
     await choisir(/Nom du service/, "Transport Sanitaire");
-    await userEvent.click(screen.getByRole("button", labo));
-
-    expect(onAccesLabo).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", labo)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Galerie de seeds" })).toBeInTheDocument();
   });
 
   it("prescripteur hors liste → saisie nom/prénom", async () => {
@@ -64,7 +63,7 @@ describe("parcours d'identification", () => {
       prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Dupont",
       prenom: "Marie",
-    });
+}, { destination: "simulateur", outilsProduit: false });
   });
 
   it("établissement « Libéral / CNAM / CPAM / Autre » → service → hors liste → nom/prénom", async () => {
@@ -86,7 +85,7 @@ describe("parcours d'identification", () => {
       prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Martin",
       prenom: "Paul",
-    });
+}, { destination: "simulateur", outilsProduit: false });
   });
 
   it("service « Autre » → vrai service saisi → prescripteur listé (à déplacer)", async () => {
@@ -108,7 +107,7 @@ describe("parcours d'identification", () => {
       serviceEstAutre: true,
       serviceLibre: "Néphrologie",
       prescripteurId: "p_grenoble_autre_1",
-    });
+}, { destination: "simulateur", outilsProduit: false });
   });
 
   it("service « Autre » → vrai service saisi → hors liste → nom/prénom", async () => {
@@ -134,7 +133,7 @@ describe("parcours d'identification", () => {
       prescripteurId: PRESCRIPTEUR_HORS_LISTE,
       nom: "Durand",
       prenom: "Léa",
-    });
+}, { destination: "simulateur", outilsProduit: false });
   });
 
   it("service « Autre » : validation désactivée tant que le service réel n'est pas saisi", async () => {

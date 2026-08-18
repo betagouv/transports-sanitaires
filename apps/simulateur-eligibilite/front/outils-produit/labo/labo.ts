@@ -7,27 +7,12 @@
 // place des règles embarquées (cf. engine.ts). Rien n'est déployé, rien ne fuite aux
 // autres utilisateurs (le `localStorage` est propre à chaque navigateur).
 //
-// L'accès au labo est **gardé** derrière l'identification : il n'apparaît que lorsque
-// le service « Transport Sanitaire » du référentiel est sélectionné (cf.
-// `estServiceLabo` + Identification.tsx).
+// L'accès au labo est **gardé** derrière l'identification, comme celui de la galerie
+// de seeds : voir `../acces.ts`.
 
 import Engine from "publicodes";
 import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
-import { normalise } from "../../shared/identite-saisie";
-
-// Service du référentiel Grist qui déverrouille le labo (colonne `Id2`, choix
-// produit). On accepte aussi le libellé pour rester robuste si l'`Id2` change.
-export const SERVICE_LABO_ID = "4";
-export const SERVICE_LABO_LIBELLE = "Transport Sanitaire";
-
-/** Vrai quand le service sélectionné est celui qui déverrouille le labo. */
-export function estServiceLabo(service: { id: string; libelle: string }): boolean {
-  return (
-    service.id === SERVICE_LABO_ID ||
-    normalise(service.libelle) === normalise(SERVICE_LABO_LIBELLE)
-  );
-}
 
 // Une version de règles chargée dans le labo. Le YAML brut est conservé tel quel
 // (c'est lui qui alimente le moteur au boot).

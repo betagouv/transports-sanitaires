@@ -15,9 +15,12 @@
 
 import { lazy, Suspense, useState } from "react";
 import type { Situation } from "publicodes";
-import { Identification } from "../identification/Identification";
-import { Labo } from "../labo/Labo";
-import { BandeauLabo } from "../labo/BandeauLabo";
+import {
+  Identification,
+  type AccesIdentification,
+} from "../identification/Identification";
+import { Labo } from "../outils-produit/labo/Labo";
+import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Prescripteur } from "../prescripteur/Prescripteur";
 import { Secretariat } from "../secretariat/Secretariat";
 import { referentielHttp } from "../identification/referentiel-http";
@@ -29,13 +32,15 @@ import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { OptionsGénération } from "../cerfa/cerfa";
 import type { Outil } from "./outil";
-import { situationDe, type Seed } from "../../seeds/seed";
+import { situationDe, type Seed } from "../outils-produit/seeds/seed";
 
-// Écran dev : chargé à la demande, pour que le catalogue de seeds et son tableau
-// restent hors du bundle initial — en production, personne ne cliquera jamais le
-// bouton qui les réclame (cf. `import.meta.env.DEV` plus bas).
+// Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
+// du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la
+// très grande majorité des prescripteurs ne le réclamera jamais.
 const GalerieSeeds = lazy(() =>
-  import("../seeds/GalerieSeeds").then((m) => ({ default: m.GalerieSeeds })),
+  import("../outils-produit/seeds/GalerieSeeds").then((m) => ({
+    default: m.GalerieSeeds,
+  })),
 );
 
 type Props = {
@@ -57,46 +62,64 @@ export function App({
   chargerGabarit,
 }: Props = {}) {
   const [identifie, setIdentifie] = useState(false);
-  // Galerie de seeds (dev) : catalogue des situations de référence, d'où l'on
-  // ouvre directement une page de résultat.
+  // Galerie de seeds : catalogue des situations de référence, d'où l'on ouvre
+  // directement une page de résultat.
   const [galerie, setGalerie] = useState(false);
-  // Écran labo (mode test des règles) affiché à la place de l'identification.
+  // Le service identifié déverrouille-t-il les outils produit (service n° 4) ?
+  // Retenu à la validation pour pouvoir les reproposer au début du parcours —
+  // c'est un booléen, pas une identité : l'invariant de `docs/architecture` tient.
+  const [outilsProduit, setOutilsProduit] = useState(false);
+  // Écran labo (mode test des règles), superposé au parcours une fois identifié.
   const [labo, setLabo] = useState(false);
   const [outil, setOutil] = useState<Outil>(outilInitial);
   // Remonté à chaque nouvelle simulation pour remonter (remount) l'outil et
   // repartir d'un parcours vierge.
   const [cle, setCle] = useState(0);
-  // Raccourci dev : situation pré-remplie pour ouvrir directement le résultat.
+  // Situation issue d'une seed, pour ouvrir directement la page de résultat.
   const [situationDev, setSituationDev] = useState<Situation<string> | null>(
     null
   );
 
-  async function handleValide(saisie: IdentiteSaisie) {
+  async function handleValide(saisie: IdentiteSaisie, acces: AccesIdentification) {
     setIdentite(await pseudonymiser(saisie));
+    setOutilsProduit(acces.outilsProduit);
     setIdentifie(true);
+    // Les outils produit s'ouvrent **après** la porte : on entre identifié, quelle
+    // que soit la destination.
+    if (acces.destination === "galerie") setGalerie(true);
+    if (acces.destination === "labo") setLabo(true);
   }
 
-  // Galerie de seeds : ouvre la page de résultat de la seed choisie. Court-circuite
-  // l'identification (identité non pseudonymisée, suivi analytics dégradé) et le
+  // Galerie de seeds : ouvre la page de résultat de la seed choisie, en sautant le
   // questionnaire — résultat médical (prescripteur) ou résultat final (secrétariat)
-  // selon l'écran d'atterrissage déclaré par la seed.
+  // selon l'écran d'atterrissage déclaré par la seed. L'identification, elle, a déjà
+  // eu lieu : on n'arrive ici que par la porte.
   function ouvrirSeed(seed: Seed) {
     setSituationDev(situationDe(seed));
     setOutil(seed.outil);
     setGalerie(false);
-    setIdentifie(true);
   }
 
   function recommencer() {
     effacerPassation();
     setGalerie(false);
+    setLabo(false);
     setSituationDev(null);
     setCle((c) => c + 1);
     setOutil("prescripteur");
   }
 
-  // La galerie est accessible des deux côtés de l'écran-porte (avant
-  // identification, et depuis le début du parcours) : elle passe donc devant.
+  // Les outils produit se superposent au parcours : on y arrive identifié, et le
+  // retour redonne la main au simulateur.
+  if (labo) {
+    return (
+      <>
+        <BandeauLabo />
+        <Labo onRetour={() => setLabo(false)} />
+      </>
+    );
+  }
+
   if (galerie) {
     return (
       <>
@@ -112,18 +135,7 @@ export function App({
     return (
       <>
         <BandeauLabo />
-        {labo ? (
-          <Labo onRetour={() => setLabo(false)} />
-        ) : (
-          <Identification
-            referentiel={referentiel}
-            onValide={handleValide}
-            onAccesLabo={() => setLabo(true)}
-            onGalerieSeeds={
-              import.meta.env.DEV ? () => setGalerie(true) : undefined
-            }
-          />
-        )}
+        <Identification referentiel={referentiel} onValide={handleValide} />
       </>
     );
   }
@@ -140,7 +152,7 @@ export function App({
         onNouvelleSimulation={recommencer}
         // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
         // l'écran-porte, sans avoir à ressortir du simulateur.
-        onGalerieSeeds={import.meta.env.DEV ? () => setGalerie(true) : undefined}
+        onGalerieSeeds={outilsProduit ? () => setGalerie(true) : undefined}
       />
     ) : (
       <Secretariat

@@ -1,8 +1,8 @@
 // Catalogue des situations de référence du simulateur.
 //
 // C'est la **source unique** : les tests métier rejouent ce catalogue
-// (`tests/simulateur/scenarios.test.ts`), la galerie dev l'affiche
-// (`front/seeds/GalerieSeeds.tsx`) et `scripts/apercu-cerfa.ts` en tire le CERFA.
+// (`tests/simulateur/scenarios.test.ts`), la galerie l'affiche
+// (`GalerieSeeds.tsx`) et `scripts/apercu-cerfa.ts` en tire le CERFA.
 // Une situation ajoutée ici devient donc du même geste un cas de non-régression
 // et un écran consultable.
 //

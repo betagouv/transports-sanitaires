@@ -2,13 +2,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   activerLabo,
   desactiverLabo,
-  estServiceLabo,
   historiqueLabo,
   laboActif,
   reglesLaboActives,
   validerRegles,
   versionLaboActive,
-} from "../../front/labo/labo";
+} from "../../front/outils-produit/labo/labo";
 
 const REGLES_OK = `montant net:\n  valeur: 100\n`;
 
@@ -57,22 +56,6 @@ describe("activation / désactivation", () => {
 
     const h = historiqueLabo();
     expect(h.map((v) => v.nom)).toEqual(["a-bis", "b"]);
-  });
-});
-
-describe("estServiceLabo", () => {
-  it("reconnaît le service par identifiant Grist", () => {
-    expect(estServiceLabo({ id: "4", libelle: "Peu importe" })).toBe(true);
-  });
-
-  it("reconnaît le service par libellé (insensible à la casse)", () => {
-    expect(estServiceLabo({ id: "s_x", libelle: "transport sanitaire" })).toBe(true);
-  });
-
-  it("ignore les autres services", () => {
-    expect(estServiceLabo({ id: "s_grenoble_cardio", libelle: "Cardiologie" })).toBe(
-      false
-    );
   });
 });
 

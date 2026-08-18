@@ -4,16 +4,16 @@ import { Parcours } from "../simulateur/Parcours";
 import { ResultatMedical } from "./ResultatMedical";
 import { engine } from "../simulateur/engine";
 import { trackResultat } from "../analytics/analytics";
-import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
+import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
 
 type Props = {
   // Passe la main au secrétariat en emportant la situation de Partie 1.
   onPasserAuSecretariat: (situationP1: Situation<string>) => void;
   onNouvelleSimulation: () => void;
-  // Raccourci dev : pré-remplit le parcours pour ouvrir directement le résultat.
+  // Seed : pré-remplit le parcours pour ouvrir directement le résultat médical.
   situationInitiale?: Situation<string> | null;
-  // Raccourci dev : ouvre la galerie de seeds, d'où l'on saute au résultat d'une
-  // situation type — dont les cas menant au CERFA. Absent hors dev (cf. `App`).
+  // Ouvre la galerie de seeds, d'où l'on saute au résultat d'une situation type —
+  // dont les cas menant au CERFA. Absent hors du service produit (cf. `App`).
   onGalerieSeeds?: () => void;
 };
 
@@ -56,12 +56,13 @@ export function Prescripteur({
             trackResultat(r, "prescripteur");
           }}
         />
-        {/* Même destination — et donc même libellé — que le raccourci de
-            l'écran-porte : la galerie de seeds. */}
+        {/* Même destination — et donc même libellé — qu'à l'écran-porte : la
+            galerie de seeds. Le mode test des règles, lui, reste à la porte : il
+            recharge l'application, et donc perdrait le parcours en cours. */}
         {onGalerieSeeds && (
-          <RaccourcisDev>
-            <BoutonDev onClick={onGalerieSeeds}>Galerie de seeds</BoutonDev>
-          </RaccourcisDev>
+          <OutilsProduit>
+            <BoutonOutil onClick={onGalerieSeeds}>Galerie de seeds</BoutonOutil>
+          </OutilsProduit>
         )}
       </>
     );

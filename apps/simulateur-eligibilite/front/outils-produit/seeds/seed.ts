@@ -2,7 +2,7 @@
 //
 // Une seed sert deux publics à partir d'une seule définition :
 //   - les **tests**, qui rejouent le catalogue et comparent le moteur aux attendus ;
-//   - la **galerie dev** (`front/seeds/GalerieSeeds.tsx`), d'où l'on ouvre le
+//   - la **galerie** (`GalerieSeeds.tsx`, juste à côté), d'où l'on ouvre le
 //     résultat correspondant — et, quand le cas s'y prête, le CERFA pré-rempli.
 //
 // Les deux voient donc exactement les mêmes situations : un cas de non-régression
@@ -10,7 +10,7 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
-import type { Outil } from "../front/app/outil.ts";
+import type { Outil } from "../../app/outil.ts";
 import { BASE_NEUTRE } from "./base-neutre.ts";
 
 /**

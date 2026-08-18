@@ -6,7 +6,8 @@
 // urgence) et, par contraste, tout ce qui reste vierge — patient, adresses,
 // identité du prescripteur.
 //
-// La situation vient du **catalogue de seeds** (`seeds/`), par défaut la seed
+// La situation vient du **catalogue de seeds** (`front/outils-produit/seeds/`), par
+// défaut la seed
 // `secretariat-prescription` — celle qu'ouvre la galerie dev. Le script et l'écran
 // produisent ainsi exactement le même document, et il n'y a qu'une situation à
 // faire évoluer. Toute autre seed menant à une prescription peut être demandée par
@@ -20,8 +21,8 @@ import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
 import { saisiesDepuisSituation } from "../front/cerfa/depuis-simulateur.ts";
 import { remplirCerfa } from "../front/cerfa/remplir-cerfa.ts";
-import { seedParId } from "../seeds/catalogue.ts";
-import { situationDe } from "../seeds/seed.ts";
+import { seedParId } from "../front/outils-produit/seeds/catalogue.ts";
+import { situationDe } from "../front/outils-produit/seeds/seed.ts";
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const règles = yaml.load(

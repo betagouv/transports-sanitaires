@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
-import { GalerieSeeds } from "../../front/seeds/GalerieSeeds";
-import { SEEDS, seedParId } from "../../seeds/catalogue";
+import { GalerieSeeds } from "../../front/outils-produit/seeds/GalerieSeeds";
+import { SEEDS, seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { snapshotReferentiel } from "../../shared/referentiel";
+import { remplirIdentiteProduit, sIdentifierProduit } from "../porte";
 
 // La galerie est le point d'entrée dev du catalogue de seeds : elle doit montrer
 // **toutes** les seeds, dire pour chacune si le moteur chargé confirme ses
@@ -12,17 +13,13 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 
 const GALERIE = { name: "Galerie de seeds" } as const;
 
-/** Franchit l'écran-porte pour atteindre le début du parcours prescripteur. */
-async function sIdentifier(user: ReturnType<typeof userEvent.setup>) {
-  const choisir = async (label: RegExp, option: string) => {
-    const select = screen.getByRole("combobox", { name: label });
-    await screen.findByRole("option", { name: option });
-    await user.selectOptions(select, option);
-  };
-  await choisir(/Établissement/, "CHU Grenoble Alpes");
-  await choisir(/Nom du service/, "Cardiologie");
-  await choisir(/Vous êtes/, "Dr Amina Berger");
-  await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
+/**
+ * Ouvre la galerie depuis l'écran-porte. L'identification est obligatoire quelle que
+ * soit la destination : le bouton la valide **et** ouvre la galerie.
+ */
+async function ouvrirGalerie(user: ReturnType<typeof userEvent.setup>) {
+  await remplirIdentiteProduit(user);
+  await user.click(screen.getByRole("button", GALERIE));
 }
 
 describe("écran de galerie", () => {
@@ -96,7 +93,7 @@ describe("galerie branchée sur l'App", () => {
     const user = userEvent.setup();
     render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
 
-    await user.click(screen.getByRole("button", GALERIE));
+    await ouvrirGalerie(user);
     const seed = seedParId("prescripteur-ambulance");
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
     await user.click(await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }));
@@ -116,7 +113,7 @@ describe("galerie branchée sur l'App", () => {
     const user = userEvent.setup();
     render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
 
-    await user.click(screen.getByRole("button", GALERIE));
+    await ouvrirGalerie(user);
     const seed = seedParId("secretariat-accord-prealable-distance");
     await user.click(await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }));
 
@@ -132,7 +129,7 @@ describe("galerie branchée sur l'App", () => {
   it("est aussi accessible depuis le début du parcours, et sait revenir", async () => {
     const user = userEvent.setup();
     render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
-    await sIdentifier(user);
+    await sIdentifierProduit(user);
 
     await user.click(screen.getByRole("button", GALERIE));
     expect(

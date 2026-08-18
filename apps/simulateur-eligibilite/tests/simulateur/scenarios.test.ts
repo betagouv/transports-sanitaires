@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { makeEngine } from "./engine";
-import { SEEDS } from "../../seeds/catalogue";
-import { evaluerSeed } from "../../seeds/seed";
+import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
+import { evaluerSeed } from "../../front/outils-produit/seeds/seed";
 
 // Matrice de non-régression métier (règles plates v8.10). Elle n'a pas de scénarios
-// à elle : elle rejoue le **catalogue de seeds** (`seeds/catalogue.ts`), qui est
+// à elle : elle rejoue le **catalogue de seeds** (`front/outils-produit/seeds/`), qui est
 // aussi ce qu'affiche la galerie dev. Ajouter une situation de référence, c'est
 // donc l'ajouter au catalogue — elle devient du même geste testée et consultable.
 

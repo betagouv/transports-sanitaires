@@ -31,11 +31,14 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   `docs/architecture/identification.md`. End of journey: `front/cerfa/` fills the
   official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form carries
   nominative health data, so no filled document must ever reach the backend.
-  Reference situations live in **`seeds/`** (a fourth, non-runtime root): one catalogue
-  of named situations **with their expected targets**, replayed by the business
-  non-regression matrix, browsable in dev through the **seed gallery**
-  (`front/seeds/GalerieSeeds.tsx`, dynamic import, `import.meta.env.DEV` only) and used
-  by `npm run apercu-cerfa`. Add a reference situation there, not in a test file.
+  Reference situations live in **`front/outils-produit/seeds/`**: one catalogue of named
+  situations **with their expected targets** (plain `publicodes`, readable by Node too),
+  replayed by the business non-regression matrix, browsable through the **seed gallery**
+  (same folder, dynamic import) and used by `npm run apercu-cerfa`.
+  Add a reference situation there, not in a test file. The gallery and the rules **lab**
+  are the two *outils produit*: same access gate on **every environment** (referential
+  service n° 4, `front/outils-produit/acces.ts`), same panel, both
+  entered **after** identification — no `import.meta.env.DEV` gating.
 - **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
   with `npm run zip`.
 

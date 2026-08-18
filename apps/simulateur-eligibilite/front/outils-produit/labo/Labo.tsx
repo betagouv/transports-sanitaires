@@ -2,7 +2,7 @@
 // (`.publicodes`), la valide en direct (erreurs affichées inline) et l'active pour
 // tester le simulateur avec — sans déploiement. Accessible uniquement depuis
 // l'identification quand le service « Transport Sanitaire » est sélectionné (cf.
-// Identification.tsx + `estServiceLabo`).
+// Identification.tsx + `estServiceProduit`).
 
 import { useRef, useState } from "react";
 import {
@@ -130,7 +130,7 @@ export function Labo({ onRetour }: Props) {
           className="fr-btn fr-btn--tertiary"
           onClick={onRetour}
         >
-          Retour à l'identification
+          Retour au simulateur
         </button>
       </div>
     </main>
