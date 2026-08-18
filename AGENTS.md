@@ -104,6 +104,11 @@ before working around one:
 - `front/outils-produit/beta/cerfa/` never references an `/api` route: the prescriber
   fills nominative health data there, and it must not leave the browser.
 - `regles.publicodes` holds eligibility logic only — no identification, no analytics.
+- `front/simulateur/` never imports `front/outils-produit/`: the product tools are
+  built **on** the simulator, and `App.tsx` hands the simulator ready-made content
+  (`panneauOutilsProduit`, `documentTelechargeable`). One named exception —
+  `moteur.ts` asking `labo/labo.ts` which rules to load — is asserted explicitly so
+  it cannot quietly grow a second.
 
 ## Architecture
 

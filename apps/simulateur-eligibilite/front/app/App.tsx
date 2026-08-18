@@ -25,10 +25,13 @@ import {
 import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
 import { referentielHttp } from "../identification/referentiel-http";
 import { rangerIdentite } from "../identification/session";
+import { BoutonCerfa } from "../outils-produit/beta/cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Labo } from "../outils-produit/labo/Labo";
+import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
 import { type Seed, situationDe } from "../outils-produit/seeds/seed";
+import { moteur } from "../simulateur/moteur";
 import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../simulateur/secretariat/Secretariat";
@@ -148,6 +151,34 @@ export function App({
     );
   }
 
+  // Les deux branchements du simulateur vers les outils produit se décident ici,
+  // et nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
+  // n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
+  // d'œil, tout ce que le service n° 4 déverrouille dans le parcours.
+  //
+  // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
+  // l'écran-porte, sans avoir à ressortir du simulateur. Le mode test des règles,
+  // lui, reste à la porte — il recharge l'application, et perdrait le parcours.
+  const panneauOutilsProduit = outilsProduit ? (
+    <OutilsProduit>
+      <BoutonOutil onClick={() => setGalerie(true)}>
+        Galerie de seeds
+      </BoutonOutil>
+    </OutilsProduit>
+  ) : undefined;
+
+  // Le pré-remplissage du CERFA reste réservé au service n° 4, le temps d'être
+  // éprouvé. La Page Résultat 2 décide, elle, si le cas final ouvre un document.
+  const documentTelechargeable = outilsProduit
+    ? (situation: Situation<string>) => (
+        <BoutonCerfa
+          moteur={moteur}
+          situation={situation}
+          chargerGabarit={chargerGabarit}
+        />
+      )
+    : undefined;
+
   const contenu =
     outil === "prescripteur" ? (
       <Prescripteur
@@ -158,17 +189,14 @@ export function App({
           setOutil("secretariat");
         }}
         onNouvelleSimulation={recommencer}
-        // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
-        // l'écran-porte, sans avoir à ressortir du simulateur.
-        onGalerieSeeds={outilsProduit ? () => setGalerie(true) : undefined}
+        panneauOutilsProduit={panneauOutilsProduit}
       />
     ) : (
       <Secretariat
         key={cle}
         situationFinale={situationDev}
         onNouvelleSimulation={recommencer}
-        outilsProduit={outilsProduit}
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />
     );
 

@@ -1,7 +1,6 @@
 import type { Situation } from "publicodes";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
-import { BoutonOutil, OutilsProduit } from "../../outils-produit/OutilsProduit";
 import { moteur } from "../moteur";
 import { Parcours } from "../questionnaire/Parcours";
 import { ResultatMedical } from "./ResultatMedical";
@@ -12,9 +11,10 @@ type Props = {
   onNouvelleSimulation: () => void;
   // Seed : pré-remplit le parcours pour ouvrir directement le résultat médical.
   situationInitiale?: Situation<string> | null;
-  // Ouvre la galerie de seeds, d'où l'on saute au résultat d'une situation type —
-  // dont les cas menant au CERFA. Absent hors du service produit (cf. `App`).
-  onGalerieSeeds?: () => void;
+  // Encadré des outils produit, rendu tel quel sous le questionnaire. Le
+  // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
+  // compose, et il est absent hors du service produit.
+  panneauOutilsProduit?: ReactNode;
 };
 
 // Outil 1 — parcours médical du prescripteur : Partie 1 → Résultat 1.
@@ -24,7 +24,7 @@ export function Prescripteur({
   onPasserAuSecretariat,
   onNouvelleSimulation,
   situationInitiale = null,
-  onGalerieSeeds,
+  panneauOutilsProduit,
 }: Props) {
   const [situation, setSituation] = useState<Situation<string> | null>(
     situationInitiale,
@@ -57,14 +57,7 @@ export function Prescripteur({
             trackResultat(r, "prescripteur");
           }}
         />
-        {/* Même destination — et donc même libellé — qu'à l'écran-porte : la
-            galerie de seeds. Le mode test des règles, lui, reste à la porte : il
-            recharge l'application, et donc perdrait le parcours en cours. */}
-        {onGalerieSeeds && (
-          <OutilsProduit>
-            <BoutonOutil onClick={onGalerieSeeds}>Galerie de seeds</BoutonOutil>
-          </OutilsProduit>
-        )}
+        {panneauOutilsProduit}
       </>
     );
   }

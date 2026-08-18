@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { App } from "../../front/app/App";
 import { Identification } from "../../front/identification/Identification";
+import {
+  BoutonOutil,
+  OutilsProduit,
+} from "../../front/outils-produit/OutilsProduit";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import {
@@ -108,7 +112,11 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
       <Prescripteur
         onPasserAuSecretariat={() => {}}
         onNouvelleSimulation={() => {}}
-        onGalerieSeeds={() => {}}
+        panneauOutilsProduit={
+          <OutilsProduit>
+            <BoutonOutil onClick={() => {}}>Galerie de seeds</BoutonOutil>
+          </OutilsProduit>
+        }
       />,
     );
 

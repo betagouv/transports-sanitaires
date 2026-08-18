@@ -124,7 +124,9 @@ front/                   front (bundlé par Vite)
                          ResultatFinal.tsx  l'assemblage des trois blocs
                          Bloc1Resultat.tsx  Bloc2Etapes.tsx  Bloc3CasRetenu.tsx
                          Article80.tsx  la charge établissement, ses deux rendus
-  outils-produit/        LA feature réservée au service produit
+  outils-produit/        LA feature réservée au service produit — se greffe sur le
+                         simulateur, jamais l'inverse : c'est App.tsx qui compose
+                         (`panneauOutilsProduit`, `documentTelechargeable`)
     acces.ts             estServiceProduit — la garde, commune à tout ce dossier
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
     labo/                Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)

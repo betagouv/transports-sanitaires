@@ -5,8 +5,7 @@
 // fichier — c'est le seul endroit qui connaisse leur ordre.
 
 import type { Situation } from "publicodes";
-import { BoutonCerfa } from "../../outils-produit/beta/cerfa/BoutonCerfa";
-import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
+import type { ReactNode } from "react";
 import { moteur } from "../moteur";
 import { TraceDebug } from "../resultat/TraceDebug";
 import type { Article80 } from "./Article80";
@@ -18,20 +17,18 @@ type Props = {
   situation: Situation<string>;
   onNouvelleSimulation: () => void;
   /**
-   * Le service identifié a-t-il accès aux outils produit ? Le téléchargement du
-   * CERFA leur est réservé. Défaut fermé : un appelant qui oublie de le passer
-   * n'ouvre pas l'accès par mégarde.
+   * Rendu du document téléchargeable proposé quand le cas final est une
+   * prescription médicale de transport. Fourni par l'appelant : le simulateur
+   * sait *quand* un document a lieu d'être, pas comment il se fabrique ni à qui
+   * il est ouvert. Défaut fermé : un appelant qui l'oublie ne propose rien.
    */
-  outilsProduit?: boolean;
-  /** Injectable pour les tests (défaut = asset servi par l'application). */
-  chargerGabarit?: OptionsGénération["chargerGabarit"];
+  documentTelechargeable?: (situation: Situation<string>) => ReactNode;
 };
 
 export function ResultatFinal({
   situation,
   onNouvelleSimulation,
-  outilsProduit = false,
-  chargerGabarit,
+  documentTelechargeable,
 }: Props) {
   const e = moteur.setSituation(situation);
   const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
@@ -76,17 +73,12 @@ export function ResultatFinal({
         article80={article80}
       />
 
-      {/* Deux conditions. Le cas final d'abord : un accord préalable relève du
-          formulaire S3139, une prise en charge par l'établissement ne donne lieu à
-          aucun CERFA. L'accès aux outils produit ensuite — le pré-remplissage
-          reste réservé au service n° 4, le temps d'être éprouvé. */}
-      {casFinal === "prescription médicale de transport" && outilsProduit && (
-        <BoutonCerfa
-          moteur={moteur}
-          situation={situation}
-          chargerGabarit={chargerGabarit}
-        />
-      )}
+      {/* Un accord préalable relève du formulaire S3139, une prise en charge par
+          l'établissement ne donne lieu à aucun CERFA : seule la prescription
+          médicale de transport ouvre un document. À qui il est ouvert, en
+          revanche, ne se décide pas ici (cf. `documentTelechargeable`). */}
+      {casFinal === "prescription médicale de transport" &&
+        documentTelechargeable?.(situation)}
 
       <div className="fr-btns-group fr-btns-group--inline">
         <button

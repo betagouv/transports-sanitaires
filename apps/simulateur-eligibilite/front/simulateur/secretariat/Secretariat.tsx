@@ -1,7 +1,6 @@
 import type { Situation } from "publicodes";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
-import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
 import { moteur } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
@@ -12,10 +11,8 @@ type Props = {
   // Seed : situation complète (P1 + P2) ouvrant directement la Page Résultat 2,
   // sans passation ni parcours administratif.
   situationFinale?: Situation<string> | null;
-  /** Ouvre le téléchargement du CERFA en fin de parcours (cf. `ResultatFinal`). */
-  outilsProduit?: boolean;
-  /** Injectable pour les tests (défaut = asset servi par l'application). */
-  chargerGabarit?: OptionsGénération["chargerGabarit"];
+  /** Transmis tel quel à la Page Résultat 2 (cf. `ResultatFinal`). */
+  documentTelechargeable?: (situation: Situation<string>) => ReactNode;
 };
 
 // Outil 2 — parcours administratif du secrétariat : reprend la Partie 1 puis
@@ -25,8 +22,7 @@ type Props = {
 export function Secretariat({
   onNouvelleSimulation,
   situationFinale = null,
-  outilsProduit = false,
-  chargerGabarit,
+  documentTelechargeable,
 }: Props) {
   const situationP1 = reprendrePassation();
   const [situation, setSituation] = useState<Situation<string> | null>(
@@ -40,8 +36,7 @@ export function Secretariat({
       <ResultatFinal
         situation={situation}
         onNouvelleSimulation={onNouvelleSimulation}
-        outilsProduit={outilsProduit}
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />
     );
   }

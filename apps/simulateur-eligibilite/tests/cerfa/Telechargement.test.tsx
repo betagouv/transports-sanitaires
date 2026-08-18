@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
 import { describe, expect, it } from "vitest";
+import { BoutonCerfa } from "../../front/outils-produit/beta/cerfa/BoutonCerfa";
 import {
   genererCerfa,
   nomFichier,
@@ -27,6 +28,17 @@ const GABARIT = readFileSync(
   ),
 );
 const chargerGabarit = async () => GABARIT.buffer.slice(0) as ArrayBuffer;
+
+// Ce que `App` branche pour un service ayant accès aux outils produit — le
+// simulateur, lui, ne connaît que la fonction. Le fait que seul le service n° 4
+// la reçoive relève d'`App`, et se teste à ce niveau (cf. `Encadre.test.tsx`).
+const documentTelechargeable = (situation: Situation<string>) => (
+  <BoutonCerfa
+    moteur={moteur}
+    situation={situation}
+    chargerGabarit={chargerGabarit}
+  />
+);
 
 /** Situation complète menant à une prescription médicale de transport (ambulance). */
 const PRESCRIPTION: Situation<string> = {
@@ -127,8 +139,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
-        outilsProduit
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />,
     );
     expect(screen.getByRole("button", BOUTON)).toBeInTheDocument();
@@ -139,8 +150,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
-        outilsProduit
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />,
     );
     expect(
@@ -153,22 +163,20 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={ACCORD_PREALABLE}
-        outilsProduit
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />,
     );
     // Accord préalable → formulaire S3139, pas ce CERFA.
     expect(screen.queryByRole("button", BOUTON)).toBeNull();
   });
 
-  it("ne le propose pas à un service sans accès aux outils produit", () => {
-    // Même situation, même cas final : c'est l'accès qui manque. Le résultat de
-    // la simulation reste entièrement lisible — seul le document est retenu.
+  it("ne propose rien quand aucun document ne lui est fourni", () => {
+    // Même situation, même cas final : c'est le rendu du document qui manque.
+    // Le résultat de la simulation reste entièrement lisible — défaut fermé.
     render(
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
-        chargerGabarit={chargerGabarit}
       />,
     );
     expect(screen.queryByRole("button", BOUTON)).toBeNull();
@@ -183,8 +191,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
-        outilsProduit
-        chargerGabarit={chargerGabarit}
+        documentTelechargeable={documentTelechargeable}
       />,
     );
 
@@ -213,10 +220,15 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
-        outilsProduit
-        chargerGabarit={async () => {
-          throw new Error("gabarit indisponible");
-        }}
+        documentTelechargeable={(situation) => (
+          <BoutonCerfa
+            moteur={moteur}
+            situation={situation}
+            chargerGabarit={async () => {
+              throw new Error("gabarit indisponible");
+            }}
+          />
+        )}
       />,
     );
 
