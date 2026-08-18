@@ -25,7 +25,7 @@ function chargerRegles(): RawPublicodes<string> {
   );
 }
 
-export function makeEngine(situation: Situation<string> = {}) {
+export function moteurDeTest(situation: Situation<string> = {}) {
   return new Engine(chargerRegles(), {
     flag: { filterNotApplicablePossibilities: true },
   }).setSituation(situation);

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getIdentite, setIdentite } from "../../front/identification/session";
+import {
+  identiteEnSession,
+  rangerIdentite,
+} from "../../front/identification/session";
 import {
   type IdentitePseudonymisee,
   VERSION,
@@ -14,12 +17,12 @@ const identite: IdentitePseudonymisee = {
 
 describe("session identité pseudonymisée", () => {
   it("conserve l'identité renseignée", () => {
-    setIdentite(identite);
-    expect(getIdentite()).toEqual(identite);
+    rangerIdentite(identite);
+    expect(identiteEnSession()).toEqual(identite);
   });
 
   it("accepte l'absence d'identité (identification sans ref)", () => {
-    setIdentite(null);
-    expect(getIdentite()).toBeNull();
+    rangerIdentite(null);
+    expect(identiteEnSession()).toBeNull();
   });
 });

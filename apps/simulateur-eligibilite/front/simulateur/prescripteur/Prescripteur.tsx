@@ -2,7 +2,7 @@ import type { Situation } from "publicodes";
 import { useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
 import { BoutonOutil, OutilsProduit } from "../../outils-produit/OutilsProduit";
-import { engine } from "../engine";
+import { moteur } from "../moteur";
 import { Parcours } from "../questionnaire/Parcours";
 import { ResultatMedical } from "./ResultatMedical";
 
@@ -51,7 +51,7 @@ export function Prescripteur({
           onTermine={(s) => {
             setSituation(s);
             const r = String(
-              engine.setSituation(s).evaluate("cible_resultat_medical")
+              moteur.setSituation(s).evaluate("cible_resultat_medical")
                 .nodeValue ?? "",
             );
             trackResultat(r, "prescripteur");

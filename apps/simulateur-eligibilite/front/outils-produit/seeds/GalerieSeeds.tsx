@@ -11,7 +11,7 @@
 
 import { useMemo } from "react";
 import type { Outil } from "../../app/outil";
-import { engine } from "../../simulateur/engine";
+import { moteur } from "../../simulateur/moteur";
 import { SEEDS } from "./catalogue";
 import {
   type CibleSeed,
@@ -62,7 +62,7 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
   // chaque seed, l'évaluation d'une seed n'influence donc pas la suivante.
   const lignes = useMemo(
     () =>
-      SEEDS.map((seed) => ({ seed, evaluation: evaluerSeed(engine, seed) })),
+      SEEDS.map((seed) => ({ seed, evaluation: evaluerSeed(moteur, seed) })),
     [],
   );
 

@@ -2,9 +2,9 @@
 // (référentiel + identité pseudonymisée) sous `/api`, puis sert le front (build
 // Vite) en same-origin. Voir docs/architecture/identification.md — ADR-5.
 //
-// `createApp` prend le `Referentiel` en paramètre pour rester testable sans mock
+// `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock
 // (les tests injectent le snapshot ; en production `server.ts` injecte le choix
-// de `chooseReferentiel`).
+// de `choisirReferentiel`).
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";
@@ -19,12 +19,12 @@ export type AppOptions = {
    */
   pseudonymesEnClair?: boolean;
   /** Répertoire du build front à servir (absent en test). */
-  distDir?: string;
+  dossierDist?: string;
 };
 
-export function createApp(
+export function creerApp(
   referentiel: Referentiel,
-  { secret, pseudonymesEnClair = false, distDir }: AppOptions,
+  { secret, pseudonymesEnClair = false, dossierDist }: AppOptions,
 ): Express {
   const app = express();
   app.use(express.json());
@@ -51,10 +51,10 @@ export function createApp(
   });
 
   // Front statique + repli SPA vers index.html.
-  if (distDir) {
-    app.use(express.static(distDir));
+  if (dossierDist) {
+    app.use(express.static(dossierDist));
     app.use((_req, res) => {
-      res.sendFile("index.html", { root: distDir });
+      res.sendFile("index.html", { root: dossierDist });
     });
   }
 

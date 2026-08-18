@@ -30,12 +30,12 @@ import type {
 export type GristConfig = {
   /** Base API du doc, ex. https://…/api/docs/<docId> */
   docUrl: string;
-  apiKey: string;
+  cleApi: string;
 };
 
-export function createGristReferentiel({
+export function creerReferentielGrist({
   docUrl,
-  apiKey,
+  cleApi,
 }: GristConfig): Referentiel {
   const base = docUrl.replace(/\/$/, "");
 
@@ -43,8 +43,8 @@ export function createGristReferentiel({
     async getEtablissements(): Promise<Etablissement[]> {
       return (await records(TABLE.etablissements))
         .map((r) => ({
-          id: str(r.fields[COL.id]),
-          libelle: str(r.fields[COL.nom]),
+          id: texte(r.fields[COL.id]),
+          libelle: texte(r.fields[COL.nom]),
         }))
         .filter((e) => e.id && e.libelle);
     },
@@ -56,8 +56,8 @@ export function createGristReferentiel({
         await records(TABLE.services, { [COL.refEtablissement]: [rowId] })
       )
         .map((r) => ({
-          id: str(r.fields[COL.id]),
-          libelle: str(r.fields[COL.nom]),
+          id: texte(r.fields[COL.id]),
+          libelle: texte(r.fields[COL.nom]),
         }))
         .filter((s) => s.id && s.libelle);
     },
@@ -67,9 +67,9 @@ export function createGristReferentiel({
       if (rowId == null) return [];
       return (await records(TABLE.prescripteurs, { [COL.refService]: [rowId] }))
         .map((r) => ({
-          id: str(r.fields[COL.id]),
+          id: texte(r.fields[COL.id]),
           libelle:
-            `${str(r.fields[COL.prenom])} ${str(r.fields[COL.nom])}`.trim(),
+            `${texte(r.fields[COL.prenom])} ${texte(r.fields[COL.nom])}`.trim(),
         }))
         .filter((p) => p.id && p.libelle);
     },
@@ -128,7 +128,7 @@ export function createGristReferentiel({
     },
   };
 
-  // ---- Helpers privés à la closure (hoisted ; ils capturent `base`/`apiKey`). ----
+  // ---- Helpers privés à la closure (hoisted ; ils capturent `base`/`cleApi`). ----
 
   async function records(
     table: string,
@@ -137,7 +137,7 @@ export function createGristReferentiel({
     const url = new URL(`${base}/tables/${table}/records`);
     if (filter) url.searchParams.set("filter", JSON.stringify(filter));
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: { Authorization: `Bearer ${cleApi}` },
     });
     if (!res.ok) {
       throw new Error(`Grist ${table} → HTTP ${res.status}`);
@@ -160,7 +160,7 @@ export function createGristReferentiel({
     const res = await fetch(`${base}/tables/${table}/records`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${cleApi}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ records: [{ fields }] }),
@@ -184,7 +184,7 @@ export function createGristReferentiel({
     const res = await fetch(`${base}/tables/${table}/records`, {
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${cleApi}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ records: [{ id: rowId, fields }] }),
@@ -215,7 +215,7 @@ export function createGristReferentiel({
       [COL.refEtablissement]: [etabRowId],
     });
     const deja = existants.find(
-      (r) => normalise(str(r.fields[COL.nom])) === cn,
+      (r) => normalise(texte(r.fields[COL.nom])) === cn,
     );
     if (deja) return deja.id;
     return create(TABLE.services, {
@@ -239,8 +239,8 @@ export function createGristReferentiel({
     });
     const deja = existants.find(
       (r) =>
-        normalise(str(r.fields[COL.nom])) === cn &&
-        normalise(str(r.fields[COL.prenom])) === cp,
+        normalise(texte(r.fields[COL.nom])) === cn &&
+        normalise(texte(r.fields[COL.prenom])) === cp,
     );
     if (deja) return deja.id;
     return create(TABLE.prescripteurs, {
@@ -276,5 +276,5 @@ const COL = {
 // opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
 const ORIGINE_FORMULAIRE = "formulaire";
 
-const str = (v: unknown): string =>
+const texte = (v: unknown): string =>
   typeof v === "string" ? v.trim() : v == null ? "" : String(v);

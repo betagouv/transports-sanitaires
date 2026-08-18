@@ -24,7 +24,7 @@ import {
 } from "../identification/Identification";
 import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
 import { referentielHttp } from "../identification/referentiel-http";
-import { setIdentite } from "../identification/session";
+import { rangerIdentite } from "../identification/session";
 import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Labo } from "../outils-produit/labo/Labo";
@@ -86,7 +86,7 @@ export function App({
     saisie: IdentiteSaisie,
     acces: AccesIdentification,
   ) {
-    setIdentite(await pseudonymiser(saisie));
+    rangerIdentite(await pseudonymiser(saisie));
     setOutilsProduit(acces.outilsProduit);
     setIdentifie(true);
     // Les outils produit s'ouvrent **après** la porte : on entre identifié, quelle

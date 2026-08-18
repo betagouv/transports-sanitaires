@@ -101,7 +101,7 @@ front/                   front (bundlé par Vite)
     session.ts           l'identité pseudonymisée, en mémoire de session (ADR-4)
   simulateur/            LES deux outils, sur un socle commun — la racine ne porte
                          que le socle non-visuel, tout composant est rangé
-    engine.ts            moteur publicodes (règles officielles ou labo)
+    moteur.ts            moteur publicodes (règles officielles ou labo)
     passation.ts         la couture prescripteur → secrétariat
     questionnaire/       Parcours.tsx (stepper + FormBuilder)  FormField.tsx
                          Mosaique.tsx  mosaique.ts

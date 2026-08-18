@@ -38,7 +38,7 @@ export function Labo({ onRetour }: Props) {
   }
 
   // Active une version puis recharge : le moteur (singleton construit au boot) est
-  // reconstruit avec les règles de test au prochain chargement (cf. engine.ts).
+  // reconstruit avec les règles de test au prochain chargement (cf. moteur.ts).
   function activer(version: VersionLabo) {
     activerLabo(version);
     window.location.reload();
@@ -66,7 +66,7 @@ export function Labo({ onRetour }: Props) {
           <p className="fr-alert__title">
             Règles de test actives : {active.nom}
           </p>
-          <p>Chargées le {formatDate(active.date)}.</p>
+          <p>Chargées le {formaterDate(active.date)}.</p>
           <button
             type="button"
             className="fr-btn fr-btn--secondary fr-btn--sm fr-mt-1w"
@@ -107,7 +107,7 @@ export function Labo({ onRetour }: Props) {
                 <span>
                   {v.nom}{" "}
                   <span className="fr-text--sm fr-text-mention--grey">
-                    — {formatDate(v.date)}
+                    — {formaterDate(v.date)}
                   </span>
                 </span>
                 {active?.yaml !== v.yaml && (
@@ -180,7 +180,7 @@ function ApercuCandidat({
   );
 }
 
-function formatDate(iso: string): string {
+function formaterDate(iso: string): string {
   return new Date(iso).toLocaleString("fr-FR", {
     dateStyle: "short",
     timeStyle: "short",

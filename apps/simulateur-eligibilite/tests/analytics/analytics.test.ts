@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  buildEvent,
+  configDepuisEnv,
+  construireEvenement,
   initAnalytics,
-  resolveConfig,
   trackResultat,
   trackSimulationStart,
   trackSimulationStep,
 } from "../../front/analytics/analytics";
-import { setIdentite } from "../../front/identification/session";
+import { rangerIdentite } from "../../front/identification/session";
 import {
   type IdentitePseudonymisee,
   VERSION,
@@ -24,12 +24,12 @@ const config = { enabled: true, url: "https://matomo.test/", siteId: "275" };
 
 beforeEach(() => {
   window._paq = [];
-  setIdentite(null);
+  rangerIdentite(null);
 });
 
-describe("buildEvent", () => {
+describe("construireEvenement", () => {
   it("porte le prescripteurRef en Nom d'événement", () => {
-    expect(buildEvent(identite, "simulation_start")).toEqual([
+    expect(construireEvenement(identite, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
@@ -38,7 +38,7 @@ describe("buildEvent", () => {
   });
 
   it("place la valeur après le Nom", () => {
-    expect(buildEvent(identite, "simulation_step", 2)).toEqual([
+    expect(construireEvenement(identite, "simulation_step", 2)).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_step",
@@ -48,12 +48,12 @@ describe("buildEvent", () => {
   });
 
   it("sans identité : pas de Nom, valeur précédée d'un Nom vide", () => {
-    expect(buildEvent(null, "simulation_start")).toEqual([
+    expect(construireEvenement(null, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
     ]);
-    expect(buildEvent(null, "simulation_abandon", 3)).toEqual([
+    expect(construireEvenement(null, "simulation_abandon", 3)).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_abandon",
@@ -63,28 +63,28 @@ describe("buildEvent", () => {
   });
 });
 
-describe("resolveConfig", () => {
+describe("configDepuisEnv", () => {
   it("désactivé hors prod et sans flag", () => {
-    expect(resolveConfig({ PROD: false }).enabled).toBe(false);
+    expect(configDepuisEnv({ PROD: false }).enabled).toBe(false);
   });
 
   it("activé en build de prod", () => {
-    expect(resolveConfig({ PROD: true }).enabled).toBe(true);
+    expect(configDepuisEnv({ PROD: true }).enabled).toBe(true);
   });
 
   it("activable en local via VITE_MATOMO_ENABLED", () => {
     expect(
-      resolveConfig({ PROD: false, VITE_MATOMO_ENABLED: "true" }).enabled,
+      configDepuisEnv({ PROD: false, VITE_MATOMO_ENABLED: "true" }).enabled,
     ).toBe(true);
   });
 
   it("défauts beta.gouv, surchargeables", () => {
-    expect(resolveConfig({ PROD: true })).toMatchObject({
+    expect(configDepuisEnv({ PROD: true })).toMatchObject({
       url: "https://stats.beta.gouv.fr/",
       siteId: "275",
     });
     expect(
-      resolveConfig({
+      configDepuisEnv({
         PROD: true,
         VITE_MATOMO_URL: "https://x/",
         VITE_MATOMO_SITE_ID: "9",
@@ -107,7 +107,7 @@ describe("initAnalytics + événements", () => {
 
   it("émet des événements portant le prescripteurRef de la session", () => {
     initAnalytics(config);
-    setIdentite(identite); // identité connue après l'identification, avant les événements
+    rangerIdentite(identite); // identité connue après l'identification, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
     trackSimulationStart();
     trackSimulationStep(3);

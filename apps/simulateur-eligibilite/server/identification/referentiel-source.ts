@@ -9,19 +9,19 @@ import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel.ts";
-import { createGristReferentiel } from "./referentiel-grist.ts";
+import { creerReferentielGrist } from "./referentiel-grist.ts";
 
 const DEFAULT_DOC_URL =
   "https://grist.numerique.gouv.fr/o/transports-sanitaires/api/docs/gbPomRAyU3M6P5NR6x6Qac";
 
-export function chooseReferentiel(env = process.env): Referentiel {
-  const apiKey = env.GRIST_API_KEY?.trim();
-  if (!apiKey) {
+export function choisirReferentiel(env = process.env): Referentiel {
+  const cleApi = env.GRIST_API_KEY?.trim();
+  if (!cleApi) {
     console.warn(
       "[simulateur] GRIST_API_KEY absente — référentiel snapshot (dev/fallback).",
     );
     return snapshotReferentiel;
   }
   const docUrl = env.GRIST_DOC_URL?.trim() || DEFAULT_DOC_URL;
-  return createGristReferentiel({ docUrl, apiKey });
+  return creerReferentielGrist({ docUrl, cleApi });
 }

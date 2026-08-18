@@ -16,7 +16,7 @@
 //     depuis la session au moment d'émettre chaque événement.
 
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
-import { getIdentite } from "../identification/session";
+import { identiteEnSession } from "../identification/session";
 
 declare global {
   interface Window {
@@ -46,7 +46,7 @@ const DEFAULT_SITE_ID = "275";
  * Construit un événement Matomo `trackEvent` : catégorie constante, action, puis
  * `prescripteurRef` en **Nom** (s'il existe) et une valeur numérique optionnelle.
  */
-export function buildEvent(
+export function construireEvenement(
   identite: IdentitePseudonymisee | null,
   action: string,
   value?: number,
@@ -67,7 +67,7 @@ export function buildEvent(
  * consentement est accordé (ADR-3 — phase expérimentale : accordé par défaut,
  * sans bandeau ; point de décision isolé pour brancher un vrai bandeau).
  */
-export function resolveConfig(env: Env = import.meta.env): AnalyticsConfig {
+export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
   const consentement = true; // ADR-3 — à remplacer par la gestion du consentement
   const activable = env.PROD === true || env.VITE_MATOMO_ENABLED === "true";
   return {
@@ -77,7 +77,7 @@ export function resolveConfig(env: Env = import.meta.env): AnalyticsConfig {
   };
 }
 
-let state: { enabled: boolean } = { enabled: false };
+let etat: { enabled: boolean } = { enabled: false };
 
 // File d'attente du tag Matomo. Unique point de création : le tag la remplace par
 // un objet actif quand matomo.js se charge, tout ce qui est empilé avant est rejoué.
@@ -91,11 +91,11 @@ function filePaq(): unknown[][] {
  * (avant le chargement de matomo.js, qui traitera la file). Appelé au boot, avant
  * l'identification : l'identité prescripteur n'est **pas** connue ici — elle est lue
  * en session au moment d'émettre chaque événement (voir `track`). N'injecte
- * **pas** le script tiers — c'est le rôle de `loadMatomo`, appelé séparément
+ * **pas** le script tiers — c'est le rôle de `chargerMatomo`, appelé séparément
  * (garde les tests sans effet de bord réseau).
  */
 export function initAnalytics(config: AnalyticsConfig): void {
-  state = { enabled: config.enabled };
+  etat = { enabled: config.enabled };
   if (!config.enabled) return;
 
   const paq = filePaq();
@@ -107,7 +107,7 @@ export function initAnalytics(config: AnalyticsConfig): void {
 }
 
 /** Injecte le script matomo.js (idempotent). */
-export function loadMatomo(url: string): void {
+export function chargerMatomo(url: string): void {
   if (document.getElementById("matomo-js")) return;
   const script = document.createElement("script");
   script.id = "matomo-js";
@@ -141,6 +141,6 @@ export const trackCerfaTelecharge = (): void =>
 // Émet un événement quand le traceur est activé, en portant l'identité
 // pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
 function track(action: string, value?: number): void {
-  if (!state.enabled) return;
-  filePaq().push(buildEvent(getIdentite(), action, value));
+  if (!etat.enabled) return;
+  filePaq().push(construireEvenement(identiteEnSession(), action, value));
 }

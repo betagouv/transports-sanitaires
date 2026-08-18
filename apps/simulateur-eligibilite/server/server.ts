@@ -5,11 +5,11 @@
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createApp } from "./app.ts";
-import { chooseReferentiel } from "./identification/referentiel-source.ts";
+import { creerApp } from "./app.ts";
+import { choisirReferentiel } from "./identification/referentiel-source.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.resolve(here, "..", "dist");
+const dossierDist = path.resolve(here, "..", "dist");
 
 // Secret de pseudonymisation (HMAC) de l'identité prescripteur. En production
 // (Scalingo) il vient d'une variable d'environnement dédiée ; en local sans
@@ -37,10 +37,10 @@ function pseudonymesEnClair(): boolean {
   return actif;
 }
 
-const app = createApp(chooseReferentiel(), {
+const app = creerApp(choisirReferentiel(), {
   secret: pseudonymisationSecret(),
   pseudonymesEnClair: pseudonymesEnClair(),
-  distDir,
+  dossierDist,
 });
 const port = Number(process.env.PORT ?? 3000);
 

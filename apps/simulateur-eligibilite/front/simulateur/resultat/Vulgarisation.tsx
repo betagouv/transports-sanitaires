@@ -1,4 +1,4 @@
-import type { engine } from "../engine";
+import type { moteur } from "../moteur";
 
 // Critères médicaux et motifs ouvrant droit, avec descriptions vulgarisées
 // destinées au patient. Partagé entre la Page Résultat 1 (résultat médical) et
@@ -115,7 +115,7 @@ export const MOTIFS: Item[] = [
 
 // Ne conserve que les items dont la règle publicodes s'évalue à vrai pour la
 // situation courante du moteur.
-export function retenus(e: typeof engine, items: Item[]): Item[] {
+export function retenus(e: typeof moteur, items: Item[]): Item[] {
   return items.filter((item) => e.evaluate(item.id).nodeValue === true);
 }
 

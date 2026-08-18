@@ -1,5 +1,5 @@
 import type { Situation } from "publicodes";
-import { engine } from "../engine";
+import { moteur } from "../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
@@ -21,7 +21,7 @@ export function ResultatMedical({
   onContinuer,
   onRecommencer,
 }: Props) {
-  const e = engine.setSituation(situation);
+  const e = moteur.setSituation(situation);
   const favorable =
     e.evaluate("cible_resultat_medical").nodeValue === "favorable";
   const transport = String(

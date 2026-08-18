@@ -2,9 +2,9 @@
 // version du fichier de règles, sans passer par un développeur ni un déploiement.
 //
 // Principe : les règles officielles sont embarquées dans le build
-// (`front/simulateur/engine.ts`). Le labo stocke un jeu de règles **de test** dans
+// (`front/simulateur/moteur.ts`). Le labo stocke un jeu de règles **de test** dans
 // le `localStorage` du navigateur du PM ; au chargement, le moteur les utilise à la
-// place des règles embarquées (cf. engine.ts). Rien n'est déployé, rien ne fuite aux
+// place des règles embarquées (cf. moteur.ts). Rien n'est déployé, rien ne fuite aux
 // autres utilisateurs (le `localStorage` est propre à chaque navigateur).
 //
 // L'accès au labo est **gardé** derrière l'identification, comme celui de la galerie
@@ -26,7 +26,7 @@ const CLE_ACTIVE = "labo:regles-active";
 const CLE_HISTORIQUE = "labo:historique";
 const MAX_HISTORIQUE = 10;
 
-const OPTIONS_ENGINE = {
+const OPTIONS_MOTEUR = {
   flag: { filterNotApplicablePossibilities: true },
 } as const;
 
@@ -62,7 +62,7 @@ export function validerRegles(contenu: string): ResultatValidation {
   }
 
   try {
-    new Engine(rules, OPTIONS_ENGINE);
+    new Engine(rules, OPTIONS_MOTEUR);
   } catch (e) {
     return { ok: false, erreur: `Règles invalides : ${(e as Error).message}` };
   }
@@ -70,7 +70,7 @@ export function validerRegles(contenu: string): ResultatValidation {
   return { ok: true, nbRegles: Object.keys(rules).length };
 }
 
-// ---- État actif (consommé par engine.ts au boot) ----
+// ---- État actif (consommé par moteur.ts au boot) ----
 
 /** YAML des règles de test actives, ou `null` si le labo est inactif. */
 export function reglesLaboActives(): string | null {

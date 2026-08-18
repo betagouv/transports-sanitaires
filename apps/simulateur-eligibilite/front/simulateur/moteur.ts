@@ -24,12 +24,12 @@ const reglesOfficielles: RawPublicodes<string> = Object.assign(
 // les officielles.
 // Auto-réparation : des règles labo qui ne compilent pas sont désactivées et on
 // retombe sur les officielles plutôt que de bloquer toute l'app.
-function initMoteur(): { rules: RawPublicodes<string>; engine: Engine } {
+function initMoteur(): { regles: RawPublicodes<string>; moteur: Engine } {
   const laboYaml = reglesLaboActives();
   if (laboYaml) {
     try {
-      const rules = yaml.load(laboYaml) as RawPublicodes<string>;
-      return { rules, engine: new Engine(rules, OPTIONS) };
+      const regles = yaml.load(laboYaml) as RawPublicodes<string>;
+      return { regles, moteur: new Engine(regles, OPTIONS) };
     } catch (err) {
       console.error(
         "[labo] Règles de test invalides — retour aux règles officielles.",
@@ -39,15 +39,15 @@ function initMoteur(): { rules: RawPublicodes<string>; engine: Engine } {
     }
   }
   return {
-    rules: reglesOfficielles,
-    engine: new Engine(reglesOfficielles, OPTIONS),
+    regles: reglesOfficielles,
+    moteur: new Engine(reglesOfficielles, OPTIONS),
   };
 }
 
-const moteur = initMoteur();
+const charge = initMoteur();
 
-export const engine = moteur.engine;
+export const moteur = charge.moteur;
 
 // Règles brutes (nœuds YAML) pour lire les métadonnées custom non interprétées
 // par le moteur — notamment la clé `mosaique` (cf. `mosaique.ts`).
-export const reglesBrutes = moteur.rules;
+export const reglesBrutes = charge.regles;

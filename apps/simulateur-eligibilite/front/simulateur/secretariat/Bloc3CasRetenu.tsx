@@ -2,7 +2,7 @@
 // retenu et les cases documentaires à reporter sur le formulaire. Chaque case n'est
 // listée que si la simulation l'a établie, d'où le moteur en paramètre.
 
-import type { engine } from "../engine";
+import type { moteur } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
 
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
@@ -30,11 +30,11 @@ const CAS_RETENU: Record<string, string> = {
 // il n'est affiché que si la simulation l'a établi.
 type CaseItem =
   | string
-  | { text: string; visible: (e: typeof engine, transport: string) => boolean };
+  | { text: string; visible: (e: typeof moteur, transport: string) => boolean };
 
 type Groupe = { titre?: string; icone?: string; items: CaseItem[] };
 
-const vrai = (e: typeof engine, id: string) =>
+const vrai = (e: typeof moteur, id: string) =>
   e.evaluate(id).nodeValue === true;
 
 // Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
@@ -256,7 +256,7 @@ export function Bloc3CasRetenu({
   doc,
   article80,
 }: {
-  e: typeof engine;
+  e: typeof moteur;
   casFinal: string;
   transport: string;
   doc: string;

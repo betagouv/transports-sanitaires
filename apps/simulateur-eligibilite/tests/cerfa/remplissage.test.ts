@@ -18,7 +18,7 @@ import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerf
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
-import { makeEngine } from "../simulateur/engine.ts";
+import { moteurDeTest } from "../simulateur/moteur.ts";
 
 const GABARIT = readFileSync(
   join(
@@ -43,7 +43,6 @@ async function relire(pdf: Uint8Array): Promise<Record<string, string>> {
   return lu;
 }
 
-const engine = () => makeEngine();
 const situation = (entrées: Record<string, string>) => ({
   ...BASE_NEUTRE,
   ...entrées,
@@ -135,7 +134,7 @@ describe("remplirCerfa", () => {
 describe("saisiesDepuisSituation", () => {
   it("coche l'ambulance et ses justifications, sans rien inventer d'autre", async () => {
     const saisies = saisiesDepuisSituation(
-      engine(),
+      moteurDeTest(),
       situation({
         p1_motif_hospitalisation: "oui",
         p1_critere_position_allongee_demi_assise: "oui",
@@ -158,7 +157,7 @@ describe("saisiesDepuisSituation", () => {
 
   it("coche le transport assis et le fauteuil roulant pour un TPMR", async () => {
     const saisies = saisiesDepuisSituation(
-      engine(),
+      moteurDeTest(),
       situation({
         p1_motif_hospitalisation: "oui",
         p1_critere_fauteuil_sans_transfert: "oui",
@@ -174,7 +173,7 @@ describe("saisiesDepuisSituation", () => {
 
   it("reporte le trajet, l'urgence et l'accident issus de la Partie 2", async () => {
     const saisies = saisiesDepuisSituation(
-      engine(),
+      moteurDeTest(),
       situation({
         p1_motif_hospitalisation: "oui",
         p1_critere_brancardage_portage: "oui",
@@ -215,13 +214,16 @@ describe("saisiesDepuisSituation", () => {
     });
 
     // Le garde `CerfaNonApplicable` ne l'écarte pas : c'est bien une prescription.
-    const moteur = engine();
+    const moteur = moteurDeTest();
     expect(
       moteur.setSituation(série).evaluate("p2_transport_en_serie").nodeValue,
     ).toBe(true);
 
     const lu = await relire(
-      await remplirCerfa(GABARIT, saisiesDepuisSituation(engine(), série)),
+      await remplirCerfa(
+        GABARIT,
+        saisiesDepuisSituation(moteurDeTest(), série),
+      ),
     );
     expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
   });
@@ -230,7 +232,7 @@ describe("saisiesDepuisSituation", () => {
     // Cette seed sert à voir le pré-remplissage : un document presque vide
     // n'apprendrait rien. On verrouille donc ce que sa situation doit couvrir.
     const saisies = saisiesDepuisSituation(
-      engine(),
+      moteurDeTest(),
       situationDe(seedParId("secretariat-prescription")),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
@@ -264,8 +266,8 @@ describe("saisiesDepuisSituation", () => {
       p2_distance_aller_superieure_150km: "oui",
     });
 
-    expect(() => saisiesDepuisSituation(engine(), accordPréalable)).toThrow(
-      CerfaNonApplicable,
-    );
+    expect(() =>
+      saisiesDepuisSituation(moteurDeTest(), accordPréalable),
+    ).toThrow(CerfaNonApplicable);
   });
 });

@@ -13,7 +13,7 @@
 // seule ligne (dédup sur Nom/Prénom normalisés).
 
 import { describe, expect, it } from "vitest";
-import { chooseReferentiel } from "../../server/identification/referentiel-source.ts";
+import { choisirReferentiel } from "../../server/identification/referentiel-source.ts";
 
 const actif =
   process.env.GRIST_ECRITURE_TEST === "1" &&
@@ -22,7 +22,7 @@ const actif =
 describe.skipIf(!actif)(
   "écriture Grist depuis une saisie libre (smoke)",
   () => {
-    const ref = chooseReferentiel();
+    const ref = choisirReferentiel();
 
     it("crée un prescripteur hors liste puis le déduplique (service Libéral)", async () => {
       const marqueur = `TEST-${Date.now()}`;

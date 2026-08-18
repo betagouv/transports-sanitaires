@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
 import { evaluerSeed } from "../../front/outils-produit/seeds/seed";
-import { makeEngine } from "./engine";
+import { moteurDeTest } from "./moteur";
 
 // Matrice de non-régression métier (règles plates v8.10). Elle n'a pas de scénarios
 // à elle : elle rejoue le **catalogue de seeds** (`front/outils-produit/seeds/`), qui est
 // aussi ce qu'affiche la galerie dev. Ajouter une situation de référence, c'est
 // donc l'ajouter au catalogue — elle devient du même geste testée et consultable.
 
-const moteur = makeEngine();
+const moteur = moteurDeTest();
 
 describe("modèle v8.10 — le moteur confirme les attendus des seeds", () => {
   for (const seed of SEEDS) {
@@ -99,7 +99,7 @@ describe("catalogue de seeds", () => {
   it("ne déclare que des entrées connues du moteur", () => {
     // Une clé inconnue ferait lever `setSituation` au premier usage — en test comme
     // dans la galerie. On le dit ici, où le message pointe la seed fautive.
-    const connues = new Set(Object.keys(makeEngine().getParsedRules()));
+    const connues = new Set(Object.keys(moteurDeTest().getParsedRules()));
     for (const seed of SEEDS) {
       for (const clé of Object.keys(seed.entrees)) {
         expect(connues, `${seed.id} — entrée « ${clé} »`).toContain(clé);

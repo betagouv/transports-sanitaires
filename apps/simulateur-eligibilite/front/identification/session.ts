@@ -6,10 +6,10 @@ import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee"
 // traceur d'analytics au moment d'émettre les événements.
 let identiteCourante: IdentitePseudonymisee | null = null;
 
-export function setIdentite(identite: IdentitePseudonymisee | null): void {
+export function rangerIdentite(identite: IdentitePseudonymisee | null): void {
   identiteCourante = identite;
 }
 
-export function getIdentite(): IdentitePseudonymisee | null {
+export function identiteEnSession(): IdentitePseudonymisee | null {
   return identiteCourante;
 }

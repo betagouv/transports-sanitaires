@@ -7,7 +7,7 @@
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { createApp } from "../../server/app.ts";
+import { creerApp } from "../../server/app.ts";
 import { empreinte } from "../../server/identification/pseudonymisation.ts";
 import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
 import {
@@ -21,7 +21,7 @@ let server: Server;
 let base: string;
 
 beforeAll(async () => {
-  const app = createApp(snapshotReferentiel, { secret: SECRET });
+  const app = creerApp(snapshotReferentiel, { secret: SECRET });
   await new Promise<void>((resolve) => {
     // Express 5 passe une éventuelle erreur au callback : on ne la propage pas
     // dans `resolve`, qui n'attend rien.
@@ -220,7 +220,7 @@ async function demarrer(
   referentiel: Referentiel,
   pseudonymesEnClair = false,
 ): Promise<{ base: string; close: () => Promise<void> }> {
-  const app = createApp(referentiel, { secret: SECRET, pseudonymesEnClair });
+  const app = creerApp(referentiel, { secret: SECRET, pseudonymesEnClair });
   const srv = await new Promise<Server>((resolve) => {
     const s = app.listen(0, () => resolve(s));
   });

@@ -2,7 +2,7 @@ import type { Situation } from "publicodes";
 import { useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
 import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
-import { engine } from "../engine";
+import { moteur } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
 import { ResultatFinal } from "./ResultatFinal";
@@ -74,7 +74,7 @@ export function Secretariat({
         onTermine={(s) => {
           setSituation(s);
           const cas = String(
-            engine.setSituation(s).evaluate("cible_cas_final").nodeValue ?? "",
+            moteur.setSituation(s).evaluate("cible_cas_final").nodeValue ?? "",
           );
           trackResultat(cas, "secretariat");
         }}

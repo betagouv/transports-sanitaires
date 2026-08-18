@@ -1,5 +1,5 @@
 import type { Situation } from "publicodes";
-import { engine } from "../engine";
+import { moteur } from "../moteur";
 
 type Props = {
   titre: string;
@@ -13,7 +13,7 @@ type Props = {
 // du parcours n'est plus disponible.
 export function TraceDebug({ titre, situation, sorties = [] }: Props) {
   if (!import.meta.env.DEV) return null;
-  const e = engine.setSituation(situation);
+  const e = moteur.setSituation(situation);
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — {titre}</summary>

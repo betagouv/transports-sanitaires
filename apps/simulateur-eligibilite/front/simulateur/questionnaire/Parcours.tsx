@@ -12,7 +12,7 @@ import {
   trackSimulationStart,
   trackSimulationStep,
 } from "../../analytics/analytics";
-import { engine, reglesBrutes } from "../engine";
+import { moteur, reglesBrutes } from "../moteur";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
@@ -24,7 +24,7 @@ import { mosaiqueDe, valeurBool } from "./mosaique";
 // `selectTreshold` (sic, orthographe de la lib) : une question à N possibilités
 // est rendue en boutons radio jusqu'à ce seuil (défaut 5), en liste déroulante
 // au-delà. Relevé à 10 pour garder le radio sur les listes un peu longues.
-const formBuilder = new FormBuilder({ engine, selectTreshold: 10 });
+const formBuilder = new FormBuilder({ engine: moteur, selectTreshold: 10 });
 
 type Props = {
   // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).
@@ -79,7 +79,7 @@ export function Parcours({
   // (dont les non touchées, figées à `false`) dans la situation — elles comptent
   // alors toutes comme « answered », y compris après un coche→décoche qui laisse
   // le groupe visuellement vide mais sans « aucun » explicite.
-  const evalue = engine.setSituation(formState.situation);
+  const evalue = moteur.setSituation(formState.situation);
   const mosaiqueRepondue = (m: MosaiqueDesc): boolean => {
     const coche = (id: string) => evalue.evaluate(id).nodeValue === true;
     return m.optionIds.some(coche) || (m.aucun ? coche(m.aucun.id) : false);
@@ -155,7 +155,7 @@ export function Parcours({
   ): boolean {
     if (champ) return valeurBool(champ) === true;
     return (
-      engine.setSituation(formState.situation).evaluate(id).nodeValue === true
+      moteur.setSituation(formState.situation).evaluate(id).nodeValue === true
     );
   }
 

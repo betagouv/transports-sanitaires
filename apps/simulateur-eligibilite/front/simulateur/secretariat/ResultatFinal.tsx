@@ -7,7 +7,7 @@
 import type { Situation } from "publicodes";
 import { BoutonCerfa } from "../../outils-produit/beta/cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
-import { engine } from "../engine";
+import { moteur } from "../moteur";
 import { TraceDebug } from "../resultat/TraceDebug";
 import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
@@ -33,7 +33,7 @@ export function ResultatFinal({
   outilsProduit = false,
   chargerGabarit,
 }: Props) {
-  const e = engine.setSituation(situation);
+  const e = moteur.setSituation(situation);
   const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
   const doc = String(
     e.evaluate("cible_document_a_remettre_au_patient").nodeValue ?? "",
@@ -82,7 +82,7 @@ export function ResultatFinal({
           reste réservé au service n° 4, le temps d'être éprouvé. */}
       {casFinal === "prescription médicale de transport" && outilsProduit && (
         <BoutonCerfa
-          moteur={engine}
+          moteur={moteur}
           situation={situation}
           chargerGabarit={chargerGabarit}
         />

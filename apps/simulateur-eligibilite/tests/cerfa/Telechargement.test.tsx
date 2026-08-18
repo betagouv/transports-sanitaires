@@ -15,7 +15,7 @@ import {
   SITUATION,
   TRAJET,
 } from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
-import { engine } from "../../front/simulateur/engine";
+import { moteur } from "../../front/simulateur/moteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 
 // Le vrai gabarit, lu sur disque : en test il n'y a pas de serveur pour le
@@ -77,7 +77,7 @@ const BOUTON = { name: /Télécharger la prescription pré-remplie/i } as const;
 
 describe("genererCerfa", () => {
   it("produit un PDF portant les déductions du moteur", async () => {
-    const blob = await genererCerfa(engine, PRESCRIPTION, { chargerGabarit });
+    const blob = await genererCerfa(moteur, PRESCRIPTION, { chargerGabarit });
     expect(blob.type).toBe("application/pdf");
 
     const formulaire = (
@@ -99,7 +99,7 @@ describe("genererCerfa", () => {
   });
 
   it("laisse vierges les blocs d'identité, que le simulateur ne connaît pas", async () => {
-    const blob = await genererCerfa(engine, PRESCRIPTION, { chargerGabarit });
+    const blob = await genererCerfa(moteur, PRESCRIPTION, { chargerGabarit });
     const formulaire = (
       await PDFDocument.load(await blob.arrayBuffer())
     ).getForm();

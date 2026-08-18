@@ -3,7 +3,7 @@
 // transport. Le contenu en langage clair vient de `resultat/` ; ce module choisit
 // quoi dire selon le cas final et le transport retenu.
 
-import type { engine } from "../engine";
+import type { moteur } from "../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
@@ -380,7 +380,7 @@ export function Bloc2Etapes({
   transportPrescrit,
   article80,
 }: {
-  e: typeof engine;
+  e: typeof moteur;
   casFinal: string;
   transport: string;
   transportPrescrit: boolean;

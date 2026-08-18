@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
-import { makeEngine } from "./engine";
+import { moteurDeTest } from "./moteur";
 
 // Portage de la matrice de non-régression du livrable
 // (tmp/8.10/transports-sanitaires.tests.v8-10.yaml → scenario_tests).
@@ -29,11 +29,11 @@ const CLES_UI = new Set([
 // Compare la valeur évaluée d'une règle à la valeur attendue de la matrice.
 // Mappe `oui`/`non` → booléens, `non applicable` → valeur nulle.
 function verifie(rule: string, attendu: string | number, id: string): void {
-  const engine = makeEngine({
+  const moteur = moteurDeTest({
     ...BASE_NEUTRE,
     ...Object.fromEntries(Object.entries(given).map(([k, v]) => [k, fmt(v)])),
   });
-  const nodeValue = engine.evaluate(rule).nodeValue;
+  const nodeValue = moteur.evaluate(rule).nodeValue;
   if (attendu === "non applicable") {
     expect(nodeValue, `${id} — ${rule}`).toBeNull();
     return;

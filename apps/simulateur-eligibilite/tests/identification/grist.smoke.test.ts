@@ -10,12 +10,12 @@
 // prescripteur, pas des libellés figés.
 
 import { describe, expect, it } from "vitest";
-import { chooseReferentiel } from "../../server/identification/referentiel-source.ts";
+import { choisirReferentiel } from "../../server/identification/referentiel-source.ts";
 
-const apiKey = process.env.GRIST_API_KEY?.trim();
+const cleApi = process.env.GRIST_API_KEY?.trim();
 
-describe.skipIf(!apiKey)("référentiel Grist (smoke)", () => {
-  const ref = chooseReferentiel();
+describe.skipIf(!cleApi)("référentiel Grist (smoke)", () => {
+  const ref = choisirReferentiel();
 
   it("renvoie des établissements {id, libelle} non vides", async () => {
     const etabs = await ref.getEtablissements();

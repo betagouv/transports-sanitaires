@@ -7,18 +7,18 @@ import Engine from "publicodes";
 
 // Vérifie la validité d'un document publicodes : syntaxe YAML puis
 // cohérence des règles (références manquantes, cycles, etc.) via l'Engine.
-// Reproduit le chargement de front/simulateur/engine.ts.
+// Reproduit le chargement de front/simulateur/moteur.ts.
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const reglesDir = resolve(__dirname, "../regles");
+const dossierRegles = resolve(__dirname, "../regles");
 const racine = resolve(__dirname, "..");
 
 function main(): void {
-  const fichiers = globSync(`${reglesDir}/*.publicodes`).sort();
+  const fichiers = globSync(`${dossierRegles}/*.publicodes`).sort();
 
   if (fichiers.length === 0) {
     throw new Error(
-      `Aucun fichier .publicodes trouvé dans ${relative(racine, reglesDir)}`,
+      `Aucun fichier .publicodes trouvé dans ${relative(racine, dossierRegles)}`,
     );
   }
 
