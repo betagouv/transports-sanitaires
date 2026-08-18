@@ -19,5 +19,10 @@ jobs:
           cache: npm
           cache-dependency-path: apps/simulateur-eligibilite/package-lock.json
       - run: npm ci
+      # Lint d'abord : c'est la vérification la plus rapide, et la plus souvent
+      # en défaut sur du code fraîchement écrit.
+      - run: npm run lint
+      - run: npm run valider-regles
       - run: npm test
+      # `npm run build` enchaîne `tsc -b` (front, serveur, scripts, tests) puis Vite.
       - run: npm run build

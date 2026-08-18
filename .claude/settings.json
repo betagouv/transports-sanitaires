@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r \".tool_input.file_path // .tool_response.filePath // empty\" | { read -r f || exit 0; app=\"${f%%/apps/simulateur-eligibilite/*}/apps/simulateur-eligibilite\"; case \"$f\" in \"$app\"/*.ts|\"$app\"/*.tsx) out=$(cd \"$app\" && npx --no-install biome check --write --no-errors-on-unmatched \"$f\" 2>&1) || { printf \"%s\\n\" \"$out\" >&2; exit 2; } ;; esac; }",
+            "timeout": 30,
+            "statusMessage": "Biome sur le fichier écrit"
+          }
+        ]
+      }
+    ]
+  }
+}
