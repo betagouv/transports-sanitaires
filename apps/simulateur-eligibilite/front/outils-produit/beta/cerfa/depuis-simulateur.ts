@@ -79,9 +79,15 @@ export function saisiesDepuisSituation(
 
   // ❷ Mode de transport. `cible_transport_sanitaire_prescrit` est la conclusion du
   // moteur ; les critères cochés en sont la justification, exigée par le CERFA.
-  const mode = valeur("cible_transport_sanitaire_prescrit") as ModePrescrit;
+  // Nommé `transport` comme partout ailleurs : `mode` désigne, dans les pages de
+  // résultat, `cible_article_80_mode` — dont les valeurs ne diffèrent que d'un « s »
+  // (« transports en commun »). Deux règles distinctes, un seul nom de variable :
+  // l'ambiguïté ne survit pas ici.
+  const transport = valeur(
+    "cible_transport_sanitaire_prescrit",
+  ) as ModePrescrit;
 
-  if (mode === "ambulance") {
+  if (transport === "ambulance") {
     const justifications = [
       [
         "p1_critere_position_allongee_demi_assise",
@@ -101,11 +107,11 @@ export function saisiesDepuisSituation(
   }
 
   if (
-    mode === "VSL ou taxi conventionné" ||
-    mode === "VSL TPMR ou taxi conventionné TPMR"
+    transport === "VSL ou taxi conventionné" ||
+    transport === "VSL TPMR ou taxi conventionné TPMR"
   ) {
     saisies.push({ case: MODE_TRANSPORT.assisProfessionnalisé });
-    if (mode === "VSL TPMR ou taxi conventionné TPMR") {
+    if (transport === "VSL TPMR ou taxi conventionné TPMR") {
       saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
     }
     if (vrai("cible_transport_partage_incompatible")) {
@@ -113,7 +119,7 @@ export function saisiesDepuisSituation(
     }
   }
 
-  if (mode === "véhicule personnel ou transport en commun") {
+  if (transport === "véhicule personnel ou transport en commun") {
     // Le CERFA sépare deux cases (véhicule individuel / transports en commun) là
     // où le simulateur n'en a qu'une : on ne peut pas trancher à sa place.
     if (vrai("cible_accompagnant_necessaire")) {
