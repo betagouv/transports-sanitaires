@@ -23,7 +23,9 @@ let base: string;
 beforeAll(async () => {
   const app = createApp(snapshotReferentiel, { secret: SECRET });
   await new Promise<void>((resolve) => {
-    server = app.listen(0, resolve);
+    // Express 5 passe une éventuelle erreur au callback : on ne la propage pas
+    // dans `resolve`, qui n'attend rien.
+    server = app.listen(0, () => resolve());
   });
   const { port } = server.address() as AddressInfo;
   base = `http://127.0.0.1:${port}`;

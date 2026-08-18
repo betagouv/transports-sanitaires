@@ -72,7 +72,9 @@ describe("gabarit CERFA n° 11574*07", () => {
 
     const numéros = champ.acroField
       .getWidgets()
-      .map((w) => pages.indexOf(w.P()) + 1);
+      // `P()` est optionnel dans pdf-lib ; un widget du gabarit CERFA porte
+      // toujours sa page — sinon `indexOf` renverrait -1 et le test échouerait.
+      .map((w) => pages.indexOf(w.P()!) + 1);
     expect(numéros).toEqual([3]); // jamais sur le Volet 2, envoyé à l'organisme
   });
 });
