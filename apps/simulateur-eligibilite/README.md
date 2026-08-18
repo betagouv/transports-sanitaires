@@ -13,7 +13,11 @@ d'éligibilité encodent la réglementation en vigueur ; le parcours débute par
 flowchart LR
     subgraph front["Front (navigateur)"]
         Ident["Identification"]
-        Simu["Simulateur"]
+        subgraph simu["Simulateur — un moteur, deux outils"]
+            Presc["Prescripteur<br/>Partie 1 → résultat médical"]
+            Secr["Secrétariat<br/>Partie 2 → cas final"]
+        end
+        Cerfa["CERFA pré-rempli"]
         Analytics["Analytics"]
     end
 
@@ -24,15 +28,28 @@ flowchart LR
 
     Grist[("Grist")]
     Matomo[("Matomo")]
+    Patient(["Prescription complétée,<br/>signée, remise au patient"])
 
     Ident -->|"consulte"| Ref
     Ident -->|"pseudonymise l'identité"| Pseudo
-    Ident -->|"identité validée"| Simu
+    Ident -->|"identité validée"| simu
     Ident -->|"refs pseudonymisées"| Analytics
-    Simu -->|"événements"| Analytics
+    Presc -->|"passation (situation P1)"| Secr
+    Presc -->|"événements"| Analytics
+    Secr -->|"événements"| Analytics
+    Secr -->|"situation, si prescription"| Cerfa
+    Cerfa -->|"PDF téléchargé"| Patient
     Ref -->|"lit"| Grist
     Analytics -->|"envoie"| Matomo
+
+    classDef nominatif stroke-dasharray:4
+    class Cerfa,Patient nominatif
 ```
+
+Le **CERFA** n'a aucune flèche vers le backend, et c'est structurel : le prescripteur
+y complète des données de santé nominatives, qui ne doivent jamais quitter le
+navigateur (traits tiretés ci-dessus). Le gabarit et `pdf-lib` sont chargés au clic —
+cf. [Prescription pré-remplie (CERFA)](#prescription-pré-remplie-cerfa).
 
 ## Commandes
 
