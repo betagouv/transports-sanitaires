@@ -210,8 +210,10 @@ server/                  backend (barrière de sécurité : secrets ici, jamais 
     referentiel-grist.ts  referentiel-source.ts  pseudonymisation.ts
 front/                   front (bundlé par Vite)
   app/                   Main.tsx  App.tsx (écran-porte)  outil.ts
-  identification/        Identification.tsx  referentiel-http.ts
-  identite/              pseudonymisation-http.ts (pseudonymiserViaApi)  session.ts
+  identification/        LA feature de l'écran-porte — miroir de server/identification/
+    Identification.tsx   le formulaire à révélation progressive
+    referentiel-http.ts  pseudonymisation-http.ts   les deux clients de l'API
+    session.ts           l'identité pseudonymisée, en mémoire de session (ADR-4)
   simulateur/            LES deux outils, sur un socle commun
     engine.ts            moteur publicodes (règles officielles ou labo)
     Parcours.tsx         flux générique : stepper + FormBuilder + navigation

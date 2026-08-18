@@ -3,7 +3,7 @@ import {
   VERSION,
   type IdentitePseudonymisee,
 } from "../../shared/identite-pseudonymisee";
-import { getIdentite, setIdentite } from "../../front/identite/session";
+import { getIdentite, setIdentite } from "../../front/identification/session";
 
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",

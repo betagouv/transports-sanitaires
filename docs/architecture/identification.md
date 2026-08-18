@@ -92,7 +92,7 @@ prescripteurRef }` = **`HMAC-SHA256(id, secret)`** (tronqué 128 bits, base64url
 identifiants opaques du référentiel. **Aucun identifiant brut, aucun nom, aucun RPPS,
 aucune donnée patient.** Le front envoie l'identité saisie à `POST /api/identite-pseudonymisee` ; le backend
 renvoie **l'objet refs en JSON**, que le front garde **en mémoire de session**
-(`front/identite/session.ts`). Le **secret vit côté serveur** (variable d'env dédiée
+(`front/identification/session.ts`). Le **secret vit côté serveur** (variable d'env dédiée
 `PSEUDONYMISATION_SECRET`, distincte de la clé Grist). ~~Le contexte était transmis au
 simulateur via le fragment d'URL `#ctx=<base64url>` ; la fusion l'a rendu inutile.~~
 **Pourquoi.** Le suivi Matomo n'a besoin que d'un **jeton stable et opaque** par
@@ -210,7 +210,7 @@ suivent le même workflow (plus de branche « non rattaché » dédiée, supprim
 - **Interdits** : identifiant brut du référentiel, nom/prénom **en clair**, RPPS, tout
   identifiant patient, toute donnée de santé.
 - **Cycle de vie** : reçu à la validation de l'identification, conservé **en mémoire de
-  session** (`front/identite/session.ts`, pas de `localStorage`), lu par le traceur au
+  session** (`front/identification/session.ts`, pas de `localStorage`), lu par le traceur au
   moment d'émettre chaque événement.
 
 ## 5. Modèle du référentiel (Grist)

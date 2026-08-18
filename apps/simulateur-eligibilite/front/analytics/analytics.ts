@@ -15,7 +15,7 @@
 //   - l'identité prescripteur (connue **après** l'étape d'identification) est lue
 //     depuis la session au moment d'émettre chaque événement.
 
-import { getIdentite } from "../identite/session";
+import { getIdentite } from "../identification/session";
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 
 declare global {

@@ -3,7 +3,7 @@ import {
   VERSION,
   type IdentitePseudonymisee,
 } from "../../shared/identite-pseudonymisee";
-import { setIdentite } from "../../front/identite/session";
+import { setIdentite } from "../../front/identification/session";
 import {
   buildEvent,
   initAnalytics,
