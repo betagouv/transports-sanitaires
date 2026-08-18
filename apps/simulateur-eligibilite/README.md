@@ -53,11 +53,23 @@ navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs r�
 
 ## Commandes
 
+- `npm run verifier` — **la vérification complète** : lint, typecheck, validation des
+  règles, tests. Mêmes portes que la CI, dans le même ordre.
 - `npm run dev:front` — front de dev (port **5173**), proxifie `/api` → `:3000`
 - `npm run dev:server` — backend de dev (port **3000**, `--watch`, charge `.env` si présent)
 - `npm test` — vitest (le smoke Grist est ignoré sans `GRIST_API_KEY`)
-- `npm run build` — typecheck front + serveur, puis build Vite (`dist/`)
+- `npm run lint` — Biome : format, tri des imports, lint (`lint:fix` applique les
+  corrections sûres)
+- `npm run typecheck` — `tsc -b` sur les quatre projets (front, node, serveur, tests)
+- `npm run valider-regles` — compile `regles/*.publicodes` et signale les erreurs
+- `npm run build` — typecheck puis build Vite (`dist/`)
 - `npm start` — serveur de production (`node server/server.ts`, Node 24)
+
+Le style n'est pas négociable : Biome le tient, et un hook Claude Code
+(`.claude/settings.json`, à la racine du dépôt) le passe sur chaque fichier écrit
+par l'IA. Les invariants d'architecture, eux, sont exécutables —
+`tests/architecture.test.ts` échoue si le front importe le serveur, si le CERFA
+adresse le backend, ou si le simulateur touche à l'identification.
 
 Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle.
 

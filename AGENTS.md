@@ -46,14 +46,34 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 
 ## Commands (run inside the app directory)
 
+- `npm run verifier` — **the one to run before saying you are done**: lint, typecheck,
+  rules validation, tests. Same gates as CI, same order.
+- `npm run lint` — Biome (format + lint + import sort); `npm run lint:fix` applies
+  every safe fix. A `PostToolUse` hook already runs this on each `.ts`/`.tsx` you
+  write, so formatting is never yours to argue about.
+- `npm run typecheck` — `tsc -b` over the **four** projects: front, node (scripts +
+  vite config), server, tests.
 - `npm test` — vitest (run mode)
-- `npm run build` — `tsc -b && vite build` (simulateur ; `tsc -b` typecheck front + serveur via les 3 projets référencés)
+- `npm run build` — `tsc -b && vite build`
 - `npm run dev:front` — vite dev server (front); `npm run dev:server` — Express backend
 - `npm start` — production server (`node server/server.ts`, Node 24)
 
 ## Conventions
 
-- **French** everywhere: UI, rule names, tests, docs, product.
+- **French** everywhere: UI, rule names, tests, docs, product — **and identifiers**.
+  English is reserved for what an external API already names that way: `handleX` /
+  `useX` / `Props` (React), `track*` (Matomo's verb), `new FormBuilder({ engine })`
+  (`@publicodes/forms` key), `Engine` (publicodes class). Everything else is domain
+  vocabulary and reads in French: `moteur`, `regles`, `passation`, `identiteEnSession`.
+- **Style is not a discussion.** Biome owns formatting, import order and lint. Never
+  hand-format, and never write a suppression comment for a linter the project does
+  not run — a stray `eslint-disable` sat in `Parcours.tsx` for months, suppressing
+  nothing. Suppress with `// biome-ignore <rule>: <reason>` on the line **immediately**
+  before the offending line, with the reason spelled out above it.
+- **Import extensions follow the runtime, not taste**: files under `front/` are bundled
+  by Vite and import **without** an extension; files under `server/` and `shared/` are
+  executed by Node directly and import **with** `.ts`. Tests follow whichever side they
+  import from.
 - **Tests without mocks.** Engine tests drive the real `publicodes` engine; UI tests
   use Testing Library against the real `<App />`. Reuse the existing helpers in
   `tests/`.
@@ -73,8 +93,17 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 
 ## Invariants
 
-- Keep **identification and analytics out of the publicodes engine**.
-  `regles.publicodes` holds eligibility logic only.
+These are **executable**, in `tests/architecture.test.ts` — do not restate them here
+without adding the matching assertion there, and read that file's failure messages
+before working around one:
+
+- `front/` imports nothing from `server/` (the secrets live there), and vice versa.
+- `shared/` depends on neither — it is loaded by both.
+- `front/simulateur/` never imports `front/identification/`: the eligibility engine
+  reasons on a medical situation, never on who prescribes.
+- `front/outils-produit/beta/cerfa/` never references an `/api` route: the prescriber
+  fills nominative health data there, and it must not leave the browser.
+- `regles.publicodes` holds eligibility logic only — no identification, no analytics.
 
 ## Architecture
 
