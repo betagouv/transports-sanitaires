@@ -1,201 +1,29 @@
 import { describe, it, expect } from "vitest";
-import { BASE_NEUTRE, makeEngine } from "./engine";
+import { makeEngine } from "./engine";
+import { SEEDS } from "../../seeds/catalogue";
+import { evaluerSeed } from "../../seeds/seed";
 
-// Matrice de non-régression métier (règles plates v8.10). On part de la base neutre
-// « tout à non » (cf. BASE_NEUTRE) puis on surcharge avec les entrées du scénario.
-const base = BASE_NEUTRE;
+// Matrice de non-régression métier (règles plates v8.10). Elle n'a pas de scénarios
+// à elle : elle rejoue le **catalogue de seeds** (`seeds/catalogue.ts`), qui est
+// aussi ce qu'affiche la galerie dev. Ajouter une situation de référence, c'est
+// donc l'ajouter au catalogue — elle devient du même geste testée et consultable.
 
-const TARGETS = [
-  "cible_resultat_medical",
-  "cible_transport_sanitaire_prescrit",
-  "cible_partie_2_requise",
-  "cible_cas_final",
-  "cible_document_a_remettre_au_patient",
-] as const;
+const moteur = makeEngine();
 
-type Sortie = Partial<Record<(typeof TARGETS)[number], string | null>>;
-
-function evaluer(inputs: Record<string, string>): Record<string, unknown> {
-  const engine = makeEngine({ ...base, ...inputs });
-  return Object.fromEntries(
-    TARGETS.map((t) => {
-      const r = engine.evaluate(t);
-      const missing = Object.keys(r.missingVariables ?? {});
-      expect(missing, `${t} a des variables manquantes`).toEqual([]);
-      return [t, r.nodeValue];
-    })
-  );
-}
-
-const scenarios: Array<{ id: string; inputs: Record<string, string>; expected: Sortie }> = [
-  {
-    id: "ROUTE-P1-01-SMUR",
-    inputs: { p1_situation_smur: "oui" },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "transport par équipe SMUR",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "SMUR",
-    },
-  },
-  {
-    id: "ROUTE-P1-02-BARIATRIQUE",
-    inputs: { p1_situation_bariatrique_seul: "oui" },
-    expected: {
-      cible_resultat_medical: "défavorable",
-      cible_transport_sanitaire_prescrit: "aucun",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "bariatrique seul",
-    },
-  },
-  {
-    id: "ROUTE-P1-03-PERMISSION",
-    inputs: { p1_situation_permission_sans_motif_medical: "'Oui'" },
-    expected: {
-      cible_resultat_medical: "défavorable",
-      cible_transport_sanitaire_prescrit: "aucun",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "permission sortie sans motif médical",
-    },
-  },
-  {
-    id: "ROUTE-P1-04-DEFAVORABLE-GENERIQUE",
-    inputs: { p1_motif_aucun: "oui", p1_critere_aucune_situation_encadree: "oui" },
-    expected: {
-      cible_resultat_medical: "défavorable",
-      cible_transport_sanitaire_prescrit: "aucun",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "non éligible assurance maladie dans ce parcours",
-    },
-  },
-  {
-    id: "ROUTE-P1-05-AMBULANCE-MOTIF-DEDUIT",
-    inputs: { p1_motif_aucun: "oui", p1_critere_oxygene: "oui" },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "ambulance",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "prescription médicale de transport",
-    },
-  },
-  {
-    id: "PMT-HOSPITALISATION-VP-TC",
-    inputs: { p1_motif_hospitalisation: "oui", p1_critere_aucune_situation_encadree: "oui" },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "véhicule personnel ou transport en commun",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "prescription médicale de transport",
-      cible_document_a_remettre_au_patient: "Prescription Médicale de Transport",
-    },
-  },
-  {
-    id: "DAP-DISTANCE-AMBULANCE",
-    inputs: {
-      p1_motif_hospitalisation: "oui",
-      p1_critere_oxygene: "oui",
-      p2_distance_aller_superieure_150km: "oui",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "ambulance",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "demande accord préalable",
-      cible_document_a_remettre_au_patient: "Demande d’Accord Préalable",
-    },
-  },
-  {
-    // v8.10 : série calculée (nombre >= 4 + chaque trajet aller > 50 km). ALD validée
-    // (séance spécifique) → pas de DAP au seul titre de la série.
-    id: "SERIE-ALD-VALIDEE-PAS-DAP-SEULE",
-    inputs: {
-      p1_motif_ald: "oui",
-      p1_ald_lien_avec_ald_reconnue: "oui",
-      p1_ald_seance_specifique: "oui",
-      p1_critere_regles_hygiene: "oui",
-      p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "VSL ou taxi conventionné",
-      cible_cas_final: "prescription médicale de transport",
-    },
-  },
-  {
-    // v8.10 : série calculée, hors ALD → DAP déclenchée par la série.
-    id: "SERIE-NON-ALD-DAP",
-    inputs: {
-      p1_motif_hospitalisation: "oui",
-      p1_critere_regles_hygiene: "oui",
-      p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "VSL ou taxi conventionné",
-      cible_cas_final: "demande accord préalable",
-    },
-  },
-  {
-    id: "ETABLISSEMENT-HOSPITALISE-SANS-EXCEPTION",
-    inputs: {
-      p1_motif_hospitalisation: "oui",
-      p1_critere_regles_hygiene: "oui",
-      p2_patient_hospitalise: "oui",
-      p2_exception_type: "'Non, le transport ne fait pas partie de ces exceptions.'",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "VSL ou taxi conventionné",
-      cible_cas_final: "transport charge établissement",
-    },
-  },
-  {
-    id: "CONVOCATION",
-    inputs: {
-      p1_motif_hospitalisation: "oui",
-      p1_critere_regles_hygiene: "oui",
-      p2_convocation_ou_avis: "oui",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "VSL ou taxi conventionné",
-      cible_cas_final: "convocation ou avis audience",
-    },
-  },
-  {
-    // v8.10 : nouveau cas — la prestation à l'origine du déplacement n'est pas prise
-    // en charge (A2.3 = Non) → prioritaire sur le mode, aucun document.
-    id: "PRESTATION-NON-PRISE-EN-CHARGE",
-    inputs: {
-      p1_motif_aucun: "oui",
-      p1_critere_oxygene: "oui",
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
-    },
-    expected: {
-      cible_resultat_medical: "favorable",
-      cible_transport_sanitaire_prescrit: "ambulance",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "prestation non prise en charge par assurance maladie",
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-];
-
-describe("modèle v8.10 — scénarios métier", () => {
-  for (const s of scenarios) {
-    it(s.id, () => {
-      const actual = evaluer(s.inputs);
-      for (const [key, value] of Object.entries(s.expected)) {
-        expect(actual[key], `${s.id} — ${key}`).toBe(value);
-      }
+describe("modèle v8.10 — le moteur confirme les attendus des seeds", () => {
+  for (const seed of SEEDS) {
+    it(seed.id, () => {
+      const { manquantes, ecarts } = evaluerSeed(moteur, seed);
+      // La base neutre répond à tout le questionnaire : aucune cible ne doit
+      // rester indécise, sans quoi les attendus porteraient sur du vide.
+      expect(manquantes, `${seed.id} — cibles à variables manquantes`).toEqual([]);
+      expect(ecarts, `${seed.id} — écarts avec les attendus`).toEqual([]);
     });
   }
 });
 
 describe("modèle v8.10 — couverture des cas finaux", () => {
-  it("les 9 cas finaux sont atteints par la matrice", () => {
+  it("les 9 cas finaux sont atteints par le catalogue", () => {
     const attendus = [
       "prescription médicale de transport",
       "demande accord préalable",
@@ -208,8 +36,70 @@ describe("modèle v8.10 — couverture des cas finaux", () => {
       "non éligible assurance maladie dans ce parcours",
     ];
     const couverts = new Set(
-      scenarios.map((s) => evaluer(s.inputs).cible_cas_final as string)
+      SEEDS.map((seed) => evaluerSeed(moteur, seed).valeurs.cible_cas_final as string)
     );
     for (const cas of attendus) expect(couverts).toContain(cas);
+  });
+});
+
+describe("modèle v8.10 — couverture des régimes de financement", () => {
+  it("les 5 régimes sont atteints par le catalogue", () => {
+    // L'axe sur lequel se lit une non-conformité : un transport dont le régime
+    // n'est pas « assurance maladie » ne doit pas lui être facturé.
+    const attendus = [
+      "assurance maladie",
+      "établissement prescripteur",
+      "patient",
+      "urgence spécifique",
+      "à qualifier",
+    ];
+    const couverts = new Set(
+      SEEDS.map((seed) => evaluerSeed(moteur, seed).valeurs.cible_regime_financement)
+    );
+    for (const régime of attendus) expect(couverts).toContain(régime);
+  });
+
+  it("distingue les deux volets de l'Article 80", () => {
+    // Trois seeds concluent à une charge de l'établissement pour trois raisons
+    // différentes : sans ces deux drapeaux, elles seraient indiscernables.
+    const drapeaux = (id: string) => {
+      const { valeurs } = evaluerSeed(moteur, SEEDS.find((s) => s.id === id)!);
+      return [
+        valeurs.cible_article_80_situation_specifique,
+        valeurs.cible_article_80_permission_sortie_therapeutique,
+      ];
+    };
+    expect(drapeaux("secretariat-detenu-inter-etablissements")).toEqual([true, false]);
+    expect(drapeaux("secretariat-permission-therapeutique")).toEqual([false, true]);
+    expect(drapeaux("secretariat-charge-etablissement")).toEqual([false, false]);
+  });
+});
+
+describe("catalogue de seeds", () => {
+  it("n'a ni identifiant ni libellé en double", () => {
+    expect(new Set(SEEDS.map((s) => s.id)).size).toBe(SEEDS.length);
+    expect(new Set(SEEDS.map((s) => s.libelle)).size).toBe(SEEDS.length);
+  });
+
+  it("ne déclare que des entrées connues du moteur", () => {
+    // Une clé inconnue ferait lever `setSituation` au premier usage — en test comme
+    // dans la galerie. On le dit ici, où le message pointe la seed fautive.
+    const connues = new Set(Object.keys(makeEngine().getParsedRules()));
+    for (const seed of SEEDS) {
+      for (const clé of Object.keys(seed.entrees)) {
+        expect(connues, `${seed.id} — entrée « ${clé} »`).toContain(clé);
+      }
+    }
+  });
+
+  it("annonce au moins le cas final et le régime de financement de chaque seed", () => {
+    // C'est ce que la galerie affiche en colonne « Attendu » : une seed muette n'y
+    // apprendrait rien, et ne verrouillerait rien non plus. Le régime est exigé de
+    // toutes : c'est lui qui dit d'un mot si le transport est à la charge de
+    // l'Assurance Maladie — donc si la situation est conforme ou non.
+    for (const seed of SEEDS) {
+      expect(seed.attendu.cible_cas_final, `${seed.id}`).toBeTruthy();
+      expect(seed.attendu.cible_regime_financement, `${seed.id}`).toBeTruthy();
+    }
   });
 });

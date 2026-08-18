@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { BASE_NEUTRE, makeEngine } from "./engine";
+import { makeEngine } from "./engine";
+import { BASE_NEUTRE } from "../../seeds/base-neutre";
 
 // Portage de la matrice de non-régression du livrable
 // (tmp/8.10/transports-sanitaires.tests.v8-10.yaml → scenario_tests).

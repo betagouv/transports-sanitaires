@@ -9,32 +9,26 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 // Les raccourcis dev court-circuitent le parcours : ils doivent être regroupés
 // dans un encadré à part, impossible à confondre avec les actions du parcours
 // nominal. Ces tests verrouillent cette séparation dans le DOM.
+//
+// L'encadré ne porte qu'une seule action — l'accès à la galerie de seeds : les
+// situations elles-mêmes vivent dans `seeds/`, pas dans les écrans.
 
 const ENCADRE = { name: "Raccourcis de développement" } as const;
-
-// Chaque libellé nomme d'abord l'écran d'atterrissage, puis ce qu'on y voit.
-const DEV_IDENTIFICATION = [
-  "Prescripteur — ambulance justifiée",
-  "Prescripteur — transport non justifié",
-  "Secrétariat — prescription (CERFA)",
-  "Secrétariat — non éligible",
-];
+const GALERIE = { name: "Galerie de seeds" } as const;
 
 describe("encadré des raccourcis dev — écran d'identification", () => {
-  it("regroupe tous les raccourcis dev, et eux seuls", () => {
+  it("ne porte que l'accès à la galerie de seeds", () => {
     render(
       <Identification
         referentiel={snapshotReferentiel}
         onValide={() => {}}
-        onAccesDirectDev={() => {}}
+        onGalerieSeeds={() => {}}
       />,
     );
 
     const encadre = screen.getByRole("region", ENCADRE);
-    for (const label of DEV_IDENTIFICATION) {
-      expect(within(encadre).getByRole("button", { name: label })).toBeInTheDocument();
-    }
-    expect(within(encadre).getAllByRole("button")).toHaveLength(DEV_IDENTIFICATION.length);
+    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
+    expect(within(encadre).getAllByRole("button")).toHaveLength(1);
   });
 
   it("laisse l'action nominale hors de l'encadré", () => {
@@ -42,7 +36,7 @@ describe("encadré des raccourcis dev — écran d'identification", () => {
       <Identification
         referentiel={snapshotReferentiel}
         onValide={() => {}}
-        onAccesDirectDev={() => {}}
+        onGalerieSeeds={() => {}}
       />,
     );
 
@@ -60,7 +54,7 @@ describe("encadré des raccourcis dev — écran d'identification", () => {
         referentiel={snapshotReferentiel}
         onValide={() => {}}
         onAccesLabo={() => {}}
-        onAccesDirectDev={() => {}}
+        onGalerieSeeds={() => {}}
       />,
     );
 
@@ -83,19 +77,17 @@ describe("encadré des raccourcis dev — écran d'identification", () => {
 });
 
 describe("encadré des raccourcis dev — début du parcours prescripteur", () => {
-  it("y range le raccourci vers le CERFA, hors du parcours", () => {
+  it("y range l'accès à la galerie, hors du parcours", () => {
     render(
       <Prescripteur
         onPasserAuSecretariat={() => {}}
         onNouvelleSimulation={() => {}}
-        onAllerAuCerfaDev={() => {}}
+        onGalerieSeeds={() => {}}
       />,
     );
 
     const encadre = screen.getByRole("region", ENCADRE);
-    expect(
-      within(encadre).getByRole("button", { name: /Secrétariat — prescription \(CERFA\)/ }),
-    ).toBeInTheDocument();
+    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
     // Le bouton de navigation du parcours reste au-dehors.
     expect(encadre).not.toContainElement(
       screen.getByRole("button", { name: /^suivant$/i }),
@@ -116,7 +108,9 @@ describe("App câble les raccourcis dev", () => {
     render(<App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />);
 
     // Écran-porte.
-    expect(screen.getByRole("region", ENCADRE)).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", ENCADRE)).getByRole("button", GALERIE),
+    ).toBeInTheDocument();
 
     const choisir = async (label: RegExp, option: string) => {
       const select = screen.getByRole("combobox", { name: label });
@@ -128,8 +122,9 @@ describe("App câble les raccourcis dev", () => {
     await choisir(/Vous êtes/, "Dr Amina Berger");
     await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
 
-    // Début du parcours : un encadré, ne contenant que le raccourci CERFA.
+    // Début du parcours : un encadré, ne contenant que l'accès à la galerie.
     const encadre = await screen.findByRole("region", ENCADRE);
     expect(within(encadre).getAllByRole("button")).toHaveLength(1);
+    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
   });
 });

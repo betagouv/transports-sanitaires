@@ -22,7 +22,6 @@ import {
 } from "../../shared/referentiel";
 import { estServiceLabo } from "../labo/labo";
 import { BoutonDev, RaccourcisDev } from "../app/RaccourcisDev";
-import type { VarianteDev } from "../app/raccourcis-dev";
 
 type Props = {
   referentiel?: Referentiel;
@@ -30,10 +29,9 @@ type Props = {
   // Ouvre le mode test des règles (labo). Proposé uniquement quand le service
   // « Transport Sanitaire » est sélectionné (garde d'accès, cf. `estServiceLabo`).
   onAccesLabo?: () => void;
-  // Raccourci dev (fourni uniquement en mode dev) : ouvre directement une page de
-  // résultat sans passer par le formulaire. Le type vient de `raccourcis-dev.ts` :
-  // le réécrire ici laisserait les deux listes diverger en silence.
-  onAccesDirectDev?: (variante: VarianteDev) => void;
+  // Raccourci dev (fourni uniquement en mode dev) : ouvre la galerie de seeds,
+  // d'où l'on saute directement à la page de résultat d'une situation type.
+  onGalerieSeeds?: () => void;
 };
 
 const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
@@ -58,7 +56,7 @@ export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
   onAccesLabo,
-  onAccesDirectDev,
+  onGalerieSeeds,
 }: Props) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -280,23 +278,12 @@ export function Identification({
           )}
         </div>
 
-        {/* Le premier mot dit l'écran d'atterrissage, le second ce qu'on y voit :
-            c'est l'écran qui distingue vraiment ces raccourcis, l'issue seule
-            donnant des libellés jumeaux. Les variantes portent les mêmes noms. */}
-        {onAccesDirectDev && (
+        {/* Un seul point d'entrée dev : la galerie de seeds. Les situations elles-
+            mêmes vivent dans `seeds/`, pas dans cet écran — les y égrener en boutons
+            obligeait à les redéclarer ici, et ne passait pas l'échelle. */}
+        {onGalerieSeeds && (
           <RaccourcisDev>
-            <BoutonDev onClick={() => onAccesDirectDev("prescripteur-ambulance")}>
-              Prescripteur — ambulance justifiée
-            </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("prescripteur-non-justifie")}>
-              Prescripteur — transport non justifié
-            </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("secretariat-prescription")}>
-              Secrétariat — prescription (CERFA)
-            </BoutonDev>
-            <BoutonDev onClick={() => onAccesDirectDev("secretariat-non-eligible")}>
-              Secrétariat — non éligible
-            </BoutonDev>
+            <BoutonDev onClick={onGalerieSeeds}>Galerie de seeds</BoutonDev>
           </RaccourcisDev>
         )}
       </form>

@@ -3,8 +3,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
-import { BASE_NEUTRE, makeEngine } from "../simulateur/engine.ts";
-import { SITUATIONS_DEV } from "../../front/app/raccourcis-dev.ts";
+import { makeEngine } from "../simulateur/engine.ts";
+import { BASE_NEUTRE } from "../../seeds/base-neutre.ts";
+import { seedParId } from "../../seeds/catalogue.ts";
+import { situationDe } from "../../seeds/seed.ts";
 import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
   "../../front/cerfa/champs-cerfa.ts";
 import { remplirCerfa } from "../../front/cerfa/remplir-cerfa.ts";
@@ -197,13 +199,12 @@ describe("saisiesDepuisSituation", () => {
     expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
   });
 
-  it("produit un CERFA fourni depuis la situation du raccourci dev", async () => {
-    // Le raccourci « Secrétariat — prescription (CERFA) » sert à voir le
-    // pré-remplissage : un document presque vide n'apprendrait rien. On verrouille
-    // donc ce que sa situation doit couvrir.
+  it("produit un CERFA fourni depuis la seed « secretariat-prescription »", async () => {
+    // Cette seed sert à voir le pré-remplissage : un document presque vide
+    // n'apprendrait rien. On verrouille donc ce que sa situation doit couvrir.
     const saisies = saisiesDepuisSituation(
       engine(),
-      SITUATIONS_DEV["secretariat-prescription"],
+      situationDe(seedParId("secretariat-prescription")),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 

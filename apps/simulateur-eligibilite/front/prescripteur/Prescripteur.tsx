@@ -12,9 +12,9 @@ type Props = {
   onNouvelleSimulation: () => void;
   // Raccourci dev : pré-remplit le parcours pour ouvrir directement le résultat.
   situationInitiale?: Situation<string> | null;
-  // Raccourci dev : saute tout le questionnaire pour ouvrir la Page Résultat 2
-  // sur un cas menant au CERFA. Absent hors dev (cf. `App`).
-  onAllerAuCerfaDev?: () => void;
+  // Raccourci dev : ouvre la galerie de seeds, d'où l'on saute au résultat d'une
+  // situation type — dont les cas menant au CERFA. Absent hors dev (cf. `App`).
+  onGalerieSeeds?: () => void;
 };
 
 // Outil 1 — parcours médical du prescripteur : Partie 1 → Résultat 1.
@@ -24,7 +24,7 @@ export function Prescripteur({
   onPasserAuSecretariat,
   onNouvelleSimulation,
   situationInitiale = null,
-  onAllerAuCerfaDev,
+  onGalerieSeeds,
 }: Props) {
   const [situation, setSituation] = useState<Situation<string> | null>(
     situationInitiale
@@ -56,13 +56,11 @@ export function Prescripteur({
             trackResultat(r, "prescripteur");
           }}
         />
-        {/* Même destination — et donc même libellé — que le raccourci homonyme
-            de l'écran-porte : la variante `secretariat-prescription`. */}
-        {onAllerAuCerfaDev && (
+        {/* Même destination — et donc même libellé — que le raccourci de
+            l'écran-porte : la galerie de seeds. */}
+        {onGalerieSeeds && (
           <RaccourcisDev>
-            <BoutonDev onClick={onAllerAuCerfaDev}>
-              Secrétariat — prescription (CERFA)
-            </BoutonDev>
+            <BoutonDev onClick={onGalerieSeeds}>Galerie de seeds</BoutonDev>
           </RaccourcisDev>
         )}
       </>

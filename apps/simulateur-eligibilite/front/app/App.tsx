@@ -13,7 +13,7 @@
 // premier passe la main au second via la passation (situation de Partie 1). Le
 // point d'entrée initial peut être forcé par `?outil=secretariat`.
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { Situation } from "publicodes";
 import { Identification } from "../identification/Identification";
 import { Labo } from "../labo/Labo";
@@ -29,11 +29,14 @@ import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { OptionsGénération } from "../cerfa/cerfa";
 import type { Outil } from "./outil";
-import {
-  OUTILS_DEV,
-  SITUATIONS_DEV,
-  type VarianteDev,
-} from "./raccourcis-dev";
+import { situationDe, type Seed } from "../../seeds/seed";
+
+// Écran dev : chargé à la demande, pour que le catalogue de seeds et son tableau
+// restent hors du bundle initial — en production, personne ne cliquera jamais le
+// bouton qui les réclame (cf. `import.meta.env.DEV` plus bas).
+const GalerieSeeds = lazy(() =>
+  import("../seeds/GalerieSeeds").then((m) => ({ default: m.GalerieSeeds })),
+);
 
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
@@ -54,6 +57,9 @@ export function App({
   chargerGabarit,
 }: Props = {}) {
   const [identifie, setIdentifie] = useState(false);
+  // Galerie de seeds (dev) : catalogue des situations de référence, d'où l'on
+  // ouvre directement une page de résultat.
+  const [galerie, setGalerie] = useState(false);
   // Écran labo (mode test des règles) affiché à la place de l'identification.
   const [labo, setLabo] = useState(false);
   const [outil, setOutil] = useState<Outil>(outilInitial);
@@ -70,21 +76,36 @@ export function App({
     setIdentifie(true);
   }
 
-  // Raccourci dev : saute l'identification (identité non pseudonymisée, suivi
-  // analytics dégradé) et ouvre directement une page de résultat sur une
-  // situation type — résultat médical (prescripteur) ou résultat final
-  // (secrétariat) selon la variante.
-  function accesDirectDev(variante: VarianteDev) {
-    setSituationDev(SITUATIONS_DEV[variante]);
-    setOutil(OUTILS_DEV[variante]);
+  // Galerie de seeds : ouvre la page de résultat de la seed choisie. Court-circuite
+  // l'identification (identité non pseudonymisée, suivi analytics dégradé) et le
+  // questionnaire — résultat médical (prescripteur) ou résultat final (secrétariat)
+  // selon l'écran d'atterrissage déclaré par la seed.
+  function ouvrirSeed(seed: Seed) {
+    setSituationDev(situationDe(seed));
+    setOutil(seed.outil);
+    setGalerie(false);
     setIdentifie(true);
   }
 
   function recommencer() {
     effacerPassation();
+    setGalerie(false);
     setSituationDev(null);
     setCle((c) => c + 1);
     setOutil("prescripteur");
+  }
+
+  // La galerie est accessible des deux côtés de l'écran-porte (avant
+  // identification, et depuis le début du parcours) : elle passe donc devant.
+  if (galerie) {
+    return (
+      <>
+        <BandeauLabo />
+        <Suspense fallback={null}>
+          <GalerieSeeds onOuvrir={ouvrirSeed} onRetour={() => setGalerie(false)} />
+        </Suspense>
+      </>
+    );
   }
 
   if (!identifie) {
@@ -98,7 +119,9 @@ export function App({
             referentiel={referentiel}
             onValide={handleValide}
             onAccesLabo={() => setLabo(true)}
-            onAccesDirectDev={import.meta.env.DEV ? accesDirectDev : undefined}
+            onGalerieSeeds={
+              import.meta.env.DEV ? () => setGalerie(true) : undefined
+            }
           />
         )}
       </>
@@ -115,11 +138,9 @@ export function App({
           setOutil("secretariat");
         }}
         onNouvelleSimulation={recommencer}
-        // Raccourci dev depuis le début du parcours : ouvre la Page Résultat 2 sur
-        // le cas « prescription médicale de transport », seul à proposer le CERFA.
-        onAllerAuCerfaDev={
-          import.meta.env.DEV ? () => accesDirectDev("secretariat-prescription") : undefined
-        }
+        // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
+        // l'écran-porte, sans avoir à ressortir du simulateur.
+        onGalerieSeeds={import.meta.env.DEV ? () => setGalerie(true) : undefined}
       />
     ) : (
       <Secretariat

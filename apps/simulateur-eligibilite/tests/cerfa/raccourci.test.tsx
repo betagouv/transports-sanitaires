@@ -6,6 +6,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
 import { Prescripteur } from "../../front/prescripteur/Prescripteur";
+import { seedParId } from "../../seeds/catalogue";
 import { snapshotReferentiel } from "../../shared/referentiel";
 
 const GABARIT = readFileSync(
@@ -38,25 +39,29 @@ async function sIdentifier(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
 }
 
-const RACCOURCI = { name: /Secrétariat — prescription \(CERFA\)/ } as const;
+const GALERIE = { name: "Galerie de seeds" } as const;
+const SEED_CERFA = seedParId("secretariat-prescription");
+const OUVRIR_SEED = { name: `Ouvrir : ${SEED_CERFA.libelle}` } as const;
 const TELECHARGER = { name: /Télécharger la prescription pré-remplie/i } as const;
 
 beforeEach(() => sessionStorage.clear());
 
-describe("raccourci « aller à la génération du CERFA »", () => {
+describe("accès dev au CERFA via la galerie de seeds", () => {
   it("est proposé dès le début du parcours prescripteur", async () => {
     const { user } = setup();
     await sIdentifier(user);
 
-    // Le parcours est bien à sa première question, et le raccourci est offert.
+    // Le parcours est bien à sa première question, et la galerie est offerte.
     expect(await screen.findByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", RACCOURCI)).toBeInTheDocument();
+    expect(screen.getByRole("button", GALERIE)).toBeInTheDocument();
   });
 
   it("saute le questionnaire et ouvre l'écran qui propose le CERFA", async () => {
     const { user } = setup();
     await sIdentifier(user);
-    await user.click(screen.getByRole("button", RACCOURCI));
+    await user.click(screen.getByRole("button", GALERIE));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
+    await user.click(await screen.findByRole("button", OUVRIR_SEED));
 
     // Page Résultat 2, sur un cas « prescription médicale de transport ».
     expect(
@@ -72,7 +77,9 @@ describe("raccourci « aller à la génération du CERFA »", () => {
   it("permet de générer le CERFA dans la foulée", async () => {
     const { user } = setup();
     await sIdentifier(user);
-    await user.click(screen.getByRole("button", RACCOURCI));
+    await user.click(screen.getByRole("button", GALERIE));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
+    await user.click(await screen.findByRole("button", OUVRIR_SEED));
 
     // Timeouts élargis sur toute la fin de ce test : la Page Résultat 2 est un
     // gros DOM (la recherche par nom accessible y coûte cher) et la génération
@@ -90,14 +97,16 @@ describe("raccourci « aller à la génération du CERFA »", () => {
   it("disparaît une fois le parcours engagé sur la page de résultat", async () => {
     const { user } = setup();
     await sIdentifier(user);
-    await user.click(screen.getByRole("button", RACCOURCI));
+    await user.click(screen.getByRole("button", GALERIE));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
+    await user.click(await screen.findByRole("button", OUVRIR_SEED));
 
-    // Le raccourci appartient au début du parcours : il n'encombre pas le résultat.
-    expect(screen.queryByRole("button", RACCOURCI)).toBeNull();
+    // L'accès dev appartient au début du parcours : il n'encombre pas le résultat.
+    expect(screen.queryByRole("button", GALERIE)).toBeNull();
   });
 
   it("n'existe pas quand le raccourci n'est pas fourni", () => {
-    // `App` ne passe `onAllerAuCerfaDev` que sous `import.meta.env.DEV` : en
+    // `App` ne passe `onGalerieSeeds` que sous `import.meta.env.DEV` : en
     // production le parcours ne peut pas être court-circuité, une prescription ne
     // devant jamais reposer sur une situation fabriquée. Ce test couvre le
     // mécanisme (prop absente ⇒ pas de bouton), le gating lui-même étant au build.
@@ -105,6 +114,6 @@ describe("raccourci « aller à la génération du CERFA »", () => {
       <Prescripteur onPasserAuSecretariat={() => {}} onNouvelleSimulation={() => {}} />,
     );
     expect(screen.getByRole("group", { name: /équipe SMUR/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", RACCOURCI)).toBeNull();
+    expect(screen.queryByRole("button", GALERIE)).toBeNull();
   });
 });

@@ -31,6 +31,11 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   `docs/architecture/identification.md`. End of journey: `front/cerfa/` fills the
   official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form carries
   nominative health data, so no filled document must ever reach the backend.
+  Reference situations live in **`seeds/`** (a fourth, non-runtime root): one catalogue
+  of named situations **with their expected targets**, replayed by the business
+  non-regression matrix, browsable in dev through the **seed gallery**
+  (`front/seeds/GalerieSeeds.tsx`, dynamic import, `import.meta.env.DEV` only) and used
+  by `npm run apercu-cerfa`. Add a reference situation there, not in a test file.
 - **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
   with `npm run zip`.
 

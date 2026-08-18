@@ -82,11 +82,96 @@ le moteur consomme les règles labo au boot (`front/simulateur/engine.ts`). Les 
 **officielles** restent embarquées dans le build (`regles/*.publicodes`) — publier une
 version reste un geste explicite (commit + déploiement).
 
+## Seeds (situations de référence)
+
+`seeds/` est la **source unique** des situations de référence du simulateur. Une seed
+est une situation nommée **avec ses attendus** :
+
+```ts
+{
+  id: "secretariat-accord-prealable-distance",
+  libelle: "Secrétariat — accord préalable (plus de 150 km)",
+  description: "…",
+  outil: "secretariat",              // écran de résultat sur lequel on atterrit
+  entrees: { p2_distance_aller_superieure_150km: "oui", … },
+  attendu: { cible_cas_final: "demande accord préalable", … },
+}
+```
+
+Trois consommateurs, une seule définition :
+
+| Consommateur | Ce qu'il en fait |
+| --- | --- |
+| `tests/simulateur/scenarios.test.ts` | rejoue tout le catalogue : matrice de non-régression métier, couverture des 9 cas finaux et des 5 régimes de financement |
+| **Galerie de seeds** (dev) | affiche le catalogue et ouvre la page de résultat d'une seed |
+| `npm run apercu-cerfa` | tire le CERFA pré-rempli d'une seed, sans navigateur |
+
+Ajouter une situation au catalogue la rend donc du même geste **testée** et
+**consultable à l'écran** — c'est ce qui empêche les deux listes de diverger.
+
+```
+seeds/
+  base-neutre.ts  BASE_NEUTRE : le questionnaire répondu « tout à non »
+  seed.ts         type Seed, situationDe(), evaluerSeed() (valeurs, manquantes, écarts)
+  catalogue.ts    SEEDS + seedParId() — le catalogue lui-même
+```
+
+Une seed ne déclare que **ce qui la distingue** (`entrees`), surchargé sur `BASE_NEUTRE` :
+l'ajout d'une question au modèle ne se paie qu'une fois, dans la base. Cette base garantit
+aussi qu'aucune cible ne reste indécise (`manquantes` vide). Elle ne doit rien affirmer :
+`p1_situation_permission_sans_motif_medical` y vaut `Non concerné` (aucune permission en
+jeu) et non `Non`, qui signifierait qu'une permission **est** en jeu, avec motif médical —
+et ferait basculer l'Article 80 sur tous les cas à la charge de l'établissement.
+
+### Non-conformités
+
+Toute seed déclare `cible_regime_financement` — **qui paie**, en un mot. C'est l'axe sur
+lequel se lit une non-conformité : un transport dont le régime n'est pas
+`assurance maladie` ne doit pas lui être facturé. Les 5 régimes du modèle sont couverts :
+
+| Régime | Seeds |
+| --- | --- |
+| `assurance maladie` | prescription, accord préalable (distance, série, avion/bateau, CAMSP/CMPP, maternité, SAMSAH, tiers), convocation, détenu retournant en établissement pénitentiaire |
+| `établissement prescripteur` | hospitalisé hors exception, détenu inter-établissements, détenu UHSA/UHSI, permission de sortie thérapeutique |
+| `patient` | bariatrique seul, permission sans motif médical, prestation non prise en charge |
+| `urgence spécifique` | SMUR |
+| `à qualifier` | transport non justifié, ALD sans lien, ALD sans incapacité, détenu à qualifier |
+
+Trois seeds concluent à une charge de l'établissement pour **trois raisons différentes** :
+`cible_article_80_situation_specifique` (détenu inter-établissements, UHSA/UHSI) et
+`cible_article_80_permission_sortie_therapeutique` les distinguent — sans ces drapeaux,
+elles seraient indiscernables (mêmes cas final, mode et document).
+
+Ces seeds restent **conformes** au moteur : le badge de la galerie reste vert. C'est la
+situation qui n'ouvre pas droit, pas la seed qui se trompe.
+
+### La galerie (dev)
+
+En dev, l'encadré **« Raccourcis de développement »** — sur l'écran-porte **et** au début
+du parcours prescripteur — porte une seule action : **« Galerie de seeds »**. Elle liste
+tout le catalogue, séparé par écran d'atterrissage :
+
+- **Page Résultat 1** — situations tranchées en Partie 1 (le parcours reste franchissable
+  jusqu'au résultat final) ;
+- **Page Résultat 2** — situations complètes (P1 + P2), ouvertes directement sur le cas
+  final ; celles marquées **CERFA** proposent le document pré-rempli.
+
+Chaque ligne rejoue sa seed dans le moteur **du navigateur**, affiche `conforme` ou
+`écart`, et donne en colonne **« Qui paie »** le régime de financement — un régime autre
+qu'`assurance maladie` signale une non-conformité. En **mode labo**, la galerie dit donc immédiatement quelles situations de
+référence les règles en cours de test font diverger — avant même d'ouvrir un parcours.
+
+L'écran (`front/seeds/GalerieSeeds.tsx`) est chargé par **import dynamique** : ni lui ni
+le catalogue n'entrent dans le bundle initial. Le bouton n'est câblé que sous
+`import.meta.env.DEV` : en production le parcours ne peut pas être court-circuité, une
+prescription ne devant jamais reposer sur une situation fabriquée.
+
 ## Structure (feature-first)
 
 Trois racines de *runtime* — `front/` (front, bundlé par Vite), `server/` (backend Node,
 détient la clé Grist + le secret), `shared/` (contrat commun) — chacune organisée **par
-feature** :
+feature** ; `seeds/` les complète, hors runtime, partagée par le front, les tests et les
+scripts :
 
 ```
 shared/                  contrat front ⇄ back (source unique)
@@ -106,6 +191,8 @@ front/                   front (bundlé par Vite)
   labo/                  Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
   analytics/             analytics.ts
   cerfa/                 prescription CERFA pré-remplie (cf. ci-dessous)
+  seeds/                 GalerieSeeds.tsx (écran dev, import dynamique)
+seeds/                   situations de référence (cf. ci-dessus) — tests, galerie, scripts
 ```
 
 ## Prescription pré-remplie (CERFA)
@@ -195,11 +282,9 @@ parcours reste exploitable sans le PDF.
 
 ### Y accéder rapidement (dev)
 
-En dev (`npm run dev:front`), la première page du parcours prescripteur affiche, dans
-l'encadré **« Raccourcis de développement »**, le bouton **« Secrétariat — prescription
-(CERFA) »** : le questionnaire est court-circuité et la Page Résultat 2 s'ouvre sur la
-variante `secretariat-prescription` de `raccourcis-dev.ts`, seule dont le cas final
-propose le CERFA.
+En dev (`npm run dev:front`), la **galerie de seeds** (cf. plus haut) marque d'un badge
+**CERFA** toute seed dont le cas final est une prescription médicale de transport.
+Celle à ouvrir pour regarder le document est `secretariat-prescription`.
 
 Cette situation est volontairement **chargée** — deux motifs ouvrant droit, les cinq
 justifications d'ambulance, aller-retour depuis le domicile, urgence SAMU, accident
@@ -208,32 +293,14 @@ d'œil l'étendue du pré-remplissage et, par contraste, ce qui reste vierge. El
 en revanche les déclencheurs d'accord préalable et le transport en série, qui
 relèvent d'un autre formulaire.
 
-L'écran d'identification porte le même encadré, avec les quatre raccourcis. Chaque
-libellé nomme **d'abord l'écran d'atterrissage, puis ce qu'on y voit** — c'est l'écran
-qui les distingue vraiment, l'issue seule donnant des libellés jumeaux :
-
-| Bouton | Variante | Ce qu'on obtient |
-| --- | --- | --- |
-| Prescripteur — ambulance justifiée | `prescripteur-ambulance` | Page Résultat 1, résultat médical favorable |
-| Prescripteur — transport non justifié | `prescripteur-non-justifie` | Page Résultat 1, aucun transport justifié |
-| Secrétariat — prescription (CERFA) | `secretariat-prescription` | Page Résultat 2, prescription médicale de transport |
-| Secrétariat — non éligible | `secretariat-non-eligible` | Page Résultat 2, non éligible assurance maladie |
-
-Cet encadré (`front/app/RaccourcisDev.tsx`) isole visuellement tout ce qui
-court-circuite le parcours, pour qu'aucun de ces boutons ne se confonde avec une
-action nominale — « Mode test des règles » (labo) reste, lui, une vraie fonctionnalité
-produit et donc hors de l'encadré.
-
-Le bouton est câblé **uniquement** sous `import.meta.env.DEV` : en production le
-parcours ne peut pas être sauté, une prescription ne devant jamais reposer sur une
-situation fabriquée.
-
 ### Commandes
 
 ```
-npx vitest run tests/cerfa    # 25 tests : gabarit, remplissage, mapping, UI, raccourci dev
-npm run apercu-cerfa          # écrit apercu-cerfa.pdf sans passer par le navigateur
+npx vitest run tests/cerfa       # gabarit, remplissage, mapping, UI, accès dev
+npm run apercu-cerfa             # écrit apercu-cerfa.pdf sans passer par le navigateur
+npm run apercu-cerfa -- <seed-id> [sortie.pdf]
 ```
 
-`apercu-cerfa` rejoue **la situation du raccourci dev** ci-dessus : le script et le
-bouton produisent le même document, et il n'y a qu'une situation à faire évoluer.
+`apercu-cerfa` rejoue une **seed** — par défaut `secretariat-prescription`, celle
+ci-dessus : le script et la galerie produisent le même document, et il n'y a qu'une
+situation à faire évoluer.
