@@ -62,7 +62,9 @@ navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs r�
   corrections sûres)
 - `npm run typecheck` — `tsc -b` sur les quatre projets (front, node, serveur, tests)
 - `npm run valider-regles` — compile `regles/*.publicodes` et signale les erreurs
-- `npm run build` — typecheck puis build Vite (`dist/`)
+- `npm run build` — typecheck puis build Vite (`dist/`), suivi de
+  `verifier-bundle` : `pdf-lib` et le catalogue de seeds doivent rester hors du
+  chunk d'entrée, sinon chaque prescripteur télécharge 1,2 Mo qu'il ne verra jamais
 - `npm start` — serveur de production (`node server/server.ts`, Node 24)
 
 Le style n'est pas négociable : Biome le tient, et un hook Claude Code

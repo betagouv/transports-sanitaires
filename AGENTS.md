@@ -54,7 +54,9 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 - `npm run typecheck` — `tsc -b` over the **four** projects: front, node (scripts +
   vite config), server, tests.
 - `npm test` — vitest (run mode)
-- `npm run build` — `tsc -b && vite build`
+- `npm run build` — `tsc -b && vite build`, then `verifier-bundle`: `pdf-lib` and
+  the seed catalogue must stay out of the entry chunk. If you replace an
+  `import()` with a static import, this is what tells you.
 - `npm run dev:front` — vite dev server (front); `npm run dev:server` — Express backend
 - `npm start` — production server (`node server/server.ts`, Node 24)
 

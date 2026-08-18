@@ -1,0 +1,34 @@
+# Configuration gitleaks du dépôt.
+#
+# Les règles par défaut couvrent les fournisseurs connus (AWS, GitHub, Stripe…),
+# mais aucun des trois secrets de ce projet n'en fait partie : ce sont des chaînes
+# hexadécimales anonymes, indistinguables d'un identifiant quelconque sans le nom
+# de variable qui les précède. D'où ces trois règles, calées sur ce nom.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "grist-api-key"
+description = "Clé API Grist (source du référentiel établissements/services/prescripteurs)"
+regex = '''(?i)grist[_-]?api[_-]?key["'\s]*[:=]["'\s]*([0-9a-f]{32,})'''
+secretGroup = 1
+tags = ["grist", "referentiel"]
+
+[[rules]]
+id = "pseudonymisation-secret"
+description = "Secret HMAC de pseudonymisation (openssl rand -hex 32)"
+regex = '''(?i)pseudonymisation[_-]?secret["'\s]*[:=]["'\s]*([0-9a-f]{32,})'''
+secretGroup = 1
+tags = ["identification", "rgpd"]
+
+[[rules]]
+id = "matomo-token-auth"
+description = "Jeton d'API Matomo (token_auth)"
+regex = '''(?i)token[_-]?auth["'\s]*[:=]["'\s]*([0-9a-f]{32})'''
+secretGroup = 1
+tags = ["matomo", "analytics"]
+
+[allowlist]
+description = "Gabarits et documentation : ces fichiers ne portent que des exemples vides."
+paths = ['''\.env\.example$''', '''(^|/)README\.md$''', '''(^|/)AGENTS\.md$''']
