@@ -113,10 +113,11 @@ front/                   front (bundlé par Vite)
                          Bloc1Resultat.tsx  Bloc2Etapes.tsx  Bloc3CasRetenu.tsx
                          Article80.tsx  la charge établissement, ses deux rendus
   outils-produit/        LA feature réservée au service produit
-    acces.ts             estServiceProduit — la garde commune aux deux outils
+    acces.ts             estServiceProduit — la garde, commune à tout ce dossier
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
     labo/                Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
     seeds/               catalogue des situations de référence + GalerieSeeds.tsx
+    beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
+      cerfa/             prescription CERFA pré-remplie, générée dans le navigateur
   analytics/             analytics.ts
-  cerfa/                 prescription CERFA pré-remplie, générée dans le navigateur
 ```

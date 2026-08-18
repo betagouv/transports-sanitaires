@@ -8,13 +8,13 @@ import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { engine } from "../../front/simulateur/engine";
-import { genererCerfa, nomFichier } from "../../front/cerfa/cerfa";
-import { MODE_TRANSPORT, SITUATION, TRAJET } from "../../front/cerfa/champs-cerfa.ts";
+import { genererCerfa, nomFichier } from "../../front/outils-produit/beta/cerfa/cerfa";
+import { MODE_TRANSPORT, SITUATION, TRAJET } from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
 
 // Le vrai gabarit, lu sur disque : en test il n'y a pas de serveur pour le
 // `fetch` de l'asset. C'est le même fichier que celui servi en production.
 const GABARIT = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "../../front/cerfa/gabarit/cerfa-11574-07.pdf"),
+  join(dirname(fileURLToPath(import.meta.url)), "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
 );
 const chargerGabarit = async () => GABARIT.buffer.slice(0) as ArrayBuffer;
 

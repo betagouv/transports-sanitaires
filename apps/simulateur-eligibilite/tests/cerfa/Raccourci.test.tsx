@@ -11,7 +11,7 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 import { sIdentifierProduit } from "../porte";
 
 const GABARIT = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "../../front/cerfa/gabarit/cerfa-11574-07.pdf"),
+  join(dirname(fileURLToPath(import.meta.url)), "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
 );
 
 function setup() {

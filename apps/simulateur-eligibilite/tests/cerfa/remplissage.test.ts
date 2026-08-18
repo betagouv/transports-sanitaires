@@ -8,17 +8,17 @@ import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { IDENTITÉ, MODE_TRANSPORT, PRESCRIPTION, SITUATION, TRAJET } from
-  "../../front/cerfa/champs-cerfa.ts";
-import { remplirCerfa } from "../../front/cerfa/remplir-cerfa.ts";
+  "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import {
   CerfaNonApplicable,
   saisiesDepuisSituation,
-} from "../../front/cerfa/depuis-simulateur.ts";
+} from "../../front/outils-produit/beta/cerfa/depuis-simulateur.ts";
 
 const GABARIT = readFileSync(
   join(
     dirname(fileURLToPath(import.meta.url)),
-    "../../front/cerfa/gabarit/cerfa-11574-07.pdf",
+    "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf",
   ),
 );
 

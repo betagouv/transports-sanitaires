@@ -8,7 +8,7 @@ import { useState } from "react";
 import type { Situation } from "publicodes";
 import type Engine from "publicodes";
 import { genererCerfa, nomFichier, telecharger, type OptionsGénération } from "./cerfa";
-import { trackCerfaTelecharge } from "../analytics/analytics";
+import { trackCerfaTelecharge } from "../../../analytics/analytics";
 
 type Props = {
   moteur: Engine<string>;

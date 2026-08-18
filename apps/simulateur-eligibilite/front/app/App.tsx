@@ -30,7 +30,7 @@ import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import type { Referentiel } from "../../shared/referentiel";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
-import type { OptionsGénération } from "../cerfa/cerfa";
+import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import type { Outil } from "./outil";
 import { situationDe, type Seed } from "../outils-produit/seeds/seed";
 

@@ -28,10 +28,11 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   (`server/`, front + `/api/*`), deployed to **Scalingo** — not static. **Feature-first
   layout** across three runtime roots: `front/` (browser, bundled by Vite), `server/`
   (backend, holds secrets), `shared/` (front⇄back contract). See
-  `docs/architecture/identification.md`. End of journey: `front/cerfa/` fills the
-  official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form carries
-  nominative health data, so no filled document must ever reach the backend. Its
-  download button is gated on the *outils produit* access (below).
+  `docs/architecture/identification.md`. End of journey: `outils-produit/beta/cerfa/`
+  fills the official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form
+  carries nominative health data, so no filled document must ever reach the backend.
+  It sits under `beta/` because its download button is gated on the *outils produit*
+  access (below) until the pre-filling is proven, not because of its nature.
   Reference situations live in **`front/outils-produit/seeds/`**: one catalogue of named
   situations **with their expected targets** (plain `publicodes`, readable by Node too),
   replayed by the business non-regression matrix, browsable through the **seed gallery**

@@ -5,7 +5,7 @@ import { ResultatFinal } from "./ResultatFinal";
 import { reprendrePassation } from "../passation";
 import { engine } from "../engine";
 import { trackResultat } from "../../analytics/analytics";
-import type { OptionsGénération } from "../../cerfa/cerfa";
+import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
 
 type Props = {
   onNouvelleSimulation: () => void;
