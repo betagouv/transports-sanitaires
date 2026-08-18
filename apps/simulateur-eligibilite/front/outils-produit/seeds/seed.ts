@@ -11,6 +11,10 @@
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
 import type { Outil } from "../../app/outil.ts";
+import type {
+  Cible,
+  SituationTypee,
+} from "../../simulateur/contrat-regles-publicodes.ts";
 import { BASE_NEUTRE } from "./base-neutre.ts";
 
 /**
@@ -30,7 +34,7 @@ export const CIBLES_SEED = [
   // Article 80 : ce qui distingue deux transports à la charge de l'établissement.
   "cible_article_80_situation_specifique",
   "cible_article_80_permission_sortie_therapeutique",
-] as const;
+] as const satisfies readonly Cible[];
 
 export type CibleSeed = (typeof CIBLES_SEED)[number];
 
@@ -50,7 +54,7 @@ export type Seed = {
   /** Écran ouvert par la galerie : résultat médical (P1) ou résultat final (P2). */
   readonly outil: Outil;
   /** Réponses qui distinguent cette seed, surchargées sur `BASE_NEUTRE`. */
-  readonly entrees: Record<string, string>;
+  readonly entrees: SituationTypee;
   readonly attendu: AttenduSeed;
 };
 

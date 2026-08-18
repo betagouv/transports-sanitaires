@@ -6,7 +6,7 @@
 
 import type { Situation } from "publicodes";
 import type { ReactNode } from "react";
-import { moteur } from "../moteur";
+import { moteur, texte, vrai } from "../moteur";
 import { TraceDebug } from "../resultat/TraceDebug";
 import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
@@ -31,22 +31,18 @@ export function ResultatFinal({
   documentTelechargeable,
 }: Props) {
   const e = moteur.setSituation(situation);
-  const casFinal = String(e.evaluate("cible_cas_final").nodeValue ?? "");
-  const doc = String(
-    e.evaluate("cible_document_a_remettre_au_patient").nodeValue ?? "",
-  );
-  const transport = String(
-    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? "",
-  );
+  const casFinal = texte(e, "cible_cas_final");
+  const doc = texte(e, "cible_document_a_remettre_au_patient");
+  const transport = texte(e, "cible_transport_sanitaire_prescrit");
   const transportPrescrit = transport !== "" && transport !== "aucun";
 
   const article80: Article80 = {
-    mode: String(e.evaluate("cible_article_80_mode").nodeValue ?? ""),
-    situationSpecifique:
-      e.evaluate("cible_article_80_situation_specifique").nodeValue === true,
-    permissionTherapeutique:
-      e.evaluate("cible_article_80_permission_sortie_therapeutique")
-        .nodeValue === true,
+    mode: texte(e, "cible_article_80_mode"),
+    situationSpecifique: vrai(e, "cible_article_80_situation_specifique"),
+    permissionTherapeutique: vrai(
+      e,
+      "cible_article_80_permission_sortie_therapeutique",
+    ),
   };
 
   return (

@@ -2,6 +2,7 @@ import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
 import { desactiverLabo, reglesLaboActives } from "../outils-produit/labo/labo";
+import type { CleDeRegle } from "./contrat-regles-publicodes";
 
 const OPTIONS = { flag: { filterNotApplicablePossibilities: true } } as const;
 
@@ -51,3 +52,22 @@ export const moteur = charge.moteur;
 // Règles brutes (nœuds YAML) pour lire les métadonnées custom non interprétées
 // par le moteur — notamment la clé `mosaique` (cf. `mosaique.ts`).
 export const reglesBrutes = charge.regles;
+
+// ---- Lecture d'une règle -----------------------------------------------------
+//
+// Deux formes suffisent à tout le produit : une valeur affichable et un booléen.
+// Elles passent par `CleDeRegle`, donc une clé absente du contrat ne compile pas —
+// c'est la seule raison d'être de ces helpers, la brièveté n'est qu'un bonus.
+// Le moteur est passé en argument : les pages de résultat font un unique
+// `setSituation` puis lisent plusieurs cibles sur le moteur ainsi positionné.
+
+/** La valeur d'une règle, en texte. Vide plutôt que `null` : le modèle laisse des
+ *  sorties indéterminées tant que le parcours n'a pas tranché. */
+export function texte(moteurPositionne: Engine, cle: CleDeRegle): string {
+  return String(moteurPositionne.evaluate(cle).nodeValue ?? "");
+}
+
+/** Une règle booléenne. Faux tant qu'elle n'est pas explicitement vraie. */
+export function vrai(moteurPositionne: Engine, cle: CleDeRegle): boolean {
+  return moteurPositionne.evaluate(cle).nodeValue === true;
+}

@@ -1,11 +1,12 @@
 import type { Situation } from "publicodes";
+import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { moteur } from "../moteur";
 
 type Props = {
   titre: string;
   situation: Situation<string>;
   // Règles à évaluer et afficher (sorties calculées du moteur).
-  sorties?: string[];
+  sorties?: CleDeRegle[];
 };
 
 // Panneau de debug (mode dev uniquement) : réponses saisies + sorties évaluées,

@@ -1,5 +1,5 @@
 import type { Situation } from "publicodes";
-import { moteur } from "../moteur";
+import { moteur, texte } from "../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
@@ -22,13 +22,9 @@ export function ResultatMedical({
   onRecommencer,
 }: Props) {
   const e = moteur.setSituation(situation);
-  const favorable =
-    e.evaluate("cible_resultat_medical").nodeValue === "favorable";
-  const transport = String(
-    e.evaluate("cible_transport_sanitaire_prescrit").nodeValue ?? "",
-  );
-  const partie2Requise =
-    e.evaluate("cible_partie_2_requise").nodeValue === "oui";
+  const favorable = texte(e, "cible_resultat_medical") === "favorable";
+  const transport = texte(e, "cible_transport_sanitaire_prescrit");
+  const partie2Requise = texte(e, "cible_partie_2_requise") === "oui";
 
   const criteresRetenus = favorable ? retenus(e, CRITERES) : [];
   const motifsRetenus = favorable ? retenus(e, MOTIFS) : [];

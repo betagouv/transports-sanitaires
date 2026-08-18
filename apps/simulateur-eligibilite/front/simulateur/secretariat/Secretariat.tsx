@@ -1,7 +1,7 @@
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
-import { moteur } from "../moteur";
+import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
 import { ResultatFinal } from "./ResultatFinal";
@@ -68,9 +68,7 @@ export function Secretariat({
         labelFin="Voir le document à remettre au patient"
         onTermine={(s) => {
           setSituation(s);
-          const cas = String(
-            moteur.setSituation(s).evaluate("cible_cas_final").nodeValue ?? "",
-          );
+          const cas = texte(moteur.setSituation(s), "cible_cas_final");
           trackResultat(cas, "secretariat");
         }}
       />

@@ -7,6 +7,7 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
+import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
 import {
   MODE_TRANSPORT,
   PRESCRIPTION,
@@ -53,8 +54,8 @@ export function saisiesDepuisSituation(
   situation: Situation<string>,
 ): Saisie[] {
   const évalué = moteur.setSituation(situation);
-  const vrai = (règle: string) => évalué.evaluate(règle).nodeValue === true;
-  const valeur = (règle: string) => évalué.evaluate(règle).nodeValue;
+  const vrai = (règle: CleDeRegle) => évalué.evaluate(règle).nodeValue === true;
+  const valeur = (règle: CleDeRegle) => évalué.evaluate(règle).nodeValue;
 
   const casFinal = valeur("cible_cas_final");
   if (casFinal !== "prescription médicale de transport")
@@ -131,7 +132,7 @@ export function saisiesDepuisSituation(
   return saisies;
 }
 
-type Lecteur = (règle: string) => unknown;
+type Lecteur = (règle: CleDeRegle) => unknown;
 
 /** Rubriques du trajet, de l'urgence et de l'accident — issues de la Partie 2. */
 function saisiesTrajet(valeur: Lecteur): Saisie[] {

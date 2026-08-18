@@ -72,10 +72,18 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   not run — a stray `eslint-disable` sat in `Parcours.tsx` for months, suppressing
   nothing. Suppress with `// biome-ignore <rule>: <reason>` on the line **immediately**
   before the offending line, with the reason spelled out above it.
-- **Import extensions follow the runtime, not taste**: files under `front/` are bundled
-  by Vite and import **without** an extension; files under `server/` and `shared/` are
-  executed by Node directly and import **with** `.ts`. Tests follow whichever side they
-  import from.
+- **Import extensions follow the runtime, not taste.** Node executes TypeScript by
+  stripping types, so it needs the real filename; Vite resolves it. Write `.ts` when the
+  importing file is *reachable from Node* — everything under `server/` and `shared/`, and
+  the `front/` chain that `scripts/apercu-cerfa.ts` pulls in (`seeds/`, `beta/cerfa/`).
+  Omit it elsewhere in `front/`. Tests follow whichever side they import from. If in
+  doubt, `npm run apercu-cerfa` is what fails when an extension is missing.
+- **Rule names go through the contract.** `front/simulateur/contrat-regles-publicodes.ts`
+  lists every publicodes key the code may name; `Question`, `Cible` and `CleDeRegle` make
+  TypeScript reject the rest — in a situation literal, a `cibles` array, or a call to
+  `texte()` / `vrai()`. Read a rule with those two helpers, never with a bare
+  `engine.evaluate("…")`. Adding a key to the contract is what authorises its use, and
+  `tests/regles-front.test.ts` checks the contract against the model.
 - **Tests without mocks.** Engine tests drive the real `publicodes` engine; UI tests
   use Testing Library against the real `<App />`. Reuse the existing helpers in
   `tests/`.

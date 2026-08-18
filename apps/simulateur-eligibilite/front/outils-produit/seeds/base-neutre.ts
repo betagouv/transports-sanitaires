@@ -9,7 +9,9 @@
 //
 // Formats de valeurs publicodes : booléens `oui`/`non`, énumérés entre quotes
 // simples, nombres tels quels.
-export const BASE_NEUTRE: Record<string, string> = {
+import type { SituationTypee } from "../../simulateur/contrat-regles-publicodes.ts";
+
+export const BASE_NEUTRE: SituationTypee = {
   p1_situation_smur: "non",
   p1_situation_bariatrique_seul: "non",
   // « Non concerné » = aucune permission de sortie en jeu. « Non » signifierait

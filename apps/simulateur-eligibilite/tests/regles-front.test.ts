@@ -7,14 +7,27 @@
 // à la compilation : une clé inconnue jette à l'exécution, un cas final non traité
 // vide silencieusement la page remise au patient.
 //
-// D'où ces trois vérifications. Elles ne testent pas un comportement : elles
-// tiennent un contrat que le typage ne peut pas exprimer.
+// Le pivot est `front/simulateur/contrat-regles-publicodes.ts` : il déclare les
+// noms que le code a le droit d'employer, et TypeScript refuse tout le reste. Ce
+// fichier vérifie l'autre moitié — que ces noms existent bel et bien dans le
+// modèle. Le contrat sans le test laisserait déclarer une clé fantôme ; le test
+// sans le contrat n'aurait rien de sûr à inspecter, faute de savoir ce que le code
+// emploie autrement qu'en balayant du texte.
+//
+// Restent deux vérifications que le typage n'atteint pas encore : les *valeurs*
+// comparées aux sorties du moteur, et l'exhaustivité des blocs de résultat. Ce sont
+// des chaînes libres dans les deux cas, d'où le balayage — le contrat, lui, ne
+// porte que les noms de règles.
 
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { describe, expect, it } from "vitest";
+import {
+  CIBLES,
+  QUESTIONS,
+} from "../front/simulateur/contrat-regles-publicodes.ts";
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -45,23 +58,29 @@ function sources(...dossiers: string[]): string[] {
 
 const lire = (fichier: string) => readFileSync(join(racine, fichier), "utf-8");
 
-describe("clés de règles citées depuis le TypeScript", () => {
-  // Les noms du modèle plat : `p1_*` et `p2_*` (les questions des deux parties),
-  // `m0_*` (les filtres d'entrée), `cible_*` (les sorties).
-  const NOM_DE_REGLE = /["']((?:p1|p2|m0|cible)_[a-z0-9_]+)["']/g;
+describe("contrat de règles", () => {
+  // `front/simulateur/contrat-regles-publicodes.ts` déclare les noms que le code a
+  // le droit d'employer, et TypeScript refuse tout le reste — dans une situation,
+  // dans un tableau de cibles, dans un appel à `texte()`/`vrai()`. Reste à vérifier
+  // l'autre moitié : que ces noms existent bel et bien dans le modèle. Les deux
+  // ensemble ferment la boucle, sans qu'aucune ne dépende d'un balayage de texte.
+  it.each([
+    ["cible", CIBLES],
+    ["question", QUESTIONS],
+  ])("chaque %s du contrat existe dans les règles", (_genre, noms) => {
+    expect(noms.filter((nom) => !(nom in regles))).toEqual([]);
+  });
 
-  it("désignent toutes une règle qui existe", () => {
-    // `engine.setSituation` et `evaluate` jettent sur une clé inconnue : sans
-    // cette vérification, une règle renommée en amont ne se voit qu'à l'exécution,
-    // et seulement sur le parcours qui la traverse.
-    const fantomes = sources("front", "tests", "scripts").flatMap((fichier) =>
-      [...lire(fichier).matchAll(NOM_DE_REGLE)]
-        .map((correspondance) => correspondance[1])
-        .filter((cle) => cle !== undefined)
-        .filter((cle) => !(cle in regles))
-        .map((cle) => `${fichier} :: ${cle}`),
-    );
-    expect(fantomes).toEqual([]);
+  it("ne déclare aucun nom en double", () => {
+    // Un doublon passerait inaperçu — le type dérivé est une union, elle absorbe
+    // la répétition — mais signale une liste éditée à deux mains.
+    const noms = [...CIBLES, ...QUESTIONS];
+    expect(noms.length).toBe(new Set(noms).size);
+  });
+
+  it("range les cibles et les questions du bon côté", () => {
+    expect(CIBLES.filter((c) => !c.startsWith("cible_"))).toEqual([]);
+    expect(QUESTIONS.filter((q) => q.startsWith("cible_"))).toEqual([]);
   });
 });
 
