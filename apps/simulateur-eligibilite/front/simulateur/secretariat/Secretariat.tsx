@@ -12,6 +12,8 @@ type Props = {
   // Seed : situation complète (P1 + P2) ouvrant directement la Page Résultat 2,
   // sans passation ni parcours administratif.
   situationFinale?: Situation<string> | null;
+  /** Ouvre le téléchargement du CERFA en fin de parcours (cf. `ResultatFinal`). */
+  outilsProduit?: boolean;
   /** Injectable pour les tests (défaut = asset servi par l'application). */
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
@@ -23,6 +25,7 @@ type Props = {
 export function Secretariat({
   onNouvelleSimulation,
   situationFinale = null,
+  outilsProduit = false,
   chargerGabarit,
 }: Props) {
   const situationP1 = reprendrePassation();
@@ -37,6 +40,7 @@ export function Secretariat({
       <ResultatFinal
         situation={situation}
         onNouvelleSimulation={onNouvelleSimulation}
+        outilsProduit={outilsProduit}
         chargerGabarit={chargerGabarit}
       />
     );

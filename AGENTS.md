@@ -30,7 +30,8 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   (backend, holds secrets), `shared/` (front⇄back contract). See
   `docs/architecture/identification.md`. End of journey: `front/cerfa/` fills the
   official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form carries
-  nominative health data, so no filled document must ever reach the backend.
+  nominative health data, so no filled document must ever reach the backend. Its
+  download button is gated on the *outils produit* access (below).
   Reference situations live in **`front/outils-produit/seeds/`**: one catalogue of named
   situations **with their expected targets** (plain `publicodes`, readable by Node too),
   replayed by the business non-regression matrix, browsable through the **seed gallery**

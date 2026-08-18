@@ -17,6 +17,12 @@ import type { Article80 } from "./Article80";
 type Props = {
   situation: Situation<string>;
   onNouvelleSimulation: () => void;
+  /**
+   * Le service identifié a-t-il accès aux outils produit ? Le téléchargement du
+   * CERFA leur est réservé. Défaut fermé : un appelant qui oublie de le passer
+   * n'ouvre pas l'accès par mégarde.
+   */
+  outilsProduit?: boolean;
   /** Injectable pour les tests (défaut = asset servi par l'application). */
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
@@ -24,6 +30,7 @@ type Props = {
 export function ResultatFinal({
   situation,
   onNouvelleSimulation,
+  outilsProduit = false,
   chargerGabarit,
 }: Props) {
   const e = engine.setSituation(situation);
@@ -69,10 +76,11 @@ export function ResultatFinal({
         article80={article80}
       />
 
-      {/* Le CERFA n'est proposé que pour le cas qui lui correspond : un accord
-          préalable relève du formulaire S3139, une prise en charge par
-          l'établissement ne donne lieu à aucun CERFA. */}
-      {casFinal === "prescription médicale de transport" && (
+      {/* Deux conditions. Le cas final d'abord : un accord préalable relève du
+          formulaire S3139, une prise en charge par l'établissement ne donne lieu à
+          aucun CERFA. L'accès aux outils produit ensuite — le pré-remplissage
+          reste réservé au service n° 4, le temps d'être éprouvé. */}
+      {casFinal === "prescription médicale de transport" && outilsProduit && (
         <BoutonCerfa
           moteur={engine}
           situation={situation}

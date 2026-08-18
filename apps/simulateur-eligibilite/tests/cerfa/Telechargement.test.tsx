@@ -108,6 +108,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
+        outilsProduit
         chargerGabarit={chargerGabarit}
       />,
     );
@@ -119,6 +120,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
+        outilsProduit
         chargerGabarit={chargerGabarit}
       />,
     );
@@ -130,11 +132,28 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={ACCORD_PREALABLE}
+        outilsProduit
         chargerGabarit={chargerGabarit}
       />,
     );
     // Accord préalable → formulaire S3139, pas ce CERFA.
     expect(screen.queryByRole("button", BOUTON)).toBeNull();
+  });
+
+  it("ne le propose pas à un service sans accès aux outils produit", () => {
+    // Même situation, même cas final : c'est l'accès qui manque. Le résultat de
+    // la simulation reste entièrement lisible — seul le document est retenu.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={PRESCRIPTION}
+        chargerGabarit={chargerGabarit}
+      />,
+    );
+    expect(screen.queryByRole("button", BOUTON)).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: /Document à imprimer/i }),
+    ).toBeInTheDocument();
   });
 
   it("génère le document au clic sans laisser le bouton bloqué", async () => {
@@ -143,6 +162,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
+        outilsProduit
         chargerGabarit={chargerGabarit}
       />,
     );
@@ -167,6 +187,7 @@ describe("fin de parcours — téléchargement du CERFA", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={PRESCRIPTION}
+        outilsProduit
         chargerGabarit={async () => {
           throw new Error("gabarit indisponible");
         }}

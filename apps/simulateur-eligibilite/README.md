@@ -48,7 +48,8 @@ flowchart LR
 
 Le **CERFA** n'a aucune flèche vers le backend, et c'est structurel : le prescripteur
 y complète des données de santé nominatives, qui ne doivent jamais quitter le
-navigateur (traits tiretés ci-dessus). Le gabarit et `pdf-lib` sont chargés au clic —
+navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs réservé
+aux [outils produit](#outils-produit). Le gabarit et `pdf-lib` sont chargés au clic —
 cf. [Prescription pré-remplie (CERFA)](#prescription-pré-remplie-cerfa).
 
 ## Commandes
@@ -83,6 +84,10 @@ Deux outils sont réservés au **produit** : le **mode test des règles** (labo)
 **galerie de seeds**. Ils partagent la même garde d'accès et le même encadré
 **« Outils produit »**, présent sur l'écran-porte d'identification et au début du
 parcours prescripteur.
+
+La même garde ouvre une troisième chose, hors encadré : le **téléchargement du CERFA
+pré-rempli** en fin de parcours secrétariat (cf. plus bas). Un prescripteur ordinaire
+voit son résultat en entier, mais pas le bouton de téléchargement.
 
 | | |
 | --- | --- |
@@ -257,9 +262,15 @@ front/                   front (bundlé par Vite)
 
 En fin de parcours secrétariat, la Page Résultat 2 propose de télécharger le CERFA
 n° 11574\*07 (*Prescription médicale de transport*, réf. S3138g) **pré-rempli à partir
-de la simulation**. Le bouton n'apparaît que si `cible_cas_final` vaut
-`prescription médicale de transport` : un accord préalable relève du formulaire S3139,
-une prise en charge par l'établissement ne donne lieu à aucun CERFA.
+de la simulation**. Deux conditions, toutes deux nécessaires :
+
+| Condition | Pourquoi |
+| --- | --- |
+| `cible_cas_final` = `prescription médicale de transport` | Un accord préalable relève du formulaire S3139 ; une prise en charge par l'établissement ne donne lieu à aucun CERFA. |
+| Accès aux **outils produit** (service n° 4, cf. plus haut) | Le pré-remplissage reste réservé au produit le temps d'être éprouvé. Le reste du résultat s'affiche normalement pour tout le monde. |
+
+Le défaut de la prop `outilsProduit` (`Secretariat`, `ResultatFinal`) est **fermé** :
+un appelant qui l'oublie n'ouvre pas l'accès par mégarde.
 
 ### Génération entièrement côté navigateur
 

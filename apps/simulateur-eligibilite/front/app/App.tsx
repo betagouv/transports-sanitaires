@@ -159,6 +159,7 @@ export function App({
         key={cle}
         situationFinale={situationDev}
         onNouvelleSimulation={recommencer}
+        outilsProduit={outilsProduit}
         chargerGabarit={chargerGabarit}
       />
     );
