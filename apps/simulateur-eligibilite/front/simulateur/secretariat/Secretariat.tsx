@@ -56,7 +56,7 @@ export function Secretariat({
           <h3 className="fr-alert__title">Aucune prescription en attente</h3>
           <p>Commencez par l'évaluation médicale du transport.</p>
         </div>
-        <button className="fr-btn" onClick={onNouvelleSimulation}>
+        <button type="button" className="fr-btn" onClick={onNouvelleSimulation}>
           Aller à l'évaluation médicale
         </button>
       </div>

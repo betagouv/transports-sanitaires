@@ -112,6 +112,10 @@ export function Parcours({
   // la fin (refs pour éviter les valeurs périmées dans le gestionnaire).
   const currentRef = useRef(current);
   currentRef.current = current;
+  // Déclarer `aucuneQuestion` et `outil` en dépendances rejouerait
+  // `simulation_start` à chaque changement ; `currentRef` existe justement pour
+  // lire la valeur fraîche sans redéclarer l'écouteur.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: amorçage unique au montage
   useEffect(() => {
     if (aucuneQuestion) return;
     trackSimulationStart(outil);
@@ -121,8 +125,6 @@ export function Parcours({
     };
     window.addEventListener("pagehide", onLeave);
     return () => window.removeEventListener("pagehide", onLeave);
-    // Amorçage unique au montage.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleChange(id: string, value: unknown) {
@@ -258,11 +260,7 @@ export function Parcours({
 
   return (
     <>
-      <div
-        className="fr-stepper"
-        aria-label="Étapes du formulaire"
-        style={{ marginBottom: "2rem" }}
-      >
+      <div className="fr-stepper" style={{ marginBottom: "2rem" }}>
         <h2 className="fr-stepper__title">
           <span className="fr-stepper__state">
             Étape {current} sur {pageCount}
@@ -318,6 +316,9 @@ export function Parcours({
             <ol style={{ margin: "0.25rem 0 1rem" }}>
               {[...formState.pages, ...formState.nextPages].map((page, i) => (
                 <li
+                  // Trace de debug rendue d'un bloc, jamais réordonnée — et deux
+                  // pages peuvent porter exactement les mêmes éléments.
+                  // biome-ignore lint/suspicious/noArrayIndexKey: pas d'autre identifiant stable
                   key={i}
                   style={{ fontWeight: i === current - 1 ? 700 : 400 }}
                 >

@@ -18,7 +18,10 @@ const analyticsConfig = resolveConfig();
 initAnalytics(analyticsConfig);
 if (analyticsConfig.enabled) loadMatomo(analyticsConfig.url);
 
-createRoot(document.getElementById("root")!).render(
+const racine = document.getElementById("root");
+if (!racine) throw new Error("Élément #root absent de index.html.");
+
+createRoot(racine).render(
   <StrictMode>
     <App />
   </StrictMode>,

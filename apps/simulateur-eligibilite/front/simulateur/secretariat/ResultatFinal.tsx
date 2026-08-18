@@ -90,6 +90,7 @@ export function ResultatFinal({
 
       <div className="fr-btns-group fr-btns-group--inline">
         <button
+          type="button"
           className="fr-btn fr-btn--secondary"
           onClick={onNouvelleSimulation}
         >

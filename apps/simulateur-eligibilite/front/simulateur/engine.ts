@@ -12,12 +12,11 @@ const modules = import.meta.glob("../../regles/*.publicodes", {
   eager: true,
 });
 
-const reglesOfficielles = Object.values(modules).reduce<RawPublicodes<string>>(
-  (acc, content) => {
-    const parsed = yaml.load(content as string) as RawPublicodes<string>;
-    return { ...acc, ...parsed };
-  },
+const reglesOfficielles: RawPublicodes<string> = Object.assign(
   {},
+  ...Object.values(modules).map(
+    (contenu) => yaml.load(contenu as string) as RawPublicodes<string>,
+  ),
 );
 
 // Choisit les règles à charger : celles du **mode labo** (test de règles par le

@@ -34,7 +34,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
@@ -57,7 +57,17 @@
   },
   "overrides": [
     {
-      "includes": ["vite.config.ts", "scripts/**"],
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["vite.config.ts", "scripts/**", "server/**"],
       "linter": {
         "rules": {
           "style": { "noDefaultExport": "off" },

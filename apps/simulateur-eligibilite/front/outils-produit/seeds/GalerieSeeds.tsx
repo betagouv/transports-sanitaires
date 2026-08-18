@@ -60,13 +60,14 @@ const SECTIONS: ReadonlyArray<{
 export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
   // Une seule passe sur le catalogue : `setSituation` réinitialise le moteur à
   // chaque seed, l'évaluation d'une seed n'influence donc pas la suivante.
-  const evaluations = useMemo(
-    () => new Map(SEEDS.map((seed) => [seed.id, evaluerSeed(engine, seed)])),
+  const lignes = useMemo(
+    () =>
+      SEEDS.map((seed) => ({ seed, evaluation: evaluerSeed(engine, seed) })),
     [],
   );
 
-  const enEcart = SEEDS.filter(
-    (s) => (evaluations.get(s.id)?.ecarts.length ?? 0) > 0,
+  const enEcart = lignes.filter(
+    ({ evaluation }) => evaluation.ecarts.length > 0,
   );
 
   return (
@@ -91,7 +92,7 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
           {enEcart.length === 0
             ? "Le moteur chargé confirme les attendus des seeds."
             : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
-                .map((s) => s.libelle)
+                .map(({ seed }) => seed.libelle)
                 .join(", ")}.`}
         </p>
       </div>
@@ -118,21 +119,27 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {SEEDS.filter((seed) => seed.outil === outil).map((seed) => (
-                  <Ligne
-                    key={seed.id}
-                    seed={seed}
-                    evaluation={evaluations.get(seed.id)!}
-                    onOuvrir={() => onOuvrir(seed)}
-                  />
-                ))}
+                {lignes
+                  .filter(({ seed }) => seed.outil === outil)
+                  .map(({ seed, evaluation }) => (
+                    <Ligne
+                      key={seed.id}
+                      seed={seed}
+                      evaluation={evaluation}
+                      onOuvrir={() => onOuvrir(seed)}
+                    />
+                  ))}
               </tbody>
             </table>
           </div>
         </section>
       ))}
 
-      <button className="fr-btn fr-btn--secondary" onClick={onRetour}>
+      <button
+        type="button"
+        className="fr-btn fr-btn--secondary"
+        onClick={onRetour}
+      >
         Retour
       </button>
     </main>

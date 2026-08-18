@@ -72,6 +72,7 @@ export function BoutonCerfa({ moteur, situation, chargerGabarit }: Props) {
       )}
 
       <button
+        type="button"
         className="fr-btn fr-icon-download-line fr-btn--icon-left"
         onClick={telechargerCerfa}
         disabled={enCours}

@@ -96,10 +96,14 @@ export function ResultatMedical({
       </div>
 
       <div className="fr-btns-group fr-btns-group--inline">
-        <button className="fr-btn fr-btn--secondary" onClick={onRecommencer}>
+        <button
+          type="button"
+          className="fr-btn fr-btn--secondary"
+          onClick={onRecommencer}
+        >
           Nouvelle simulation
         </button>
-        <button className="fr-btn" onClick={onContinuer}>
+        <button type="button" className="fr-btn" onClick={onContinuer}>
           {labelSuite}
         </button>
       </div>

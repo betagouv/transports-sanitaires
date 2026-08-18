@@ -79,6 +79,13 @@ export function resolveConfig(env: Env = import.meta.env): AnalyticsConfig {
 
 let state: { enabled: boolean } = { enabled: false };
 
+// File d'attente du tag Matomo. Unique point de création : le tag la remplace par
+// un objet actif quand matomo.js se charge, tout ce qui est empilé avant est rejoué.
+function filePaq(): unknown[][] {
+  window._paq ??= [];
+  return window._paq;
+}
+
 /**
  * Configure le traceur : si activé, empile les commandes d'amorçage dans `_paq`
  * (avant le chargement de matomo.js, qui traitera la file). Appelé au boot, avant
@@ -91,9 +98,9 @@ export function initAnalytics(config: AnalyticsConfig): void {
   state = { enabled: config.enabled };
   if (!config.enabled) return;
 
-  const paq = (window._paq ??= []);
+  const paq = filePaq();
   paq.push(["disableCookies"]);
-  paq.push(["setTrackerUrl", config.url + "matomo.php"]);
+  paq.push(["setTrackerUrl", `${config.url}matomo.php`]);
   paq.push(["setSiteId", config.siteId]);
   paq.push(["enableLinkTracking"]);
   paq.push(["trackPageView"]);
@@ -105,7 +112,7 @@ export function loadMatomo(url: string): void {
   const script = document.createElement("script");
   script.id = "matomo-js";
   script.async = true;
-  script.src = url + "matomo.js";
+  script.src = `${url}matomo.js`;
   document.head.appendChild(script);
 }
 
@@ -135,5 +142,5 @@ export const trackCerfaTelecharge = (): void =>
 // pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
 function track(action: string, value?: number): void {
   if (!state.enabled) return;
-  (window._paq ??= []).push(buildEvent(getIdentite(), action, value));
+  filePaq().push(buildEvent(getIdentite(), action, value));
 }
