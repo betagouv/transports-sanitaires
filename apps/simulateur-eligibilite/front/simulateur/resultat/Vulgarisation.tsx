@@ -1,4 +1,4 @@
-import type { engine } from "./engine";
+import type { engine } from "../engine";
 
 // Critères médicaux et motifs ouvrant droit, avec descriptions vulgarisées
 // destinées au patient. Partagé entre la Page Résultat 1 (résultat médical) et

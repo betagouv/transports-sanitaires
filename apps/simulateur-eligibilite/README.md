@@ -231,13 +231,19 @@ front/                   front (bundlé par Vite)
     Identification.tsx   le formulaire à révélation progressive
     referentiel-http.ts  pseudonymisation-http.ts   les deux clients de l'API
     session.ts           l'identité pseudonymisée, en mémoire de session (ADR-4)
-  simulateur/            LES deux outils, sur un socle commun
+  simulateur/            LES deux outils, sur un socle commun — la racine ne porte
+                         que le socle non-visuel, tout composant est rangé
     engine.ts            moteur publicodes (règles officielles ou labo)
-    Parcours.tsx         flux générique : stepper + FormBuilder + navigation
-    FormField.tsx  Mosaique.tsx  mosaique.ts  passation.ts  TraceDebug.tsx
-    Vulgarisation.tsx  InformationPatient.tsx
+    passation.ts         la couture prescripteur → secrétariat
+    questionnaire/       Parcours.tsx (stepper + FormBuilder)  FormField.tsx
+                         Mosaique.tsx  mosaique.ts
+    resultat/            Vulgarisation.tsx (dictionnaire patient)
+                         InformationPatient.tsx  TraceDebug.tsx
     prescripteur/        Prescripteur.tsx  ResultatMedical.tsx (Partie 1 → Résultat 1)
-    secretariat/         Secretariat.tsx  ResultatFinal.tsx (Partie 2 → Résultat 2)
+    secretariat/         Secretariat.tsx (Partie 2 → Résultat 2)
+                         ResultatFinal.tsx  l'assemblage des trois blocs
+                         Bloc1Resultat.tsx  Bloc2Etapes.tsx  Bloc3CasRetenu.tsx
+                         Article80.tsx  la charge établissement, ses deux rendus
   outils-produit/        LA feature réservée au service n° 4 (cf. plus haut)
     acces.ts             estServiceProduit — la garde commune aux deux outils
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Situation } from "publicodes";
-import { Parcours } from "../Parcours";
+import { Parcours } from "../questionnaire/Parcours";
 import { ResultatMedical } from "./ResultatMedical";
 import { engine } from "../engine";
 import { trackResultat } from "../../analytics/analytics";

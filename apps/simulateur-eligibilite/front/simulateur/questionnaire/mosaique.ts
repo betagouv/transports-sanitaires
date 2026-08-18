@@ -1,5 +1,5 @@
 import type { EvaluatedFormElement, FormPageElementProp } from "@publicodes/forms";
-import { reglesBrutes } from "./engine";
+import { reglesBrutes } from "../engine";
 
 // Valeur booléenne d'un champ d'option, à trois états (vrai / faux / indéfini —
 // non répondu). Selon le rendu, `@publicodes/forms` expose `checked` (case) ou

@@ -1,5 +1,5 @@
 import type { Situation } from "publicodes";
-import { engine } from "./engine";
+import { engine } from "../engine";
 
 type Props = {
   titre: string;

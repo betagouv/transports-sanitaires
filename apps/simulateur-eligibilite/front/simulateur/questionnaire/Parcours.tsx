@@ -6,7 +6,7 @@ import type {
   FormState,
 } from "@publicodes/forms";
 import type { Situation } from "publicodes";
-import { engine, reglesBrutes } from "./engine";
+import { engine, reglesBrutes } from "../engine";
 import { FormField } from "./FormField";
 import { Mosaique } from "./Mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
@@ -16,7 +16,7 @@ import {
   trackSimulationComplete,
   trackSimulationStart,
   trackSimulationStep,
-} from "../analytics/analytics";
+} from "../../analytics/analytics";
 
 // pageBuilder par défaut : depuis le séquencement conditionnel du modèle
 // (`applicable si`, v6), la pagination naturelle suffit — le pageBuilder custom
