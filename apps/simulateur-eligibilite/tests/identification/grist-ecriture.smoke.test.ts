@@ -70,7 +70,7 @@ describe.skipIf(!actif)(
       expect(svc).toHaveLength(1);
 
       // Le prescripteur est rattaché à ce vrai service, une seule fois.
-      const prescripteurs = await ref.getPrescripteurs(svc[0].id);
+      const prescripteurs = await ref.getPrescripteurs(svc[0]!.id);
       const trouves = prescripteurs.filter((p) => p.libelle.includes("Smoke"));
       expect(trouves).toHaveLength(1);
     });

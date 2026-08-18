@@ -56,7 +56,8 @@ describe("clés de règles citées depuis le TypeScript", () => {
     // et seulement sur le parcours qui la traverse.
     const fantomes = sources("front", "tests", "scripts").flatMap((fichier) =>
       [...lire(fichier).matchAll(NOM_DE_REGLE)]
-        .map(([, cle]) => cle)
+        .map((correspondance) => correspondance[1])
+        .filter((cle) => cle !== undefined)
         .filter((cle) => !(cle in regles))
         .map((cle) => `${fichier} :: ${cle}`),
     );
@@ -88,7 +89,8 @@ describe("valeurs comparées aux sorties du moteur", () => {
 
     const inconnues = sources("front").flatMap((fichier) =>
       [...lire(fichier).matchAll(motif)]
-        .map(([, valeur]) => valeur)
+        .map((correspondance) => correspondance[1])
+        .filter((valeur) => valeur !== undefined)
         .filter((valeur) => !admises.has(valeur))
         .map((valeur) => `${fichier} :: ${valeur}`),
     );

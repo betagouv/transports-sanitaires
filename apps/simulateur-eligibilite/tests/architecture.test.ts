@@ -40,8 +40,9 @@ const IMPORT = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
 function importsDe(fichier: string): string[] {
   const source = readFileSync(join(racine, fichier), "utf-8");
   const cibles: string[] = [];
-  for (const [, specificateur] of source.matchAll(IMPORT)) {
-    if (!specificateur.startsWith(".")) continue;
+  for (const correspondance of source.matchAll(IMPORT)) {
+    const specificateur = correspondance[1];
+    if (!specificateur?.startsWith(".")) continue;
     cibles.push(
       relative(racine, resolve(dirname(join(racine, fichier)), specificateur)),
     );

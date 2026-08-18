@@ -39,7 +39,9 @@ describe("écran de galerie", () => {
     const compte = (outil: "prescripteur" | "secretariat") =>
       SEEDS.filter((s) => s.outil === outil).length;
 
-    const [p1, p2] = screen.getAllByRole("table");
+    const tables = screen.getAllByRole("table");
+    expect(tables).toHaveLength(2); // une section par outil
+    const [p1, p2] = tables as [HTMLElement, HTMLElement];
     expect(
       within(p1).getAllByRole("button", { name: /^Ouvrir :/ }),
     ).toHaveLength(compte("prescripteur"));
