@@ -14,13 +14,13 @@
 
 import { createHmac } from "node:crypto";
 import {
-  VERSION,
   type IdentitePseudonymisee,
+  VERSION,
 } from "../../shared/identite-pseudonymisee.ts";
 import {
+  type IdentiteSaisie,
   normalise,
   PRESCRIPTEUR_HORS_LISTE,
-  type IdentiteSaisie,
 } from "../../shared/identite-saisie.ts";
 
 /**

@@ -1,9 +1,9 @@
-import { readFileSync, globSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { globSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
-import Engine from "publicodes";
-import type { RawPublicodes } from "publicodes";
+import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
+import type { RawPublicodes } from "publicodes";
+import Engine from "publicodes";
 
 // Vérifie la validité d'un document publicodes : syntaxe YAML puis
 // cohérence des règles (références manquantes, cycles, etc.) via l'Engine.

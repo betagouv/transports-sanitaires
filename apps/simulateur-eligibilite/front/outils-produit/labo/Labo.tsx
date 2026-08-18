@@ -9,10 +9,10 @@ import {
   activerLabo,
   desactiverLabo,
   historiqueLabo,
-  validerRegles,
-  versionLaboActive,
   type ResultatValidation,
   type VersionLabo,
+  validerRegles,
+  versionLaboActive,
 } from "./labo";
 
 type Props = {

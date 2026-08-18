@@ -4,16 +4,16 @@
 // transport (cf. `ResultatFinal`) — un accord préalable relève du formulaire
 // S3139, une prise en charge par l'établissement ne donne lieu à aucun CERFA.
 
-import { useState } from "react";
-import type { Situation } from "publicodes";
 import type Engine from "publicodes";
+import type { Situation } from "publicodes";
+import { useState } from "react";
+import { trackCerfaTelecharge } from "../../../analytics/analytics";
 import {
   genererCerfa,
   nomFichier,
-  telecharger,
   type OptionsGénération,
+  telecharger,
 } from "./cerfa";
-import { trackCerfaTelecharge } from "../../../analytics/analytics";
 
 type Props = {
   moteur: Engine<string>;

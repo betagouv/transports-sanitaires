@@ -10,8 +10,8 @@
 // `pdf-lib` (~400 ko) et le gabarit (~750 ko) ne sont chargés qu'au clic, par
 // import dynamique et `fetch` de l'asset : le bundle initial est inchangé.
 
-import type { Situation } from "publicodes";
 import type Engine from "publicodes";
+import type { Situation } from "publicodes";
 import gabaritUrl from "./gabarit/cerfa-11574-07.pdf?url";
 
 /** Nom du fichier proposé au téléchargement, daté pour éviter les collisions. */

@@ -1,9 +1,9 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import Engine from "publicodes";
-import type { RawPublicodes, Situation } from "publicodes";
 import yaml from "js-yaml";
+import type { RawPublicodes, Situation } from "publicodes";
+import Engine from "publicodes";
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), "../../regles");
 

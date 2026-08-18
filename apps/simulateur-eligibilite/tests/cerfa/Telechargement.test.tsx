@@ -1,13 +1,11 @@
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
-import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { engine } from "../../front/simulateur/engine";
+import { describe, expect, it } from "vitest";
 import {
   genererCerfa,
   nomFichier,
@@ -17,6 +15,8 @@ import {
   SITUATION,
   TRAJET,
 } from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+import { engine } from "../../front/simulateur/engine";
+import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 
 // Le vrai gabarit, lu sur disque : en test il n'y a pas de serveur pour le
 // `fetch` de l'asset. C'est le même fichier que celui servi en production.

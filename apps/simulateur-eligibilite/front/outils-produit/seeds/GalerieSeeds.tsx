@@ -10,15 +10,15 @@
 // même d'ouvrir un parcours.
 
 import { useMemo } from "react";
+import type { Outil } from "../../app/outil";
 import { engine } from "../../simulateur/engine";
 import { SEEDS } from "./catalogue";
 import {
-  evaluerSeed,
   type CibleSeed,
   type EvaluationSeed,
+  evaluerSeed,
   type Seed,
 } from "./seed";
-import type { Outil } from "../../app/outil";
 
 type Props = {
   onOuvrir: (seed: Seed) => void;

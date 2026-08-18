@@ -1,12 +1,8 @@
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, it, expect } from "vitest";
 import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
-import { makeEngine } from "../simulateur/engine.ts";
-import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
-import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
-import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
+import { describe, expect, it } from "vitest";
 import {
   IDENTITÉ,
   MODE_TRANSPORT,
@@ -14,11 +10,15 @@ import {
   SITUATION,
   TRAJET,
 } from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import {
   CerfaNonApplicable,
   saisiesDepuisSituation,
 } from "../../front/outils-produit/beta/cerfa/depuis-simulateur.ts";
+import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
+import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
+import { makeEngine } from "../simulateur/engine.ts";
 
 const GABARIT = readFileSync(
   join(

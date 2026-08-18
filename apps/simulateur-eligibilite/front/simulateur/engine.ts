@@ -1,7 +1,7 @@
-import Engine from "publicodes";
-import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
-import { reglesLaboActives, desactiverLabo } from "../outils-produit/labo/labo";
+import type { RawPublicodes } from "publicodes";
+import Engine from "publicodes";
+import { desactiverLabo, reglesLaboActives } from "../outils-produit/labo/labo";
 
 const OPTIONS = { flag: { filterNotApplicablePossibilities: true } } as const;
 

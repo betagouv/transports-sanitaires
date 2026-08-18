@@ -9,16 +9,16 @@
 
 import { useEffect, useState } from "react";
 import {
+  type IdentiteSaisie,
   PRESCRIPTEUR_HORS_LISTE,
   saisieComplete,
-  type IdentiteSaisie,
 } from "../../shared/identite-saisie";
 import {
-  snapshotReferentiel,
   type Etablissement,
   type Prescripteur,
   type Referentiel,
   type Service,
+  snapshotReferentiel,
 } from "../../shared/referentiel";
 import { estServiceProduit } from "../outils-produit/acces";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";

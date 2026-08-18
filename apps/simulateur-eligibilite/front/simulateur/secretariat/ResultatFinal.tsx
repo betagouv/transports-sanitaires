@@ -5,14 +5,14 @@
 // fichier — c'est le seul endroit qui connaisse leur ordre.
 
 import type { Situation } from "publicodes";
-import { engine } from "../engine";
-import { TraceDebug } from "../resultat/TraceDebug";
 import { BoutonCerfa } from "../../outils-produit/beta/cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../../outils-produit/beta/cerfa/cerfa";
+import { engine } from "../engine";
+import { TraceDebug } from "../resultat/TraceDebug";
+import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
 import { Bloc2Etapes } from "./Bloc2Etapes";
 import { Bloc3CasRetenu } from "./Bloc3CasRetenu";
-import type { Article80 } from "./Article80";
 
 type Props = {
   situation: Situation<string>;

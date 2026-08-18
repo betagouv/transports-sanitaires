@@ -4,16 +4,16 @@
 // l'app avec le référentiel snapshot (comme le fait le backend quand
 // GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
+import type { AddressInfo } from "node:net";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../../server/app.ts";
 import { empreinte } from "../../server/identification/pseudonymisation.ts";
-import {
-  snapshotReferentiel,
-  type Referentiel,
-} from "../../shared/referentiel.ts";
 import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
+import {
+  type Referentiel,
+  snapshotReferentiel,
+} from "../../shared/referentiel.ts";
 
 const SECRET = "secret-de-test";
 

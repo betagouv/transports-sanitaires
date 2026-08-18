@@ -15,17 +15,17 @@
 // **rowId interne Grist** de la ligne cible, pas son Id2 : on résout donc Id2 →
 // rowId avant de filtrer les enfants.
 
+import {
+  type IdentiteSaisie,
+  normalise,
+  PRESCRIPTEUR_HORS_LISTE,
+} from "../../shared/identite-saisie.ts";
 import type {
   Etablissement,
   Prescripteur,
   Referentiel,
   Service,
 } from "../../shared/referentiel.ts";
-import {
-  normalise,
-  PRESCRIPTEUR_HORS_LISTE,
-  type IdentiteSaisie,
-} from "../../shared/identite-saisie.ts";
 
 export type GristConfig = {
   /** Base API du doc, ex. https://…/api/docs/<docId> */

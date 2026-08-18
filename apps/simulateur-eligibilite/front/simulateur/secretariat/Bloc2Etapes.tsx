@@ -3,14 +3,14 @@
 // transport. Le contenu en langage clair vient de `resultat/` ; ce module choisit
 // quoi dire selon le cas final et le transport retenu.
 
-import { engine } from "../engine";
-import { CRITERES, MOTIFS, retenus } from "../resultat/Vulgarisation";
+import type { engine } from "../engine";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
   SousTitre,
 } from "../resultat/InformationPatient";
-import { Article80Patient, type Article80 } from "./Article80";
+import { CRITERES, MOTIFS, retenus } from "../resultat/Vulgarisation";
+import { type Article80, Article80Patient } from "./Article80";
 
 // Prise en charge / reste à charge, formulation propre à chaque cas final.
 const RESTE_A_CHARGE: Record<string, string> = {

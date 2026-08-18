@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
-import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
+import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import { sIdentifierProduit } from "../porte";
 

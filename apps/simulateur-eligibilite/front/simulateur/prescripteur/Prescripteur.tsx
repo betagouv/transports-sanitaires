@@ -1,10 +1,10 @@
-import { useState } from "react";
 import type { Situation } from "publicodes";
-import { Parcours } from "../questionnaire/Parcours";
-import { ResultatMedical } from "./ResultatMedical";
-import { engine } from "../engine";
+import { useState } from "react";
 import { trackResultat } from "../../analytics/analytics";
 import { BoutonOutil, OutilsProduit } from "../../outils-produit/OutilsProduit";
+import { engine } from "../engine";
+import { Parcours } from "../questionnaire/Parcours";
+import { ResultatMedical } from "./ResultatMedical";
 
 type Props = {
   // Passe la main au secrétariat en emportant la situation de Partie 1.

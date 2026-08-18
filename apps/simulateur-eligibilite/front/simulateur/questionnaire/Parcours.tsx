@@ -1,22 +1,22 @@
-import { useEffect, useRef, useState } from "react";
-import { FormBuilder } from "@publicodes/forms";
 import type {
   EvaluatedFormElement,
   FormPageElementProp,
   FormState,
 } from "@publicodes/forms";
+import { FormBuilder } from "@publicodes/forms";
 import type { Situation } from "publicodes";
-import { engine, reglesBrutes } from "../engine";
-import { FormField } from "./FormField";
-import { Mosaique } from "./Mosaique";
-import { mosaiqueDe, valeurBool } from "./mosaique";
-import type { Mosaique as MosaiqueDesc } from "./mosaique";
+import { useEffect, useRef, useState } from "react";
 import {
   trackSimulationAbandon,
   trackSimulationComplete,
   trackSimulationStart,
   trackSimulationStep,
 } from "../../analytics/analytics";
+import { engine, reglesBrutes } from "../engine";
+import { FormField } from "./FormField";
+import { Mosaique } from "./Mosaique";
+import type { Mosaique as MosaiqueDesc } from "./mosaique";
+import { mosaiqueDe, valeurBool } from "./mosaique";
 
 // pageBuilder par défaut : depuis le séquencement conditionnel du modèle
 // (`applicable si`, v6), la pagination naturelle suffit — le pageBuilder custom

@@ -6,12 +6,12 @@
 // Prend le `Referentiel` et le secret en paramètres pour rester testable sans
 // mock (les tests injectent le snapshot).
 
-import express, { type Router, type Request, type Response } from "express";
-import type { Referentiel } from "../../shared/referentiel.ts";
+import express, { type Request, type Response, type Router } from "express";
 import {
-  saisieComplete,
   type IdentiteSaisie,
+  saisieComplete,
 } from "../../shared/identite-saisie.ts";
+import type { Referentiel } from "../../shared/referentiel.ts";
 import { pseudonymiser } from "./pseudonymisation.ts";
 
 export function identificationRoutes(

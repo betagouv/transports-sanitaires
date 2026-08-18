@@ -7,7 +7,7 @@
 // dans la liste », comme en production.
 
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import type userEvent from "@testing-library/user-event";
 
 type User = ReturnType<typeof userEvent.setup>;
 

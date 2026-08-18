@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { App } from "../../front/app/App";
 import { Identification } from "../../front/identification/Identification";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";

@@ -1,6 +1,6 @@
+import { startReactDsfr } from "@codegouvfr/react-dsfr/spa";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { startReactDsfr } from "@codegouvfr/react-dsfr/spa";
 import { App } from "./App";
 import "./dsfr-overrides.css";
 import {

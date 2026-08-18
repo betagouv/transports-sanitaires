@@ -1,9 +1,9 @@
-import type { ChangeEvent } from "react";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import type {
   EvaluatedFormElement,
   FormPageElementProp,
 } from "@publicodes/forms";
+import type { ChangeEvent } from "react";
 import { valeurBool } from "./mosaique";
 
 type OptionField = EvaluatedFormElement & FormPageElementProp;

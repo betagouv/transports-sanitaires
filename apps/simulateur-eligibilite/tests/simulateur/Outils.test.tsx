@@ -1,9 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { emettrePassation } from "../../front/simulateur/passation";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { emettrePassation } from "../../front/simulateur/passation";
 
 type User = ReturnType<typeof userEvent.setup>;
 type Reponse = [RegExp, string];

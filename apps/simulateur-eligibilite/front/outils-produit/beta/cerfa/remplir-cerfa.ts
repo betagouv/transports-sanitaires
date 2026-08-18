@@ -6,13 +6,13 @@
 // (cf. README, § « Où faire tourner le remplissage »).
 
 import {
-  PDFDocument,
   PDFCheckBox,
   PDFDict,
+  PDFDocument,
   PDFName,
   PDFTextField,
 } from "pdf-lib";
-import { MULTILIGNES_ROGNÉS, type ChampCase } from "./champs-cerfa.ts";
+import { type ChampCase, MULTILIGNES_ROGNÉS } from "./champs-cerfa.ts";
 
 /** Une valeur à écrire : soit un texte dans un champ nommé, soit une case à cocher. */
 export type Saisie =

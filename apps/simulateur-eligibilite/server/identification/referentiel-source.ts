@@ -6,8 +6,8 @@
 //   docs/architecture/identification.md — §7 (incréments).
 
 import {
-  snapshotReferentiel,
   type Referentiel,
+  snapshotReferentiel,
 } from "../../shared/referentiel.ts";
 import { createGristReferentiel } from "./referentiel-grist.ts";
 

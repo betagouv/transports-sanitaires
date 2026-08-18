@@ -10,9 +10,9 @@
 // L'accès au labo est **gardé** derrière l'identification, comme celui de la galerie
 // de seeds : voir `../acces.ts`.
 
-import Engine from "publicodes";
-import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
+import type { RawPublicodes } from "publicodes";
+import Engine from "publicodes";
 
 // Une version de règles chargée dans le labo. Le YAML brut est conservé tel quel
 // (c'est lui qui alimente le moteur au boot).

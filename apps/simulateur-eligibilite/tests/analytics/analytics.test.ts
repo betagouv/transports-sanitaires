@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  VERSION,
-  type IdentitePseudonymisee,
-} from "../../shared/identite-pseudonymisee";
-import { setIdentite } from "../../front/identification/session";
-import {
   buildEvent,
   initAnalytics,
   resolveConfig,
@@ -12,6 +7,11 @@ import {
   trackSimulationStart,
   trackSimulationStep,
 } from "../../front/analytics/analytics";
+import { setIdentite } from "../../front/identification/session";
+import {
+  type IdentitePseudonymisee,
+  VERSION,
+} from "../../shared/identite-pseudonymisee";
 
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",

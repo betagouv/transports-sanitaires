@@ -5,7 +5,7 @@
 // l'agencer. Seuls les intitulés diffèrent d'une page à l'autre (ton « résultat »
 // vs « document ») : ils sont passés en props, le texte restant est identique.
 
-import { ListeVulgarisee, type Item } from "./Vulgarisation";
+import { type Item, ListeVulgarisee } from "./Vulgarisation";
 
 // Sous-titre iconographié du bloc patient (h4 DSFR).
 export function SousTitre({

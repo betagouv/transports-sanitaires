@@ -13,26 +13,26 @@
 // premier passe la main au second via la passation (situation de Partie 1). Le
 // point d'entrée initial peut être forcé par `?outil=secretariat`.
 
-import { lazy, Suspense, useState } from "react";
 import type { Situation } from "publicodes";
+import { lazy, Suspense, useState } from "react";
+import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
+import type { IdentiteSaisie } from "../../shared/identite-saisie";
+import type { Referentiel } from "../../shared/referentiel";
 import {
-  Identification,
   type AccesIdentification,
+  Identification,
 } from "../identification/Identification";
-import { Labo } from "../outils-produit/labo/Labo";
+import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
+import { referentielHttp } from "../identification/referentiel-http";
+import { setIdentite } from "../identification/session";
+import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
+import { Labo } from "../outils-produit/labo/Labo";
+import { type Seed, situationDe } from "../outils-produit/seeds/seed";
+import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../simulateur/secretariat/Secretariat";
-import { referentielHttp } from "../identification/referentiel-http";
-import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
-import { setIdentite } from "../identification/session";
-import { effacerPassation, emettrePassation } from "../simulateur/passation";
-import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
-import type { Referentiel } from "../../shared/referentiel";
-import type { IdentiteSaisie } from "../../shared/identite-saisie";
-import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import type { Outil } from "./outil";
-import { situationDe, type Seed } from "../outils-produit/seeds/seed";
 
 // Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
 // du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la

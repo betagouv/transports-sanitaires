@@ -14,11 +14,11 @@
 // son identifiant.
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import Engine from "publicodes";
-import type { RawPublicodes } from "publicodes";
 import yaml from "js-yaml";
+import type { RawPublicodes } from "publicodes";
+import Engine from "publicodes";
 import { saisiesDepuisSituation } from "../front/outils-produit/beta/cerfa/depuis-simulateur.ts";
 import { remplirCerfa } from "../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { seedParId } from "../front/outils-produit/seeds/catalogue.ts";

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { makeEngine } from "./engine";
+import { describe, expect, it } from "vitest";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
 import { evaluerSeed } from "../../front/outils-produit/seeds/seed";
+import { makeEngine } from "./engine";
 
 // Matrice de non-régression métier (règles plates v8.10). Elle n'a pas de scénarios
 // à elle : elle rejoue le **catalogue de seeds** (`front/outils-produit/seeds/`), qui est

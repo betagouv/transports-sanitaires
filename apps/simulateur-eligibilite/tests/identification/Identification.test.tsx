@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { Identification } from "../../front/identification/Identification";
 import { PRESCRIPTEUR_HORS_LISTE } from "../../shared/identite-saisie";
 

@@ -2,8 +2,8 @@
 // retenu et les cases documentaires à reporter sur le formulaire. Chaque case n'est
 // listée que si la simulation l'a établie, d'où le moteur en paramètre.
 
-import { engine } from "../engine";
-import { Article80CorpsMedical, type Article80 } from "./Article80";
+import type { engine } from "../engine";
+import { type Article80, Article80CorpsMedical } from "./Article80";
 
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
 // la valeur brute de `cas_final`).

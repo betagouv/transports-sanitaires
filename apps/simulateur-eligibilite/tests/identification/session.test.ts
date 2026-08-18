@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import {
-  VERSION,
-  type IdentitePseudonymisee,
-} from "../../shared/identite-pseudonymisee";
 import { getIdentite, setIdentite } from "../../front/identification/session";
+import {
+  type IdentitePseudonymisee,
+  VERSION,
+} from "../../shared/identite-pseudonymisee";
 
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",
