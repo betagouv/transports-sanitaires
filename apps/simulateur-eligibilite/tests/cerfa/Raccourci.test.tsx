@@ -96,7 +96,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
     // `App` ne passe `onGalerieSeeds` que pour le service produit (n° 4) : un
     // prescripteur ordinaire ne peut pas court-circuiter son parcours. Ce test
     // couvre le mécanisme (prop absente ⇒ pas de bouton), la garde d'accès
-    // elle-même étant vérifiée dans `tests/outils-produit/encadre.test.tsx`.
+    // elle-même étant vérifiée dans `tests/outils-produit/Encadre.test.tsx`.
     render(
       <Prescripteur onPasserAuSecretariat={() => {}} onNouvelleSimulation={() => {}} />,
     );

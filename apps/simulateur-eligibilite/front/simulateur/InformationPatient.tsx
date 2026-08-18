@@ -1,11 +1,11 @@
 // Briques de mise en page du bloc « Information destinée au patient », partagées
 // entre la Page Résultat 1 (résultat médical, prescripteur) et la Page Résultat 2
 // (document administratif, secrétariat). Le contenu en langage clair (critères et
-// motifs) vient du dictionnaire `vulgarisation.tsx` ; ce module ne fait que
+// motifs) vient du dictionnaire `Vulgarisation.tsx` ; ce module ne fait que
 // l'agencer. Seuls les intitulés diffèrent d'une page à l'autre (ton « résultat »
 // vs « document ») : ils sont passés en props, le texte restant est identique.
 
-import { ListeVulgarisee, type Item } from "./vulgarisation";
+import { ListeVulgarisee, type Item } from "./Vulgarisation";
 
 // Sous-titre iconographié du bloc patient (h4 DSFR).
 export function SousTitre({

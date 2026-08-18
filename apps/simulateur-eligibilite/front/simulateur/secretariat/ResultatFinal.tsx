@@ -2,12 +2,12 @@
 import type { Situation } from "publicodes";
 import { engine } from "../engine";
 import { TraceDebug } from "../TraceDebug";
-import { CRITERES, MOTIFS, retenus } from "../vulgarisation";
+import { CRITERES, MOTIFS, retenus } from "../Vulgarisation";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
   SousTitre,
-} from "../information-patient";
+} from "../InformationPatient";
 import { BoutonCerfa } from "../../cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../../cerfa/cerfa";
 
