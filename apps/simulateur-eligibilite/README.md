@@ -82,7 +82,10 @@ Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle
 ## Le modèle de règles
 
 `regles/regles.publicodes` est **livré de l'extérieur et intégré par recopie** —
-aujourd'hui la **v9.1** (161 règles). Le paquet du fournisseur apporte aussi un
+aujourd'hui la **v9.1** (161 règles). Le fichier livré ne porte pas sa version :
+`regles/VERSION` la porte à côté de lui, et c'est elle que le pied de page
+affiche. **Une recopie met les deux à jour**, sans quoi l'application annonce une
+version qu'elle n'exécute pas. Le paquet du fournisseur apporte aussi un
 contrat d'interface (`*.ui.yaml`, schéma 2.0.0) et une matrice de tests, tous deux
 réencodés ici plutôt que chargés : le contrat d'interface se lit dans les
 composants, la matrice dans `tests/simulateur/regression-v9-1.test.ts` et
@@ -143,6 +146,23 @@ c'est lui qui échoue si une recopie du modèle emporte le correctif.
 
 > La v9.2 livrée n'apporte que le premier morceau. Une demande de v9.2.1 est
 > partie ; le correctif local reste entier en attendant.
+
+## Savoir ce qui tourne
+
+Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.1`.
+C'est un outil de support — quand un prescripteur signale un résultat surprenant,
+ces deux valeurs disent quel code et quel modèle il avait sous les yeux.
+
+| Valeur | D'où elle vient |
+| --- | --- |
+| Le sha du commit | `SOURCE_VERSION`, posée par Scalingo à la construction ; à défaut `git rev-parse`, en local et en CI ; à défaut `inconnu` — jamais une valeur inventée |
+| La version des règles | `regles/VERSION`, lue à la construction |
+
+Les deux sont figées par Vite (`define`, cf. `vite.config.ts`) : le navigateur n'a
+aucun moyen de les découvrir. `tests/app/BandeauVersion.test.tsx` vérifie que ce
+qui est affiché est bien ce que `regles/VERSION` déclare — une recopie qui
+oublierait de la mettre à jour afficherait sinon un mensonge à tous les
+utilisateurs.
 
 ## Configuration
 

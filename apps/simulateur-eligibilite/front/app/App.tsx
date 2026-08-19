@@ -30,6 +30,7 @@ import { moteur } from "../simulateur/moteur";
 import { emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../simulateur/secretariat/Secretariat";
+import { BandeauVersion } from "./BandeauVersion";
 import { EcranPleinePage } from "./EcranPleinePage";
 import type { Navigation } from "./navigation";
 import { outilDeLUrl, useNavigation } from "./navigation";
@@ -66,9 +67,15 @@ export function App({
       )}
       {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
       {navigation.ecran === "simulateur" && (
-        <EcranPleinePage>
-          <Simulateur navigation={navigation} chargerGabarit={chargerGabarit} />
-        </EcranPleinePage>
+        <>
+          <EcranPleinePage>
+            <Simulateur
+              navigation={navigation}
+              chargerGabarit={chargerGabarit}
+            />
+          </EcranPleinePage>
+          <BandeauVersion />
+        </>
       )}
     </>
   );
