@@ -1,6 +1,5 @@
 [tools]
 node = "24.16.0"
-python = "3.13.14"
 
 [tasks.clean-install]
 description = "Installe proprement (npm ci) les dépendances du simulateur"
@@ -23,3 +22,13 @@ depends = ["dev-simulateur-front", "dev-simulateur-server"]
 [tasks.dev]
 description = "Lance le simulateur (front + backend)"
 depends = ["dev-simulateur"]
+
+[tasks.verifier]
+description = "La porte unique : lint, typecheck et tests des trois apps"
+run = """
+set -e
+for app in simulateur-eligibilite data-analyzer glossaire-notion; do
+  echo "── $app"
+  (cd {{config_root}}/apps/$app && npm run verifier)
+done
+"""
