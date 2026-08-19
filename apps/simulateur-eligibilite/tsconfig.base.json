@@ -1,0 +1,22 @@
+{
+  // Socle commun aux quatre projets (`app`, `node`, `server`, `tests`) : cible,
+  // sémantique de module et niveau de rigueur. Chaque projet n'exprime ensuite
+  // que ce qui le distingue (bibliothèques DOM, JSX, `types`, racines).
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}

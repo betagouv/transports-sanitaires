@@ -1,19 +1,8 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    "erasableSyntaxOnly": true,
-    "strict": true,
-    "types": ["node"]
+    "types": ["node"],
+    "erasableSyntaxOnly": true
   },
   // `scripts/` : outils de développement exécutés par Node (`node --experimental-
   // strip-types`), hors du bundle front.

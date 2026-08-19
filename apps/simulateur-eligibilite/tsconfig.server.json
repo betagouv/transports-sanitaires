@@ -1,22 +1,13 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    // Le serveur est exécuté directement par Node : il se résout comme Node, pas
+    // comme un bundler.
     "module": "NodeNext",
     "moduleResolution": "nodenext",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
     "types": ["node"],
-
-    "erasableSyntaxOnly": true,
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "erasableSyntaxOnly": true
   },
   "include": ["server", "shared"]
 }
