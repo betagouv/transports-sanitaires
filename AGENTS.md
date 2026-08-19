@@ -75,6 +75,28 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
   hoisted `function` declarations, never arrow `const` (an arrow below its first use is
   a TDZ error), and private constants sit at the bottom whenever they are only read
   inside functions. No work at module load beyond one explicit entry point at the top.
+- **Cut along meaning, never to fit the budget.** The 30-line limit *detects* a
+  function that does several things; it does not tell you *where* to cut. The
+  test is: **would you make this same extraction if the limit did not exist?**
+  If not, you are cutting in the wrong place. Four consequences:
+  - **Split the branches, not the repetition.** A conditional over domain cases
+    is the seam: each branch becomes a function named after the case it answers,
+    and the parent shrinks to a one-line dispatch. Extracting the fragment the
+    branches happen to share is the cheapest cut and the wrong one — it leaves
+    the parent doing exactly what it did before, minus a few lines.
+  - **A name must add what the call site does not already say.** `<PiedDePage />`
+    at the bottom of a page teaches the reader nothing; `<AucunTransportPrescrit />`
+    says which situation is being answered. A name that describes the markup
+    (`Introduction`, `EnTetes`, `SeRapprocherDuSecretariat`) marks a fragment, not
+    an intention.
+  - **Repeating literal content beats minting a nameless fragment.** Two identical
+    `<li>` in two branches cost nothing. A one-line component with no intention
+    costs every reader a jump for no information. Deduplicate only what has a name
+    of its own — and it then takes parameters and serves unrelated callers.
+  - **One function chooses, the others do.** Never one that chooses *and* does.
+  The same holds when the 300-line limit bites: split a file by subject, never by
+  moving the overflow out.
+
 - **A file is named after a capability, not a category.** If the name needs `utils`,
   `helpers`, `commun` or `acces` to work, the file has no intention and its contents
   belong to its callers. Export only what another file imports — the file now called
