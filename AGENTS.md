@@ -162,6 +162,17 @@ qui sont le contenu rédactionnel de référence des deux pages de résultat.
 Les specs se périment : `etl-part-plateformes.md` annonce 5 marts, le README de
 `data-analyzer` en documente 6. Corrige la source la moins à jour, ne t'y fie pas.
 
+## Marches à suivre
+
+Trois gestes récurrents ont leur mode d'emploi dans `.claude/skills/`, chargé à
+la demande plutôt que recopié ici :
+
+| Skill | Quand |
+|---|---|
+| `regle-publicodes` | Toucher au modèle d'éligibilité — les quatre endroits qu'une règle traverse, et l'encodage des choix multiples en mosaïque |
+| `situation-de-reference` | Couvrir un cas métier : il va dans le catalogue de seeds, pas dans un fichier de test |
+| `doc-architecture` | Écrire ou réviser un document de `docs/architecture/` — format ADR maison, décisions révoquées conservées et barrées |
+
 ## La règle qui tient les autres
 
 **Toute règle de forme énoncée ici nomme l'assertion qui la garde. Sans
