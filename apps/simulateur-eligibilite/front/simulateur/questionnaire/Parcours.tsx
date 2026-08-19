@@ -9,10 +9,10 @@ import { TraceParcours } from "./TraceParcours";
 
 type Props = Options & {
   // Libellé du bouton de la dernière page.
-  labelFin: string;
+  libelleFin: string;
 };
 
-export function Parcours({ labelFin, ...options }: Props) {
+export function Parcours({ libelleFin, ...options }: Props) {
   const passation = usePassation(options);
 
   // En cours de bascule vers la page de résultat : rien à afficher.
@@ -33,7 +33,7 @@ export function Parcours({ labelFin, ...options }: Props) {
           onReponse={passation.repondre}
           onReponses={passation.repondrePlusieurs}
         />
-        <Navigation passation={passation} labelFin={labelFin} />
+        <Navigation passation={passation} libelleFin={libelleFin} />
       </form>
       <Debug passation={passation} outil={options.outil} />
     </>
@@ -84,10 +84,10 @@ function Etapeur({
 
 function Navigation({
   passation,
-  labelFin,
+  libelleFin,
 }: {
   passation: ReturnType<typeof usePassation>;
-  labelFin: string;
+  libelleFin: string;
 }) {
   return (
     <div
@@ -108,7 +108,7 @@ function Navigation({
         className="fr-btn"
         disabled={passation.questionsEnAttente}
       >
-        {passation.parcoursTermine ? labelFin : "Suivant"}
+        {passation.parcoursTermine ? libelleFin : "Suivant"}
       </button>
     </div>
   );

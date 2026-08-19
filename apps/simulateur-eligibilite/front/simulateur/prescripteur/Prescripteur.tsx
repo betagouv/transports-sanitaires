@@ -1,3 +1,5 @@
+// Outil 1 — le parcours médical du prescripteur : Partie 1 puis Résultat 1.
+
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/evenements";
@@ -17,9 +19,6 @@ type Props = {
   panneauOutilsProduit?: ReactNode;
 };
 
-// Outil 1 — parcours médical du prescripteur : Partie 1 → Résultat 1.
-// Cibles limitées aux sorties médicales : le graphe ne tire que les questions
-// de Partie 1.
 export function Prescripteur({
   onPasserAuSecretariat,
   onNouvelleSimulation,
@@ -70,7 +69,7 @@ function EvaluationMedicale({
         "cible_autonomie_patient",
         "cible_accompagnant_necessaire",
       ]}
-      labelFin="Voir le résultat médical"
+      libelleFin="Voir le résultat médical"
       onTermine={(s) => {
         onTermine(s);
         trackResultat(

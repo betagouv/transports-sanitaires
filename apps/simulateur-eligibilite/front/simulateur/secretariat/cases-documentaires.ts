@@ -9,63 +9,67 @@ import type { moteur } from "../moteur";
 // Une case documentaire : soit un libellé toujours listé (checklist manuelle du
 // praticien), soit un libellé conditionné par une règle du modèle — auquel cas
 // il n'est affiché que si la simulation l'a établi.
-export type CaseItem =
+export type CaseDocumentaire =
   | string
-  | { text: string; visible: (e: typeof moteur, transport: string) => boolean };
+  | {
+      texte: string;
+      visible: (e: typeof moteur, transport: string) => boolean;
+    };
 
-export type Groupe = { titre?: string; icone?: string; items: CaseItem[] };
-
-const vrai = (e: typeof moteur, id: string) =>
-  e.evaluate(id).nodeValue === true;
+export type Groupe = {
+  titre?: string;
+  icone?: string;
+  cases: CaseDocumentaire[];
+};
 
 // Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
 // affichée que si la simulation l'a validée — conditions reprises du mapping
 // documentaire (tmp/8.6/transports-sanitaires.ui.v8-6.yaml, bloc_3_corps_medical
-// → « Mode de transport » → items.visible_if).
-const MODE_TRANSPORT_ITEMS: CaseItem[] = [
-  { text: "Ambulance.", visible: (_e, t) => t === "ambulance" },
+// → « Mode de transport » → cases.visible_if).
+const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
+  { texte: "Ambulance.", visible: (_e, t) => t === "ambulance" },
   {
-    text: "Position allongée ou demi-assise.",
+    texte: "Position allongée ou demi-assise.",
     visible: (e) => vrai(e, "p1_critere_position_allongee_demi_assise"),
   },
   {
-    text: "Surveillance par une personne qualifiée.",
+    texte: "Surveillance par une personne qualifiée.",
     visible: (e) => vrai(e, "p1_critere_surveillance_personne_qualifiee"),
   },
   {
-    text: "Administration d’oxygène.",
+    texte: "Administration d’oxygène.",
     visible: (e) => vrai(e, "p1_critere_oxygene"),
   },
   {
-    text: "Brancardage ou portage.",
+    texte: "Brancardage ou portage.",
     visible: (e) => vrai(e, "p1_critere_brancardage_portage"),
   },
   {
-    text: "Conditions d’asepsie.",
+    texte: "Conditions d’asepsie.",
     visible: (e) => vrai(e, "p1_critere_asepsie"),
   },
   {
-    text: "VSL ou taxi conventionné.",
+    texte: "VSL ou taxi conventionné.",
     visible: (_e, t) => t === "VSL ou taxi conventionné",
   },
   {
-    text: "Transport à mobilité réduite dans le fauteuil roulant.",
+    texte: "Transport à mobilité réduite dans le fauteuil roulant.",
     visible: (_e, t) => t === "VSL TPMR ou taxi conventionné TPMR",
   },
   {
-    text: "Transport partagé incompatible.",
+    texte: "Transport partagé incompatible.",
     visible: (e) => vrai(e, "cible_transport_partage_incompatible"),
   },
   {
-    text: "Moyen de transport individuel.",
+    texte: "Moyen de transport individuel.",
     visible: (_e, t) => t === "véhicule personnel ou transport en commun",
   },
   {
-    text: "Transport en commun terrestre.",
+    texte: "Transport en commun terrestre.",
     visible: (_e, t) => t === "véhicule personnel ou transport en commun",
   },
   {
-    text: "Personne accompagnante si nécessaire.",
+    texte: "Personne accompagnante si nécessaire.",
     visible: (e) => vrai(e, "cible_accompagnant_necessaire"),
   },
 ];
@@ -76,7 +80,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Situation permettant la prise en charge",
       icone: "fr-icon-health-book-line",
-      items: [
+      cases: [
         "Entrée ou sortie d’hospitalisation.",
         "Séance de chimiothérapie, radiothérapie ou hémodialyse.",
         "Transport en lien avec une ALD — Affection de Longue Durée — avec déficience ou incapacité.",
@@ -87,12 +91,12 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Mode de transport",
       icone: "fr-icon-car-line",
-      items: MODE_TRANSPORT_ITEMS,
+      cases: CASES_MODE_TRANSPORT,
     },
     {
       titre: "Trajet",
       icone: "fr-icon-road-map-line",
-      items: [
+      cases: [
         "Départ.",
         "Arrivée.",
         "Aller-retour.",
@@ -106,7 +110,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Situation nécessitant une DAP",
       icone: "fr-icon-health-book-line",
-      items: [
+      cases: [
         "Trajet aller supérieur à 150 km.",
         "Transports en série.",
         "Transport vers un CAMSP ou un CMPP.",
@@ -118,7 +122,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Situation associée si avion ou bateau",
       icone: "fr-icon-ship-2-line",
-      items: [
+      cases: [
         "Hospitalisation ou séances.",
         "ALD — Affection de Longue Durée.",
         "Accident du travail ou maladie professionnelle.",
@@ -127,12 +131,12 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Mode de transport",
       icone: "fr-icon-car-line",
-      items: MODE_TRANSPORT_ITEMS,
+      cases: CASES_MODE_TRANSPORT,
     },
     {
       titre: "Trajet",
       icone: "fr-icon-road-map-line",
-      items: [
+      cases: [
         "Départ.",
         "Arrivée.",
         "Aller-retour.",
@@ -146,7 +150,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Éléments à vérifier",
       icone: "fr-icon-checkbox-circle-line",
-      items: [
+      cases: [
         "Type de convocation ou d’avis.",
         "Mode de transport indiqué ou validé.",
         "Identité du patient.",
@@ -159,7 +163,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Assurez-vous que ces éléments soient complétés",
       icone: "fr-icon-checkbox-line",
-      items: [
+      cases: [
         "Patient hospitalisé au moment du transport.",
         "Absence d’exception restant Assurance Maladie.",
         "Type de transport établissement.",
@@ -175,7 +179,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Éléments à vérifier",
       icone: "fr-icon-checkbox-circle-line",
-      items: [
+      cases: [
         "Intervention SMUR confirmée.",
         "Établissement ou service concerné.",
         "Organisation par l’équipe médicale ou l’établissement concerné.",
@@ -198,13 +202,20 @@ export function casesRetenues(
   return (CASES_BLOC3[casFinal] ?? [])
     .map((groupe) => ({
       ...groupe,
-      items: groupe.items.filter(
-        (item) => typeof item === "string" || item.visible(e, transport),
+      cases: groupe.cases.filter(
+        (laCase) => typeof laCase === "string" || laCase.visible(e, transport),
       ),
     }))
-    .filter((groupe) => groupe.items.length > 0);
+    .filter((groupe) => groupe.cases.length > 0);
 }
 
-export function texteItem(item: CaseItem): string {
-  return typeof item === "string" ? item : item.text;
+export function texteDeCase(laCase: CaseDocumentaire): string {
+  return typeof laCase === "string" ? laCase : laCase.texte;
+}
+
+// ---- implémentation ----
+
+// Une règle du modèle s'évalue-t-elle à vrai pour la situation courante ?
+function vrai(e: typeof moteur, id: string): boolean {
+  return e.evaluate(id).nodeValue === true;
 }

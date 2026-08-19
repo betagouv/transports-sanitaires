@@ -1,3 +1,6 @@
+// Page Résultat 1 — le résultat médical du transport, et l'information à
+// remettre au patient.
+
 import type { Situation } from "publicodes";
 import { moteur, texte } from "../moteur";
 import {
@@ -13,9 +16,8 @@ type Props = {
   onRecommencer: () => void;
 };
 
-// Page Résultat 1 — résultat médical du transport. Le transport prescrit est
-// figé ici : le secrétariat ne peut plus le modifier (verrou structurel — il ne
-// pose aucune question de Partie 1).
+// Le transport prescrit est figé ici : le secrétariat ne peut plus le modifier
+// (verrou structurel — il ne pose aucune question de Partie 1).
 export function ResultatMedical({
   situation,
   onContinuer,
@@ -31,7 +33,7 @@ export function ResultatMedical({
       <Verdict favorable={favorable} transport={transport} />
       <InformationPatient e={e} favorable={favorable} transport={transport} />
       <SuiteDuParcours
-        labelSuite={
+        libelleSuite={
           partie2Requise
             ? "Compléter la partie administrative"
             : "Voir le document à remettre au patient"
@@ -147,11 +149,11 @@ function TransportJustifie({
 // Les deux suites possibles depuis le résultat médical : repartir de zéro, ou
 // poursuivre — vers la Partie 2 si elle est requise, vers le document sinon.
 function SuiteDuParcours({
-  labelSuite,
+  libelleSuite,
   onContinuer,
   onRecommencer,
 }: {
-  labelSuite: string;
+  libelleSuite: string;
   onContinuer: () => void;
   onRecommencer: () => void;
 }) {
@@ -165,7 +167,7 @@ function SuiteDuParcours({
         Nouvelle simulation
       </button>
       <button type="button" className="fr-btn" onClick={onContinuer}>
-        {labelSuite}
+        {libelleSuite}
       </button>
     </div>
   );

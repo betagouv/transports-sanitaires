@@ -7,7 +7,7 @@
 //  - données à partir de la ligne 2.
 // Ce référentiel ne couvre que le **hors Article 80** (enveloppe posée en dur ici).
 
-import { Xlsx } from "./shared.ts";
+import { Xlsx } from "./xlsx.ts";
 import type { EtablissementRow, TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, MappingEntry, VehiculeCanonique } from "../../types.ts";
 

@@ -15,9 +15,9 @@ export type Prescripteur = { id: string; libelle: string };
  * FINESS/RPPS — sans toucher les composants consommateurs.
  */
 export interface Referentiel {
-  getEtablissements(): Promise<Etablissement[]>;
-  getServices(etabId: string): Promise<Service[]>;
-  getPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
+  listerEtablissements(): Promise<Etablissement[]>;
+  listerServices(etabId: string): Promise<Service[]>;
+  listerPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
   /**
    * Enrichit le référentiel avec les **saisies libres** d'une sélection (service
    * « autre », prescripteur « hors liste »). Optionnel : seule la source Grist
@@ -32,15 +32,15 @@ export interface Referentiel {
  * les tests — front comme backend sans clé Grist.
  */
 export const snapshotReferentiel: Referentiel = {
-  async getEtablissements() {
+  async listerEtablissements() {
     return ETABLISSEMENTS;
   },
-  async getServices(etabId) {
+  async listerServices(etabId) {
     return SERVICES.filter((service) => service.etabId === etabId).map(
       ({ id, libelle }) => ({ id, libelle }),
     );
   },
-  async getPrescripteurs(serviceId) {
+  async listerPrescripteurs(serviceId) {
     return PRESCRIPTEURS.filter(
       (prescripteur) => prescripteur.serviceId === serviceId,
     ).map(({ id, libelle }) => ({ id, libelle }));

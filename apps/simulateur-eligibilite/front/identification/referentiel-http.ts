@@ -11,19 +11,21 @@ import type {
 } from "../../shared/referentiel";
 
 export const referentielHttp: Referentiel = {
-  getEtablissements: () => get<Etablissement[]>("/api/etablissements"),
-  getServices: (etabId) =>
-    get<Service[]>(`/api/services?etabId=${encoder(etabId)}`),
-  getPrescripteurs: (serviceId) =>
-    get<Prescripteur[]>(`/api/prescripteurs?serviceId=${encoder(serviceId)}`),
+  listerEtablissements: () => recuperer<Etablissement[]>("/api/etablissements"),
+  listerServices: (etabId) =>
+    recuperer<Service[]>(`/api/services?etabId=${encoder(etabId)}`),
+  listerPrescripteurs: (serviceId) =>
+    recuperer<Prescripteur[]>(
+      `/api/prescripteurs?serviceId=${encoder(serviceId)}`,
+    ),
 };
 
 // ---- implémentation ----
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`API ${path} → HTTP ${res.status}`);
-  return (await res.json()) as T;
+async function recuperer<T>(chemin: string): Promise<T> {
+  const reponse = await fetch(chemin);
+  if (!reponse.ok) throw new Error(`API ${chemin} → HTTP ${reponse.status}`);
+  return (await reponse.json()) as T;
 }
 
 function encoder(valeur: string): string {

@@ -6,7 +6,7 @@
 // vs « document ») : ils sont passés en props, le texte restant est identique.
 
 import type { ReactNode } from "react";
-import { type Item, ListeVulgarisee } from "./Vulgarisation";
+import { type EntreeVulgarisee, ListeVulgarisee } from "./Vulgarisation";
 
 // Sous-titre iconographié du bloc patient (h4 DSFR).
 export function SousTitre({
@@ -34,9 +34,9 @@ export function PourquoiCeTransport({
   titreMotifs,
 }: {
   titreExplication: string;
-  criteres: Item[];
+  criteres: EntreeVulgarisee[];
   titreCriteres: string;
-  motifs: Item[];
+  motifs: EntreeVulgarisee[];
   titreMotifs: string;
 }) {
   return (
@@ -52,7 +52,7 @@ export function PourquoiCeTransport({
           <SousTitre icone="fr-icon-stethoscope-line">
             {titreCriteres}
           </SousTitre>
-          <ListeVulgarisee items={criteres} />
+          <ListeVulgarisee entrees={criteres} />
         </>
       )}
 
@@ -61,7 +61,7 @@ export function PourquoiCeTransport({
           <SousTitre icone="fr-icon-checkbox-circle-line">
             {titreMotifs}
           </SousTitre>
-          <ListeVulgarisee items={motifs} />
+          <ListeVulgarisee entrees={motifs} />
         </>
       )}
     </>
@@ -106,6 +106,8 @@ export function ExplicationTransportImpossible() {
 
 // L'une des deux conditions cumulatives d'une prescription : son intitulé en
 // gras, puis l'exemple qui l'illustre.
+// ---- implémentation ----
+
 function Condition({ rang, children }: { rang: string; children: ReactNode }) {
   return (
     <p className="fr-mb-2w">

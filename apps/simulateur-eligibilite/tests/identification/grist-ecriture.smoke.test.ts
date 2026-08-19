@@ -41,7 +41,7 @@ describe.skipIf(!actif)(
       await ref.enrichirDepuisSaisie!(sel);
 
       // Service « Libéral » (Id2=3). La nouvelle saisie doit apparaître exactement 1 fois.
-      const prescripteurs = await ref.getPrescripteurs("3");
+      const prescripteurs = await ref.listerPrescripteurs("3");
       const trouves = prescripteurs.filter((p) => p.libelle.includes(marqueur));
       expect(trouves).toHaveLength(1);
     });
@@ -65,12 +65,12 @@ describe.skipIf(!actif)(
       await ref.enrichirDepuisSaisie!(sel);
 
       // Le vrai service apparaît, une seule fois, dans les services de l'établissement.
-      const services = await ref.getServices("11");
+      const services = await ref.listerServices("11");
       const svc = services.filter((s) => s.libelle === marqueur);
       expect(svc).toHaveLength(1);
 
       // Le prescripteur est rattaché à ce vrai service, une seule fois.
-      const prescripteurs = await ref.getPrescripteurs(svc[0]!.id);
+      const prescripteurs = await ref.listerPrescripteurs(svc[0]!.id);
       const trouves = prescripteurs.filter((p) => p.libelle.includes("Smoke"));
       expect(trouves).toHaveLength(1);
     });

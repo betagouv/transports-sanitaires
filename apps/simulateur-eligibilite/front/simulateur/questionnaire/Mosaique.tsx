@@ -1,25 +1,26 @@
+// Rend une question à choix multiple : un `fieldset` de cases à cocher bâti sur
+// N règles booléennes regroupées par une mosaïque (cf. `mosaique.ts`).
+
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import type {
   EvaluatedFormElement,
   FormPageElementProp,
 } from "@publicodes/forms";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ComponentProps } from "react";
 import { valeurBool } from "./mosaique";
 
-type OptionField = EvaluatedFormElement & FormPageElementProp;
+type ChampOption = EvaluatedFormElement & FormPageElementProp;
 
 type Props = {
   question: string;
   // Éléments booléens des options présents sur la page courante.
-  options: OptionField[];
+  options: ChampOption[];
   // Option d'exclusivité « aucun » (état dérivé : toutes les options décochées).
-  aucun?: { label: string; coche: boolean };
+  aucun?: { libelle: string; coche: boolean };
   onToggleOption: (id: string, coche: boolean) => void;
   onToggleAucun?: (coche: boolean) => void;
 };
 
-// Rend une question à choix multiple : un `fieldset` de cases à cocher, à partir
-// de N règles booléennes regroupées par une mosaïque (cf. `mosaique.ts`).
 export function Mosaique({
   question,
   options,
@@ -39,17 +40,13 @@ export function Mosaique({
 
 // ---- implémentation ----
 
-type CaseACocher = {
-  label: string;
-  nativeInputProps: {
-    name: string;
-    checked: boolean;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  };
-};
+// La forme des cases est celle du composant DSFR appelé, pas la nôtre : on la
+// lui emprunte plutôt que de la recopier — `label`, `nativeInputProps` sont ses
+// noms à lui, et une recopie dériverait d'une version à l'autre.
+type CaseACocher = ComponentProps<typeof Checkbox>["options"][number];
 
 function casesACocher(
-  options: OptionField[],
+  options: ChampOption[],
   aucun: Props["aucun"],
   onToggleOption: Props["onToggleOption"],
   onToggleAucun: Props["onToggleAucun"],
@@ -58,7 +55,7 @@ function casesACocher(
   // qui « ferme » les options dès que l'agrégat OU est satisfait) : dans une
   // mosaïque — vrai choix multiple — toute combinaison doit rester cochable. On
   // respecte en revanche une non-applicabilité réelle (`applicable si`).
-  const cases = options
+  const cases: CaseACocher[] = options
     .filter((opt) => opt.applicable !== false)
     .map((opt) => ({
       label: opt.label,
@@ -72,7 +69,7 @@ function casesACocher(
 
   if (aucun && onToggleAucun) {
     cases.push({
-      label: aucun.label,
+      label: aucun.libelle,
       nativeInputProps: {
         name: "mosaique-aucun",
         checked: aucun.coche,

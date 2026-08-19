@@ -18,7 +18,7 @@ describe.skipIf(!cleApi)("référentiel Grist (smoke)", () => {
   const ref = choisirReferentiel();
 
   it("renvoie des établissements {id, libelle} non vides", async () => {
-    const etabs = await ref.getEtablissements();
+    const etabs = await ref.listerEtablissements();
     expect(Array.isArray(etabs)).toBe(true);
     for (const e of etabs) {
       expect(e.id).toBeTruthy();
@@ -27,14 +27,14 @@ describe.skipIf(!cleApi)("référentiel Grist (smoke)", () => {
   });
 
   it("enchaîne établissement → services → prescripteurs", async () => {
-    const [etab] = await ref.getEtablissements();
+    const [etab] = await ref.listerEtablissements();
     if (!etab) return; // référentiel vide : rien à vérifier
-    const services = await ref.getServices(etab.id);
+    const services = await ref.listerServices(etab.id);
     expect(Array.isArray(services)).toBe(true);
 
     const [service] = services;
     if (!service) return;
-    const prescripteurs = await ref.getPrescripteurs(service.id);
+    const prescripteurs = await ref.listerPrescripteurs(service.id);
     expect(Array.isArray(prescripteurs)).toBe(true);
     for (const p of prescripteurs) {
       expect(p.id).toBeTruthy();

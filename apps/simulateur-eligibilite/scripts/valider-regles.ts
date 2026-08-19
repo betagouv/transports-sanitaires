@@ -1,13 +1,13 @@
+// Vérifie la validité du document publicodes : syntaxe YAML puis cohérence des
+// règles (références manquantes, cycles, etc.) via l'Engine. Reproduit le
+// chargement de front/simulateur/moteur.ts.
+
 import { globSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
-
-// Vérifie la validité du document publicodes : syntaxe YAML puis cohérence des
-// règles (références manquantes, cycles, etc.) via l'Engine. Reproduit le
-// chargement de front/simulateur/moteur.ts.
 
 try {
   main();

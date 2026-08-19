@@ -1,3 +1,5 @@
+// Outil 2 — le parcours administratif du secrétariat : Partie 2 puis Résultat 2.
+
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/evenements";
@@ -15,10 +17,9 @@ type Props = {
   documentTelechargeable?: (situation: Situation<string>) => ReactNode;
 };
 
-// Outil 2 — parcours administratif du secrétariat : reprend la Partie 1 puis
-// pose la Partie 2 → Résultat 2. La situation initiale (P1) rend les questions
-// de Partie 1 déjà répondues : `Parcours` ne présente donc que la Partie 2, et
-// bascule directement au résultat quand le cas est tranché dès la Partie 1.
+// La situation initiale (P1) rend les questions de Partie 1 déjà répondues :
+// `Parcours` ne présente donc que la Partie 2, et bascule directement au
+// résultat quand le cas est tranché dès la Partie 1.
 export function Secretariat({
   onNouvelleSimulation,
   situationFinale = null,
@@ -67,7 +68,7 @@ function Qualification({
         outil="secretariat"
         cibles={["cible_cas_final", "cible_document_a_remettre_au_patient"]}
         situationInitiale={situationP1}
-        labelFin="Voir le document à remettre au patient"
+        libelleFin="Voir le document à remettre au patient"
         onTermine={(s) => {
           onTermine(s);
           trackResultat(

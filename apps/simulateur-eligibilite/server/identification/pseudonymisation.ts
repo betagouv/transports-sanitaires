@@ -70,12 +70,12 @@ function refPrescripteur(
  */
 export function empreinte(
   secret: string,
-  value: string,
+  valeur: string,
   enClair = false,
 ): string {
-  if (enClair) return value;
+  if (enClair) return valeur;
   return createHmac("sha256", secret)
-    .update(value)
+    .update(valeur)
     .digest()
     .subarray(0, 16)
     .toString("base64url");

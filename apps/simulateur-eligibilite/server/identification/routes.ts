@@ -24,16 +24,16 @@ export function identificationRoutes(
   router.get(
     "/etablissements",
     handle(async (_req, res) => {
-      res.json(await referentiel.getEtablissements());
+      res.json(await referentiel.listerEtablissements());
     }),
   );
   router.get(
     "/services",
-    handle(lister("etabId", (id) => referentiel.getServices(id))),
+    handle(lister("etabId", (id) => referentiel.listerServices(id))),
   );
   router.get(
     "/prescripteurs",
-    handle(lister("serviceId", (id) => referentiel.getPrescripteurs(id))),
+    handle(lister("serviceId", (id) => referentiel.listerPrescripteurs(id))),
   );
   router.post(
     "/identite-pseudonymisee",

@@ -3,7 +3,7 @@
 // Structure (publique) : colonne A = libellé GHT libre ; colonnes de valeurs fixes (cf.
 // constantes), colonnes de montants ignorées. Lignes 0-2 = en-têtes ; ligne « Total » ignorée.
 
-import { Xlsx } from "./shared.ts";
+import { Xlsx } from "./xlsx.ts";
 import type { TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
 

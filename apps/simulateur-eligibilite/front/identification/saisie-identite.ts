@@ -86,7 +86,7 @@ function useListes(
 
   useEffect(() => {
     referentiel
-      .getEtablissements()
+      .listerEtablissements()
       .then((l) => setEtablissements(triParLibelle(l)));
   }, [referentiel]);
 
@@ -94,7 +94,7 @@ function useListes(
     setServices([]);
     if (etabId) {
       referentiel
-        .getServices(etabId)
+        .listerServices(etabId)
         .then((l) => setServices(triParLibelle(l)));
     }
   }, [referentiel, etabId]);
@@ -103,7 +103,7 @@ function useListes(
     setPrescripteurs([]);
     if (serviceId) {
       referentiel
-        .getPrescripteurs(serviceId)
+        .listerPrescripteurs(serviceId)
         .then((l) => setPrescripteurs(triParLibelle(l)));
     }
   }, [referentiel, serviceId]);

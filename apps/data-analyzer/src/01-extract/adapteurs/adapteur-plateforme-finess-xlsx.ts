@@ -7,7 +7,7 @@
 //    (total − détail) est imputé à « Autre » (TPMR & autres modes) pour que la somme des
 //    véhicules égale le total hors art. 80 annoncé.
 
-import { Xlsx } from "./shared.ts";
+import { Xlsx } from "./xlsx.ts";
 import type { TrajetRow } from "../../contrats.ts";
 import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
 

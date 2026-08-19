@@ -1,3 +1,6 @@
+// Panneau de debug (mode dev uniquement) : les réponses saisies et les sorties
+// évaluées, depuis une page de résultat.
+
 import type { Situation } from "publicodes";
 import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { moteur } from "../moteur";
@@ -9,9 +12,8 @@ type Props = {
   sorties?: CleDeRegle[];
 };
 
-// Panneau de debug (mode dev uniquement) : réponses saisies + sorties évaluées,
-// pour suivre le chemin parcouru depuis une page de résultat, où le `formState`
-// du parcours n'est plus disponible.
+// Une page de résultat n'a plus le `formState` du parcours sous la main : d'où
+// la relecture de la situation.
 export function TraceDebug({ titre, situation, sorties = [] }: Props) {
   if (!import.meta.env.DEV) return null;
   return (

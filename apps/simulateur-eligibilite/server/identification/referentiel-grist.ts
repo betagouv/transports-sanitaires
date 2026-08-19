@@ -48,9 +48,9 @@ export function creerReferentielGrist({
 }: GristConfig): Referentiel {
   const doc = ouvrirDoc(docUrl, cleApi);
   return {
-    getEtablissements: () => etablissements(doc),
-    getServices: (etabId) => services(doc, etabId),
-    getPrescripteurs: (serviceId) => prescripteurs(doc, serviceId),
+    listerEtablissements: () => etablissements(doc),
+    listerServices: (etabId) => services(doc, etabId),
+    listerPrescripteurs: (serviceId) => prescripteurs(doc, serviceId),
     enrichirDepuisSaisie: (saisie) => enrichir(doc, saisie),
   };
 }

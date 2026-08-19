@@ -1,4 +1,4 @@
-// Utilitaires CSV — lecture des sources et lecture/écriture des artefacts ETL.
+// Lecture et écriture des CSV du pipeline — sources en entrée, artefacts en sortie.
 //
 // Deux formats coexistent :
 //  - certains CSV *sources* sont en UTF-16LE, séparés par des tabulations, sans

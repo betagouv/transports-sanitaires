@@ -1,9 +1,9 @@
-// Rend les champs d'une page de parcours : un `FormField` par question simple,
+// Rend les champs d'une page de parcours : un `ChampDeFormulaire` par question simple,
 // une `Mosaique` par groupe de règles booléennes.
 
 import type { Situation } from "publicodes";
 import { moteur } from "../moteur";
-import { FormField } from "./FormField";
+import { ChampDeFormulaire } from "./ChampDeFormulaire";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
@@ -29,9 +29,9 @@ export function ChampsDePage({
     const groupe = mosaiqueDe(champ.id);
     if (!groupe)
       return (
-        <FormField
+        <ChampDeFormulaire
           key={champ.id}
-          field={champ}
+          champ={champ}
           onChange={(valeur) => onReponse(champ.id, valeur)}
         />
       );
@@ -74,7 +74,7 @@ function GroupeMosaique({ groupe, parId, situation, onReponses }: GroupeProps) {
     <Mosaique
       question={groupe.question}
       options={options}
-      aucun={aucun ? { label: aucun.label, coche: aucunCoche } : undefined}
+      aucun={aucun ? { libelle: aucun.libelle, coche: aucunCoche } : undefined}
       onToggleOption={(id, coche) =>
         onReponses(apresBasculeOption(options, aucun?.id, id, coche))
       }

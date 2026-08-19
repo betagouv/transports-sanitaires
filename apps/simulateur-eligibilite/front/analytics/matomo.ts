@@ -72,9 +72,9 @@ export function chargerMatomo(url: string): void {
  * Émet un événement quand le traceur est activé, en portant l'identité
  * pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
  */
-export function emettre(action: string, value?: number): void {
+export function emettre(action: string, valeur?: number): void {
   if (!etat.enabled) return;
-  filePaq().push(construireEvenement(identiteEnSession(), action, value));
+  filePaq().push(construireEvenement(identiteEnSession(), action, valeur));
 }
 
 /**
@@ -88,16 +88,16 @@ export function emettre(action: string, value?: number): void {
 export function construireEvenement(
   identite: IdentitePseudonymisee | null,
   action: string,
-  value?: number,
+  valeur?: number,
 ): unknown[] {
-  const event: unknown[] = ["trackEvent", CATEGORY, action];
-  const name = identite?.prescripteurRef;
-  if (name !== undefined) event.push(name);
-  if (value !== undefined) {
-    if (name === undefined) event.push(""); // Matomo : le Nom précède la Valeur
-    event.push(value);
+  const evenement: unknown[] = ["trackEvent", CATEGORY, action];
+  const nom = identite?.prescripteurRef;
+  if (nom !== undefined) evenement.push(nom);
+  if (valeur !== undefined) {
+    if (nom === undefined) evenement.push(""); // Matomo : le Nom précède la Valeur
+    evenement.push(valeur);
   }
-  return event;
+  return evenement;
 }
 
 // ---- implémentation ----

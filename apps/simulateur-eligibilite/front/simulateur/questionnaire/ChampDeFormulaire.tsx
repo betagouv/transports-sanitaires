@@ -1,3 +1,5 @@
+// Rend un champ de page du questionnaire selon sa variante `element`.
+
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Select } from "@codegouvfr/react-dsfr/Select";
@@ -10,26 +12,25 @@ import type {
 } from "@publicodes/forms";
 
 type Props = {
-  field: EvaluatedFormElement & FormPageElementProp;
-  onChange: (value: unknown) => void;
+  champ: EvaluatedFormElement & FormPageElementProp;
+  onChange: (valeur: unknown) => void;
 };
 
-// Rend un champ de page selon sa variante `element`. Le `field` est passé déjà
-// restreint à chaque sous-composant : c'est le `switch` ci-dessous qui porte le
-// narrowing de l'union, pas les composants.
-export function FormField({ field, onChange }: Props) {
-  if (field.hidden || !field.applicable) return null;
+// Le `champ` est passé déjà restreint à chaque sous-composant : c'est le
+// `switch` ci-dessous qui porte le narrowing de l'union, pas les composants.
+export function ChampDeFormulaire({ champ, onChange }: Props) {
+  if (champ.hidden || !champ.applicable) return null;
 
   return (
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
-      {field.element === "RadioGroup" && (
-        <ChoixRadio champ={field} onChange={onChange} />
+      {champ.element === "RadioGroup" && (
+        <ChoixRadio champ={champ} onChange={onChange} />
       )}
-      {field.element === "select" && (
-        <ChoixDeroulant champ={field} onChange={onChange} />
+      {champ.element === "select" && (
+        <ChoixDeroulant champ={champ} onChange={onChange} />
       )}
-      {field.element === "input" && field.type === "number" && (
-        <SaisieNombre champ={field} onChange={onChange} />
+      {champ.element === "input" && champ.type === "number" && (
+        <SaisieNombre champ={champ} onChange={onChange} />
       )}
     </div>
   );

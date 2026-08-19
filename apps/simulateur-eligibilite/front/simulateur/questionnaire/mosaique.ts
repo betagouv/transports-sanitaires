@@ -13,7 +13,7 @@ export type Mosaique = {
   // Règles booléennes cochables (l'ordre suit la déclaration `options`).
   optionIds: string[];
   // Option d'exclusivité « aucun » : la cocher décoche toutes les autres.
-  aucun?: { id: string; label: string };
+  aucun?: { id: string; libelle: string };
 };
 
 /**
@@ -72,7 +72,7 @@ function construire(): Mosaique[] {
       parentId: nom,
       question: libelle(nom),
       optionIds: meta.options ?? [],
-      aucun: aucunId ? { id: aucunId, label: libelle(aucunId) } : undefined,
+      aucun: aucunId ? { id: aucunId, libelle: libelle(aucunId) } : undefined,
     });
   }
   return res;

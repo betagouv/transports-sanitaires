@@ -91,7 +91,7 @@ function ChampEtablissement({ saisie }: ChampsProps) {
   return (
     <ListeDeroulante
       id="etablissement"
-      label="Établissement"
+      libelle="Établissement"
       invite="Sélectionnez un établissement"
       valeur={saisie.champs.etabId}
       options={saisie.etablissements}
@@ -105,7 +105,7 @@ function ChampService({ saisie }: ChampsProps) {
   return (
     <ListeDeroulante
       id="service"
-      label="Nom du service"
+      libelle="Nom du service"
       invite="Sélectionnez un service"
       valeur={saisie.champs.serviceId}
       options={saisie.services}
@@ -119,7 +119,7 @@ function ChampServiceLibre({ saisie }: ChampsProps) {
   return (
     <ChampTexte
       id="service-libre"
-      label="Nom de votre service / unité"
+      libelle="Nom de votre service / unité"
       valeur={saisie.champs.serviceLibre}
       onChange={(v) => saisie.modifier("serviceLibre", v)}
     />
@@ -131,7 +131,7 @@ function ChampPrescripteur({ saisie }: ChampsProps) {
   return (
     <ListeDeroulante
       id="prescripteur"
-      label="Vous êtes"
+      libelle="Vous êtes"
       invite="Sélectionnez"
       valeur={saisie.champs.prescripteurId}
       options={saisie.prescripteurs}
@@ -148,13 +148,13 @@ function ChampsIdentiteLibre({ saisie }: ChampsProps) {
     <>
       <ChampTexte
         id="nom"
-        label="Votre nom"
+        libelle="Votre nom"
         valeur={saisie.champs.nom}
         onChange={(v) => saisie.modifier("nom", v)}
       />
       <ChampTexte
         id="prenom"
-        label="Votre prénom"
+        libelle="Votre prénom"
         valeur={saisie.champs.prenom}
         onChange={(v) => saisie.modifier("prenom", v)}
       />
@@ -214,7 +214,7 @@ function PanneauOutils({
 
 type ListeProps = {
   id: string;
-  label: string;
+  libelle: string;
   // Option affichée tant que rien n'est sélectionné.
   invite: string;
   valeur: string;
@@ -226,7 +226,7 @@ type ListeProps = {
 
 function ListeDeroulante({
   id,
-  label,
+  libelle,
   invite,
   valeur,
   options,
@@ -236,7 +236,7 @@ function ListeDeroulante({
   return (
     <div className="fr-select-group">
       <label className="fr-label" htmlFor={id}>
-        {label}
+        {libelle}
       </label>
       <select
         className="fr-select"
@@ -260,19 +260,19 @@ function ListeDeroulante({
 
 function ChampTexte({
   id,
-  label,
+  libelle,
   valeur,
   onChange,
 }: {
   id: string;
-  label: string;
+  libelle: string;
   valeur: string;
   onChange: (valeur: string) => void;
 }) {
   return (
     <div className="fr-input-group">
       <label className="fr-label" htmlFor={id}>
-        {label}
+        {libelle}
       </label>
       <input
         className="fr-input"

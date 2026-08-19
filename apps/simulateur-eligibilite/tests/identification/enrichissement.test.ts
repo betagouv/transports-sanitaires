@@ -17,10 +17,10 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
   // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
   const appels: IdentiteSaisie[] = [];
   const referentiel: Referentiel = {
-    getEtablissements: () => snapshotReferentiel.getEtablissements(),
-    getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-    getPrescripteurs: (serviceId) =>
-      snapshotReferentiel.getPrescripteurs(serviceId),
+    listerEtablissements: () => snapshotReferentiel.listerEtablissements(),
+    listerServices: (etabId) => snapshotReferentiel.listerServices(etabId),
+    listerPrescripteurs: (serviceId) =>
+      snapshotReferentiel.listerPrescripteurs(serviceId),
     async enrichirDepuisSaisie(sel) {
       appels.push(sel);
     },
@@ -76,10 +76,10 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
 
   it("ne bloque pas l'accès si l'enrichissement échoue", async () => {
     const { base: baseKo, close: closeKo } = await demarrer({
-      getEtablissements: () => snapshotReferentiel.getEtablissements(),
-      getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-      getPrescripteurs: (serviceId) =>
-        snapshotReferentiel.getPrescripteurs(serviceId),
+      listerEtablissements: () => snapshotReferentiel.listerEtablissements(),
+      listerServices: (etabId) => snapshotReferentiel.listerServices(etabId),
+      listerPrescripteurs: (serviceId) =>
+        snapshotReferentiel.listerPrescripteurs(serviceId),
       async enrichirDepuisSaisie() {
         throw new Error("Grist indisponible");
       },

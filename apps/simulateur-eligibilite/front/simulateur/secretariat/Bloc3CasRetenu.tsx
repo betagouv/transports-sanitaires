@@ -5,7 +5,48 @@
 import type { moteur } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
 import type { Groupe } from "./cases-documentaires";
-import { casesRetenues, texteItem } from "./cases-documentaires";
+import { casesRetenues, texteDeCase } from "./cases-documentaires";
+
+type Props = {
+  e: typeof moteur;
+  casFinal: string;
+  transport: string;
+  doc: string;
+  article80: Article80;
+};
+
+export function Bloc3CasRetenu({
+  e,
+  casFinal,
+  transport,
+  doc,
+  article80,
+}: Props) {
+  return (
+    <div className="fr-callout" style={{ marginBottom: "2rem" }}>
+      <h3 className="fr-callout__title">
+        <span className="fr-icon-hospital-line fr-mr-1w" aria-hidden="true" />
+        Informations pour le corps médical
+      </h3>
+
+      <div className="fr-callout__text">
+        <p>
+          <strong>Cas retenu :</strong> {CAS_RETENU[casFinal] ?? casFinal}
+        </p>
+        <p>
+          <strong>Transport sanitaire prescrit :</strong> {transport}
+        </p>
+        <p>
+          <strong>Document à remettre au patient :</strong> {doc}
+        </p>
+        <NoteCorpsMedical casFinal={casFinal} article80={article80} />
+        <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />
+      </div>
+    </div>
+  );
+}
+
+// ---- implémentation ----
 
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
 // la valeur brute de `cas_final`).
@@ -65,45 +106,6 @@ function NoteCorpsMedical({
   return null;
 }
 
-type Props = {
-  e: typeof moteur;
-  casFinal: string;
-  transport: string;
-  doc: string;
-  article80: Article80;
-};
-
-export function Bloc3CasRetenu({
-  e,
-  casFinal,
-  transport,
-  doc,
-  article80,
-}: Props) {
-  return (
-    <div className="fr-callout" style={{ marginBottom: "2rem" }}>
-      <h3 className="fr-callout__title">
-        <span className="fr-icon-hospital-line fr-mr-1w" aria-hidden="true" />
-        Informations pour le corps médical
-      </h3>
-
-      <div className="fr-callout__text">
-        <p>
-          <strong>Cas retenu :</strong> {CAS_RETENU[casFinal] ?? casFinal}
-        </p>
-        <p>
-          <strong>Transport sanitaire prescrit :</strong> {transport}
-        </p>
-        <p>
-          <strong>Document à remettre au patient :</strong> {doc}
-        </p>
-        <NoteCorpsMedical casFinal={casFinal} article80={article80} />
-        <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />
-      </div>
-    </div>
-  );
-}
-
 function CasesACompleter({ groupes }: { groupes: Groupe[] }) {
   if (groupes.length === 0) return null;
   return (
@@ -140,8 +142,8 @@ function GroupeDeCases({ groupe }: { groupe: Groupe }) {
         </p>
       )}
       <ul>
-        {groupe.items.map((item) => (
-          <li key={texteItem(item)}>{texteItem(item)}</li>
+        {groupe.cases.map((laCase) => (
+          <li key={texteDeCase(laCase)}>{texteDeCase(laCase)}</li>
         ))}
       </ul>
     </>
