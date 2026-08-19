@@ -1,5 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Ce fichier guide Claude Code (claude.ai/code) dans ce dépôt.
 
-See [AGENTS.md](AGENTS.md) for project guidance.
+Les instructions sont dans [AGENTS.md](AGENTS.md) — et, pour chaque app, dans son
+propre `apps/<app>/AGENTS.md`, à lire avant d'y toucher.

@@ -53,13 +53,15 @@ navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs r�
 
 ## Commandes
 
-- `npm run verifier` — **la vérification complète** : lint, typecheck, validation des
-  règles, tests. Mêmes portes que la CI, dans le même ordre.
+- `npm run verifier` — **la vérification complète** : lint, typecheck, knip,
+  validation des règles, tests, build (et sa vérification de bundle). C'est la
+  commande que lance la CI, telle quelle : ce qui passe ici passe là-bas.
 - `npm run dev:front` — front de dev (port **5173**), proxifie `/api` → `:3000`
 - `npm run dev:server` — backend de dev (port **3000**, `--watch`, charge `.env` si présent)
 - `npm test` — vitest (le smoke Grist est ignoré sans `GRIST_API_KEY`)
 - `npm run lint` — Biome : format, tri des imports, lint (`lint:fix` applique les
-  corrections sûres)
+  corrections sûres). Socle commun aux trois apps : `biome.base.jsonc`, à la racine
+- `npm run knip` — exports, fichiers et dépendances que plus personne n'atteint
 - `npm run typecheck` — `tsc -b` sur les quatre projets (front, node, serveur, tests)
 - `npm run valider-regles` — compile `regles/*.publicodes` et signale les erreurs
 - `npm run build` — typecheck puis build Vite (`dist/`), suivi de
@@ -67,22 +69,15 @@ navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs r�
   chunk d'entrée, sinon chaque prescripteur télécharge 1,2 Mo qu'il ne verra jamais
 - `npm start` — serveur de production (`node server/server.ts`, Node 24)
 
-Le style n'est pas négociable : Biome le tient (`biome.jsonc`), et un hook Claude
-Code (`.claude/settings.json`, à la racine du dépôt) le passe sur chaque fichier
-écrit par l'IA. Les invariants d'architecture, eux, sont exécutables —
-`tests/architecture.test.ts` échoue si le front importe le serveur, si le CERFA
-adresse le backend, ou si le simulateur touche à l'identification.
+Les règles d'écriture et les invariants ne sont pas de la prose : ils sont
+exécutables, dans `tests/architecture.test.ts` (les frontières, les limites de 30
+et 300 lignes) et `tests/lisibilite.test.ts` (la forme des fichiers, les noms, les
+extensions d'import). Lis leur message d'échec : chacun dit ce que sa règle
+protège. Ce qu'on en attend d'un contributeur est écrit dans
+[AGENTS.md](AGENTS.md).
 
-**Taille du code** : une fonction tient en 30 lignes, un fichier en 300. Biome
-signale les dépassements dans l'éditeur, mais il compte des lignes *logiques* —
-un bloc de texte JSX y vaut une seule ligne, si bien qu'un composant de 450
-lignes réelles n'en pèse que 178 pour lui. C'est donc `tests/architecture.test.ts`
-qui fait foi, en lignes réelles ; tout ce que Biome refuse y échoue aussi. Deux
-exemptions, chacune commentée là où elle est déclarée : les callbacks `describe`
-/ `it` (un bloc de cas n'est pas un traitement à découper) et le catalogue de
-seeds (une liste de données, qui vaut d'être lue d'un seul tenant).
-
-Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle.
+Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle,
+`mise run verifier` passe la vérification sur les trois apps.
 
 ## Configuration
 

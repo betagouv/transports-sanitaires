@@ -1,169 +1,171 @@
 # AGENTS.md
 
-> Instructions for AI agents.
+> Ce qui vaut pour tout le dépôt. Le reste est dans l'app concernée.
 
 ## Communication
 
-### ALWAYS
+**Toujours** — être concis. Poser les questions produit, architecture, code.
 
-- Be concise
-- Ask questions regarding product, architecture, code
+**Jamais** — flatter. Dire que c'est fait sans l'avoir vérifié.
 
-### NEVER
+## Le dépôt
 
-- Praise
-- Assume done
+Monorepo léger, **sans outillage de workspace** (ni workspaces npm/pnpm, ni turbo).
+Chaque app sous `apps/` est **indépendante** : son `package.json`, son
+`package-lock.json`, son job CI, son `npm run verifier`. Le toolchain vient de
+`mise` (Node 24).
 
-## Repository
+**Avant de toucher à `apps/X`, lis `apps/X/AGENTS.md`.** Ce fichier-ci ne décrit
+aucune app.
 
-Light monorepo — **no workspace tooling** (no npm/pnpm workspaces, no turbo). Each
-app under `apps/` is **independent**: its own `package.json` + `package-lock.json`,
-its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
+| App | Ce que c'est |
+|---|---|
+| `apps/simulateur-eligibilite` | Le produit. Simulateur d'éligibilité au transport sanitaire : règles publicodes, front React/DSFR, backend Express, identification du prescripteur, remplissage du CERFA. |
+| `apps/data-analyzer` | L'ETL qui calcule la part des trajets réalisés via les plateformes. Code public, **données et fournisseurs privés**. |
+| `apps/glossaire-notion` | Une extension de navigateur qui affiche le glossaire tenu dans Notion. |
 
-- **`apps/simulateur-eligibilite`** — React 19 + Vite + DSFR
-  (`@codegouvfr/react-dsfr`). Eligibility rules engine **`publicodes`** (single file
-  `regles/regles.publicodes`) + `@publicodes/forms` (`FormBuilder` auto-generates the
-  form from the rules). Fronted by a **mandatory prescriber-identification gate**
-  (`front/identification/`, referential from Grist). Served by a **Node/Express backend**
-  (`server/`, front + `/api/*`), deployed to **Scalingo** — not static. **Feature-first
-  layout** across three runtime roots: `front/` (browser, bundled by Vite), `server/`
-  (backend, holds secrets), `shared/` (front⇄back contract). See
-  `docs/architecture/identification.md`. End of journey: `outils-produit/beta/cerfa/`
-  fills the official CERFA (AcroForm, `pdf-lib`) **in the browser only** — the form
-  carries nominative health data, so no filled document must ever reach the backend.
-  It sits under `beta/` because its download button is gated on the *outils produit*
-  access (below) until the pre-filling is proven, not because of its nature.
-  Reference situations live in **`front/outils-produit/seeds/`**: one catalogue of named
-  situations **with their expected targets** (plain `publicodes`, readable by Node too),
-  replayed by the business non-regression matrix, browsable through the **seed gallery**
-  (same folder, dynamic import) and used by `npm run apercu-cerfa`.
-  Add a reference situation there, not in a test file. The gallery and the rules **lab**
-  are the two *outils produit*: same access gate on **every environment** (referential
-  service n° 4, `front/outils-produit/deverrouillage.ts`), same panel, both
-  entered **after** identification — no `import.meta.env.DEV` gating.
-- **`apps/glossaire-notion`** — browser extension (React + `notion-client`), packaged
-  with `npm run zip`.
+## Vérifier
 
-## Commands (run inside the app directory)
+`npm run verifier`, dans l'app — **la commande à passer avant de dire que c'est
+fait**. C'est aussi, mot pour mot, ce que lance la CI : un `verifier` vert ici
+l'est là-bas. Une porte à ajouter se met dans ce script, jamais dans le YAML.
 
-- `npm run verifier` — **the one to run before saying you are done**: lint, typecheck,
-  rules validation, tests. Same gates as CI, same order.
-- `npm run lint` — Biome (`biome.jsonc`: format + lint + import sort); `npm run lint:fix` applies
-  every safe fix. A `PostToolUse` hook already runs this on each `.ts`/`.tsx` you
-  write, so formatting is never yours to argue about.
-- `npm run typecheck` — `tsc -b` over the **four** projects: front, node (scripts +
-  vite config), server, tests.
-- `npm test` — vitest (run mode)
-- `npm run build` — `tsc -b && vite build`, then `verifier-bundle`: `pdf-lib` and
-  the seed catalogue must stay out of the entry chunk. If you replace an
-  `import()` with a static import, this is what tells you.
-- `npm run dev:front` — vite dev server (front); `npm run dev:server` — Express backend
-- `npm start` — production server (`node server/server.ts`, Node 24)
+`mise run verifier` à la racine le passe sur les trois apps.
 
-## Conventions
+## Français
 
-- **French** everywhere: UI, rule names, tests, docs, product — **and identifiers**.
-  English is reserved for what an external API already names that way: `handleX` /
-  `useX` / `Props` (React), `track*` (Matomo's verb), `new FormBuilder({ engine })`
-  (`@publicodes/forms` key), `Engine` (publicodes class). Everything else is domain
-  vocabulary and reads in French: `moteur`, `regles`, `passation`, `identiteEnSession`.
-- **A file reads top-down as its contract, then its implementation.** In order:
-  a 1–3 line header saying *what this file lets you do* (the why, the history and the
-  constraints go down next to the code they explain, not in a preamble); the public
-  types; the exports, in the order a caller meets them; then `// ---- implémentation ----`
-  and everything private. Two consequences that are not cosmetic: private helpers are
-  hoisted `function` declarations, never arrow `const` (an arrow below its first use is
-  a TDZ error), and private constants sit at the bottom whenever they are only read
-  inside functions. No work at module load beyond one explicit entry point at the top.
-- **Cut along meaning, never to fit the budget.** The 30-line limit *detects* a
-  function that does several things; it does not tell you *where* to cut. The
-  test is: **would you make this same extraction if the limit did not exist?**
-  If not, you are cutting in the wrong place. Four consequences:
-  - **Split the branches, not the repetition.** A conditional over domain cases
-    is the seam: each branch becomes a function named after the case it answers,
-    and the parent shrinks to a one-line dispatch. Extracting the fragment the
-    branches happen to share is the cheapest cut and the wrong one — it leaves
-    the parent doing exactly what it did before, minus a few lines.
-  - **A name must add what the call site does not already say.** `<PiedDePage />`
-    at the bottom of a page teaches the reader nothing; `<AucunTransportPrescrit />`
-    says which situation is being answered. A name that describes the markup
-    (`Introduction`, `EnTetes`, `SeRapprocherDuSecretariat`) marks a fragment, not
-    an intention.
-  - **Repeating literal content beats minting a nameless fragment.** Two identical
-    `<li>` in two branches cost nothing. A one-line component with no intention
-    costs every reader a jump for no information. Deduplicate only what has a name
-    of its own — and it then takes parameters and serves unrelated callers.
-  - **One function chooses, the others do.** Never one that chooses *and* does.
-  The same holds when the 300-line limit bites: split a file by subject, never by
-  moving the overflow out.
+**Français partout** : interface, noms de règles, tests, documentation, messages
+de commit — **et identifiants**. L'anglais est réservé à ce qu'une API tierce
+nomme déjà ainsi : `handleX` / `useX` / `Props` (React), `track*` (le verbe de
+Matomo), `label` et `nativeInputProps` (DSFR), `formState` / `pageCount`
+(`@publicodes/forms`), `fields` / `rowId` (Grist), `Engine` (publicodes). Tout
+le reste est du vocabulaire métier et se lit en français : `moteur`, `regles`,
+`passation`, `casesRetenues`, `identiteEnSession`.
 
-- **A file is named after a capability, not a category.** If the name needs `utils`,
-  `helpers`, `commun` or `acces` to work, the file has no intention and its contents
-  belong to its callers. Export only what another file imports — the file now called
-  `deverrouillage.ts` shipped two `export const` nobody read, sitting above the one
-  function that mattered.
-- **Style is not a discussion.** Biome owns formatting, import order and lint. Never
-  hand-format, and never write a suppression comment for a linter the project does
-  not run — a stray `eslint-disable` sat in `Parcours.tsx` for months, suppressing
-  nothing. Suppress with `// biome-ignore <rule>: <reason>` on the line **immediately**
-  before the offending line, with the reason spelled out above it.
-- **Import extensions follow the runtime, not taste.** Node executes TypeScript by
-  stripping types, so it needs the real filename; Vite resolves it. Write `.ts` when the
-  importing file is *reachable from Node* — everything under `server/` and `shared/`, and
-  the `front/` chain that `scripts/apercu-cerfa.ts` pulls in (`seeds/`, `beta/cerfa/`).
-  Omit it elsewhere in `front/`. Tests follow whichever side they import from. If in
-  doubt, `npm run apercu-cerfa` is what fails when an extension is missing.
-- **Rule names go through the contract.** `front/simulateur/contrat-regles-publicodes.ts`
-  lists every publicodes key the code may name; `Question`, `Cible` and `CleDeRegle` make
-  TypeScript reject the rest — in a situation literal, a `cibles` array, or a call to
-  `texte()` / `vrai()`. Read a rule with those two helpers, never with a bare
-  `engine.evaluate("…")`. Adding a key to the contract is what authorises its use, and
-  `tests/regles-front.test.ts` checks the contract against the model.
-- **Tests without mocks.** Engine tests drive the real `publicodes` engine; UI tests
-  use Testing Library against the real `<App />`. Reuse the existing helpers in
-  `tests/`.
-- **DSFR** for all UI.
-- **publicodes**: rule keys use ` . ` separators; `une possibilité` values are quoted
-  (`"'valeur'"`); booleans are `oui`/`non`. Pass situations to the engine with the
-  exact rule keys — unknown keys throw.
-- **`@publicodes/forms` + StrictMode gotcha**: `goToNextPage` / `handleInputChange`
-  mutate their argument. Do **not** use the `setState(prev => …)` callback form with
-  them; pass the current `formState` directly (tests render without StrictMode so they
-  won't catch this).
+*Gardé par* `tests/lisibilite.test.ts › les identifiants sont en français`, dont
+la liste `TOLERES` est ce qui autorise une exception : l'ajouter est une
+décision, pas un moyen de faire passer le test.
+
+**Une dérogation assumée** : `apps/glossaire-notion` est intégralement en
+anglais. Elle n'a pas de vocabulaire métier propre — c'est un lecteur de base
+Notion — et la franciser coûterait plus que ça ne clarifierait.
+
+## Écrire du code
+
+- **Un fichier se lit de haut en bas comme son contrat, puis son
+  implémentation.** Dans l'ordre : un en-tête de quelques lignes disant *ce que
+  ce fichier permet de faire* (le pourquoi, l'histoire et les contraintes
+  descendent à côté du code qu'ils expliquent, pas dans un préambule) ; les
+  types publics ; les exports, dans l'ordre où un appelant les rencontre ; puis
+  `// ---- implémentation ----` et tout ce qui est privé. Deux conséquences qui
+  ne sont pas cosmétiques : les fonctions privées sont des `function` hoistées,
+  jamais des `const` fléchés (une flèche sous son premier appel est une erreur
+  TDZ), et les constantes privées descendent en bas dès qu'elles ne sont lues
+  que dans des fonctions. Aucun travail au chargement du module, hors un point
+  d'entrée explicite en tête.
+
+  *Gardé par* `tests/lisibilite.test.ts › un fichier se lit comme son contrat`.
+
+- **Couper aux jointures du sens, jamais pour tenir dans le budget.** La limite
+  de 30 lignes *détecte* une fonction qui fait plusieurs choses ; elle ne dit
+  pas *où* couper. Le test : **ferais-tu la même extraction si la limite
+  n'existait pas ?** Sinon, tu coupes au mauvais endroit. Quatre conséquences :
+
+  - **Séparer les branches, pas la répétition.** Un branchement sur des cas
+    métier est la jointure : chaque branche devient une fonction nommée d'après
+    le cas qu'elle répond, et le parent se réduit à un aiguillage d'une ligne.
+    Extraire le fragment que les branches partagent est la coupe la moins chère
+    et la mauvaise — elle laisse le parent faire exactement ce qu'il faisait,
+    moins quelques lignes.
+  - **Un nom doit ajouter ce que le site d'appel ne dit pas déjà.**
+    `<PiedDePage />` en bas d'une page n'apprend rien ; `<AucunTransportPrescrit />`
+    dit quelle situation est répondue. Un nom qui décrit le balisage
+    (`Introduction`, `EnTetes`) marque un fragment, pas une intention.
+  - **Répéter un contenu littéral vaut mieux que fabriquer un fragment sans
+    nom.** Deux `<li>` identiques dans deux branches ne coûtent rien. Un
+    composant d'une ligne sans intention coûte un saut à chaque lecteur, pour
+    rien. On ne factorise que ce qui a un nom propre — et qui prend alors des
+    paramètres et sert des appelants sans rapport.
+  - **Une fonction choisit, les autres font.** Jamais une qui choisit *et* fait.
+
+  Même chose quand la limite de 300 lignes mord : séparer un fichier par sujet,
+  jamais en déplaçant le débordement ailleurs.
+
+  *Gardé par* `tests/architecture.test.ts › taille du code` — en lignes réelles.
+  Biome porte les mêmes limites pour le retour dans l'éditeur, mais il compte
+  des lignes *logiques* : un bloc de texte JSX y pèse une ligne. C'est le test
+  qui fait foi.
+
+- **Un fichier porte le nom d'une capacité, pas d'une catégorie.** Si le nom a
+  besoin d'`utils`, `helpers`, `commun` ou `acces` pour fonctionner, le fichier
+  n'a pas d'intention et son contenu appartient à ses appelants.
+
+  *Gardé par* `tests/lisibilite.test.ts › aucun fichier ne porte un nom de
+  catégorie`.
+
+- **N'exporter que ce qu'un autre fichier importe.** Le fichier aujourd'hui
+  appelé `deverrouillage.ts` a livré deux `export const` que personne ne lisait,
+  posés au-dessus de la seule fonction qui comptait.
+
+  *Gardé par* `npm run knip`, dans `verifier`. Un export qui est de la
+  documentation et non du code appelé le déclare par un `@public` motivé.
+
+- **Le style ne se discute pas.** Biome tient le format, l'ordre des imports et
+  le lint, avec le même socle (`biome.base.jsonc`) pour les trois apps. Ne
+  jamais formater à la main, et ne jamais écrire une suppression pour un linter
+  que le projet ne lance pas — un `eslint-disable` a dormi des mois dans
+  `Parcours.tsx` sans rien supprimer. Supprimer s'écrit
+  `// biome-ignore <règle>: <raison>` sur la ligne **immédiatement** avant la
+  ligne fautive, la raison écrite en toutes lettres.
+
+  Un hook `PostToolUse` passe Biome sur chaque `.ts` / `.tsx` écrit, dans
+  n'importe quelle app : le format n'est jamais à toi de défendre.
 
 ## Git
 
-- **Always work on `main`.** Commit directly to `main` — do **not** create feature
-  branches (no PR workflow).
+- **Toujours travailler sur `main`.** Commiter directement, pas de branche de
+  fonctionnalité, pas de PR.
+- **Conventional Commits**, scope entre parenthèses (`simulateur`,
+  `data-analyzer`, `identification`) quand le changement est circonscrit à une
+  app.
+- **Sujet en français, verbe conjugué à la 3ᵉ personne de l'indicatif présent** :
+  « coupe aux jointures du sens », « plafonne les fonctions à 30 lignes »,
+  « rend les invariants d'architecture exécutables ». Ni impératif, ni infinitif.
+- **Corps argumenté** : ce qui change, et surtout *pourquoi*. Nommer les
+  renommages un par un. Terminer par l'état de vérification (« 184 tests verts,
+  bundle et aperçu CERFA inchangés »).
+- Trailer `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`.
+- **Avant de commiter sur `data-analyzer`** : relire le diff *et le message*
+  pour vérifier qu'aucun nom de fournisseur ni donnée n'y figure (cf.
+  `apps/data-analyzer/AGENTS.md`).
 
-## Invariants
+## Où écrire quoi
 
-These are **executable**, in `tests/architecture.test.ts` — do not restate them here
-without adding the matching assertion there, and read that file's failure messages
-before working around one:
+| Ce que tu veux écrire | Où ça va |
+|---|---|
+| Une décision d'architecture | `docs/architecture/` — format ADR maison, au niveau composant C4, sans détail de fichier |
+| Le cadrage d'un chantier | `docs/specs/` |
+| Le mode d'emploi d'une app | son `README.md` |
+| Une règle pour l'IA | `AGENTS.md`, celui de la racine ou celui de l'app |
+| Une garde | **un test**, pas une phrase |
 
-- `front/` imports nothing from `server/` (the secrets live there), and vice versa.
-- `shared/` depends on neither — it is loaded by both.
-- `front/simulateur/` never imports `front/identification/`: the eligibility engine
-  reasons on a medical situation, never on who prescribes.
-- `front/outils-produit/beta/cerfa/` never references an `/api` route: the prescriber
-  fills nominative health data there, and it must not leave the browser.
-- `regles.publicodes` holds eligibility logic only — no identification, no analytics.
-- **A function is at most 30 real lines, a file at most 300.** Biome carries the
-  same two limits (`noExcessiveLinesPerFunction`, `noExcessiveLinesPerFile`) for
-  editor feedback, but it counts *logical* lines — a JSX text block or a
-  multiline string weighs one. The test is what decides, and it counts real
-  lines. Exemptions: `describe` / `it` callbacks are outside the function limit,
-  and `seeds/catalogue.ts` outside the file limit.
-- `front/simulateur/` never imports `front/outils-produit/`: the product tools are
-  built **on** the simulator, and `App.tsx` hands the simulator ready-made content
-  (`panneauOutilsProduit`, `documentTelechargeable`). One named exception —
-  `moteur.ts` asking `labo/labo.ts` which rules to load — is asserted explicitly so
-  it cannot quietly grow a second.
+`docs/architecture/` contient `identification.md` et `analytics.md`.
+`docs/specs/` contient le cadrage de l'ETL, celui de l'enrichissement du
+référentiel, la convention d'encodage des questions à choix multiple, et deux
+specs **produit** — `page-resultat-medical.md` et `page-resultat-administratif.md`,
+qui sont le contenu rédactionnel de référence des deux pages de résultat.
 
-## Architecture
+**Quand deux sources se contredisent**, l'ordre d'autorité est :
 
-- Design docs (ADR + spec, kept at **C4 Component level** — no code-file detail) live
-  in **`docs/architecture/`**: `identification.md`, `analytics.md`.
-- For non-trivial or model-changing tasks, **frame/plan the architecture before
-  coding**; present options + a recommendation, not a single path.
+**le test > le code > le README de l'app > `docs/architecture/` > `docs/specs/`**
+
+Les specs se périment : `etl-part-plateformes.md` annonce 5 marts, le README de
+`data-analyzer` en documente 6. Corrige la source la moins à jour, ne t'y fie pas.
+
+## La règle qui tient les autres
+
+**Toute règle de forme énoncée ici nomme l'assertion qui la garde. Sans
+assertion, elle n'existe pas** — et il vaut mieux l'écrire dans un test que la
+répéter ici. C'est la seule chose qui empêche ce fichier de redevenir une prose
+que le code contredit : neuf fichiers ouvraient sur un `import` pendant des mois
+sous une règle qui l'interdisait, parce que rien ne la vérifiait.
