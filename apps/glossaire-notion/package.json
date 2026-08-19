@@ -12,7 +12,8 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "typecheck": "tsc -b",
-    "verifier": "npm run lint && npm run typecheck && npm test && npm run build"
+    "verifier": "npm run lint && npm run typecheck && npm run knip && npm test && npm run build",
+    "knip": "knip"
   },
   "dependencies": {
     "notion-client": "^7.10.0",
@@ -32,6 +33,7 @@
     "@types/webextension-polyfill": "^0.12.5",
     "@vitejs/plugin-react": "^6.0.2",
     "happy-dom": "^20.10.4",
+    "knip": "^6.32.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-static-copy": "^4.1.1",

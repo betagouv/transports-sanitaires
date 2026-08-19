@@ -22,7 +22,7 @@ import { BASE_NEUTRE } from "./base-neutre.ts";
  * ni les questions, ni les règles intermédiaires : une seed décrit ce que le
  * produit affiche, pas comment le moteur y arrive.
  */
-export const CIBLES_SEED = [
+const CIBLES_SEED = [
   "cible_resultat_medical",
   "cible_transport_sanitaire_prescrit",
   "cible_partie_2_requise",
@@ -42,7 +42,7 @@ export type CibleSeed = (typeof CIBLES_SEED)[number];
  * Attendus déclarés par une seed. Partiel : on n'annonce que ce qui la caractérise —
  * sauf `cible_regime_financement`, que toutes déclarent (cf. `catalogue.ts`).
  */
-export type AttenduSeed = Partial<Record<CibleSeed, string | boolean>>;
+type AttenduSeed = Partial<Record<CibleSeed, string | boolean>>;
 
 export type Seed = {
   /** Identifiant stable (kebab-case) — cité par les tests, les scripts et la doc. */
@@ -63,7 +63,7 @@ export function situationDe(seed: Seed): Situation<string> {
   return { ...BASE_NEUTRE, ...seed.entrees };
 }
 
-export type EcartSeed = {
+type EcartSeed = {
   readonly cible: CibleSeed;
   readonly attendu: string | boolean;
   readonly obtenu: unknown;

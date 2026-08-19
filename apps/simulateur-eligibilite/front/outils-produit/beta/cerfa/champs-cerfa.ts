@@ -109,7 +109,12 @@ export const PRESCRIPTION = {
   pensionMilitaireNon: case_("oui2", "NON"),
 } as const;
 
-/** Identification du prescripteur et de la structure dans laquelle il exerce. */
+/**
+ * Identification du prescripteur et de la structure dans laquelle il exerce.
+ *
+ * @public Carte du formulaire, pas du code appelé : listée pour que le jour où
+ * le référentiel portera RPPS et FINESS, on sache quoi remplir.
+ */
 export const PRESCRIPTEUR = {
   nomPrénom: "N et P prescript", // 45 car.
   raisonSociale: "raison sociale prescript",
@@ -122,6 +127,8 @@ export const PRESCRIPTEUR = {
 /**
  * Bloc transporteur, Volet 2 **uniquement** — rempli à la main par le transporteur.
  * Listé pour mémoire : le simulateur ne doit rien y écrire.
+ *
+ * @public
  */
 export const TRANSPORTEUR_NE_PAS_REMPLIR = [
   "raison sociale VSL",

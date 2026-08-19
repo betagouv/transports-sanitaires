@@ -51,7 +51,7 @@ export interface Adapter {
 }
 
 /** Constructeur d'adaptateur, tel qu'enregistré dans le registre des formats. */
-export type AdapterConstructor = new (
+type AdapterConstructor = new (
   location: string,
   entry: MappingEntry,
 ) => Adapter;

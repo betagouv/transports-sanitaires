@@ -16,7 +16,7 @@ import type {
 } from "../../shared/referentiel";
 import { estServiceProduit } from "../outils-produit/deverrouillage";
 
-export type Champs = {
+type Champs = {
   etabId: string;
   serviceId: string;
   serviceLibre: string;

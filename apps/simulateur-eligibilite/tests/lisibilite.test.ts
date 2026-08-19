@@ -49,15 +49,18 @@ describe("un fichier se lit comme son contrat", () => {
       (fichier) =>
         !DONNEES.includes(fichier) &&
         lignesDe(fichier) > 80 &&
-        aDuPrive(fichier) &&
+        aDesFonctionsPrivees(fichier) &&
         aDuPublic(fichier) &&
         !texteDe(fichier).includes(MARQUEUR),
     );
     expect(
       sans,
-      `Passé 80 lignes, un fichier qui mêle exports et privés se lit mal : ` +
-        `place \`${MARQUEUR}\` après le dernier export, et tout ce qui est ` +
-        `privé en dessous. Le lecteur doit pouvoir s'arrêter au marqueur.`,
+      `Passé 80 lignes, un fichier qui mêle ce qu'on peut appeler et la façon ` +
+        `dont c'est fait se lit mal : place \`${MARQUEUR}\` après le dernier ` +
+        `export, et les fonctions privées en dessous. Le lecteur doit pouvoir ` +
+        `s'arrêter au marqueur. Un type ou une constante privés dont un export ` +
+        `est bâti restent au-dessus : ils font partie du contrat, pas de son ` +
+        `implémentation — d'où le fait que seules les fonctions comptent ici.`,
     ).toEqual([]);
   });
 
@@ -205,9 +208,9 @@ const TOLERES = new Set([
   "fields",
 ]);
 
-function aDuPrive(fichier: string): boolean {
+function aDesFonctionsPrivees(fichier: string): boolean {
   return astDe(fichier).statements.some(
-    (noeud) => estUneDeclaration(noeud) && !estExporte(noeud),
+    (noeud) => ts.isFunctionDeclaration(noeud) && !estExporte(noeud),
   );
 }
 

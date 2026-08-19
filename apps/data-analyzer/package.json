@@ -16,7 +16,8 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "typecheck": "tsc -b",
-    "verifier": "npm run lint && npm run typecheck && npm test"
+    "verifier": "npm run lint && npm run typecheck && npm run knip && npm test",
+    "knip": "knip"
   },
   "engines": {
     "node": "24.x"
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.9",
     "@types/node": "^24.13.3",
+    "knip": "^6.32.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }

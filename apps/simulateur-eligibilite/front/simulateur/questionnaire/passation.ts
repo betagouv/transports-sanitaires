@@ -36,7 +36,7 @@ export type Options = {
   onTermine: (situation: Situation<string>) => void;
 };
 
-export type Etat = {
+type Etat = {
   champs: readonly Champ[];
   // État brut du formulaire — la situation saisie, et les pages traversées ou
   // à venir. Seule la trace de debug a besoin de ce niveau de détail.
@@ -53,7 +53,7 @@ export type Etat = {
   parcoursTermine: boolean;
 };
 
-export type Actions = {
+type Actions = {
   repondre: (id: string, valeur: unknown) => void;
   repondrePlusieurs: (reponses: Reponses) => void;
   avancer: () => void;

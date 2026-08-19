@@ -23,7 +23,7 @@ export function nomFichier(le: Date = new Date()): string {
 }
 
 /** Charge le gabarit CERFA depuis les assets de l'application. */
-export async function chargerGabarit(): Promise<ArrayBuffer> {
+async function chargerGabarit(): Promise<ArrayBuffer> {
   const réponse = await fetch(gabaritUrl);
   if (!réponse.ok) {
     throw new Error(`Gabarit CERFA indisponible (HTTP ${réponse.status}).`);

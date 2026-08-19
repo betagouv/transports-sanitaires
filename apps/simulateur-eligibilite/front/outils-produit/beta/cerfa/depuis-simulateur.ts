@@ -68,6 +68,9 @@ export function saisiesDepuisSituation(
  * Champs du CERFA qu'aucune règle ne permet de déduire, groupés par origine.
  * C'est la part qui reste à saisir — et elle détermine où le remplissage doit
  * tourner (cf. README).
+ *
+ * @public Cahier des charges du module : ce qu'il ne sait pas déduire est
+ * énuméré ici, et c'est ce qui interdit au remplissage de quitter le navigateur.
  */
 export const RESTE_A_SAISIR = {
   /** Données de santé nominatives — absentes du simulateur, anonyme par construction. */

@@ -12,7 +12,7 @@ import { type Seed, situationDe } from "../outils-produit/seeds/seed";
 import { effacerPassation } from "../simulateur/passation";
 import type { Outil } from "./outil";
 
-export type Ecran = "identification" | "galerie" | "labo" | "simulateur";
+type Ecran = "identification" | "galerie" | "labo" | "simulateur";
 
 export type Navigation = {
   ecran: Ecran;

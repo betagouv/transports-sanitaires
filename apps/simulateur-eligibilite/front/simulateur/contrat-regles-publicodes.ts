@@ -95,7 +95,7 @@ export const QUESTIONS = [
 ] as const;
 
 export type Cible = (typeof CIBLES)[number];
-export type Question = (typeof QUESTIONS)[number];
+type Question = (typeof QUESTIONS)[number];
 
 /** Toute clé du modèle que le code a le droit de nommer. */
 export type CleDeRegle = Cible | Question;

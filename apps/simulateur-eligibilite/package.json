@@ -18,9 +18,10 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "typecheck": "tsc -b",
-    "verifier": "npm run lint && npm run typecheck && npm run valider-regles && npm test && npm run build",
+    "verifier": "npm run lint && npm run typecheck && npm run knip && npm run valider-regles && npm test && npm run build",
     "postbuild": "node scripts/verifier-bundle.ts",
-    "verifier-bundle": "node scripts/verifier-bundle.ts"
+    "verifier-bundle": "node scripts/verifier-bundle.ts",
+    "knip": "knip"
   },
   "engines": {
     "node": "24.x"
@@ -28,7 +29,6 @@
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.32.4",
     "@publicodes/forms": "^0.6.1",
-    "@publicodes/react-ui": "^1.10.0",
     "express": "^5.1.0",
     "js-yaml": "4.3.1",
     "pdf-lib": "^1.17.1",
@@ -48,6 +48,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "happy-dom": "^20.10.4",
+    "knip": "^6.32.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vitest": "^4.1.9"
