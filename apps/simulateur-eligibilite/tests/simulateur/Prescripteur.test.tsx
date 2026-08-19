@@ -2,172 +2,128 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
-import { passerFiltresM0 } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
+// Le parcours médical v9.1 tient en trois pages : Q1 (autonomie et besoins),
+// puis Q1.1 (aides et conditions particulières) **seulement** si Q1 établit un
+// besoin professionnel, puis M0 (cas particuliers médicaux) accompagnée de M4
+// (transport partagé) quand le mode retenu s'y prête.
+const AUTONOME = /peut se déplacer seul/i;
+const PROCHE = /proche accompagnant/i;
+const PROFESSIONNEL = /prise en charge spécifique/i;
+const AIDES = /aides ou conditions particulières/i;
+const CAS_PARTICULIERS = /cas particuliers/i;
+const AUCUNE_AIDE = /aucune de ces situations/i;
+const AUCUN_CAS = /aucun de ces cas médicaux/i;
+
+function afficher() {
+  render(
+    <Prescripteur
+      onPasserAuSecretariat={() => {}}
+      onNouvelleSimulation={() => {}}
+    />,
+  );
+  return userEvent.setup();
+}
+
+const questionQ1 = () => screen.getByRole("group", { name: /^le patient/i });
+const suivant = () => screen.getByRole("button", { name: /^suivant$/i });
+const voirResultat = () =>
+  screen.getByRole("button", { name: /voir le résultat médical/i });
+
+async function repondreQ1(user: ReturnType<typeof afficher>, option: RegExp) {
+  await user.click(within(questionQ1()).getByRole("radio", { name: option }));
+}
+
 describe("prescripteur — parcours médical", () => {
-  it("commence par la page « Situation particulière » (SMUR en premier, ALD non révélée)", () => {
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
-    // 1re page : situations particulières uniquement — les motifs et l'ALD
-    // n'apparaissent que sur les pages suivantes (révélation progressive).
-    expect(
-      screen.getByRole("group", { name: /équipe SMUR/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("group", { name: /en lien avec une ALD/i }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("group", { name: /hospitalisation/i }),
-    ).toBeNull();
+  it("commence par l'autonomie (Q1), sans révéler les aides ni les cas particuliers", () => {
+    afficher();
+    expect(questionQ1()).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
+    expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
   });
 
   it("n'affiche pas « Voir le résultat médical » tant que le parcours n'est pas terminé", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+    const user = afficher();
 
     // 1re page, question non répondue : bien que le moteur n'ait pas encore de
     // page suivante (le séquencement conditionnel dépend de la réponse), le
     // bouton de fin ne doit pas apparaître. Le bouton d'avancement reste
     // « Suivant » et est désactivé (« toute question posée doit être répondue »).
     expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
-    const suivant = screen.getByRole("button", { name: /^suivant$/i });
-    expect(suivant).toBeDisabled();
+    expect(suivant()).toBeDisabled();
 
     // Après réponse, une page suivante existe : toujours pas de bouton de fin.
-    await user.click(
-      within(screen.getByRole("group", { name: /équipe SMUR/i })).getByRole(
-        "radio",
-        { name: "Non" },
-      ),
-    );
+    await repondreQ1(user, PROFESSIONNEL);
     expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
-    expect(screen.getByRole("button", { name: /^suivant$/i })).toBeEnabled();
+    expect(suivant()).toBeEnabled();
   });
-  it("motifs (M1.1) : une seule question à cases à cocher avec exclusivité « Aucun »", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
 
-    // Page « Situation particulière » (révélation progressive) → page « Motif ».
-    await passerFiltresM0(user);
+  it("Q1.1 : une seule question à cases à cocher, avec exclusivité « Aucune »", async () => {
+    const user = afficher();
+    await repondreQ1(user, PROFESSIONNEL);
+    await user.click(suivant());
 
-    // Page « Motif » : une seule question, rendue en cases à cocher.
-    const motif = screen.getByRole("group", {
-      name: /quelle situation justifie le transport/i,
+    const aides = screen.getByRole("group", { name: AIDES });
+    const oxygene = within(aides).getByRole("checkbox", { name: /oxygène/i });
+    const fauteuil = within(aides).getByRole("checkbox", {
+      name: /doit rester dans son fauteuil roulant/i,
     });
-    const hospit = within(motif).getByRole("checkbox", {
-      name: /hospitalisation/i,
-    });
-    const ald = within(motif).getByRole("checkbox", {
-      name: /en lien avec une ALD/i,
-    });
-    const aucun = within(motif).getByRole("checkbox", {
-      name: /aucun de ces motifs/i,
-    });
+    const aucune = within(aides).getByRole("checkbox", { name: AUCUNE_AIDE });
 
-    // Choix multiple : deux motifs cochés simultanément (les autres options ne
+    // Choix multiple : deux aides cochées simultanément (les autres options ne
     // doivent pas se désactiver une fois l'agrégat OU satisfait).
-    await user.click(hospit);
-    await user.click(ald);
-    expect(hospit).toBeChecked();
-    expect(ald).toBeChecked();
+    await user.click(oxygene);
+    await user.click(fauteuil);
+    expect(oxygene).toBeChecked();
+    expect(fauteuil).toBeChecked();
 
-    // Exclusivité : cocher « Aucun » décoche tous les motifs.
-    await user.click(aucun);
-    expect(aucun).toBeChecked();
-    expect(hospit).not.toBeChecked();
-    expect(ald).not.toBeChecked();
+    // Exclusivité : cocher « Aucune » décoche toutes les aides.
+    await user.click(aucune);
+    expect(aucune).toBeChecked();
+    expect(oxygene).not.toBeChecked();
+    expect(fauteuil).not.toBeChecked();
   });
 
-  it("motifs (M1.1) : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
-
-    await passerFiltresM0(user);
-
-    const motif = screen.getByRole("group", {
-      name: /quelle situation justifie le transport/i,
-    });
-    const hospit = within(motif).getByRole("checkbox", {
-      name: /hospitalisation/i,
-    });
+  it("Q1.1 : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
+    const user = afficher();
+    await repondreQ1(user, PROFESSIONNEL);
+    await user.click(suivant());
 
     // La mosaïque fige toutes ses options dans la situation à chaque clic ; une
     // fois « répondues » au sens de @publicodes/forms, un coche→décoche laisse le
-    // groupe visuellement vide MAIS sans « aucun » explicite. Le parcours ne doit
+    // groupe visuellement vide MAIS sans « aucune » explicite. Le parcours ne doit
     // pas être considéré terminé : le CTA de fin ne doit pas apparaître et
     // l'avancement reste bloqué (« aucune sélection » n'est pas une réponse).
-    await user.click(hospit);
-    await user.click(hospit);
-    expect(hospit).not.toBeChecked();
+    const oxygene = within(
+      screen.getByRole("group", { name: AIDES }),
+    ).getByRole("checkbox", { name: /oxygène/i });
+    await user.click(oxygene);
+    await user.click(oxygene);
+    expect(oxygene).not.toBeChecked();
 
     expect(screen.queryByRole("button", { name: /^voir/i })).toBeNull();
-    expect(screen.getByRole("button", { name: /^suivant$/i })).toBeDisabled();
+    expect(suivant()).toBeDisabled();
   });
 
-  it("critères — « Aucune situation » (aucun à sémantique métier) mène au transport véhicule personnel", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+  it("un patient autonome saute Q1.1 et obtient le véhicule personnel", async () => {
+    const user = afficher();
+    await repondreQ1(user, AUTONOME);
+    await user.click(suivant());
 
-    // Situation (révélation progressive) → Motif.
-    await passerFiltresM0(user);
-
-    // Motif : cocher « hospitalisation ».
-    const motif = screen.getByRole("group", {
-      name: /quelle situation justifie le transport/i,
-    });
+    // Q1.1 n'est pas posée : on passe droit aux cas particuliers médicaux.
+    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
     await user.click(
-      within(motif).getByRole("checkbox", { name: /hospitalisation/i }),
+      within(screen.getByRole("group", { name: CAS_PARTICULIERS })).getByRole(
+        "checkbox",
+        { name: AUCUN_CAS },
+      ),
     );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    await user.click(voirResultat());
 
-    // Autonomie (v6 : gate des critères) : répondre.
-    const autonomie = screen.getByRole("group", { name: /^le patient/i });
-    await user.click(
-      within(autonomie).getByRole("radio", {
-        name: /aucune de ces situations/i,
-      }),
-    );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-
-    // Critères : cocher « Aucune de ces situations » (option aucun = règle métier
-    // p1_critere_aucune_situation_encadree, qui doit être activée).
-    const crit = screen.getByRole("group", {
-      name: /prise en charge plus encadrée/i,
-    });
-    await user.click(
-      within(crit).getByRole("checkbox", { name: /aucune de ces situations/i }),
-    );
-    await user.click(screen.getByRole("button", { name: /^voir/i }));
-
-    // Résultat déduit : transport véhicule personnel ou transport en commun.
     expect(
-      screen.getByRole("heading", { name: /avis médical favorable/i }),
+      screen.getByRole("heading", { name: /décision médicale établie/i }),
     ).toBeInTheDocument();
     // (getAllByText : le panneau de debug répète la valeur du transport.)
     expect(
@@ -175,95 +131,39 @@ describe("prescripteur — parcours médical", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("critères VSL/taxi → la question « transport partagé » est posée (cible sortie P1)", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
-
-    await passerFiltresM0(user);
+  it("une aide menant au VSL fait poser la question du transport partagé", async () => {
+    const user = afficher();
+    await repondreQ1(user, PROFESSIONNEL);
+    await user.click(suivant());
     await user.click(
-      within(
-        screen.getByRole("group", {
-          name: /quelle situation justifie le transport/i,
-        }),
-      ).getByRole("checkbox", { name: /hospitalisation/i }),
-    );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-    await user.click(
-      within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
-        "radio",
-        { name: /aucune de ces situations/i },
-      ),
-    );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-
-    // Critère menant à un VSL/taxi → transport partagé devient applicable ET, la
-    // sortie étant ciblée, la question est posée à l'étape suivante.
-    await user.click(
-      within(
-        screen.getByRole("group", { name: /prise en charge plus encadrée/i }),
-      ).getByRole("checkbox", {
-        name: /respect rigoureux de règles d’hygiène/i,
+      within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
+        name: /règles d’hygiène ou la désinfection/i,
       }),
     );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    await user.click(suivant());
 
+    // Le mode retenu est un VSL ou taxi conventionné : M4 devient applicable et,
+    // la sortie étant ciblée, la question est posée.
     expect(
       screen.getByRole("group", { name: /transport partagé/i }),
     ).toBeInTheDocument();
   });
-  it("retour : changer une réponse recalcule la suite (pas de page suivante figée)", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
 
-    const repondreFiltre = async (re: RegExp, val: string) => {
-      const g = await screen.findByRole("group", { name: re });
-      await user.click(within(g).getByRole("radio", { name: val }));
-      await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-    };
+  it("retour : changer Q1 recalcule la suite (pas de page suivante figée)", async () => {
+    const user = afficher();
+    await repondreQ1(user, PROFESSIONNEL);
+    await user.click(suivant());
+    expect(screen.getByRole("group", { name: AIDES })).toBeInTheDocument();
 
-    // SMUR non → bariatrique non → on atteint la page « permission de sortie ».
-    await repondreFiltre(/équipe SMUR/i, "Non");
-    await repondreFiltre(/contrainte bariatrique/i, "Non");
-    expect(
-      screen.getByRole("group", { name: /permission de sortie/i }),
-    ).toBeInTheDocument();
-
-    // Retour → page « contrainte bariatrique ».
     await user.click(screen.getByRole("button", { name: /précédent/i }));
-    expect(
-      screen.getByRole("group", { name: /contrainte bariatrique/i }),
-    ).toBeInTheDocument();
+    await repondreQ1(user, PROCHE);
+    await user.click(suivant());
 
-    // Changer la réponse : bariatrique = Oui mène à une sortie directe. La page
-    // « permission de sortie » ne doit plus être figée dans l'état : le parcours
-    // se recalcule et se termine (bouton de fin), sans repasser par elle.
-    await user.click(
-      within(
-        screen.getByRole("group", { name: /contrainte bariatrique/i }),
-      ).getByRole("radio", { name: "Oui" }),
-    );
+    // La page « aides et conditions particulières » ne doit plus être figée dans
+    // l'état : le parcours se recalcule et passe droit aux cas particuliers.
+    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
     expect(
-      screen.getByRole("button", { name: /voir le résultat médical/i }),
-    ).toBeEnabled();
-
-    await user.click(
-      screen.getByRole("button", { name: /voir le résultat médical/i }),
-    );
-    expect(
-      screen.queryByRole("group", { name: /permission de sortie/i }),
-    ).toBeNull();
-    expect(
-      screen.getByRole("heading", { name: /non justifié médicalement/i }),
+      screen.getByRole("group", { name: CAS_PARTICULIERS }),
     ).toBeInTheDocument();
   });
 });

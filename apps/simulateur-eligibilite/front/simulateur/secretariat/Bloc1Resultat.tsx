@@ -196,26 +196,26 @@ function TransportPrescrit({ transport }: { transport: string }) {
 
 const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
   "prescription médicale de transport": prescriptionMedicale,
-  "demande accord préalable": accordPrealable,
-  "convocation ou avis audience": convocation,
-  "transport charge établissement": chargeEtablissement,
-  "prestation non prise en charge par assurance maladie":
+  "demande d’accord préalable": accordPrealable,
+  "convocation ou avis d’audience": convocation,
+  "transport à la charge de l’établissement": chargeEtablissement,
+  "prestation non prise en charge par l’Assurance Maladie":
     prestationNonPriseEnCharge,
   SMUR: smur,
   "bariatrique seul": bariatriqueSeul,
-  "permission sortie sans motif médical": permissionSortie,
-  "non éligible assurance maladie dans ce parcours": nonEligible,
+  "permission de sortie sans motif médical": permissionSortie,
+  "non éligible à une prise en charge par l’Assurance Maladie": nonEligible,
 };
 
 // Teinte DSFR de l'alerte selon le cas final déterminé par le moteur.
 const TEINTE: Record<string, "success" | "info" | "warning" | "error"> = {
   "prescription médicale de transport": "success",
-  "demande accord préalable": "info",
-  "convocation ou avis audience": "success",
-  "transport charge établissement": "warning",
-  "prestation non prise en charge par assurance maladie": "error",
+  "demande d’accord préalable": "info",
+  "convocation ou avis d’audience": "success",
+  "transport à la charge de l’établissement": "warning",
+  "prestation non prise en charge par l’Assurance Maladie": "error",
   SMUR: "warning",
   "bariatrique seul": "error",
-  "permission sortie sans motif médical": "error",
-  "non éligible assurance maladie dans ce parcours": "error",
+  "permission de sortie sans motif médical": "error",
+  "non éligible à une prise en charge par l’Assurance Maladie": "error",
 };

@@ -35,8 +35,6 @@ const LIBELLE_CIBLE: Record<CibleSeed, string> = {
   cible_document_a_remettre_au_patient: "Document",
   cible_regime_financement: "Qui paie",
   cible_article_80_situation_specifique: "Article 80 — situation spécifique",
-  cible_article_80_permission_sortie_therapeutique:
-    "Article 80 — permission thérapeutique",
 };
 
 const SECTIONS: ReadonlyArray<{

@@ -1,4 +1,4 @@
-// Les critères médicaux et les motifs ouvrant droit, avec leurs descriptions
+// Les critères médicaux et les cas particuliers, avec leurs descriptions
 // vulgarisées destinées au patient.
 
 import type { moteur } from "../moteur";
@@ -12,30 +12,49 @@ export type EntreeVulgarisee = {
   description: string;
 };
 
-// Critères médicaux retenus — descriptions vulgarisées destinées au patient.
-// L'ordre suit la mosaïque `p1_critere` du modèle publicodes.
+// Aides et conditions particulières retenues — descriptions vulgarisées
+// destinées au patient. L'ordre suit la mosaïque `p1_criteres_transport` (Q1.1)
+// du modèle publicodes.
 export const CRITERES: EntreeVulgarisee[] = [
   {
-    id: "p1_critere_regles_hygiene",
-    libelle: "Respect rigoureux de règles d’hygiène",
+    id: "p1_critere_incapacite_deplacement_autonome",
+    libelle: "Incapacité à se déplacer de manière autonome",
+    description:
+      "Votre pathologie, votre traitement ou un handicap ne vous permet pas de faire seul un long trajet, de prendre les transports en commun ni de conduire.",
+  },
+  {
+    id: "p1_critere_aide_technique",
+    libelle: "Aide technique et assistance pour monter dans le véhicule",
+    description:
+      "Vous utilisez un fauteuil roulant, un déambulateur ou des béquilles, et vous avez besoin d’aide pour monter dans le véhicule ou en descendre.",
+  },
+  {
+    id: "p1_critere_aide_professionnel",
+    libelle: "Aide d’un professionnel",
+    description:
+      "Aucun proche ne peut vous accompagner, et vous avez besoin d’un professionnel pendant le trajet ou pour les formalités liées au transport.",
+  },
+  {
+    id: "p1_critere_hygiene_desinfection",
+    libelle: "Règles d’hygiène ou désinfection du véhicule",
     description:
       "Votre état nécessite des conditions de transport limitant les risques liés à l’hygiène pendant le trajet.",
   },
   {
-    id: "p1_critere_risques_effets_secondaires",
-    libelle: "Risques d’effets secondaires pendant le transport",
+    id: "p1_critere_risque_effets_secondaires",
+    libelle: "Risque d’effets secondaires, de malaise ou de complications",
     description:
       "Votre état peut entraîner un malaise, une fatigue importante ou une réaction nécessitant un transport plus encadré.",
   },
   {
     id: "p1_critere_fauteuil_sans_transfert",
-    libelle: "Transport sans quitter le fauteuil roulant manuel ou électrique",
+    libelle: "Maintien dans le fauteuil roulant pendant le transport",
     description:
       "Le transport doit être adapté à votre fauteuil roulant et permettre le trajet sans transfert vers un siège classique.",
   },
   {
     id: "p1_critere_position_allongee_demi_assise",
-    libelle: "Position allongée ou demi-assise",
+    libelle: "Position allongée ou semi-allongée",
     description:
       "Votre état ne permet pas un transport assis classique pendant le trajet.",
   },
@@ -43,81 +62,75 @@ export const CRITERES: EntreeVulgarisee[] = [
     id: "p1_critere_brancardage_portage",
     libelle: "Brancardage ou portage",
     description:
-      "Votre état nécessite une aide physique importante pour être installé, déplacé ou transféré.",
+      "Votre état nécessite une aide physique importante pour être installé, déplacé ou transféré, même sur une courte distance.",
   },
   {
-    id: "p1_critere_surveillance_personne_qualifiee",
-    libelle: "Surveillance par une personne qualifiée",
+    id: "p1_critere_surveillance_constante",
+    libelle: "Surveillance constante et matériel de secours",
     description:
-      "Votre état nécessite une surveillance particulière pendant le transport.",
+      "Votre état peut se dégrader pendant le trajet : une personne qualifiée doit vous surveiller, avec du matériel de secours à disposition.",
   },
   {
     id: "p1_critere_oxygene",
-    libelle: "Oxygène pendant le transport",
+    libelle: "Administration d’oxygène",
     description:
       "Votre état nécessite la présence ou l’administration d’oxygène pendant le trajet.",
   },
   {
-    id: "p1_critere_asepsie",
-    libelle: "Conditions d’asepsie",
+    id: "p1_critere_isolement_asepsie",
+    libelle: "Isolement, asepsie ou désinfection stricts",
     description:
       "Votre état impose des conditions renforcées pour éviter un risque infectieux ou protéger votre santé.",
   },
   {
-    id: "p1_critere_aucune_situation_encadree",
-    libelle: "Aucune situation nécessitant une prise en charge plus encadrée",
+    id: "p1_critere_aucune_situation",
+    libelle: "Aucune aide ou condition particulière",
     description:
       "Les informations renseignées ne montrent pas de besoin médical imposant une ambulance, un VSL, un taxi conventionné ou un véhicule adapté au fauteuil roulant.",
   },
 ];
 
-// Motifs ouvrant droit identifiés ou déduits — mêmes règles que
-// `p1_motif_ouvrant_droit_identifie_ou_deduit` du modèle publicodes.
-export const MOTIFS: EntreeVulgarisee[] = [
+// Cas particuliers médicaux — mosaïque `p1_cas_particuliers_medicaux` (M0). Ils
+// ne changent pas le mode retenu, sauf le SMUR, la contrainte bariatrique seule
+// et la permission de sortie, qui tranchent le parcours dès la Partie 1.
+export const CAS_PARTICULIERS: EntreeVulgarisee[] = [
   {
-    id: "p1_motif_hospitalisation",
-    libelle: "Entrée ou sortie d’hospitalisation",
-    description:
-      "Le transport est lié à une hospitalisation, par exemple pour entrer à l’hôpital, en sortir, ou dans le cadre d’une prise en charge hospitalière.",
-  },
-  {
-    id: "p1_motif_seance_chimio_radio_hemodialyse",
-    libelle: "Séance de chimiothérapie, radiothérapie ou hémodialyse",
-    description:
-      "Le transport est lié à une séance de soins répétée ou spécialisée.",
-  },
-  {
-    id: "p1_ald_validee",
+    id: "p1_m0_smur",
     libelle:
-      "Soins ou examens en lien avec une ALD — Affection de Longue Durée",
-    description:
-      "Le transport est lié à une maladie reconnue comme affection de longue durée, lorsque les conditions médicales nécessaires sont remplies.",
-  },
-  {
-    id: "p1_motif_accident_travail_maladie_professionnelle",
-    libelle: "Accident du travail ou maladie professionnelle",
-    description:
-      "Le transport est lié à des soins en rapport avec un accident du travail ou une maladie professionnelle.",
-  },
-  {
-    id: "p1_motif_retour_etablissement_penitentiaire",
-    libelle:
-      "Retour vers établissement pénitentiaire avec prescription médicale",
-    description:
-      "Le transport concerne le retour vers un établissement pénitentiaire et repose sur une prescription médicale.",
-  },
-  {
-    id: "p1_critere_ambulance",
-    libelle: "Transport par ambulance justifié par l’état de santé du patient",
-    description:
-      "Votre état nécessite un transport en ambulance, par exemple en raison d’une position allongée, d’une surveillance, d’oxygène, d’un brancardage ou de conditions d’asepsie.",
-  },
-  {
-    id: "p1_situation_smur",
-    libelle:
-      "Transport par équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
+      "Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
     description:
       "Votre état nécessite l’intervention d’une équipe médicale d’urgence pendant le transport.",
+  },
+  {
+    id: "p1_m0_bariatrique",
+    libelle: "Équipement bariatrique adapté requis",
+    description:
+      "Le véhicule utilisé doit disposer d’un équipement adapté à votre morphologie ou à votre poids.",
+  },
+  {
+    id: "p1_m0_permission_sans_motif_medical",
+    libelle: "Permission de sortie demandée sans motif médical",
+    description:
+      "Le déplacement correspond à une permission de sortie que vous avez demandée, sans motif médical.",
+  },
+  {
+    id: "p1_m0_ald",
+    libelle:
+      "Soins ou examens liés à une ALD — Affection de Longue Durée — reconnue",
+    description:
+      "Le transport est lié à une maladie reconnue comme affection de longue durée par l’Assurance Maladie.",
+  },
+  {
+    id: "p1_m0_seance",
+    libelle: "Séance de dialyse, de radiothérapie ou de chimiothérapie",
+    description:
+      "Le transport est lié à une séance de soins répétée ou spécialisée, hémodialyse comprise.",
+  },
+  {
+    id: "p1_m0_aucun",
+    libelle: "Aucun cas médical particulier",
+    description:
+      "Aucune des situations médicales particulières prévues par le simulateur ne s’applique.",
   },
 ];
 

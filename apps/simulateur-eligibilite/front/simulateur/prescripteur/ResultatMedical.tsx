@@ -1,14 +1,20 @@
-// Page Résultat 1 — le résultat médical du transport, et l'information à
-// remettre au patient.
+// Page Résultat 1 — la décision médicale, et l'information à remettre au patient.
+//
+// Deux rendus, selon que la Partie 1 a tranché ou non. Le cas courant expose le
+// mode retenu et ce qui l'a justifié ; trois cas particuliers médicaux (SMUR,
+// contrainte bariatrique seule, permission de sortie sans motif médical) closent
+// au contraire le parcours ici même, sans qualification administrative.
 
 import type { Situation } from "publicodes";
-import { moteur, texte } from "../moteur";
+import type { CleDeRegle } from "../contrat-regles-publicodes";
+import { moteur, texte, vrai } from "../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
+  SousTitre,
 } from "../resultat/InformationPatient";
 import { TraceDebug } from "../resultat/TraceDebug";
-import { CRITERES, MOTIFS, retenus } from "../resultat/Vulgarisation";
+import { CAS_PARTICULIERS, CRITERES, retenus } from "../resultat/Vulgarisation";
 
 type Props = {
   situation: Situation<string>;
@@ -24,32 +30,26 @@ export function ResultatMedical({
   onRecommencer,
 }: Props) {
   const e = moteur.setSituation(situation);
-  const favorable = texte(e, "cible_resultat_medical") === "favorable";
+  const casFinal = texte(e, "cible_cas_final");
   const transport = texte(e, "cible_transport_sanitaire_prescrit");
-  const partie2Requise = texte(e, "cible_partie_2_requise") === "oui";
 
   return (
     <div>
-      <Verdict favorable={favorable} transport={transport} />
-      <InformationPatient e={e} favorable={favorable} transport={transport} />
+      <p>
+        La décision ci-dessous est établie à partir de l’état de santé et des
+        besoins du patient pendant le déplacement.
+      </p>
+      <Verdict casFinal={casFinal} transport={transport} />
+      <InformationPatient e={e} casFinal={casFinal} transport={transport} />
       <SuiteDuParcours
-        libelleSuite={
-          partie2Requise
-            ? "Compléter la partie administrative"
-            : "Voir le document à remettre au patient"
-        }
+        libelleSuite={libelleSuite(e)}
         onContinuer={onContinuer}
         onRecommencer={onRecommencer}
       />
       <TraceDebug
         titre="résultat médical"
         situation={situation}
-        sorties={[
-          "cible_resultat_medical",
-          "cible_transport_sanitaire_prescrit",
-          "cible_partie_2_requise",
-          "cible_cas_final",
-        ]}
+        sorties={SORTIES_TRACEES}
       />
     </div>
   );
@@ -57,45 +57,59 @@ export function ResultatMedical({
 
 // ---- implémentation ----
 
+// La Partie 2 n'est requise que si la Partie 1 n'a pas déjà tranché.
+function libelleSuite(e: typeof moteur): string {
+  return texte(e, "cible_partie_2_requise") === "oui"
+    ? "Compléter la partie administrative"
+    : "Voir le résultat final";
+}
+
 function Verdict({
-  favorable,
+  casFinal,
   transport,
 }: {
-  favorable: boolean;
+  casFinal: string;
   transport: string;
+}) {
+  const direct = CAS_DIRECTS[casFinal];
+  if (direct)
+    return <Alerte type="error" titre={direct.titre} texte={direct.verdict} />;
+  return (
+    <Alerte
+      type="success"
+      titre="Décision médicale établie"
+      texte={`Le mode de transport retenu est : ${transport}. C’est le mode le moins onéreux compatible avec l’état de santé et le niveau d’autonomie du patient.`}
+    />
+  );
+}
+
+function Alerte({
+  type,
+  titre,
+  texte: contenu,
+}: {
+  type: "success" | "error";
+  titre: string;
+  texte: string;
 }) {
   return (
     <div
-      className={`fr-alert fr-alert--${favorable ? "success" : "error"}`}
+      className={`fr-alert fr-alert--${type}`}
       style={{ marginBottom: "2rem" }}
     >
-      <h3 className="fr-alert__title">
-        {favorable
-          ? "Avis médical favorable"
-          : "Transport non justifié médicalement"}
-      </h3>
-      {favorable ? (
-        <p>
-          L'état de santé du patient justifie le transport sanitaire suivant :{" "}
-          {transport}.
-        </p>
-      ) : (
-        <p>
-          Les informations renseignées ne permettent pas de justifier une
-          prescription médicale de transport.
-        </p>
-      )}
+      <h3 className="fr-alert__title">{titre}</h3>
+      <p>{contenu}</p>
     </div>
   );
 }
 
 function InformationPatient({
   e,
-  favorable,
+  casFinal,
   transport,
 }: {
   e: typeof moteur;
-  favorable: boolean;
+  casFinal: string;
   transport: string;
 }) {
   return (
@@ -108,17 +122,18 @@ function InformationPatient({
         Information destinée au patient
       </h3>
       <div className="fr-callout__text">
-        {favorable ? (
-          <TransportJustifie e={e} transport={transport} />
-        ) : (
+        {CAS_DIRECTS[casFinal] ? (
           <ExplicationTransportImpossible />
+        ) : (
+          <TransportJustifie e={e} transport={transport} />
         )}
       </div>
     </div>
   );
 }
 
-// Cas favorable : le transport retenu, et ce qui l'a justifié.
+// Cas courant : le transport retenu, ce qui l'a justifié, et les deux mentions
+// qui ne modifient pas le mode mais accompagnent le véhicule.
 function TransportJustifie({
   e,
   transport,
@@ -139,15 +154,41 @@ function TransportJustifie({
         titreExplication="Quelques explications"
         criteres={retenus(e, CRITERES)}
         titreCriteres="Le ou les critères médicaux retenus sont les suivants"
-        motifs={retenus(e, MOTIFS)}
-        titreMotifs="Le ou les motifs ouvrant droit identifiés ou déduits sont les suivants"
+        casParticuliers={retenus(e, CAS_PARTICULIERS)}
+        titreCasParticuliers="Le ou les cas particuliers médicaux retenus sont les suivants"
       />
+      <MentionsDuVehicule e={e} />
+    </>
+  );
+}
+
+function MentionsDuVehicule({ e }: { e: typeof moteur }) {
+  const partageApplicable = vrai(e, "cible_transport_partage_applicable");
+  const partageIncompatible = vrai(e, "cible_transport_partage_incompatible");
+  return (
+    <>
+      {partageApplicable && (
+        <p>
+          {partageIncompatible
+            ? "Votre état de santé est incompatible avec un transport partagé."
+            : "Votre état de santé est compatible avec un transport partagé."}
+        </p>
+      )}
+      {vrai(e, "cible_equipement_bariatrique_requis") && (
+        <>
+          <SousTitre icone="fr-icon-car-line">Équipement du véhicule</SousTitre>
+          <p>
+            Le véhicule utilisé doit disposer d’un équipement bariatrique
+            adapté. Cette exigence ne modifie pas le mode retenu.
+          </p>
+        </>
+      )}
     </>
   );
 }
 
 // Les deux suites possibles depuis le résultat médical : repartir de zéro, ou
-// poursuivre — vers la Partie 2 si elle est requise, vers le document sinon.
+// poursuivre — vers la Partie 2 si elle est requise, vers le résultat sinon.
 function SuiteDuParcours({
   libelleSuite,
   onContinuer,
@@ -172,3 +213,31 @@ function SuiteDuParcours({
     </div>
   );
 }
+
+// Les trois cas particuliers médicaux qui closent le parcours dès la Partie 1.
+// Absent de cette table = décision standard.
+const CAS_DIRECTS: Record<string, { titre: string; verdict: string }> = {
+  SMUR: {
+    titre:
+      "Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
+    verdict:
+      "Le déplacement relève d’un transport par une équipe SMUR. Aucune prescription médicale de transport ni demande d’accord préalable ne doit être établie dans ce parcours.",
+  },
+  "bariatrique seul": {
+    titre: "Aucun transport prescriptible sur le seul fondement bariatrique",
+    verdict:
+      "La contrainte bariatrique ne constitue pas, à elle seule, un motif médical ouvrant droit à une prescription prise en charge par l’Assurance Maladie.",
+  },
+  "permission de sortie sans motif médical": {
+    titre: "Permission de sortie sans motif médical",
+    verdict:
+      "Le déplacement correspond à une permission de sortie demandée par le patient, sans motif médical : il ne donne pas lieu à une prescription médicale de transport.",
+  },
+};
+
+const SORTIES_TRACEES: CleDeRegle[] = [
+  "cible_resultat_medical",
+  "cible_transport_sanitaire_prescrit",
+  "cible_partie_2_requise",
+  "cible_cas_final",
+];

@@ -51,24 +51,25 @@ export function Bloc3CasRetenu({
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
 // la valeur brute de `cas_final`).
 const CAS_RETENU: Record<string, string> = {
-  "prescription médicale de transport": "Prescription Médicale de Transport",
-  "demande accord préalable": "Demande d’Accord Préalable",
-  "convocation ou avis audience":
+  "prescription médicale de transport":
+    "PMT (Prescription Médicale de Transport)",
+  "demande d’accord préalable": "DAP (Demande d’Accord Préalable)",
+  "convocation ou avis d’audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
-  "transport charge établissement":
+  "transport à la charge de l’établissement":
     "Transport à charge de l’établissement de santé",
-  "prestation non prise en charge par assurance maladie":
+  "prestation non prise en charge par l’Assurance Maladie":
     "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
   SMUR: "Transport par équipe SMUR",
   "bariatrique seul":
     "Contrainte bariatrique seule insuffisante pour une prise en charge Assurance Maladie",
-  "permission sortie sans motif médical":
+  "permission de sortie sans motif médical":
     "Permission de sortie demandée par le patient, sans motif médical",
-  "non éligible assurance maladie dans ce parcours":
+  "non éligible à une prise en charge par l’Assurance Maladie":
     "Non éligible Assurance Maladie dans ce parcours",
 };
 
-// Note corps médical propre à certains cas (v8.10) : rendue en complément de la
+// Note corps médical propre à certains cas : rendue en complément de la
 // checklist. Contenus repris de ui.yaml → result_pages.resultat_2.blocks.
 function NoteCorpsMedical({
   casFinal,
@@ -77,7 +78,7 @@ function NoteCorpsMedical({
   casFinal: string;
   article80: Article80;
 }) {
-  if (casFinal === "prestation non prise en charge par assurance maladie") {
+  if (casFinal === "prestation non prise en charge par l’Assurance Maladie") {
     return (
       <div className="fr-mt-2w">
         <p>
@@ -96,7 +97,7 @@ function NoteCorpsMedical({
       </div>
     );
   }
-  if (casFinal === "transport charge établissement") {
+  if (casFinal === "transport à la charge de l’établissement") {
     return (
       <div className="fr-mt-2w">
         <Article80CorpsMedical article80={article80} />

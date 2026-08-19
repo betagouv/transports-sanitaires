@@ -111,10 +111,6 @@ function cibles(e: typeof moteur) {
     article80: {
       mode: texte(e, "cible_article_80_mode"),
       situationSpecifique: vrai(e, "cible_article_80_situation_specifique"),
-      permissionTherapeutique: vrai(
-        e,
-        "cible_article_80_permission_sortie_therapeutique",
-      ),
     } satisfies Article80,
   };
 }

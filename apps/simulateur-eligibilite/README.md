@@ -79,6 +79,39 @@ protège. Ce qu'on en attend d'un contributeur est écrit dans
 Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle,
 `mise run verifier` passe la vérification sur les trois apps.
 
+## Le modèle de règles
+
+`regles/regles.publicodes` est **livré de l'extérieur et intégré par recopie** —
+aujourd'hui la **v9.1** (161 règles). Le paquet du fournisseur apporte aussi un
+contrat d'interface (`*.ui.yaml`, schéma 2.0.0) et une matrice de tests, tous deux
+réencodés ici plutôt que chargés : le contrat d'interface se lit dans les
+composants, la matrice dans `tests/simulateur/regression-v9-1.test.ts` et
+`familles-v9-1.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
+`SERIE-001`, `ARTICLE80-003`…) pour qu'un désaccord remonte au fournisseur sous
+son nom.
+
+Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
+
+| Ce qui est vérifié | Par quoi |
+| --- | --- |
+| Le code ne nomme que des règles existantes | `contrat-regles-publicodes.ts` (TypeScript) **et** `tests/regles-front.test.ts` (les noms existent dans le modèle) |
+| Le code ne compare qu'à des **valeurs** existantes | `tests/regles-front.test.ts › valeurs comparées aux sorties du moteur` — c'est la seule garde contre une reformulation en amont, que le typage ne voit pas |
+| Chaque cas final est traité par les trois blocs de la Page Résultat 2 | `tests/regles-front.test.ts › exhaustivité de la Page Résultat 2` |
+
+### Le correctif local à la v9.1
+
+Le modèle livré déclare les **douze saisies d'adresse** (`p2_depart_*`,
+`p2_arrivee_*`) sans type. Publicodes en déduit alors `booléen` — toute règle
+portant `question` et rien d'autre l'est — et `@publicodes/forms` rend une case à
+cocher là où le contrat d'interface 2.0.0 demande un champ texte. On ajoute donc
+`type: texte` sur ces douze règles, et les trois règles qui les consommaient comme
+des booléens (`p2_depart_nom_complete`, `p2_arrivee_nom_complete`,
+`p2_adresses_obligatoires_completes`) testent leur présence par `est défini`.
+
+**À rejouer à chaque livraison** tant que le fournisseur ne l'a pas intégré : une
+recopie brute du YAML annule le correctif, et le symptôme est silencieux — douze
+cases à cocher au lieu de douze champs.
+
 ## Configuration
 
 Copier `.env.example` → `.env` (gitignoré). Les variables `VITE_*` sont lues au **build**
@@ -142,6 +175,8 @@ front/                   front (bundlé par Vite)
     seeds/               catalogue des situations de référence + GalerieSeeds.tsx
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
       cerfa/             prescription CERFA pré-remplie, générée dans le navigateur
+                         depuis-simulateur.ts  la traduction situation → saisies
+                         lieux-du-trajet.ts    départ et arrivée, adresses comprises
   analytics/             evenements.ts le vocabulaire mesuré, seul import du reste
                          matomo.ts     le transport (tag `_paq`, config, émission)
 ```

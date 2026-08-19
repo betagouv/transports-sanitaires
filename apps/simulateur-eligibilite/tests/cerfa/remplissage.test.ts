@@ -48,6 +48,15 @@ const situation = (entrées: Record<string, string>) => ({
   ...entrées,
 });
 
+// Les réponses v9.1 que ces cas répètent : un besoin professionnel (sans quoi
+// Q1.1 n'est pas posée et aucun critère ne compte) et un contexte ouvrant droit.
+const AIDE_PROFESSIONNEL =
+  "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
+const HOSPITALISATION = {
+  p2_contexte_hospitalisation: "oui",
+  p2_contexte_aucun: "non",
+};
+
 describe("gabarit CERFA n° 11574*07", () => {
   it("est un formulaire interactif dont les champs couvrent les deux volets", async () => {
     const document = await PDFDocument.load(GABARIT);
@@ -136,9 +145,10 @@ describe("saisiesDepuisSituation", () => {
     const saisies = saisiesDepuisSituation(
       moteurDeTest(),
       situation({
-        p1_motif_hospitalisation: "oui",
+        p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_position_allongee_demi_assise: "oui",
         p1_critere_brancardage_portage: "oui",
+        ...HOSPITALISATION,
       }),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
@@ -159,8 +169,9 @@ describe("saisiesDepuisSituation", () => {
     const saisies = saisiesDepuisSituation(
       moteurDeTest(),
       situation({
-        p1_motif_hospitalisation: "oui",
+        p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_fauteuil_sans_transfert: "oui",
+        ...HOSPITALISATION,
       }),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
@@ -175,12 +186,16 @@ describe("saisiesDepuisSituation", () => {
     const saisies = saisiesDepuisSituation(
       moteurDeTest(),
       situation({
-        p1_motif_hospitalisation: "oui",
+        p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_brancardage_portage: "oui",
-        p2_trajet_aller_retour: "'Aller-retour'",
+        ...HOSPITALISATION,
+        p2_trajet_aller_retour: "'aller-retour identique'",
         p2_trajet_depart: "'Domicile'",
-        p2_trajet_arrivee: "'Structure de soins'",
-        p2_transport_urgence: "'Appel SAMU - Centre 15'",
+        p2_trajet_arrivee:
+          "'Une structure de soins différente du lieu de départ.'",
+        p2_arrivee_nom_lieu: "'CH de Vannes'",
+        p2_transport_urgence:
+          "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'",
         p2_nombre_transports_prevus: "3",
       }),
     );
@@ -193,10 +208,13 @@ describe("saisiesDepuisSituation", () => {
       [PRESCRIPTION.urgenceSamu.nom]: "/On",
       [SITUATION.accidentTiersNon.nom]: "/NON",
     });
-    // L'arrivée est une structure de soins : le type est connu, pas son adresse —
-    // on ne coche donc pas « domicile » et on laisse le champ libre au prescripteur.
+    // L'arrivée est une structure de soins : on ne coche pas « domicile », et la
+    // v9.1 permet d'écrire le lieu détaillé — nom, adresse, code postal, commune
+    // aplatis sur l'unique ligne du formulaire.
     expect(lu).not.toHaveProperty(TRAJET.arrivéeDomicile.nom);
-    expect(lu).not.toHaveProperty(TRAJET.arrivéeStructureSoins);
+    expect(lu[TRAJET.arrivéeStructureSoins]).toBe(
+      "CH de Vannes, 2 rue de l’Arrivée, 75002, Paris",
+    );
   });
 
   it("laisse « transports itératifs » vide pour un transport en série", async () => {
@@ -205,10 +223,11 @@ describe("saisiesDepuisSituation", () => {
     // plus de 50 km). Une série n'exige un accord préalable que si l'ALD n'est pas
     // validée : sous ALD validée elle reste une prescription, et arrive donc ici.
     const série = situation({
-      p1_motif_ald: "oui",
-      p1_ald_lien_avec_ald_reconnue: "oui",
-      p1_ald_incapacite_ou_deficience: "oui",
+      p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_position_allongee_demi_assise: "oui",
+      p1_m0_ald: "oui",
+      p1_m0_seance: "oui",
+      p1_m0_aucun: "non",
       p2_nombre_transports_prevus: "4",
       p2_chaque_trajet_aller_superieur_50km: "oui",
     });
@@ -238,7 +257,7 @@ describe("saisiesDepuisSituation", () => {
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     expect(lu).toMatchObject({
-      // Deux motifs ouvrant droit cumulés.
+      // Deux contextes administratifs cumulés.
       [SITUATION.entréeSortieHospitalisation.nom]: "/NON", // état d'export
       [SITUATION.accidentTravailMaladiePro.nom]: "/On",
       // Les cinq justifications d'ambulance.
@@ -254,15 +273,16 @@ describe("saisiesDepuisSituation", () => {
       [PRESCRIPTION.urgenceSamu.nom]: "/On",
       [SITUATION.accidentTiersOui.nom]: "/OUI",
     });
-    expect(saisies).toHaveLength(12);
+    expect(saisies).toHaveLength(13);
   });
 
   it("refuse de produire ce CERFA quand le cas final relève d'un autre document", () => {
     // Transport en série : le simulateur conclut à une demande d'accord préalable
     // (formulaire S3139), pas à cette prescription.
     const accordPréalable = situation({
-      p1_motif_hospitalisation: "oui",
+      p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_brancardage_portage: "oui",
+      ...HOSPITALISATION,
       p2_distance_aller_superieure_150km: "oui",
     });
 

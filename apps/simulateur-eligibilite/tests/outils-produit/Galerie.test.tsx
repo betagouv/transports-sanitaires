@@ -52,7 +52,7 @@ describe("écran de galerie", () => {
 
   it("donne à chaque seed son régime de financement, non-conformités comprises", () => {
     // La colonne « Qui paie » est ce qui rend une non-conformité repérable d'un
-    // coup d'œil : un régime autre qu'« assurance maladie ».
+    // coup d'œil : un régime autre qu'« Assurance Maladie ».
     render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
 
     const ligne = (id: string) =>
@@ -63,11 +63,11 @@ describe("écran de galerie", () => {
     expect(ligne("secretariat-detenu-inter-etablissements")).toHaveTextContent(
       "établissement prescripteur",
     );
-    expect(ligne("prescripteur-ald-sans-lien")).toHaveTextContent(
-      "à qualifier",
+    expect(ligne("prescripteur-ald-sans-incapacite")).toHaveTextContent(
+      "aucune prise en charge dans ce parcours",
     );
     expect(ligne("secretariat-prescription")).toHaveTextContent(
-      "assurance maladie",
+      "Assurance Maladie",
     );
   });
 
@@ -119,12 +119,14 @@ describe("galerie branchée sur l'App", () => {
     // Page Résultat 1 : le transport retenu est celui qu'annonce la seed, sans
     // avoir répondu à une seule question.
     expect(
-      await screen.findByRole("heading", { name: "Avis médical favorable" }),
+      await screen.findByRole("heading", {
+        name: /décision médicale établie/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/justifie le transport sanitaire suivant/),
+      screen.getByText(/le mode de transport retenu est/i),
     ).toHaveTextContent("ambulance");
-    expect(screen.queryByRole("group", { name: /équipe SMUR/i })).toBeNull();
+    expect(screen.queryByRole("group", { name: /^le patient/i })).toBeNull();
   });
 
   it("ouvre une seed de Partie 2 sur la page de résultat final", async () => {
@@ -174,7 +176,7 @@ describe("galerie branchée sur l'App", () => {
 
     await user.click(screen.getByRole("button", { name: "Retour" }));
     expect(
-      await screen.findByRole("group", { name: /équipe SMUR/i }),
+      await screen.findByRole("group", { name: /^le patient/i }),
     ).toBeInTheDocument();
   });
 });

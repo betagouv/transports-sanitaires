@@ -3,14 +3,14 @@ import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
 import { evaluerSeed } from "../../front/outils-produit/seeds/seed";
 import { moteurDeTest } from "./moteur";
 
-// Matrice de non-régression métier (règles plates v8.10). Elle n'a pas de scénarios
+// Matrice de non-régression métier (règles plates v9.1). Elle n'a pas de scénarios
 // à elle : elle rejoue le **catalogue de seeds** (`front/outils-produit/seeds/`), qui est
 // aussi ce qu'affiche la galerie dev. Ajouter une situation de référence, c'est
 // donc l'ajouter au catalogue — elle devient du même geste testée et consultable.
 
 const moteur = moteurDeTest();
 
-describe("modèle v8.10 — le moteur confirme les attendus des seeds", () => {
+describe("modèle v9.1 — le moteur confirme les attendus des seeds", () => {
   for (const seed of SEEDS) {
     it(seed.id, () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
@@ -24,18 +24,18 @@ describe("modèle v8.10 — le moteur confirme les attendus des seeds", () => {
   }
 });
 
-describe("modèle v8.10 — couverture des cas finaux", () => {
+describe("modèle v9.1 — couverture des cas finaux", () => {
   it("les 9 cas finaux sont atteints par le catalogue", () => {
     const attendus = [
       "prescription médicale de transport",
-      "demande accord préalable",
-      "convocation ou avis audience",
-      "transport charge établissement",
-      "prestation non prise en charge par assurance maladie",
+      "demande d’accord préalable",
+      "convocation ou avis d’audience",
+      "transport à la charge de l’établissement",
+      "prestation non prise en charge par l’Assurance Maladie",
       "SMUR",
       "bariatrique seul",
-      "permission sortie sans motif médical",
-      "non éligible assurance maladie dans ce parcours",
+      "permission de sortie sans motif médical",
+      "non éligible à une prise en charge par l’Assurance Maladie",
     ];
     const couverts = new Set(
       SEEDS.map(
@@ -46,16 +46,16 @@ describe("modèle v8.10 — couverture des cas finaux", () => {
   });
 });
 
-describe("modèle v8.10 — couverture des régimes de financement", () => {
+describe("modèle v9.1 — couverture des régimes de financement", () => {
   it("les 5 régimes sont atteints par le catalogue", () => {
     // L'axe sur lequel se lit une non-conformité : un transport dont le régime
     // n'est pas « assurance maladie » ne doit pas lui être facturé.
     const attendus = [
-      "assurance maladie",
+      "Assurance Maladie",
       "établissement prescripteur",
       "patient",
       "urgence spécifique",
-      "à qualifier",
+      "aucune prise en charge dans ce parcours",
     ];
     const couverts = new Set(
       SEEDS.map(
@@ -65,28 +65,16 @@ describe("modèle v8.10 — couverture des régimes de financement", () => {
     for (const régime of attendus) expect(couverts).toContain(régime);
   });
 
-  it("distingue les deux volets de l'Article 80", () => {
-    // Trois seeds concluent à une charge de l'établissement pour trois raisons
-    // différentes : sans ces deux drapeaux, elles seraient indiscernables.
-    const drapeaux = (id: string) => {
-      const { valeurs } = evaluerSeed(moteur, SEEDS.find((s) => s.id === id)!);
-      return [
-        valeurs.cible_article_80_situation_specifique,
-        valeurs.cible_article_80_permission_sortie_therapeutique,
-      ];
-    };
-    expect(drapeaux("secretariat-detenu-inter-etablissements")).toEqual([
-      true,
-      false,
-    ]);
-    expect(drapeaux("secretariat-permission-therapeutique")).toEqual([
-      false,
-      true,
-    ]);
-    expect(drapeaux("secretariat-charge-etablissement")).toEqual([
-      false,
-      false,
-    ]);
+  it("distingue les deux Article 80", () => {
+    // Deux seeds concluent à une charge de l'établissement pour deux raisons
+    // différentes : sans ce drapeau, elles seraient indiscernables. La v9.1 a
+    // retiré le second volet (permission de sortie thérapeutique), devenu un cas
+    // particulier médical qui tranche dès la Partie 1.
+    const spécifique = (id: string) =>
+      evaluerSeed(moteur, SEEDS.find((s) => s.id === id)!).valeurs
+        .cible_article_80_situation_specifique;
+    expect(spécifique("secretariat-detenu-inter-etablissements")).toBe(true);
+    expect(spécifique("secretariat-charge-etablissement")).toBe(false);
   });
 });
 

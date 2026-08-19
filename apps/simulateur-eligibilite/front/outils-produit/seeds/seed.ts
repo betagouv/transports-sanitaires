@@ -33,7 +33,6 @@ const CIBLES_SEED = [
   "cible_regime_financement",
   // Article 80 : ce qui distingue deux transports à la charge de l'établissement.
   "cible_article_80_situation_specifique",
-  "cible_article_80_permission_sortie_therapeutique",
 ] as const satisfies readonly Cible[];
 
 export type CibleSeed = (typeof CIBLES_SEED)[number];

@@ -3,31 +3,23 @@
 // corps médical (Bloc 3), qui ne disent pas la même chose. Les regrouper ici évite
 // que les deux volets divergent au fil des évolutions du modèle.
 //
-// Contenus différenciés v8.10 selon le mode retenu et les situations spécifiques
-// (détenu / UHSA-UHSI…). Repris de tmp/8.10/transports-sanitaires.ui.v8-10.yaml
-// → result_pages.resultat_2.blocks.article_80.
+// Contenus différenciés selon le mode retenu et les situations spécifiques
+// (détenu / UHSA-UHSI…).
+//
+// La v9.1 a retiré du modèle la permission de sortie thérapeutique : elle n'est
+// plus une variante de l'Article 80 mais un cas particulier médical (M0) qui
+// tranche dès la Partie 1. Le volet patient n'a donc plus qu'un seul rendu.
 
 export type Article80 = {
-  // "transport professionnel" | "véhicule personnel ou transports en commun" | "non applicable"
+  // "transport professionnel" | "véhicule personnel ou transport en commun" | "non applicable"
   mode: string;
   situationSpecifique: boolean;
-  permissionTherapeutique: boolean;
 };
 
 // Volet patient. La variante « situation spécifique » (détenu/UHSA-UHSI) n'évoque
 // jamais le véhicule personnel ni les transports en commun (contrainte ui.yaml).
 export function Article80Patient({ article80 }: { article80: Article80 }) {
-  return (
-    <>
-      {article80.permissionTherapeutique && (
-        <p>
-          La permission de sortie est accordée pour un motif thérapeutique. Le
-          transport est à la charge de l’établissement.
-        </p>
-      )}
-      <ConsignesPatient article80={article80} />
-    </>
-  );
+  return <ConsignesPatient article80={article80} />;
 }
 
 // Volet corps médical.
@@ -125,5 +117,5 @@ function ConsigneCorpsMedical({ article80 }: { article80: Article80 }) {
 }
 
 function estVehiculePersonnel(article80: Article80): boolean {
-  return article80.mode === "véhicule personnel ou transports en commun";
+  return article80.mode === "véhicule personnel ou transport en commun";
 }

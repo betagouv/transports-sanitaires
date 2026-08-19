@@ -29,7 +29,7 @@ describe("écran-porte d'identification", () => {
     expect(
       screen.getByRole("combobox", { name: /Établissement/ }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: /équipe SMUR/i })).toBeNull();
+    expect(screen.queryByRole("group", { name: /^le patient/i })).toBeNull();
   });
 
   it("passe au simulateur une fois le prescripteur validé", async () => {
@@ -44,7 +44,7 @@ describe("écran-porte d'identification", () => {
 
     // Le simulateur est monté : une question de Partie 1 apparaît (plus de titre h1).
     expect(
-      await screen.findByRole("group", { name: /équipe SMUR/i }),
+      await screen.findByRole("group", { name: /^le patient/i }),
     ).toBeInTheDocument();
   });
 });

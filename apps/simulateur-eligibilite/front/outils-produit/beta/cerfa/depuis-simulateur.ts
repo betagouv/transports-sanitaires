@@ -15,6 +15,7 @@ import {
   SITUATION,
   TRAJET,
 } from "./champs-cerfa.ts";
+import { saisiesLieux } from "./lieux-du-trajet.ts";
 import type { Saisie } from "./remplir-cerfa.ts";
 
 /** Levée quand la situation ne conduit pas à ce CERFA (autre document, ou aucun). */
@@ -58,6 +59,7 @@ export function saisiesDepuisSituation(
     ...saisiesSituation(vrai),
     ...saisiesModeTransport(
       vrai,
+      valeur,
       valeur("cible_transport_sanitaire_prescrit") as ModePrescrit,
     ),
     ...saisiesTrajet(valeur),
@@ -85,13 +87,11 @@ export const RESTE_A_SAISIR = {
     "N° immat assuré",
     "clé 1",
   ],
-  /** Le type de lieu est déduit ; l'adresse ou le nom de la structure, jamais. */
-  trajet: [
-    "départ autre lieu",
-    "départ struct soins",
-    "arrivée autre lieu",
-    "arrivée struct soins",
-  ],
+  /**
+   * Le trajet est intégralement déduit depuis la v9.1 : type de lieu, nom de la
+   * structure et adresse. Rien n'y reste à saisir.
+   */
+  trajet: [],
   /**
    * Le référentiel d'identification ne porte aujourd'hui que des libellés
    * (`{ id, libelle }`) : ni RPPS, ni FINESS/SIRET, ni adresse de structure.
@@ -118,13 +118,24 @@ export const RESTE_A_SAISIR = {
 
 // ---- implémentation ----
 
-type ModePrescrit =
-  | "aucun"
-  | "véhicule personnel ou transport en commun"
-  | "VSL ou taxi conventionné"
-  | "VSL TPMR ou taxi conventionné TPMR"
-  | "ambulance"
-  | "transport par équipe SMUR";
+/**
+ * Les six valeurs de `cible_transport_sanitaire_prescrit`, recopiées mot pour mot
+ * du modèle. Nommées plutôt qu'écrites au point d'appel — seule exception à la
+ * règle du contrat de règles : depuis la v9.1 chaque abréviation traîne sa
+ * définition, et la variante TPMR pèse à elle seule 150 caractères.
+ * `tests/regles-front.test.ts` les confronte aux possibilités du modèle.
+ */
+const MODE = {
+  aucun: "aucun",
+  véhiculePersonnel: "véhicule personnel ou transport en commun",
+  assis: "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+  assisTPMR:
+    "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)",
+  ambulance: "ambulance",
+  smur: "transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)",
+} as const;
+
+type ModePrescrit = (typeof MODE)[keyof typeof MODE];
 
 const JUSTIFICATIONS_AMBULANCE = [
   [
@@ -133,11 +144,11 @@ const JUSTIFICATIONS_AMBULANCE = [
   ],
   ["p1_critere_brancardage_portage", MODE_TRANSPORT.brancardagePortage],
   [
-    "p1_critere_surveillance_personne_qualifiee",
+    "p1_critere_surveillance_constante",
     MODE_TRANSPORT.surveillancePersonneQualifiée,
   ],
   ["p1_critere_oxygene", MODE_TRANSPORT.oxygène],
-  ["p1_critere_asepsie", MODE_TRANSPORT.asepsieRigoureuse],
+  ["p1_critere_isolement_asepsie", MODE_TRANSPORT.asepsieRigoureuse],
 ] as const satisfies ReadonlyArray<readonly [CleDeRegle, ChampCase]>;
 
 type Lecteur = (règle: CleDeRegle) => unknown;
@@ -146,18 +157,15 @@ type Predicat = (règle: CleDeRegle) => boolean;
 /** ❶ Situation permettant la prise en charge (plusieurs choix possibles). */
 function saisiesSituation(vrai: Predicat): Saisie[] {
   const saisies: Saisie[] = [];
-  if (
-    vrai("p1_motif_hospitalisation") ||
-    vrai("p1_motif_seance_chimio_radio_hemodialyse")
-  ) {
+  if (vrai("p2_contexte_hospitalisation") || vrai("p1_m0_seance")) {
     // Le CERFA réunit sur une seule case l'hospitalisation et les séances
-    // (chimio / radio / hémodialyse) que le simulateur distingue.
+    // (dialyse / radiothérapie / chimiothérapie) que le simulateur distingue.
     saisies.push({ case: SITUATION.entréeSortieHospitalisation });
   }
-  if (vrai("p1_motif_accident_travail_maladie_professionnelle")) {
+  if (vrai("p2_contexte_at_mp")) {
     saisies.push({ case: SITUATION.accidentTravailMaladiePro });
   }
-  // `p1_motif_ald` ne dit rien du caractère **exonérant** de l'ALD, seule
+  // `p1_m0_ald` ne dit rien du caractère **exonérant** de l'ALD, seule
   // distinction que le CERFA demande : la case reste au prescripteur.
   return saisies;
 }
@@ -172,72 +180,85 @@ function saisiesSituation(vrai: Predicat): Saisie[] {
  */
 function saisiesModeTransport(
   vrai: Predicat,
+  valeur: Lecteur,
   transport: ModePrescrit,
 ): Saisie[] {
-  if (transport === "ambulance") {
-    return JUSTIFICATIONS_AMBULANCE.filter(([règle]) => vrai(règle)).map(
-      ([, champ]) => ({ case: champ }),
-    );
-  }
-
-  if (
-    transport === "VSL ou taxi conventionné" ||
-    transport === "VSL TPMR ou taxi conventionné TPMR"
-  ) {
-    const saisies: Saisie[] = [{ case: MODE_TRANSPORT.assisProfessionnalisé }];
-    if (transport === "VSL TPMR ou taxi conventionné TPMR") {
-      saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
-    }
-    if (vrai("cible_transport_partage_incompatible")) {
-      saisies.push({ case: MODE_TRANSPORT.transportPartagéIncompatible });
-    }
-    return saisies;
-  }
-
-  // Le CERFA sépare deux cases (véhicule individuel / transports en commun) là
-  // où le simulateur n'en a qu'une : on ne peut pas trancher à sa place.
-  if (
-    transport === "véhicule personnel ou transport en commun" &&
-    vrai("cible_accompagnant_necessaire")
-  ) {
-    return [{ case: MODE_TRANSPORT.accompagnantNécessaire }];
-  }
-
+  if (transport === MODE.ambulance) return justificationsAmbulance(vrai);
+  if (transport === MODE.assis || transport === MODE.assisTPMR)
+    return transportAssis(vrai, transport);
+  if (transport === MODE.véhiculePersonnel) return véhiculePersonnel(valeur);
   return [];
+}
+
+// Une ambulance ne se prescrit pas sans dire pourquoi : le CERFA exige au moins
+// une des cinq justifications, et ce sont les critères cochés en Q1.1.
+function justificationsAmbulance(vrai: Predicat): Saisie[] {
+  return JUSTIFICATIONS_AMBULANCE.filter(([règle]) => vrai(règle)).map(
+    ([, champ]) => ({ case: champ }),
+  );
+}
+
+function transportAssis(vrai: Predicat, transport: ModePrescrit): Saisie[] {
+  const saisies: Saisie[] = [{ case: MODE_TRANSPORT.assisProfessionnalisé }];
+  if (transport === MODE.assisTPMR)
+    saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
+  if (vrai("cible_transport_partage_incompatible"))
+    saisies.push({ case: MODE_TRANSPORT.transportPartagéIncompatible });
+  return saisies;
+}
+
+// Le CERFA sépare deux cases (véhicule individuel / transports en commun) là où
+// le simulateur n'en a qu'une : on ne peut pas trancher à sa place. Seul
+// l'accompagnant se déduit.
+function véhiculePersonnel(valeur: Lecteur): Saisie[] {
+  return accompagnantNécessaire(valeur)
+    ? [{ case: MODE_TRANSPORT.accompagnantNécessaire }]
+    : [];
 }
 
 /** Rubriques du trajet, de l'urgence et de l'accident — issues de la Partie 2. */
 function saisiesTrajet(valeur: Lecteur): Saisie[] {
-  const saisies: Saisie[] = [];
-
-  if (valeur("p2_trajet_aller_retour") === "Aller-retour") {
-    saisies.push({ case: TRAJET.allerRetour });
-  }
-
-  // Seul le **type** de lieu est modélisé. « Domicile » se coche ; « structure de
-  // soins » et « autre lieu » ouvrent un champ d'adresse que le simulateur ne
-  // connaît pas — d'où leur présence dans `RESTE_A_SAISIR.trajet`.
-  if (valeur("p2_trajet_depart") === "Domicile")
-    saisies.push({ case: TRAJET.départDomicile });
-  if (valeur("p2_trajet_arrivee") === "Domicile")
-    saisies.push({ case: TRAJET.arrivéeDomicile });
-
-  const urgence = valeur("p2_transport_urgence");
-  if (urgence === "Appel SAMU - Centre 15")
-    saisies.push({ case: PRESCRIPTION.urgenceSamu });
-  if (urgence === "Autre urgence")
-    saisies.push({ case: PRESCRIPTION.urgenceAutre });
-
-  const tiers = valeur("p2_accident_cause_par_tiers");
-  if (tiers === "Oui, en rapport avec un accident causé par un tiers") {
-    saisies.push({ case: SITUATION.accidentTiersOui });
-  } else if (tiers === "Non") {
-    saisies.push({ case: SITUATION.accidentTiersNon });
-  }
-
-  saisies.push(...saisieTransportsItératifs(valeur));
-  return saisies;
+  const allerRetour = valeur("p2_trajet_aller_retour");
+  return [
+    ...(allerRetour === "aller-retour identique" ||
+    allerRetour === "aller-retour différent"
+      ? [{ case: TRAJET.allerRetour }]
+      : []),
+    ...saisiesLieux(valeur),
+    ...saisiesUrgence(valeur),
+    ...saisiesAccidentTiers(valeur),
+    ...saisieTransportsItératifs(valeur),
+  ];
 }
+
+/** ❹ Urgence : deux cases, mutuellement exclusives. */
+function saisiesUrgence(valeur: Lecteur): Saisie[] {
+  const urgence = valeur("p2_transport_urgence");
+  if (urgence === "Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15")
+    return [{ case: PRESCRIPTION.urgenceSamu }];
+  if (urgence === "Autre situation d’urgence attestée par le prescripteur")
+    return [{ case: PRESCRIPTION.urgenceAutre }];
+  return [];
+}
+
+// La v9.1 pose A4.6 en oui/non : les deux cases du CERFA (elles aussi
+// mutuellement exclusives) suivent directement le booléen.
+function saisiesAccidentTiers(valeur: Lecteur): Saisie[] {
+  const tiers = valeur("p2_accident_cause_par_tiers");
+  if (tiers === true) return [{ case: SITUATION.accidentTiersOui }];
+  if (tiers === false) return [{ case: SITUATION.accidentTiersNon }];
+  return [];
+}
+
+// Le proche accompagnant : la v9.1 n'expose plus de cible dédiée, c'est la
+// deuxième réponse de Q1 qui le dit — un patient qui se déplace avec un proche
+// pour l'aider ou transmettre les informations à l'équipe soignante.
+function accompagnantNécessaire(valeur: Lecteur): boolean {
+  return valeur("p1_autonomie") === PROCHE_ACCOMPAGNANT;
+}
+
+const PROCHE_ACCOMPAGNANT =
+  "Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.";
 
 // La notice réserve « nombre de transports itératifs » aux transports répétés
 // **ne correspondant pas** à la définition du transport en série (≥ 4 transports

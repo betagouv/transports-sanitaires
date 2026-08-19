@@ -9,7 +9,7 @@ import {
   PourquoiCeTransport,
   SousTitre,
 } from "../resultat/InformationPatient";
-import { CRITERES, MOTIFS, retenus } from "../resultat/Vulgarisation";
+import { CAS_PARTICULIERS, CRITERES, retenus } from "../resultat/Vulgarisation";
 import { type Article80, Article80Patient } from "./Article80";
 import { EtapesPatient } from "./EtapesPatient";
 
@@ -17,19 +17,20 @@ import { EtapesPatient } from "./EtapesPatient";
 const RESTE_A_CHARGE: Record<string, string> = {
   "prescription médicale de transport":
     "Votre transport peut être pris en charge par l’Assurance Maladie selon les règles applicables à votre situation. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
-  "demande accord préalable":
+  "demande d’accord préalable":
     "Votre transport peut être pris en charge par l’Assurance Maladie uniquement si l’accord préalable est obtenu. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
-  "convocation ou avis audience":
+  "convocation ou avis d’audience":
     "La convocation ou l’avis d’audience sert de document patient pour votre transport. La prise en charge dépend des règles applicables à cette convocation ou à cet avis. Un reste à charge peut exister selon votre situation.",
-  "transport charge établissement":
+  "transport à la charge de l’établissement":
     "Ce transport est à la charge de l’établissement de santé. Le service ou le secrétariat de l’établissement vous indiquera les modalités d’organisation applicables.",
-  "prestation non prise en charge par assurance maladie":
+  "prestation non prise en charge par l’Assurance Maladie":
     "La prestation à l’origine du déplacement n’étant pas prise en charge par l’Assurance Maladie, le transport ne peut pas être pris en charge, même si un mode de transport est médicalement adapté. N’adressez aucune demande de remboursement à votre caisse pour ce déplacement.",
   SMUR: "Ce transport est organisé dans le cadre de l’urgence médicale. Les éventuelles informations de facturation ou de prise en charge sont communiquées par l’établissement concerné.",
   "bariatrique seul":
     "Aucune prise en charge par l’Assurance Maladie n’est ouverte au titre du seul motif bariatrique. Les solutions éventuelles et leur coût doivent être vus avec le service médical ou le secrétariat.",
-  "permission sortie sans motif médical": "Le transport reste à votre charge.",
-  "non éligible assurance maladie dans ce parcours":
+  "permission de sortie sans motif médical":
+    "Le transport reste à votre charge.",
+  "non éligible à une prise en charge par l’Assurance Maladie":
     "Le transport reste à votre charge.",
 };
 
@@ -75,7 +76,7 @@ function OrganisationEtDefraiement({
   casFinal,
   article80,
 }: Pick<Props, "casFinal" | "article80">) {
-  if (casFinal !== "transport charge établissement") return null;
+  if (casFinal !== "transport à la charge de l’établissement") return null;
   return (
     <>
       <SousTitre icone="fr-icon-bank-line">
@@ -110,8 +111,8 @@ function TransportJustifie({ e, transport }: Pick<Props, "e" | "transport">) {
         titreExplication="Pourquoi ce transport ?"
         criteres={retenus(e, CRITERES)}
         titreCriteres="Critères médicaux retenus"
-        motifs={retenus(e, MOTIFS)}
-        titreMotifs="Motifs ouvrant droit identifiés ou déduits"
+        casParticuliers={retenus(e, CAS_PARTICULIERS)}
+        titreCasParticuliers="Cas particuliers médicaux retenus"
       />
     </>
   );

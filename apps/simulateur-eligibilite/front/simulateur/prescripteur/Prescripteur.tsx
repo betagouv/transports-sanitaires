@@ -66,8 +66,6 @@ function EvaluationMedicale({
         "cible_transport_sanitaire_prescrit",
         "cible_partie_2_requise",
         "cible_transport_partage_incompatible",
-        "cible_autonomie_patient",
-        "cible_accompagnant_necessaire",
       ]}
       libelleFin="Voir le résultat médical"
       onTermine={(s) => {

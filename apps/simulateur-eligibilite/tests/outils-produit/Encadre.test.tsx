@@ -172,7 +172,7 @@ describe("App câble les outils produit", () => {
     );
 
     expect(
-      await screen.findByRole("group", { name: /équipe SMUR/i }),
+      await screen.findByRole("group", { name: /^le patient/i }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });

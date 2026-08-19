@@ -1,9 +1,19 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
+import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 
 beforeEach(() => sessionStorage.clear());
+
+// Les situations partent de la base neutre du catalogue de seeds : une réponse
+// oubliée y laisserait des cibles indécises, et le résultat final vide.
+const SMUR = { ...BASE_NEUTRE, p1_m0_smur: "oui", p1_m0_aucun: "non" };
+const BARIATRIQUE = {
+  ...BASE_NEUTRE,
+  p1_m0_bariatrique: "oui",
+  p1_m0_aucun: "non",
+};
 
 describe("secrétariat — parcours administratif", () => {
   it("sans passation : invite à commencer par l'évaluation médicale", () => {
@@ -14,11 +24,7 @@ describe("secrétariat — parcours administratif", () => {
   });
 
   it("cas tranché dès la Partie 1 (SMUR) : affiche directement la Page Résultat 2", () => {
-    emettrePassation({
-      p1_situation_smur: "oui",
-      p1_situation_bariatrique_seul: "non",
-      p1_situation_permission_sans_motif_medical: "'Non'",
-    });
+    emettrePassation(SMUR);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
     // Bloc 1 — résultat final (titre du cas SMUR).
@@ -46,10 +52,7 @@ describe("secrétariat — parcours administratif", () => {
   });
 
   it("cas défavorable sans transport (bariatrique) : bloc patient sur les deux conditions et reste à charge", () => {
-    emettrePassation({
-      p1_situation_smur: "non",
-      p1_situation_bariatrique_seul: "oui",
-    });
+    emettrePassation(BARIATRIQUE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
     // Bloc 1 — aucun transport prescrit.
@@ -59,7 +62,7 @@ describe("secrétariat — parcours administratif", () => {
       }),
     ).toBeInTheDocument();
     // Bloc 2 — variante « aucun transport » : rappel des deux conditions, pas de
-    // section critères/motifs retenus.
+    // section critères retenus.
     expect(
       screen.getByText(/deux éléments doivent être réunis/i),
     ).toBeInTheDocument();
@@ -85,47 +88,14 @@ describe("secrétariat — parcours administratif", () => {
       <Secretariat
         onNouvelleSimulation={() => {}}
         situationFinale={{
-          p1_situation_smur: "non",
-          p1_situation_bariatrique_seul: "non",
-          p1_situation_permission_sans_motif_medical: "'Non'",
-          p1_motif_hospitalisation: "non",
-          p1_motif_seance_chimio_radio_hemodialyse: "non",
-          p1_motif_ald: "oui",
-          p1_ald_lien_avec_ald_reconnue: "oui",
-          p1_ald_seance_specifique: "non",
-          p1_ald_incapacite_ou_deficience: "oui",
-          p1_motif_accident_travail_maladie_professionnelle: "non",
-          p1_motif_retour_etablissement_penitentiaire: "non",
-          p1_motif_aucun: "non",
-          p1_autonomie: "'Aucune de ces situations.'",
-          p1_critere_regles_hygiene: "non",
-          p1_critere_risques_effets_secondaires: "non",
-          p1_critere_fauteuil_sans_transfert: "non",
+          ...BASE_NEUTRE,
+          // Un besoin professionnel et le seul critère « position allongée » :
+          // l'ambulance est justifiée par lui et par lui seul.
+          p1_autonomie:
+            "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
           p1_critere_position_allongee_demi_assise: "oui",
-          p1_critere_brancardage_portage: "non",
-          p1_critere_surveillance_personne_qualifiee: "non",
-          p1_critere_oxygene: "non",
-          p1_critere_asepsie: "non",
-          p1_critere_aucune_situation_encadree: "non",
-          p2_patient_hospitalise: "non",
-          p2_convocation_ou_avis: "non",
-          // v8.10 : A2.3 (prestation prise en charge) applicable hors motif déjà
-          // qualifiant → doit être répondue pour trancher le cas final.
-          p2_prestation_prise_en_charge_assurance_maladie: "oui",
-          p2_distance_aller_superieure_150km: "non",
-          // v8.10 : série calculée depuis le nombre (>=4) + distance de chaque trajet.
-          p2_chaque_trajet_aller_superieur_50km: "oui",
-          p2_avion_ou_bateau: "non",
-          p2_camsp_cmpp: "non",
-          p2_maternite_eloignee: "non",
-          p2_samsah: "non",
-          p2_accompagnement_tiers: "non",
-          p2_trajet_aller_retour: "'Aller simple'",
-          p2_trajet_depart: "'Domicile'",
-          p2_trajet_arrivee: "'Structure de soins'",
-          p2_nombre_transports_prevus: "4",
-          p2_transport_urgence: "'Non'",
-          p2_accident_cause_par_tiers: "'Non'",
+          p2_contexte_hospitalisation: "oui",
+          p2_contexte_aucun: "non",
         }}
       />,
     );
@@ -157,14 +127,7 @@ describe("secrétariat — parcours administratif", () => {
     // « aucune prescription ». Une situation complète en `situationFinale`
     // court-circuite le parcours et rend le résultat final.
     render(
-      <Secretariat
-        onNouvelleSimulation={() => {}}
-        situationFinale={{
-          p1_situation_smur: "oui",
-          p1_situation_bariatrique_seul: "non",
-          p1_situation_permission_sans_motif_medical: "'Non'",
-        }}
-      />,
+      <Secretariat onNouvelleSimulation={() => {}} situationFinale={SMUR} />,
     );
 
     expect(

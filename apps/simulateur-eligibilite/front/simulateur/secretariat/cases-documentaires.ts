@@ -4,6 +4,7 @@
 // conditionnée par une règle du modèle — auquel cas elle n'apparaît que si la
 // simulation l'a établie. C'est pourquoi la sélection demande le moteur.
 
+import type { CleDeRegle } from "../contrat-regles-publicodes";
 import type { moteur } from "../moteur";
 
 // Une case documentaire : soit un libellé toujours listé (checklist manuelle du
@@ -24,17 +25,20 @@ export type Groupe = {
 
 // Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
 // affichée que si la simulation l'a validée — conditions reprises du mapping
-// documentaire (tmp/8.6/transports-sanitaires.ui.v8-6.yaml, bloc_3_corps_medical
-// → « Mode de transport » → cases.visible_if).
+// documentaire du contrat d’interface, bloc 3 corps médical → « Mode de
+// transport » → cases.visible_if.
 const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
-  { texte: "Ambulance.", visible: (_e, t) => t === "ambulance" },
+  {
+    texte: "Ambulance.",
+    visible: (_e, transport) => transport === "ambulance",
+  },
   {
     texte: "Position allongée ou demi-assise.",
     visible: (e) => vrai(e, "p1_critere_position_allongee_demi_assise"),
   },
   {
     texte: "Surveillance par une personne qualifiée.",
-    visible: (e) => vrai(e, "p1_critere_surveillance_personne_qualifiee"),
+    visible: (e) => vrai(e, "p1_critere_surveillance_constante"),
   },
   {
     texte: "Administration d’oxygène.",
@@ -46,15 +50,18 @@ const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
   },
   {
     texte: "Conditions d’asepsie.",
-    visible: (e) => vrai(e, "p1_critere_asepsie"),
+    visible: (e) => vrai(e, "p1_critere_isolement_asepsie"),
   },
   {
     texte: "VSL ou taxi conventionné.",
-    visible: (_e, t) => t === "VSL ou taxi conventionné",
+    visible: (_e, transport) =>
+      transport === "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
   },
   {
     texte: "Transport à mobilité réduite dans le fauteuil roulant.",
-    visible: (_e, t) => t === "VSL TPMR ou taxi conventionné TPMR",
+    visible: (_e, transport) =>
+      transport ===
+      "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)",
   },
   {
     texte: "Transport partagé incompatible.",
@@ -62,15 +69,18 @@ const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
   },
   {
     texte: "Moyen de transport individuel.",
-    visible: (_e, t) => t === "véhicule personnel ou transport en commun",
+    visible: (_e, transport) =>
+      transport === "véhicule personnel ou transport en commun",
   },
   {
     texte: "Transport en commun terrestre.",
-    visible: (_e, t) => t === "véhicule personnel ou transport en commun",
+    visible: (_e, transport) =>
+      transport === "véhicule personnel ou transport en commun",
   },
   {
     texte: "Personne accompagnante si nécessaire.",
-    visible: (e) => vrai(e, "cible_accompagnant_necessaire"),
+    visible: (e) =>
+      e.evaluate("p1_autonomie").nodeValue === PROCHE_ACCOMPAGNANT,
   },
 ];
 
@@ -106,7 +116,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
-  "demande accord préalable": [
+  "demande d’accord préalable": [
     {
       titre: "Situation nécessitant une DAP",
       icone: "fr-icon-health-book-line",
@@ -146,7 +156,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
-  "convocation ou avis audience": [
+  "convocation ou avis d’audience": [
     {
       titre: "Éléments à vérifier",
       icone: "fr-icon-checkbox-circle-line",
@@ -159,7 +169,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
-  "transport charge établissement": [
+  "transport à la charge de l’établissement": [
     {
       titre: "Assurez-vous que ces éléments soient complétés",
       icone: "fr-icon-checkbox-line",
@@ -186,10 +196,10 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
-  "prestation non prise en charge par assurance maladie": [],
+  "prestation non prise en charge par l’Assurance Maladie": [],
   "bariatrique seul": [],
-  "permission sortie sans motif médical": [],
-  "non éligible assurance maladie dans ce parcours": [],
+  "permission de sortie sans motif médical": [],
+  "non éligible à une prise en charge par l’Assurance Maladie": [],
 };
 
 // Les groupes du cas final, réduits aux cases que la simulation a établies. Un
@@ -215,7 +225,13 @@ export function texteDeCase(laCase: CaseDocumentaire): string {
 
 // ---- implémentation ----
 
-// Une règle du modèle s'évalue-t-elle à vrai pour la situation courante ?
-function vrai(e: typeof moteur, id: string): boolean {
+// Une règle du modèle s'évalue-t-elle à vrai pour la situation courante ? Le
+// paramètre passe par `CleDeRegle` : une règle renommée en amont ne compile plus.
+function vrai(e: typeof moteur, id: CleDeRegle): boolean {
   return e.evaluate(id).nodeValue === true;
 }
+
+// La v9.1 n'expose plus de cible « accompagnant nécessaire » : c'est la deuxième
+// réponse de Q1 qui l'établit.
+const PROCHE_ACCOMPAGNANT =
+  "Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.";

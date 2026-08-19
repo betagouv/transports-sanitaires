@@ -1,104 +1,43 @@
 cible_resultat_medical:
-  titre: Résultat médical du transport
+  titre: Décision médicale
   une possibilité:
-  - '''favorable'''
-  - '''défavorable'''
+  - '''décision établie'''
+  - '''aucun transport prescriptible'''
   valeur:
     variations:
-    - si: resultat_medical_favorable
-      alors: '''favorable'''
-    - sinon: '''défavorable'''
+    - si: p1_decision_medicale_complete
+      alors: '''décision établie'''
+    - sinon: '''aucun transport prescriptible'''
+
 cible_transport_sanitaire_prescrit:
-  titre: Transport sanitaire prescrit
-  description: Cible exposée à l’application et verrouillée à partir de la Page Résultat 1.
+  titre: Mode de transport retenu par le prescripteur
+  description: Valeur calculée par la Partie 1 et figée par l’application lorsque l’utilisateur valide la Page Résultat 1.
   une possibilité:
   - '''aucun'''
   - '''véhicule personnel ou transport en commun'''
-  - '''VSL ou taxi conventionné'''
-  - '''VSL TPMR ou taxi conventionné TPMR'''
+  - '''VSL (Véhicule Sanitaire Léger) ou taxi conventionné'''
+  - '''VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'''
   - '''ambulance'''
-  - '''transport par équipe SMUR'''
-  valeur:
-    variations:
-    - si: resultat_medical_favorable
-      alors: p1_transport_adapte_deduit
-    - sinon: '''aucun'''
-cible_cas_final:
-  titre: Cas final affiché en Page Résultat 2
-  description: La cible n’est définie que lorsque les questions intermédiaires obligatoires de la branche concernée sont complétées.
-  une possibilité:
-  - '''prescription médicale de transport'''
-  - '''demande accord préalable'''
-  - '''convocation ou avis audience'''
-  - '''transport charge établissement'''
-  - '''prestation non prise en charge par assurance maladie'''
-  - '''SMUR'''
-  - '''bariatrique seul'''
-  - '''permission sortie sans motif médical'''
-  - '''non éligible assurance maladie dans ce parcours'''
+  - '''transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)'''
   valeur:
     variations:
     - si: p1_cas_final_direct = 'SMUR'
-      alors: '''SMUR'''
-    - si: p1_cas_final_direct = 'bariatrique seul'
-      alors: '''bariatrique seul'''
-    - si: p1_cas_final_direct = 'permission sortie sans motif médical'
-      alors: '''permission sortie sans motif médical'''
-    - si: p1_cas_final_direct = 'non éligible assurance maladie dans ce parcours'
-      alors: '''non éligible assurance maladie dans ce parcours'''
-    - si: p2_transport_charge_etablissement
-      alors: '''transport charge établissement'''
-    - si: p2_prestation_non_prise_en_charge
-      alors: '''prestation non prise en charge par assurance maladie'''
-    - si: p2_non_eligible_assurance_maladie_dans_ce_parcours
-      alors: '''non éligible assurance maladie dans ce parcours'''
-    - si: p2_convocation_ou_avis_valant_prescription
-      alors: '''convocation ou avis audience'''
+      alors: '''transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)'''
     - si:
-        toutes ces conditions:
-        - p2_document_dap_determine
-        - p2_informations_trajet_complete
-      alors: '''demande accord préalable'''
-    - si:
-        toutes ces conditions:
-        - p2_document_pmt_determine
-        - p2_informations_trajet_complete
-      alors: '''prescription médicale de transport'''
-cible_resultat_2_affichable:
-  titre: Page Résultat 2 affichable
-  description: 'Garde-fou : ne jamais afficher le résultat final tant que cible_cas_final n’est pas défini.'
-  une de ces conditions:
-  - cible_cas_final = 'prescription médicale de transport'
-  - cible_cas_final = 'demande accord préalable'
-  - cible_cas_final = 'convocation ou avis audience'
-  - cible_cas_final = 'transport charge établissement'
-  - cible_cas_final = 'prestation non prise en charge par assurance maladie'
-  - cible_cas_final = 'SMUR'
-  - cible_cas_final = 'bariatrique seul'
-  - cible_cas_final = 'permission sortie sans motif médical'
-  - cible_cas_final = 'non éligible assurance maladie dans ce parcours'
-cible_document_a_remettre_au_patient:
-  titre: Document à remettre au patient
-  valeur:
-    variations:
-    - si: cible_cas_final = 'prescription médicale de transport'
-      alors: '''Prescription Médicale de Transport'''
-    - si: cible_cas_final = 'demande accord préalable'
-      alors: '''Demande d’Accord Préalable'''
-    - si: cible_cas_final = 'convocation ou avis audience'
-      alors: '''convocation ou avis d’audience'''
-    - si: cible_cas_final = 'transport charge établissement'
-      alors: '''formulaire établissement ou document interne'''
-    - si: cible_cas_final = 'SMUR'
-      alors: '''document ou consignes remis par l’équipe médicale, le service d’urgence ou l’établissement concerné'''
-    - si: cible_cas_final = 'prestation non prise en charge par assurance maladie'
-      alors: '''aucun document'''
-    - si: cible_cas_final = 'bariatrique seul'
-      alors: '''aucun document'''
-    - si: cible_cas_final = 'permission sortie sans motif médical'
-      alors: '''aucun document'''
-    - si: cible_cas_final = 'non éligible assurance maladie dans ce parcours'
-      alors: '''aucun document'''
+        une de ces conditions:
+        - p1_cas_final_direct = 'bariatrique seul'
+        - p1_cas_final_direct = 'permission sortie sans motif médical'
+      alors: '''aucun'''
+    - si: p1_decision_medicale_complete
+      alors: p1_mode_transport_medical
+    - sinon: '''aucun'''
+
+cible_decision_medicale_verrouillable:
+  titre: Décision médicale prête à être verrouillée
+  toutes ces conditions:
+  - p1_decision_medicale_complete
+  - cible_transport_sanitaire_prescrit != 'aucun'
+
 cible_partie_2_requise:
   titre: Partie administrative requise
   une possibilité:
@@ -108,49 +47,148 @@ cible_partie_2_requise:
     variations:
     - si: p1_cas_final_direct != 'aucun'
       alors: '''non'''
-    - si: resultat_medical_favorable
+    - si: p1_decision_medicale_complete
       alors: '''oui'''
     - sinon: '''non'''
-cible_autonomie_patient:
-  titre: Autonomie du patient — cible documentaire
-  valeur: p1_autonomie
-cible_accompagnant_necessaire:
-  titre: Accompagnant nécessaire — cible documentaire
-  valeur: p1_accompagnant_necessaire
-cible_transport_partage_applicable:
-  titre: Transport partagé applicable — cible documentaire
+
+cible_cas_final:
+  titre: Cas final affiché en Page Résultat 2
+  description: La cible ne doit être définie qu’après la complétion de toutes les questions obligatoires de la branche active.
+  une possibilité:
+  - '''prescription médicale de transport'''
+  - '''demande d’accord préalable'''
+  - '''convocation ou avis d’audience'''
+  - '''transport à la charge de l’établissement'''
+  - '''prestation non prise en charge par l’Assurance Maladie'''
+  - '''SMUR'''
+  - '''bariatrique seul'''
+  - '''permission de sortie sans motif médical'''
+  - '''non éligible à une prise en charge par l’Assurance Maladie'''
+  valeur:
+    variations:
+    - si: p1_cas_final_direct = 'SMUR'
+      alors: '''SMUR'''
+    - si: p1_cas_final_direct = 'permission sortie sans motif médical'
+      alors: '''permission de sortie sans motif médical'''
+    - si: p1_cas_final_direct = 'bariatrique seul'
+      alors: '''bariatrique seul'''
+    - si: p2_transport_charge_etablissement
+      alors: '''transport à la charge de l’établissement'''
+    - si: p2_prestation_non_prise_en_charge
+      alors: '''prestation non prise en charge par l’Assurance Maladie'''
+    - si: p2_convocation_ou_avis_valant_prescription
+      alors: '''convocation ou avis d’audience'''
+    - si:
+        toutes ces conditions:
+        - p2_document_dap_determine
+        - p2_informations_document_completes
+      alors: '''demande d’accord préalable'''
+    - si:
+        toutes ces conditions:
+        - p2_document_pmt_determine
+        - p2_informations_document_completes
+      alors: '''prescription médicale de transport'''
+    - si: p2_non_eligible_assurance_maladie
+      alors: '''non éligible à une prise en charge par l’Assurance Maladie'''
+
+cible_resultat_2_affichable:
+  titre: Page Résultat 2 affichable
   une de ces conditions:
-  - cible_transport_sanitaire_prescrit = 'VSL ou taxi conventionné'
-  - cible_transport_sanitaire_prescrit = 'VSL TPMR ou taxi conventionné TPMR'
-cible_transport_partage_incompatible:
-  titre: Transport partagé incompatible — cible documentaire
+  - cible_cas_final = 'prescription médicale de transport'
+  - cible_cas_final = 'demande d’accord préalable'
+  - cible_cas_final = 'convocation ou avis d’audience'
+  - cible_cas_final = 'transport à la charge de l’établissement'
+  - cible_cas_final = 'prestation non prise en charge par l’Assurance Maladie'
+  - cible_cas_final = 'SMUR'
+  - cible_cas_final = 'bariatrique seul'
+  - cible_cas_final = 'permission de sortie sans motif médical'
+  - cible_cas_final = 'non éligible à une prise en charge par l’Assurance Maladie'
+
+cible_document_a_remettre_au_patient:
+  titre: Document à remettre au patient
+  valeur:
+    variations:
+    - si: cible_cas_final = 'prescription médicale de transport'
+      alors: '''PMT (Prescription Médicale de Transport)'''
+    - si: cible_cas_final = 'demande d’accord préalable'
+      alors: '''DAP (Demande d’Accord Préalable)'''
+    - si: cible_cas_final = 'convocation ou avis d’audience'
+      alors: '''convocation ou avis d’audience'''
+    - si: cible_cas_final = 'transport à la charge de l’établissement'
+      alors: '''formulaire ou document interne de l’établissement'''
+    - sinon: '''aucun document'''
+
+cible_regime_financement:
+  titre: Régime de financement du transport
+  une possibilité:
+  - '''Assurance Maladie'''
+  - '''établissement prescripteur'''
+  - '''patient'''
+  - '''urgence spécifique'''
+  - '''aucune prise en charge dans ce parcours'''
   valeur:
     variations:
     - si:
         une de ces conditions:
-        - cible_transport_sanitaire_prescrit = 'VSL ou taxi conventionné'
-        - cible_transport_sanitaire_prescrit = 'VSL TPMR ou taxi conventionné TPMR'
+        - cible_cas_final = 'prescription médicale de transport'
+        - cible_cas_final = 'demande d’accord préalable'
+        - cible_cas_final = 'convocation ou avis d’audience'
+      alors: '''Assurance Maladie'''
+    - si: cible_cas_final = 'transport à la charge de l’établissement'
+      alors: '''établissement prescripteur'''
+    - si:
+        une de ces conditions:
+        - cible_cas_final = 'bariatrique seul'
+        - cible_cas_final = 'permission de sortie sans motif médical'
+      alors: '''patient'''
+    - si: cible_cas_final = 'SMUR'
+      alors: '''urgence spécifique'''
+    - sinon: '''aucune prise en charge dans ce parcours'''
+
+cible_transport_partage_applicable:
+  titre: Transport partagé applicable
+  une de ces conditions:
+  - cible_transport_sanitaire_prescrit = 'VSL (Véhicule Sanitaire Léger) ou taxi conventionné'
+  - cible_transport_sanitaire_prescrit = 'VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'
+
+cible_transport_partage_incompatible:
+  titre: Transport partagé incompatible avec l’état de santé
+  valeur:
+    variations:
+    - si: cible_transport_partage_applicable
       alors: p1_transport_partage_incompatible
     - sinon: non
+
+cible_equipement_bariatrique_requis:
+  titre: Équipement bariatrique requis
+  valeur: p1_m0_bariatrique
+
+cible_ald_reconnue_liee_aux_soins:
+  titre: Soins ou examens liés à une ALD (Affection de Longue Durée) reconnue
+  valeur: p1_m0_ald
+
+cible_seance_dialyse_radiotherapie_chimiotherapie:
+  titre: Séance de dialyse, de radiothérapie ou de chimiothérapie
+  valeur: p1_m0_seance
+
 cible_article_80_mode:
-  titre: Article 80 — catégorie de mode pour les contenus
+  titre: Catégorie du mode pour les contenus relatifs aux transports à la charge de l’établissement
   une possibilité:
   - '''non applicable'''
   - '''transport professionnel'''
-  - '''véhicule personnel ou transports en commun'''
+  - '''véhicule personnel ou transport en commun'''
   valeur:
     variations:
-    - si: cible_cas_final != 'transport charge établissement'
+    - si: cible_cas_final != 'transport à la charge de l’établissement'
       alors: '''non applicable'''
     - si: cible_transport_sanitaire_prescrit = 'véhicule personnel ou transport en commun'
-      alors: '''véhicule personnel ou transports en commun'''
+      alors: '''véhicule personnel ou transport en commun'''
     - sinon: '''transport professionnel'''
+
 cible_article_80_situation_specifique:
-  titre: Article 80 — situation spécifique incompatible avec véhicule personnel ou transports en commun
+  titre: Situation spécifique d’un patient détenu
   valeur: p2_article_80_situation_specifique
-cible_article_80_permission_sortie_therapeutique:
-  titre: Article 80 — permission de sortie thérapeutique
-  valeur: p2_article_80_permission_sortie_therapeutique
+
 cible_prise_en_charge_prestation:
   titre: Prise en charge de la prestation à l’origine du déplacement
   une possibilité:
@@ -165,330 +203,323 @@ cible_prise_en_charge_prestation:
       alors: '''oui'''
     - si: p2_prestation_prise_en_charge_assurance_maladie = non
       alors: '''non'''
-cible_regime_financement:
-  titre: Régime de financement du transport
-  une possibilité:
-  - '''assurance maladie'''
-  - '''établissement prescripteur'''
-  - '''patient'''
-  - '''urgence spécifique'''
-  - '''à qualifier'''
-  valeur:
-    variations:
-    - si:
-        une de ces conditions:
-        - cible_cas_final = 'prescription médicale de transport'
-        - cible_cas_final = 'demande accord préalable'
-        - cible_cas_final = 'convocation ou avis audience'
-      alors: '''assurance maladie'''
-    - si: cible_cas_final = 'transport charge établissement'
-      alors: '''établissement prescripteur'''
-    - si:
-        une de ces conditions:
-        - cible_cas_final = 'prestation non prise en charge par assurance maladie'
-        - cible_cas_final = 'bariatrique seul'
-        - cible_cas_final = 'permission sortie sans motif médical'
-      alors: '''patient'''
-    - si: cible_cas_final = 'SMUR'
-      alors: '''urgence spécifique'''
-    - sinon: '''à qualifier'''
-p1_situation_smur:
-  titre: Transport par équipe SMUR
-  question: Le patient doit-il être transporté par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation) ?
-  spec_id: M0.1
-p1_situation_bariatrique_seul:
-  titre: Contrainte bariatrique seule
-  question: Le transport est-il demandé uniquement pour une contrainte bariatrique du patient, sans autre motif médical ouvrant droit ?
-  applicable si: p1_situation_smur = non
-  spec_id: M0.2
-p1_situation_permission_sans_motif_medical:
-  titre: Permission de sortie sans motif médical
-  question: La permission de sortie est-elle demandée par le patient, sans motif médical ?
-  une possibilité:
-  - '''Oui'''
-  - '''Non'''
-  - '''Non concerné'''
-  applicable si:
-    toutes ces conditions:
-    - p1_situation_smur = non
-    - p1_situation_bariatrique_seul = non
-  spec_id: M0.3
-p1_permission_sortie_therapeutique:
-  titre: Permission de sortie thérapeutique identifiée
-  description: La réponse Non signifie qu’une permission de sortie est concernée mais qu’elle n’est pas demandée par le patient sans motif médical.
-    Non concerné signifie qu’aucune permission de sortie n’est en jeu.
-  valeur: p1_situation_permission_sans_motif_medical = 'Non'
-p1_filtres_initiaux_leves:
-  titre: Filtres initiaux levés
-  toutes ces conditions:
-  - p1_situation_smur = non
-  - p1_situation_bariatrique_seul = non
-  - une de ces conditions:
-    - p1_situation_permission_sans_motif_medical = 'Non'
-    - p1_situation_permission_sans_motif_medical = 'Non concerné'
-p1_exclusion_initiale:
-  titre: Situation excluant une prescription dans ce parcours
-  une de ces conditions:
-  - p1_situation_bariatrique_seul
-  - p1_situation_permission_sans_motif_medical = 'Oui'
-p1_motif_hospitalisation:
-  question: Entrée ou sortie d’hospitalisation complète, partielle ou ambulatoire.
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif_seance_chimio_radio_hemodialyse:
-  question: Séance de dialyse, y compris hémodialyse, de radiothérapie ou de chimiothérapie.
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif_ald:
-  question: Soins ou examens en lien avec une ALD (Affection de Longue Durée).
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif_accident_travail_maladie_professionnelle:
-  question: Soins en rapport avec un accident du travail ou une maladie professionnelle.
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif_retour_etablissement_penitentiaire:
-  question: Retour vers établissement pénitentiaire avec prescription médicale.
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif_aucun:
-  question: Aucun de ces motifs.
-  applicable si: p1_filtres_initiaux_leves
-  spec_id: M1.1
-p1_motif:
-  titre: Motif ouvrant droit
-  question: Quelle situation justifie le transport ? (Plusieurs choix possibles)
-  mosaique:
-    type: selection
-    options:
-    - p1_motif_hospitalisation
-    - p1_motif_seance_chimio_radio_hemodialyse
-    - p1_motif_ald
-    - p1_motif_accident_travail_maladie_professionnelle
-    - p1_motif_retour_etablissement_penitentiaire
-    option aucun: p1_motif_aucun
-  spec_id: M1.1
-p1_motif_selection_repondue:
-  titre: Réponse au motif ouvrant droit renseignée
-  une de ces conditions:
-  - p1_motif_hospitalisation
-  - p1_motif_seance_chimio_radio_hemodialyse
-  - p1_motif_ald
-  - p1_motif_accident_travail_maladie_professionnelle
-  - p1_motif_retour_etablissement_penitentiaire
-  - p1_motif_aucun
-p1_ald_lien_avec_ald_reconnue:
-  titre: Lien avec l’ALD reconnue
-  question: Le transport est-il en lien avec l’ALD reconnue du patient ?
-  applicable si: p1_motif_ald
-  spec_id: M2.1
-p1_ald_seance_specifique:
-  titre: Séance spécifique liée à l’ALD
-  question: S’agit-il d’une séance de dialyse, y compris d’hémodialyse, de radiothérapie ou de chimiothérapie ?
-  description: Cette question n’est pas affichée si la séance a déjà été sélectionnée dans M1.1.
-  applicable si:
-    toutes ces conditions:
-    - p1_ald_lien_avec_ald_reconnue
-    - p1_motif_seance_chimio_radio_hemodialyse = non
-  spec_id: M2.2
-p1_ald_seance_specifique_validee:
-  titre: Séance spécifique ALD identifiée ou déduite
-  une de ces conditions:
-  - p1_motif_seance_chimio_radio_hemodialyse
-  - p1_ald_seance_specifique
-p1_ald_contexte_complete:
-  titre: Contexte ALD suffisamment qualifié pour afficher le bloc clinique commun
-  valeur:
-    variations:
-    - si: p1_motif_ald = non
-      alors: oui
-    - si: p1_ald_lien_avec_ald_reconnue = non
-      alors: oui
-    - si: p1_ald_seance_specifique_validee
-      alors: oui
-    - si:
-        toutes ces conditions:
-        - p1_ald_lien_avec_ald_reconnue
-        - p1_motif_seance_chimio_radio_hemodialyse = non
-        - p1_ald_seance_specifique = non
-      alors: oui
-    - sinon: non
-p1_m3_applicable:
-  titre: Bloc clinique commun applicable
-  toutes ces conditions:
-  - p1_filtres_initiaux_leves
-  - p1_motif_selection_repondue
-  - p1_ald_contexte_complete
+
+cible_lieu_depart_type:
+  titre: Type du lieu de départ
+  valeur: p2_trajet_depart
+
+cible_lieu_arrivee_type:
+  titre: Type du lieu d’arrivée
+  valeur: p2_trajet_arrivee
+
+cible_document_depart_nom:
+  titre: Nom du lieu de départ
+  valeur: p2_depart_nom_lieu
+
+cible_document_depart_adresse:
+  titre: Adresse du lieu de départ
+  valeur: p2_depart_adresse
+
+cible_document_depart_complement:
+  titre: Complément d’adresse du lieu de départ
+  valeur: p2_depart_complement_adresse
+
+cible_document_depart_code_postal:
+  titre: Code postal du lieu de départ
+  valeur: p2_depart_code_postal
+
+cible_document_depart_commune:
+  titre: Commune du lieu de départ
+  valeur: p2_depart_commune
+
+cible_document_depart_pays:
+  titre: Pays du lieu de départ
+  valeur: p2_depart_pays
+
+cible_document_arrivee_nom:
+  titre: Nom du lieu d’arrivée
+  valeur: p2_arrivee_nom_lieu
+
+cible_document_arrivee_adresse:
+  titre: Adresse du lieu d’arrivée
+  valeur: p2_arrivee_adresse
+
+cible_document_arrivee_complement:
+  titre: Complément d’adresse du lieu d’arrivée
+  valeur: p2_arrivee_complement_adresse
+
+cible_document_arrivee_code_postal:
+  titre: Code postal du lieu d’arrivée
+  valeur: p2_arrivee_code_postal
+
+cible_document_arrivee_commune:
+  titre: Commune du lieu d’arrivée
+  valeur: p2_arrivee_commune
+
+cible_document_arrivee_pays:
+  titre: Pays du lieu d’arrivée
+  valeur: p2_arrivee_pays
+
+# PARTIE 1 - Évaluation médicale
+
 p1_autonomie:
-  titre: Autonomie ou accompagnement possible
+  titre: Autonomie et besoins généraux
   question: 'Le patient :'
   une possibilité:
-  - '''Peut se déplacer seul.'''
-  - '''Peut se déplacer avec un proche accompagnant, pour aider à son déplacement et/ou à la transmission d’informations à l’équipe soignante.'''
-  - '''Aucune de ces situations.'''
-  applicable si: p1_m3_applicable
+  - '''Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'''
+  - '''Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'''
+  - '''Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'''
   spec_id: Q1
+
 p1_autonomie_repondue:
-  titre: Autonomie renseignée
+  titre: Réponse à la question sur l’autonomie renseignée
   une de ces conditions:
-  - p1_autonomie = 'Peut se déplacer seul.'
-  - p1_autonomie = 'Peut se déplacer avec un proche accompagnant, pour aider à son déplacement et/ou à la transmission d’informations à l’équipe
-    soignante.'
-  - p1_autonomie = 'Aucune de ces situations.'
-p1_critere_regles_hygiene:
-  question: Le patient nécessite le respect rigoureux de règles d’hygiène.
-  applicable si: p1_autonomie_repondue
+  - p1_autonomie = 'Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'
+  - p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+  - p1_autonomie = 'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'
+
+p1_autonomie_professionnel_requis:
+  titre: Intervention d’un professionnel requise
+  valeur: p1_autonomie = 'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'
+
+p1_critere_incapacite_deplacement_autonome:
+  question: Ne peut pas se déplacer de manière autonome sur une longue distance, utiliser seul les transports en commun ou conduire un véhicule personnel en raison de sa pathologie, de son traitement ou d’un handicap.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere_risques_effets_secondaires:
-  question: Le patient présente des risques d’effets secondaires pendant le transport.
-  applicable si: p1_autonomie_repondue
+
+p1_critere_aide_technique:
+  question: Nécessite une aide technique, telle qu’un fauteuil roulant, un déambulateur ou des béquilles, et une assistance pour monter dans le véhicule ou en descendre.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
+
+p1_critere_aide_professionnel:
+  question: Nécessite l’aide d’un professionnel pendant le trajet ou pour accomplir les formalités liées au transport, en l’absence d’un proche accompagnant.
+  applicable si: p1_autonomie_professionnel_requis
+  spec_id: Q1.1
+
+p1_critere_hygiene_desinfection:
+  question: Nécessite le respect rigoureux de règles d’hygiène ou la désinfection du véhicule afin de prévenir un risque infectieux.
+  applicable si: p1_autonomie_professionnel_requis
+  spec_id: Q1.1
+
+p1_critere_risque_effets_secondaires:
+  question: Présente un risque d’effets secondaires, de malaise ou de complications pendant le transport.
+  applicable si: p1_autonomie_professionnel_requis
+  spec_id: Q1.1
+
 p1_critere_fauteuil_sans_transfert:
-  question: Le patient doit être transporté sans quitter son fauteuil roulant manuel ou électrique.
-  applicable si: p1_autonomie_repondue
+  question: Doit rester dans son fauteuil roulant manuel ou électrique pendant le transport.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
+
 p1_critere_position_allongee_demi_assise:
-  question: Le patient doit être allongé ou en position demi-assise.
-  applicable si: p1_autonomie_repondue
+  question: Doit être transporté en position allongée ou semi-allongée, car son état ne permet pas la position assise.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
+
 p1_critere_brancardage_portage:
-  question: Le patient doit être brancardé ou bénéficier d’un portage.
-  applicable si: p1_autonomie_repondue
+  question: Nécessite un brancardage ou un portage, y compris pour se déplacer sur une courte distance.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere_surveillance_personne_qualifiee:
-  question: Le patient doit être surveillé par une personne qualifiée.
-  applicable si: p1_autonomie_repondue
+
+p1_critere_surveillance_constante:
+  question: Nécessite une surveillance constante par une personne qualifiée et la présence de matériel de secours en raison d’un risque de dégradation de son état.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
+
 p1_critere_oxygene:
-  question: Le patient doit être sous oxygène.
-  applicable si: p1_autonomie_repondue
+  question: Nécessite l’administration d’oxygène pendant le transport.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere_asepsie:
-  question: Le patient doit voyager dans des conditions d’asepsie.
-  applicable si: p1_autonomie_repondue
+
+p1_critere_isolement_asepsie:
+  question: Nécessite un transport dans des conditions d’isolement, d’asepsie ou de désinfection strictes en raison d’un risque infectieux.
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere_aucune_situation_encadree:
+
+p1_critere_aucune_situation:
   question: Aucune de ces situations ne s’applique au patient.
-  applicable si: p1_autonomie_repondue
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere:
-  titre: Situations nécessitant une prise en charge plus encadrée
-  question: Certaines situations peuvent nécessiter une prise en charge plus encadrée pendant le transport. Sélectionnez toutes les situations
-    qui s’appliquent au patient. (Plusieurs choix possibles)
+
+p1_criteres_transport:
+  titre: Aides et conditions particulières
+  question: Quelles aides ou conditions particulières sont nécessaires pendant le transport ?
+  description: Sélectionnez toutes les réponses correspondant à la situation du patient.
   mosaique:
     type: selection
     options:
-    - p1_critere_regles_hygiene
-    - p1_critere_risques_effets_secondaires
+    - p1_critere_incapacite_deplacement_autonome
+    - p1_critere_aide_technique
+    - p1_critere_aide_professionnel
+    - p1_critere_hygiene_desinfection
+    - p1_critere_risque_effets_secondaires
     - p1_critere_fauteuil_sans_transfert
     - p1_critere_position_allongee_demi_assise
     - p1_critere_brancardage_portage
-    - p1_critere_surveillance_personne_qualifiee
+    - p1_critere_surveillance_constante
     - p1_critere_oxygene
-    - p1_critere_asepsie
-    option aucun: p1_critere_aucune_situation_encadree
+    - p1_critere_isolement_asepsie
+    option aucun: p1_critere_aucune_situation
+  applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
-p1_critere_selection_repondue:
-  titre: Réponse aux critères médicaux renseignée
+
+p1_criteres_transport_repondus:
+  titre: Réponse aux aides et conditions particulières renseignée
   une de ces conditions:
-  - p1_critere_regles_hygiene
-  - p1_critere_risques_effets_secondaires
+  - p1_critere_incapacite_deplacement_autonome
+  - p1_critere_aide_technique
+  - p1_critere_aide_professionnel
+  - p1_critere_hygiene_desinfection
+  - p1_critere_risque_effets_secondaires
   - p1_critere_fauteuil_sans_transfert
   - p1_critere_position_allongee_demi_assise
   - p1_critere_brancardage_portage
-  - p1_critere_surveillance_personne_qualifiee
+  - p1_critere_surveillance_constante
   - p1_critere_oxygene
-  - p1_critere_asepsie
-  - p1_critere_aucune_situation_encadree
+  - p1_critere_isolement_asepsie
+  - p1_critere_aucune_situation
+
 p1_critere_ambulance:
-  titre: Critère ambulance sélectionné
+  titre: Au moins un critère justifie une ambulance
   une de ces conditions:
   - p1_critere_position_allongee_demi_assise
   - p1_critere_brancardage_portage
-  - p1_critere_surveillance_personne_qualifiee
+  - p1_critere_surveillance_constante
   - p1_critere_oxygene
-  - p1_critere_asepsie
-p1_critere_vsl_taxi_standard:
-  titre: Critère VSL ou taxi conventionné standard sélectionné
-  description: Logique v8.9 conservée. Les modifications complémentaires de Q1/Q1.1 non encore validées ne sont pas intégrées.
-  une de ces conditions:
-  - p1_critere_regles_hygiene
-  - p1_critere_risques_effets_secondaires
-p1_ald_incapacite_ou_deficience:
-  titre: Incapacité ou déficience ALD calculée depuis le bloc clinique commun
-  description: 'Règle interne M2.3 : elle n’est plus posée à l’utilisateur. Elle est calculée à partir de Q1 et Q1.1.'
-  valeur:
-    variations:
-    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, pour aider à son déplacement et/ou à la transmission d’informations à
-        l’équipe soignante.'
-      alors: oui
-    - si:
-        une de ces conditions:
-        - p1_critere_regles_hygiene
-        - p1_critere_risques_effets_secondaires
-        - p1_critere_fauteuil_sans_transfert
-        - p1_critere_position_allongee_demi_assise
-        - p1_critere_brancardage_portage
-        - p1_critere_surveillance_personne_qualifiee
-        - p1_critere_oxygene
-        - p1_critere_asepsie
-      alors: oui
-    - sinon: non
-  spec_id: M2.3
-p1_ald_validee:
-  titre: Motif ALD validé
-  toutes ces conditions:
-  - p1_motif_ald
-  - p1_ald_lien_avec_ald_reconnue
-  - une de ces conditions:
-    - p1_ald_seance_specifique_validee
-    - toutes ces conditions:
-      - p1_critere_selection_repondue
-      - p1_ald_incapacite_ou_deficience
-p1_motif_hors_ald_identifie:
-  titre: Motif ouvrant droit hors ALD identifié
-  une de ces conditions:
-  - p1_motif_hospitalisation
-  - p1_motif_seance_chimio_radio_hemodialyse
-  - p1_motif_accident_travail_maladie_professionnelle
-  - p1_motif_retour_etablissement_penitentiaire
-p1_transport_adapte_deduit:
-  titre: Transport adapté déduit par la Partie 1
+  - p1_critere_isolement_asepsie
+
+p1_mode_transport_medical:
+  titre: Mode de transport médicalement adapté avant les cas particuliers
   une possibilité:
-  - '''aucun'''
   - '''véhicule personnel ou transport en commun'''
-  - '''VSL ou taxi conventionné'''
-  - '''VSL TPMR ou taxi conventionné TPMR'''
+  - '''VSL (Véhicule Sanitaire Léger) ou taxi conventionné'''
+  - '''VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'''
   - '''ambulance'''
-  - '''transport par équipe SMUR'''
   valeur:
     variations:
-    - si: p1_situation_smur
-      alors: '''transport par équipe SMUR'''
-    - si: p1_exclusion_initiale
-      alors: '''aucun'''
     - si: p1_critere_ambulance
       alors: '''ambulance'''
     - si: p1_critere_fauteuil_sans_transfert
-      alors: '''VSL TPMR ou taxi conventionné TPMR'''
-    - si: p1_critere_vsl_taxi_standard
-      alors: '''VSL ou taxi conventionné'''
-    - si: p1_critere_aucune_situation_encadree
+      alors: '''VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'''
+    - si: p1_autonomie_professionnel_requis
+      alors: '''VSL (Véhicule Sanitaire Léger) ou taxi conventionné'''
+    - si: p1_autonomie_repondue
       alors: '''véhicule personnel ou transport en commun'''
-    - sinon: '''aucun'''
-p1_motif_ouvrant_droit_identifie_ou_deduit:
-  titre: Motif ouvrant droit identifié ou déduit
-  une de ces conditions:
-  - p1_situation_smur
-  - p1_motif_hors_ald_identifie
-  - p1_ald_validee
-  - p1_critere_ambulance
-resultat_medical_favorable:
-  titre: Avis médical favorable
+
+p1_transport_partage_etape_applicable:
+  titre: Question sur le transport partagé applicable
   toutes ces conditions:
-  - p1_exclusion_initiale = non
-  - p1_motif_ouvrant_droit_identifie_ou_deduit
-  - p1_transport_adapte_deduit != 'aucun'
+  - p1_criteres_et_autonomie_complets
+  - une de ces conditions:
+    - p1_mode_transport_medical = 'VSL (Véhicule Sanitaire Léger) ou taxi conventionné'
+    - p1_mode_transport_medical = 'VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'
+
+p1_transport_partage_incompatible:
+  titre: Incompatibilité avec un transport partagé
+  question: L’état de santé du patient est-il incompatible avec un transport partagé ?
+  applicable si: p1_transport_partage_etape_applicable
+  spec_id: M4
+
+p1_transport_partage_repondu:
+  titre: Réponse sur le transport partagé renseignée
+  une de ces conditions:
+  - p1_transport_partage_incompatible
+  - p1_transport_partage_incompatible = non
+
+p1_criteres_et_autonomie_complets:
+  titre: Évaluation de l’autonomie et des besoins complète
+  valeur:
+    variations:
+    - si: p1_autonomie_professionnel_requis
+      alors: p1_criteres_transport_repondus
+    - si: p1_autonomie_repondue
+      alors: oui
+    - sinon: non
+
+p1_m0_smur:
+  question: Le patient doit être transporté par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_m0_bariatrique:
+  question: La morphologie ou le poids du patient (plus de 150 kg) nécessite un véhicule disposant d’un équipement bariatrique adapté.
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_m0_permission_sans_motif_medical:
+  question: Le déplacement correspond à une permission de sortie demandée par le patient, sans motif médical.
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_m0_ald:
+  question: Soins ou examens en lien avec une ALD (Affection de Longue Durée) reconnue pour ce patient par l’Assurance Maladie, exonérante ou non exonérante.
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_m0_seance:
+  question: Séance de dialyse, y compris d’hémodialyse, de radiothérapie ou de chimiothérapie.
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_m0_aucun:
+  question: Aucun de ces cas médicaux.
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_cas_particuliers_medicaux:
+  titre: Cas particuliers médicaux
+  question: Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.
+  description: Sélectionnez tous les cas concernés.
+  mosaique:
+    type: selection
+    options:
+    - p1_m0_smur
+    - p1_m0_bariatrique
+    - p1_m0_permission_sans_motif_medical
+    - p1_m0_ald
+    - p1_m0_seance
+    option aucun: p1_m0_aucun
+  applicable si: p1_criteres_et_autonomie_complets
+  spec_id: M0
+
+p1_cas_particuliers_repondus:
+  titre: Réponse aux cas particuliers médicaux renseignée
+  une de ces conditions:
+  - p1_m0_smur
+  - p1_m0_bariatrique
+  - p1_m0_permission_sans_motif_medical
+  - p1_m0_ald
+  - p1_m0_seance
+  - p1_m0_aucun
+
+p1_bariatrique_seul:
+  titre: Contrainte bariatrique sans autre besoin médical identifié
+  toutes ces conditions:
+  - p1_m0_bariatrique
+  - p1_autonomie_professionnel_requis = non
+  - p1_m0_ald = non
+  - p1_m0_seance = non
+  - p1_critere_ambulance = non
+
+p1_ald_incapacite_ou_deficience:
+  titre: Incapacité ou déficience associée à une ALD (Affection de Longue Durée)
+  valeur:
+    variations:
+    - si: p1_autonomie_professionnel_requis
+      alors: oui
+    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+      alors: oui
+    - sinon: non
+
+p1_ald_validee:
+  titre: Situation ALD (Affection de Longue Durée) médicalement qualifiée
+  toutes ces conditions:
+  - p1_m0_ald
+  - une de ces conditions:
+    - p1_ald_incapacite_ou_deficience
+    - p1_m0_seance
+
 p1_cas_final_direct:
   titre: Cas final déterminé dès la Partie 1
   une possibilité:
@@ -496,246 +527,398 @@ p1_cas_final_direct:
   - '''SMUR'''
   - '''bariatrique seul'''
   - '''permission sortie sans motif médical'''
-  - '''non éligible assurance maladie dans ce parcours'''
   valeur:
     variations:
-    - si: p1_situation_smur
+    - si: p1_m0_smur
       alors: '''SMUR'''
-    - si: p1_situation_bariatrique_seul
-      alors: '''bariatrique seul'''
-    - si: p1_situation_permission_sans_motif_medical = 'Oui'
+    - si: p1_m0_permission_sans_motif_medical
       alors: '''permission sortie sans motif médical'''
-    - si:
-        toutes ces conditions:
-        - p1_critere_selection_repondue
-        - resultat_medical_favorable = non
-      alors: '''non éligible assurance maladie dans ce parcours'''
+    - si: p1_bariatrique_seul
+      alors: '''bariatrique seul'''
     - sinon: '''aucun'''
-p1_transport_partage_etape_applicable:
-  titre: Étape transport partagé applicable
-  une de ces conditions:
-  - p1_transport_adapte_deduit = 'VSL ou taxi conventionné'
-  - p1_transport_adapte_deduit = 'VSL TPMR ou taxi conventionné TPMR'
-p1_transport_partage_incompatible:
-  titre: État de santé incompatible avec un transport partagé
-  question: État de santé du patient incompatible avec un transport partagé.
-  applicable si: p1_transport_partage_etape_applicable
-  spec_id: M4
-p1_accompagnant_necessaire:
-  titre: Accompagnant nécessaire
-  valeur:
-    variations:
-    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, pour aider à son déplacement et/ou à la transmission d’informations à
-        l’équipe soignante.'
-      alors: oui
-    - sinon: non
-p2_patient_hospitalise:
-  titre: Patient hospitalisé au moment exact du transport
-  question: Au moment exact où le transport sera réalisé, le patient aura-t-il déjà été admis en hospitalisation et sera-t-il toujours hospitalisé,
-    y compris en hospitalisation de jour ?
-  description: Cette question porte sur le statut du patient au moment du trajet, et non sur le simple fait que le déplacement soit lié à une
-    entrée ou une sortie d’hospitalisation.
+
+p1_decision_medicale_complete:
+  titre: Partie médicale complète
+  toutes ces conditions:
+  - p1_criteres_et_autonomie_complets
+  - p1_cas_particuliers_repondus
+  - une de ces conditions:
+    - p1_transport_partage_etape_applicable = non
+    - p1_transport_partage_repondu
+
+# PARTIE 2 - Qualification administrative
+
+p2_contexte_hospitalisation:
+  question: Entrée ou sortie d’hospitalisation complète, partielle ou ambulatoire.
   applicable si: cible_partie_2_requise = 'oui'
-  spec_id: A0.1
-p2_exception_restant_assurance_maladie:
-  titre: Exception restant Assurance Maladie
+  spec_id: M1.1
+
+p2_contexte_at_mp:
+  question: Soins en rapport avec un AT (Accident du Travail) ou une MP (Maladie Professionnelle).
+  applicable si: cible_partie_2_requise = 'oui'
+  spec_id: M1.1
+
+p2_contexte_retour_penitentiaire:
+  question: Retour vers un établissement pénitentiaire sur prescription médicale.
+  applicable si: cible_partie_2_requise = 'oui'
+  spec_id: M1.1
+
+p2_contexte_aucun:
+  question: Aucun de ces contextes ne correspond à la situation du patient.
+  applicable si: cible_partie_2_requise = 'oui'
+  spec_id: M1.1
+
+p2_contexte_administratif:
+  titre: Contexte administratif
+  question: Dans quel contexte le déplacement est-il réalisé ?
+  description: Plusieurs choix sont possibles. Sélectionnez toutes les réponses correspondant à la situation du patient.
+  mosaique:
+    type: selection
+    options:
+    - p2_contexte_hospitalisation
+    - p2_contexte_at_mp
+    - p2_contexte_retour_penitentiaire
+    option aucun: p2_contexte_aucun
+  applicable si: cible_partie_2_requise = 'oui'
+  spec_id: M1.1
+
+p2_contexte_administratif_repondu:
+  titre: Contexte administratif renseigné
   une de ces conditions:
-  - p2_exception_type = 'Retour en USLD (Unité de Soins de Longue Durée).'
-  - p2_exception_type = 'Retour en EHPAD (Établissement d’Hébergement pour Personnes Âgées Dépendantes).'
-  - p2_exception_type = 'Retour en HAD (Hospitalisation À Domicile).'
-  - p2_exception_type = 'Transfert provisoire vers un centre de santé ou une structure libérale pour des séances de radiothérapie.'
-  - p2_exception_type = 'Permission de sortie de moins de 48 h pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours.'
-p2_exception_type:
-  titre: Exception restant prise en charge par l’Assurance Maladie
-  question: Le transport fait-il partie de l’une de ces exceptions restant prise en charge par l’Assurance Maladie ?
-  une possibilité:
-  - '''Retour en USLD (Unité de Soins de Longue Durée).'''
-  - '''Retour en EHPAD (Établissement d’Hébergement pour Personnes Âgées Dépendantes).'''
-  - '''Retour en HAD (Hospitalisation À Domicile).'''
-  - '''Transfert provisoire vers un centre de santé ou une structure libérale pour des séances de radiothérapie.'''
-  - '''Permission de sortie de moins de 48 h pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours.'''
-  - '''Non, le transport ne fait pas partie de ces exceptions.'''
+  - p2_contexte_hospitalisation
+  - p2_contexte_at_mp
+  - p2_contexte_retour_penitentiaire
+  - p2_contexte_aucun
+
+p2_patient_hospitalise:
+  titre: Patient hospitalisé au moment du transport
+  question: Au moment exact du transport, le patient sera-t-il toujours hospitalisé, notamment dans le cadre d’un transfert vers un autre établissement ou d’un déplacement temporaire pour recevoir des soins ?
+  description: Répondez « Non » si le patient quitte les urgences ou une consultation sans avoir été hospitalisé dans l’établissement de départ.
   applicable si:
     toutes ces conditions:
     - cible_partie_2_requise = 'oui'
-    - p2_patient_hospitalise
-  spec_id: A0.2-A0.3
-p2_exception_type_renseigne:
-  titre: Réponse sur les exceptions renseignée
+    - p2_contexte_administratif_repondu
+  spec_id: A0.1
+
+p2_patient_hospitalise_repondu:
+  titre: Statut d’hospitalisation renseigné
   une de ces conditions:
-  - p2_exception_type = 'Retour en USLD (Unité de Soins de Longue Durée).'
-  - p2_exception_type = 'Retour en EHPAD (Établissement d’Hébergement pour Personnes Âgées Dépendantes).'
-  - p2_exception_type = 'Retour en HAD (Hospitalisation À Domicile).'
-  - p2_exception_type = 'Transfert provisoire vers un centre de santé ou une structure libérale pour des séances de radiothérapie.'
-  - p2_exception_type = 'Permission de sortie de moins de 48 h pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours.'
-  - p2_exception_type = 'Non, le transport ne fait pas partie de ces exceptions.'
+  - p2_patient_hospitalise
+  - p2_patient_hospitalise = non
+
+p2_exception_aide_medicale_urgente:
+  question: Transport sanitaire réalisé dans le cadre de l’aide médicale urgente, hors équipe SMUR (Structure Mobile d’Urgence et de Réanimation).
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_avion_bateau:
+  question: Transport par avion ou par bateau.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_had_hors_protocole:
+  question: Transport prescrit par un établissement d’HAD (Hospitalisation À Domicile) en dehors d’un transfert de moins de 48 heures prévu par le protocole de soins ou lié à la prise en charge en cours.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_usld:
+  question: Transport depuis ou vers une USLD (Unité de Soins de Longue Durée), hors établissements situés sur la même implantation géographique.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_ehpad:
+  question: Transport depuis ou vers un EHPAD (Établissement d’Hébergement pour Personnes Âgées Dépendantes), hors établissements situés sur la même implantation géographique.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_radiotherapie_moins_48h:
+  question: Transfert de moins de 48 heures pour une séance de radiothérapie dans une structure d’exercice libéral ou un centre de santé.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_dialyse_domicile:
+  question: Transport d’un patient pratiquant la dialyse à domicile.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_admission_had:
+  question: Transport d’un patient hospitalisé vers son domicile dans le cadre d’une admission en HAD (Hospitalisation À Domicile).
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_permission_mineur:
+  question: Permission de sortie de moins de 48 heures pour un patient de moins de 20 ans hospitalisé depuis plus de 14 jours.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exception_aucune:
+  question: Aucune de ces exceptions ne s’applique au transport.
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exceptions_assurance_maladie:
+  titre: Exceptions restant prises en charge dans les conditions de l’Assurance Maladie
+  question: Le transport relève-t-il d’une ou plusieurs de ces exceptions restant prises en charge dans les conditions de l’Assurance Maladie ?
+  description: Sélectionnez toutes les réponses correspondant à la situation du patient.
+  mosaique:
+    type: selection
+    options:
+    - p2_exception_aide_medicale_urgente
+    - p2_exception_avion_bateau
+    - p2_exception_had_hors_protocole
+    - p2_exception_usld
+    - p2_exception_ehpad
+    - p2_exception_radiotherapie_moins_48h
+    - p2_exception_dialyse_domicile
+    - p2_exception_admission_had
+    - p2_exception_permission_mineur
+    option aucun: p2_exception_aucune
+  applicable si: p2_patient_hospitalise
+  spec_id: A0.2
+
+p2_exceptions_repondues:
+  titre: Réponse aux exceptions renseignée
+  une de ces conditions:
+  - p2_exception_aide_medicale_urgente
+  - p2_exception_avion_bateau
+  - p2_exception_had_hors_protocole
+  - p2_exception_usld
+  - p2_exception_ehpad
+  - p2_exception_radiotherapie_moins_48h
+  - p2_exception_dialyse_domicile
+  - p2_exception_admission_had
+  - p2_exception_permission_mineur
+  - p2_exception_aucune
+
+p2_exception_restant_assurance_maladie:
+  titre: Au moins une exception relevant de l’Assurance Maladie
+  une de ces conditions:
+  - p2_exception_aide_medicale_urgente
+  - p2_exception_avion_bateau
+  - p2_exception_had_hors_protocole
+  - p2_exception_usld
+  - p2_exception_ehpad
+  - p2_exception_radiotherapie_moins_48h
+  - p2_exception_dialyse_domicile
+  - p2_exception_admission_had
+  - p2_exception_permission_mineur
+
 p2_detenu_hospitalise:
   titre: Patient détenu hospitalisé
   question: Le patient hospitalisé est-il détenu ?
   applicable si:
     toutes ces conditions:
     - p2_patient_hospitalise
-    - p2_exception_type_renseigne
-    - p2_exception_restant_assurance_maladie
+    - p2_exceptions_repondues
+    - p2_contexte_retour_penitentiaire = non
   spec_id: A1.1
+
 p2_detenu_inter_etablissements:
-  titre: Détenu — transport inter-établissements
-  question: Le transport est-il un transport inter-établissements ?
+  titre: Transport inter-établissements d’un patient détenu
+  question: Le transport du patient détenu est-il un transport inter-établissements ?
   applicable si: p2_detenu_hospitalise
   spec_id: A1.2
+
 p2_detenu_uhsa_uhsi:
-  titre: Détenu — aller sans consentement UHSA ou UHSI
-  question: Le transport concerne-t-il un aller sans consentement vers une UHSA (Unité Hospitalière Spécialement Aménagée) ou une UHSI (Unité
-    Hospitalière Sécurisée Interrégionale) ?
+  titre: Aller sans consentement d’un patient détenu
+  question: Le transport du patient détenu concerne-t-il un aller sans consentement vers une UHSA (Unité Hospitalière Spécialement Aménagée) ou une UHSI (Unité Hospitalière Sécurisée Interrégionale) ?
   applicable si:
     toutes ces conditions:
     - p2_detenu_hospitalise
     - p2_detenu_inter_etablissements = non
   spec_id: A1.3
-p2_detenu_retour_etablissement_penitentiaire:
-  titre: Détenu — retour établissement pénitentiaire
-  question: S’agit-il d’un retour vers l’établissement pénitentiaire ?
-  applicable si:
-    toutes ces conditions:
-    - p2_detenu_hospitalise
-    - p2_detenu_inter_etablissements = non
-    - p2_detenu_uhsa_uhsi = non
-  spec_id: A1.4
+
 p2_transport_charge_etablissement:
-  titre: Transport à charge de l’établissement
+  titre: Transport à la charge de l’établissement
   une de ces conditions:
   - toutes ces conditions:
     - p2_patient_hospitalise
-    - p2_exception_type_renseigne
-    - p2_exception_type = 'Non, le transport ne fait pas partie de ces exceptions.'
+    - p2_exceptions_repondues
+    - p2_exception_restant_assurance_maladie = non
+    - p2_contexte_retour_penitentiaire = non
+    - p2_detenu_hospitalise = non
   - p2_detenu_inter_etablissements
   - p2_detenu_uhsa_uhsi
+
 p2_article_80_situation_specifique:
-  titre: Situation Article 80 spécifique
+  titre: Transport à la charge de l’établissement pour un patient détenu
   une de ces conditions:
   - p2_detenu_inter_etablissements
   - p2_detenu_uhsa_uhsi
-p2_article_80_permission_sortie_therapeutique:
-  titre: Permission de sortie thérapeutique relevant de la charge établissement
-  toutes ces conditions:
-  - p2_transport_charge_etablissement
-  - p1_permission_sortie_therapeutique
-p2_non_eligible_assurance_maladie_dans_ce_parcours:
-  titre: Cas détenu à qualifier hors parcours standard
+
+p2_detenu_hors_parcours_standard:
+  titre: Situation d’un patient détenu ne relevant pas du parcours standard
   toutes ces conditions:
   - p2_detenu_hospitalise
   - p2_detenu_inter_etablissements = non
   - p2_detenu_uhsa_uhsi = non
-  - p2_detenu_retour_etablissement_penitentiaire = non
-p2_controle_securite_sociale_applicable:
-  titre: Étape contrôle Sécurité sociale applicable
+  - p2_contexte_retour_penitentiaire = non
+
+p2_parcours_standard_applicable:
+  titre: Parcours standard de l’Assurance Maladie applicable
   une de ces conditions:
   - p2_patient_hospitalise = non
+  - p2_contexte_retour_penitentiaire
   - toutes ces conditions:
     - p2_patient_hospitalise
-    - p2_exception_type_renseigne
+    - p2_exceptions_repondues
     - p2_exception_restant_assurance_maladie
     - p2_detenu_hospitalise = non
+
 p2_convocation_ou_avis:
   titre: Convocation ou avis d’audience
-  question: Le transport est-il lié à une convocation ou un avis d’audience valant prescription médicale de transport ?
-  applicable si: p2_controle_securite_sociale_applicable
+  question: Le transport est-il lié à une convocation ou à un avis d’audience valant prescription médicale de transport ?
+  applicable si: p2_parcours_standard_applicable
   spec_id: A2.1
+
 p2_convocation_ou_avis_type:
   titre: Type de convocation ou d’avis
   question: Quel type de convocation ou d’avis est concerné ?
   une possibilité:
   - '''Convocation du contrôle médical.'''
   - '''Convocation d’un médecin-expert ou consultant désigné par une juridiction.'''
-  - '''Audience concernée lorsqu’une consultation clinique a lieu.'''
-  - '''Consultation d’un expert désigné selon l’article R141-1.'''
-  - '''Convocation de la commission prévue par l’article R142-8.'''
+  - '''Audience au cours de laquelle une consultation clinique a lieu.'''
+  - '''Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.'''
+  - '''Convocation de la commission prévue par l’article R. 142-8 du Code de la sécurité sociale.'''
   - '''Convocation du médecin désigné par cette commission.'''
-  - '''Fournisseur d’appareillage agréé.'''
-  applicable si:
-    toutes ces conditions:
-    - p2_controle_securite_sociale_applicable
-    - p2_convocation_ou_avis
+  - '''Déplacement chez un fournisseur d’appareillage agréé.'''
+  applicable si: p2_convocation_ou_avis
   spec_id: A2.2
-p2_convocation_ou_avis_type_renseigne:
+
+p2_convocation_ou_avis_type_repondu:
   titre: Type de convocation ou d’avis renseigné
   une de ces conditions:
   - p2_convocation_ou_avis_type = 'Convocation du contrôle médical.'
   - p2_convocation_ou_avis_type = 'Convocation d’un médecin-expert ou consultant désigné par une juridiction.'
-  - p2_convocation_ou_avis_type = 'Audience concernée lorsqu’une consultation clinique a lieu.'
-  - p2_convocation_ou_avis_type = 'Consultation d’un expert désigné selon l’article R141-1.'
-  - p2_convocation_ou_avis_type = 'Convocation de la commission prévue par l’article R142-8.'
+  - p2_convocation_ou_avis_type = 'Audience au cours de laquelle une consultation clinique a lieu.'
+  - p2_convocation_ou_avis_type = 'Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.'
+  - p2_convocation_ou_avis_type = 'Convocation de la commission prévue par l’article R. 142-8 du Code de la sécurité sociale.'
   - p2_convocation_ou_avis_type = 'Convocation du médecin désigné par cette commission.'
-  - p2_convocation_ou_avis_type = 'Fournisseur d’appareillage agréé.'
+  - p2_convocation_ou_avis_type = 'Déplacement chez un fournisseur d’appareillage agréé.'
+
 p2_convocation_ou_avis_valant_prescription:
   titre: Convocation ou avis valant prescription
   toutes ces conditions:
   - p2_convocation_ou_avis
-  - p2_convocation_ou_avis_type_renseigne
-p2_parcours_standard_apres_convocation:
-  titre: Parcours Assurance Maladie standard après contrôle des convocations
-  une de ces conditions:
-  - toutes ces conditions:
-    - p2_controle_securite_sociale_applicable
-    - p2_convocation_ou_avis = non
-  - p2_detenu_retour_etablissement_penitentiaire
-p2_prestation_question_non_requise:
-  titre: Question sur la prestation non requise car le régime est déjà déterminé
+  - p2_convocation_ou_avis_type_repondu
+
+p2_parcours_apres_convocation:
+  titre: Parcours poursuivi après la question sur les convocations
   toutes ces conditions:
-  - p2_parcours_standard_apres_convocation
+  - p2_parcours_standard_applicable
+  - p2_convocation_ou_avis = non
+
+p2_prestation_question_non_requise:
+  titre: Question sur la prestation non requise
+  toutes ces conditions:
+  - p2_parcours_apres_convocation
   - une de ces conditions:
-    - p1_motif_hospitalisation
-    - p1_motif_seance_chimio_radio_hemodialyse
-    - p1_motif_accident_travail_maladie_professionnelle
-    - p1_motif_retour_etablissement_penitentiaire
+    - p2_contexte_hospitalisation
+    - p2_contexte_at_mp
+    - p2_contexte_retour_penitentiaire
+    - p1_m0_seance
+    - p2_exception_restant_assurance_maladie
+
 p2_prestation_prise_en_charge_applicable:
   titre: Question sur la prise en charge de la prestation applicable
   toutes ces conditions:
-  - p2_parcours_standard_apres_convocation
-  - p1_motif_hospitalisation = non
-  - p1_motif_seance_chimio_radio_hemodialyse = non
-  - p1_motif_accident_travail_maladie_professionnelle = non
-  - p1_motif_retour_etablissement_penitentiaire = non
+  - p2_parcours_apres_convocation
+  - p2_prestation_question_non_requise = non
+
 p2_prestation_prise_en_charge_assurance_maladie:
   titre: Prise en charge de la prestation à l’origine du déplacement
   question: La consultation, le soin, l’examen ou la prestation à l’origine du déplacement est-il pris en charge par l’Assurance Maladie ?
-  description: Répondez uniquement Oui ou Non. Aucune réponse n’est sélectionnée par défaut. Une réponse est obligatoire pour poursuivre.
   applicable si: p2_prestation_prise_en_charge_applicable
   spec_id: A2.3
+
 p2_prestation_prise_en_charge_repondue:
   titre: Réponse sur la prise en charge de la prestation renseignée
   une de ces conditions:
   - p2_prestation_prise_en_charge_assurance_maladie
   - p2_prestation_prise_en_charge_assurance_maladie = non
+
 p2_prestation_non_prise_en_charge:
-  titre: Prestation non prise en charge par l’Assurance Maladie
+  titre: Prestation non prise en charge
   toutes ces conditions:
   - p2_prestation_prise_en_charge_applicable
   - p2_prestation_prise_en_charge_assurance_maladie = non
+
 p2_prestation_prise_en_charge_validee:
-  titre: Prise en charge de la prestation validée ou question non requise
+  titre: Prise en charge de la prestation validée
   une de ces conditions:
   - p2_prestation_question_non_requise
   - p2_prestation_prise_en_charge_assurance_maladie
-p2_accord_prealable_applicable:
-  titre: Bloc accord préalable applicable
+
+p2_motif_ouvrant_droit:
+  titre: Motif ouvrant droit à une prise en charge du transport
+  une de ces conditions:
+  - p2_contexte_hospitalisation
+  - p2_contexte_at_mp
+  - p2_contexte_retour_penitentiaire
+  - p1_m0_seance
+  - p1_ald_validee
+  - p1_critere_ambulance
+  - p2_exception_restant_assurance_maladie
+
+p2_non_eligible_motif_absent:
+  titre: Aucun motif ouvrant droit
   toutes ces conditions:
-  - p2_parcours_standard_apres_convocation
+  - p2_parcours_apres_convocation
   - p2_prestation_prise_en_charge_validee
+  - p2_motif_ouvrant_droit = non
+
+p2_non_eligible_assurance_maladie:
+  titre: Situation non éligible dans le parcours
+  une de ces conditions:
+  - p2_detenu_hors_parcours_standard
+  - p2_non_eligible_motif_absent
+
+p2_transport_urgence:
+  titre: Contexte d’urgence hors transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)
+  question: En dehors d’un transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation), la prescription est-elle établie dans un contexte d’urgence ?
+  une possibilité:
+  - '''Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'''
+  - '''Autre situation d’urgence attestée par le prescripteur'''
+  - '''Non'''
+  applicable si:
+    toutes ces conditions:
+    - p2_parcours_apres_convocation
+    - p2_prestation_prise_en_charge_validee
+    - p2_motif_ouvrant_droit
+    - p2_exception_aide_medicale_urgente = non
+  spec_id: A4.5
+
+p2_transport_urgence_repondu:
+  titre: Contexte d’urgence renseigné
+  une de ces conditions:
+  - p2_exception_aide_medicale_urgente
+  - p2_transport_urgence = 'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'
+  - p2_transport_urgence = 'Autre situation d’urgence attestée par le prescripteur'
+  - p2_transport_urgence = 'Non'
+
+p2_accord_prealable_applicable:
+  titre: Qualification de l’accord préalable applicable
+  toutes ces conditions:
+  - p2_parcours_apres_convocation
+  - p2_prestation_prise_en_charge_validee
+  - p2_motif_ouvrant_droit
+  - p2_transport_urgence_repondu
+
 p2_distance_aller_superieure_150km:
-  titre: Distance aller supérieure à 150 km
+  titre: Distance aller supérieure à 150 kilomètres
   question: Le trajet aller est-il supérieur à 150 km ?
   applicable si: p2_accord_prealable_applicable
   spec_id: A3.1
-p2_distance_aller_renseignee:
+
+p2_distance_aller_repondue:
   titre: Distance aller renseignée
   une de ces conditions:
   - p2_distance_aller_superieure_150km
   - p2_distance_aller_superieure_150km = non
+
 p2_nombre_transports_prevus:
   titre: Nombre de transports prévus sur deux mois
   question: Combien de transports sont prévus au cours des 2 prochains mois pour ce même traitement ?
-  description: Cette saisie remplace la qualification préalable « transport en série » et le nombre redemandé ensuite.
   type: nombre
   saisie:
     minimum: 1
@@ -745,14 +928,15 @@ p2_nombre_transports_prevus:
   applicable si:
     toutes ces conditions:
     - p2_accord_prealable_applicable
-    - p2_distance_aller_renseignee
-  spec_id: A3.2-A4.4
+    - p2_distance_aller_repondue
+  spec_id: A3.2
+
 p2_nombre_transports_prevus_valide:
-  titre: Nombre de transports prévu valide
-  toutes ces conditions:
-  - p2_nombre_transports_prevus >= 1
+  titre: Nombre de transports valide
+  valeur: p2_nombre_transports_prevus >= 1
+
 p2_chaque_trajet_aller_superieur_50km:
-  titre: Distance de chaque trajet d’une série potentielle
+  titre: Distance de chaque transport d’une série potentielle
   question: Chaque trajet aller est-il supérieur à 50 km ?
   applicable si:
     toutes ces conditions:
@@ -760,229 +944,364 @@ p2_chaque_trajet_aller_superieur_50km:
     - p2_distance_aller_superieure_150km = non
     - p2_nombre_transports_prevus >= 4
   spec_id: A3.3
-p2_distance_serie_renseignee:
-  titre: Distance de la série potentielle renseignée
+
+p2_distance_serie_repondue:
+  titre: Distance de chaque transport renseignée
   une de ces conditions:
   - p2_chaque_trajet_aller_superieur_50km
   - p2_chaque_trajet_aller_superieur_50km = non
+
 p2_transport_en_serie:
-  titre: Transport en série calculé
-  description: Vrai si au moins 4 transports sont prévus sur 2 mois et si chaque trajet aller est supérieur à 50 km.
+  titre: Transport en série
   toutes ces conditions:
   - p2_nombre_transports_prevus >= 4
   - p2_chaque_trajet_aller_superieur_50km
-  spec_id: A3.2-A3.3
+
 p2_transport_serie_declenche_dap:
-  titre: Transport en série déclenchant une DAP
+  titre: Transport en série déclenchant une DAP (Demande d’Accord Préalable)
   toutes ces conditions:
   - p2_transport_en_serie
   - p1_ald_validee = non
-p2_continue_apres_serie:
-  titre: Continuer après qualification précise du transport en série
-  une de ces conditions:
-  - toutes ces conditions:
-    - p2_distance_aller_superieure_150km = non
-    - p2_nombre_transports_prevus < 4
-  - toutes ces conditions:
-    - p2_distance_aller_superieure_150km = non
-    - p2_nombre_transports_prevus >= 4
-    - p2_distance_serie_renseignee
-    - p2_transport_serie_declenche_dap = non
-p2_avion_ou_bateau:
-  titre: Transport par avion ou bateau de ligne régulière
-  question: Le trajet entre-t-il dans un cas nécessitant une Demande d’Accord Préalable en raison d’un transport par avion ou bateau de ligne
-    régulière ?
+
+p2_special_avion_bateau:
+  question: Transport par avion ou par bateau de ligne régulière.
   applicable si:
     toutes ces conditions:
     - p2_accord_prealable_applicable
-    - p2_continue_apres_serie
+    - p2_exception_avion_bateau = non
   spec_id: A3.4
-p2_continue_apres_avion:
-  titre: Continuer après avion ou bateau
-  toutes ces conditions:
-  - p2_avion_ou_bateau = non
-p2_camsp_cmpp:
-  titre: Transport vers CAMSP ou CMPP
-  question: Le transport concerne-t-il un CAMSP (Centre d’Action Médico-Sociale Précoce) ou un CMPP (Centre Médico-Psycho-Pédagogique) ?
+
+p2_special_camsp_cmpp:
+  question: Soins ou traitements dans un CAMSP (Centre d’Action Médico-Sociale Précoce) ou un CMPP (Centre Médico-Psycho-Pédagogique).
+  applicable si: p2_accord_prealable_applicable
+  spec_id: A3.4
+
+p2_special_engagement_maternite:
+  question: Transport vers une maternité éloignée dans le cadre du dispositif Engagement maternité.
+  applicable si: p2_accord_prealable_applicable
+  spec_id: A3.4
+
+p2_special_samsah:
+  question: Soins ou traitements dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés).
+  applicable si: p2_accord_prealable_applicable
+  spec_id: A3.4
+
+p2_special_aucune:
+  question: Aucune de ces situations ne concerne le transport.
+  applicable si: p2_accord_prealable_applicable
+  spec_id: A3.4
+
+p2_situations_accord_prealable:
+  titre: Situations particulières pouvant nécessiter un accord préalable
+  question: Le transport concerne-t-il une ou plusieurs des situations suivantes ?
+  description: Sélectionnez toutes les réponses correspondant à la situation du patient.
+  mosaique:
+    type: selection
+    options:
+    - p2_special_avion_bateau
+    - p2_special_camsp_cmpp
+    - p2_special_engagement_maternite
+    - p2_special_samsah
+    option aucun: p2_special_aucune
   applicable si:
     toutes ces conditions:
     - p2_accord_prealable_applicable
-    - p2_continue_apres_avion
-  spec_id: A3.5
-p2_continue_apres_camsp:
-  titre: Continuer après CAMSP/CMPP
-  toutes ces conditions:
-  - p2_camsp_cmpp = non
-p2_maternite_eloignee:
-  titre: Engagement maternité
-  question: Le transport concerne-t-il une maternité éloignée dans le cadre du dispositif Engagement maternité ?
-  applicable si:
-    toutes ces conditions:
-    - p2_accord_prealable_applicable
-    - p2_continue_apres_camsp
-  spec_id: A3.6
-p2_continue_apres_maternite:
-  titre: Continuer après maternité
-  toutes ces conditions:
-  - p2_maternite_eloignee = non
-p2_samsah:
-  titre: Transport vers SAMSAH
-  question: Le transport concerne-t-il des soins ou traitements vers un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)
-    ?
-  applicable si:
-    toutes ces conditions:
-    - p2_accord_prealable_applicable
-    - p2_continue_apres_maternite
-  spec_id: A3.7
-p2_continue_apres_samsah:
-  titre: Continuer après SAMSAH
-  toutes ces conditions:
-  - p2_samsah = non
+    - p2_nombre_transports_prevus_valide
+    - p2_distance_aller_superieure_150km = non
+    - p2_transport_serie_declenche_dap = non
+    - p2_exception_avion_bateau = non
+    - une de ces conditions:
+      - p2_nombre_transports_prevus < 4
+      - p2_distance_serie_repondue
+  spec_id: A3.4
+
+p2_situations_accord_prealable_repondues:
+  titre: Situations particulières renseignées
+  une de ces conditions:
+  - p2_special_avion_bateau
+  - p2_special_camsp_cmpp
+  - p2_special_engagement_maternite
+  - p2_special_samsah
+  - p2_special_aucune
+
+p2_situation_speciale_declenche_dap:
+  titre: Situation particulière déclenchant une DAP (Demande d’Accord Préalable)
+  une de ces conditions:
+  - p2_exception_avion_bateau
+  - p2_special_avion_bateau
+  - p2_special_camsp_cmpp
+  - p2_special_engagement_maternite
+  - p2_special_samsah
+
 p2_accompagnement_tiers:
   titre: Accompagnement nécessitant l’assistance d’un tiers
   question: Le transport concerne-t-il l’accompagnement d’une personne nécessitant l’assistance d’un tiers ?
   applicable si:
     toutes ces conditions:
-    - p2_accord_prealable_applicable
-    - p2_continue_apres_samsah
+    - p2_situations_accord_prealable_repondues
+    - p2_situation_speciale_declenche_dap = non
   spec_id: A3.8
+
+p2_accompagnement_tiers_repondu:
+  titre: Accompagnement par un tiers renseigné
+  une de ces conditions:
+  - p2_accompagnement_tiers
+  - p2_accompagnement_tiers = non
+
 p2_accord_prealable_requis:
   titre: Accord préalable requis
   une de ces conditions:
   - p2_distance_aller_superieure_150km
   - p2_transport_serie_declenche_dap
-  - p2_avion_ou_bateau
-  - p2_camsp_cmpp
-  - p2_maternite_eloignee
-  - p2_samsah
+  - p2_situation_speciale_declenche_dap
   - p2_accompagnement_tiers
+
 p2_accord_prealable_questionnaire_complete:
-  titre: Questionnaire accord préalable complété
+  titre: Questionnaire relatif à l’accord préalable complété
   une de ces conditions:
   - toutes ces conditions:
     - p2_distance_aller_superieure_150km
     - p2_nombre_transports_prevus_valide
-  - p2_transport_serie_declenche_dap
-  - p2_avion_ou_bateau
-  - p2_camsp_cmpp
-  - p2_maternite_eloignee
-  - p2_samsah
-  - p2_accompagnement_tiers
-  - p2_accompagnement_tiers = non
+  - toutes ces conditions:
+    - p2_exception_avion_bateau
+    - p2_nombre_transports_prevus_valide
+  - toutes ces conditions:
+    - p2_transport_serie_declenche_dap
+    - p2_nombre_transports_prevus_valide
+    - p2_distance_serie_repondue
+  - toutes ces conditions:
+    - p2_situations_accord_prealable_repondues
+    - p2_situation_speciale_declenche_dap
+  - toutes ces conditions:
+    - p2_accompagnement_tiers_repondu
+
 p2_document_dap_determine:
-  titre: Document DAP déterminé
+  titre: DAP (Demande d’Accord Préalable) déterminée
   toutes ces conditions:
+  - p2_accord_prealable_applicable
   - p2_accord_prealable_questionnaire_complete
   - p2_accord_prealable_requis
+
 p2_document_pmt_determine:
-  titre: Document PMT déterminé
+  titre: PMT (Prescription Médicale de Transport) déterminée
   toutes ces conditions:
+  - p2_accord_prealable_applicable
   - p2_accord_prealable_questionnaire_complete
   - p2_accord_prealable_requis = non
+
 p2_document_pmt_ou_dap_determine:
-  titre: Document PMT ou DAP déterminé
+  titre: Document de prescription déterminé
   une de ces conditions:
   - p2_document_dap_determine
   - p2_document_pmt_determine
-p2_informations_trajet_requises:
-  titre: Informations de trajet requises
-  toutes ces conditions:
-  - p2_prestation_non_prise_en_charge = non
-  - p2_convocation_ou_avis = non
-  - p2_document_pmt_ou_dap_determine
+
 p2_trajet_aller_retour:
-  titre: Aller simple ou aller-retour
-  question: Le trajet est-il un aller simple ou un aller-retour ?
+  titre: Sens du déplacement
+  question: Quel est le sens du déplacement concerné par cette évaluation ?
   une possibilité:
-  - '''Aller simple'''
-  - '''Aller-retour'''
-  applicable si: p2_informations_trajet_requises
+  - '''aller simple'''
+  - '''aller-retour identique'''
+  - '''aller-retour différent'''
+  applicable si: p2_document_pmt_ou_dap_determine
   spec_id: A4.1
-p2_trajet_aller_retour_renseigne:
-  titre: Aller simple ou aller-retour renseigné
+
+p2_trajet_aller_retour_repondu:
+  titre: Sens du déplacement renseigné
   une de ces conditions:
-  - p2_trajet_aller_retour = 'Aller simple'
-  - p2_trajet_aller_retour = 'Aller-retour'
+  - p2_trajet_aller_retour = 'aller simple'
+  - p2_trajet_aller_retour = 'aller-retour identique'
+  - p2_trajet_aller_retour = 'aller-retour différent'
+
 p2_trajet_depart:
   titre: Lieu de départ
-  question: Quel est le lieu de départ ?
+  question: Quel est le lieu de départ du trajet concerné ?
   une possibilité:
   - '''Domicile'''
   - '''Structure de soins'''
   - '''Autre lieu'''
-  applicable si:
-    toutes ces conditions:
-    - p2_informations_trajet_requises
-    - p2_trajet_aller_retour_renseigne
+  applicable si: p2_trajet_aller_retour_repondu
   spec_id: A4.2
-p2_trajet_depart_renseigne:
+
+p2_trajet_depart_repondu:
   titre: Lieu de départ renseigné
   une de ces conditions:
   - p2_trajet_depart = 'Domicile'
   - p2_trajet_depart = 'Structure de soins'
   - p2_trajet_depart = 'Autre lieu'
+
 p2_trajet_arrivee:
   titre: Lieu d’arrivée
-  question: Quel est le lieu d’arrivée ?
+  question: Quel est le lieu d’arrivée du trajet concerné ?
+  description: Le lieu d’arrivée doit être différent du lieu de départ. Pour un aller-retour, renseignez les lieux du trajet aller.
   une possibilité:
-  - '''Domicile'''
-  - '''Structure de soins'''
-  - '''Autre lieu'''
-  applicable si:
-    toutes ces conditions:
-    - p2_informations_trajet_requises
-    - p2_trajet_depart_renseigne
+  - '''Un domicile différent du lieu de départ.'''
+  - '''Une structure de soins différente du lieu de départ.'''
+  - '''Un autre lieu différent du lieu de départ.'''
+  applicable si: p2_trajet_depart_repondu
   spec_id: A4.3
-p2_trajet_arrivee_renseigne:
+
+p2_trajet_arrivee_repondu:
   titre: Lieu d’arrivée renseigné
   une de ces conditions:
-  - p2_trajet_arrivee = 'Domicile'
-  - p2_trajet_arrivee = 'Structure de soins'
-  - p2_trajet_arrivee = 'Autre lieu'
-p2_transport_urgence:
-  titre: Contexte d’urgence hors SMUR
-  question: En dehors d’un transport par équipe SMUR, la prescription est-elle établie dans un contexte d’urgence ?
-  une possibilité:
-  - '''Appel SAMU - Centre 15'''
-  - '''Autre urgence'''
-  - '''Non'''
+  - p2_trajet_arrivee = 'Un domicile différent du lieu de départ.'
+  - p2_trajet_arrivee = 'Une structure de soins différente du lieu de départ.'
+  - p2_trajet_arrivee = 'Un autre lieu différent du lieu de départ.'
+
+p2_depart_nom_lieu:
+  titre: Nom de la structure ou du lieu de départ
+  type: texte
+  question: Quel est le nom de la structure ou du lieu de départ ?
   applicable si:
     toutes ces conditions:
-    - p2_informations_trajet_requises
-    - p2_trajet_arrivee_renseigne
-  spec_id: A4.5
-p2_transport_urgence_renseigne:
-  titre: Contexte d’urgence renseigné
+    - p2_trajet_depart_repondu
+    - p2_trajet_depart != 'Domicile'
+  spec_id: D1
+
+p2_depart_adresse:
+  titre: Adresse du lieu de départ
+  type: texte
+  question: Quelle est l’adresse du lieu de départ ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D2
+
+p2_depart_complement_adresse:
+  titre: Complément d’adresse du lieu de départ
+  type: texte
+  question: Quel est le complément d’adresse du lieu de départ ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D3
+
+p2_depart_code_postal:
+  titre: Code postal du lieu de départ
+  type: texte
+  question: Quel est le code postal du lieu de départ ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D4
+
+p2_depart_commune:
+  titre: Commune du lieu de départ
+  type: texte
+  question: Quelle est la commune du lieu de départ ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D5
+
+p2_depart_pays:
+  titre: Pays du lieu de départ
+  type: texte
+  question: Quel est le pays du lieu de départ si celui-ci se situe hors de France ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D6
+
+p2_arrivee_nom_lieu:
+  titre: Nom de la structure ou du lieu d’arrivée
+  type: texte
+  question: Quel est le nom de la structure ou du lieu d’arrivée ?
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_trajet_arrivee != 'Un domicile différent du lieu de départ.'
+  spec_id: D7
+
+p2_arrivee_adresse:
+  titre: Adresse du lieu d’arrivée
+  type: texte
+  question: Quelle est l’adresse du lieu d’arrivée ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D8
+
+p2_arrivee_complement_adresse:
+  titre: Complément d’adresse du lieu d’arrivée
+  type: texte
+  question: Quel est le complément d’adresse du lieu d’arrivée ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D9
+
+p2_arrivee_code_postal:
+  titre: Code postal du lieu d’arrivée
+  type: texte
+  question: Quel est le code postal du lieu d’arrivée ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D10
+
+p2_arrivee_commune:
+  titre: Commune du lieu d’arrivée
+  type: texte
+  question: Quelle est la commune du lieu d’arrivée ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D11
+
+p2_arrivee_pays:
+  titre: Pays du lieu d’arrivée
+  type: texte
+  question: Quel est le pays du lieu d’arrivée si celui-ci se situe hors de France ?
+  applicable si: p2_trajet_arrivee_repondu
+  spec_id: D12
+
+p2_depart_nom_requis:
+  titre: Nom du lieu de départ requis
   une de ces conditions:
-  - p2_transport_urgence = 'Appel SAMU - Centre 15'
-  - p2_transport_urgence = 'Autre urgence'
-  - p2_transport_urgence = 'Non'
+  - p2_trajet_depart = 'Structure de soins'
+  - p2_trajet_depart = 'Autre lieu'
+
+p2_arrivee_nom_requis:
+  titre: Nom du lieu d’arrivée requis
+  une de ces conditions:
+  - p2_trajet_arrivee = 'Une structure de soins différente du lieu de départ.'
+  - p2_trajet_arrivee = 'Un autre lieu différent du lieu de départ.'
+
+p2_depart_nom_complete:
+  titre: Nom du lieu de départ complété lorsqu’il est requis
+  valeur:
+    variations:
+    - si: p2_depart_nom_requis
+      alors:
+        est défini: p2_depart_nom_lieu
+    - sinon: oui
+
+p2_arrivee_nom_complete:
+  titre: Nom du lieu d’arrivée complété lorsqu’il est requis
+  valeur:
+    variations:
+    - si: p2_arrivee_nom_requis
+      alors:
+        est défini: p2_arrivee_nom_lieu
+    - sinon: oui
+
+p2_adresses_obligatoires_completes:
+  titre: Adresses obligatoires complétées
+  toutes ces conditions:
+  - p2_depart_nom_complete
+  - est défini: p2_depart_adresse
+  - est défini: p2_depart_code_postal
+  - est défini: p2_depart_commune
+  - p2_arrivee_nom_complete
+  - est défini: p2_arrivee_adresse
+  - est défini: p2_arrivee_code_postal
+  - est défini: p2_arrivee_commune
+
 p2_accident_cause_par_tiers:
   titre: Accident causé par un tiers
   question: Le transport est-il en rapport avec un accident causé par un tiers ?
-  une possibilité:
-  - '''Oui, en rapport avec un accident causé par un tiers'''
-  - '''Non'''
-  applicable si:
-    toutes ces conditions:
-    - p2_informations_trajet_requises
-    - p2_transport_urgence_renseigne
+  applicable si: p2_adresses_obligatoires_completes
   spec_id: A4.6
-p2_accident_cause_par_tiers_renseigne:
-  titre: Accident causé par un tiers renseigné
+
+p2_accident_cause_par_tiers_repondu:
+  titre: Réponse sur l’accident causé par un tiers renseignée
   une de ces conditions:
-  - p2_accident_cause_par_tiers = 'Oui, en rapport avec un accident causé par un tiers'
-  - p2_accident_cause_par_tiers = 'Non'
-p2_lie_accident_travail_maladie_professionnelle:
-  titre: Lien avec accident du travail ou maladie professionnelle
-  valeur: p1_motif_accident_travail_maladie_professionnelle
+  - p2_accident_cause_par_tiers
+  - p2_accident_cause_par_tiers = non
+
+p2_lie_at_mp:
+  titre: Lien avec un AT (Accident du Travail) ou une MP (Maladie Professionnelle)
+  valeur: p2_contexte_at_mp
   spec_id: A4.7
-p2_informations_trajet_complete:
-  titre: Informations de trajet complètes
+
+p2_informations_document_completes:
+  titre: Informations nécessaires au document complètes
   toutes ces conditions:
-  - p2_trajet_aller_retour_renseigne
-  - p2_trajet_depart_renseigne
-  - p2_trajet_arrivee_renseigne
-  - p2_nombre_transports_prevus_valide
-  - p2_transport_urgence_renseigne
-  - p2_accident_cause_par_tiers_renseigne
+  - p2_document_pmt_ou_dap_determine
+  - p2_trajet_aller_retour_repondu
+  - p2_trajet_depart_repondu
+  - p2_trajet_arrivee_repondu
+  - p2_adresses_obligatoires_completes
+  - p2_accident_cause_par_tiers_repondu

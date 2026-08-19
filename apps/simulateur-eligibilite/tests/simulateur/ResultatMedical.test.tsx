@@ -2,81 +2,77 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
-import { passerFiltresM0, terminerParcours } from "./parcours";
+import { terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-describe("prescripteur — résultat médical", () => {
-  it("SMUR → avis médical favorable, passe la main au secrétariat", async () => {
-    const user = userEvent.setup();
-    const passer = vi.fn();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={passer}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+const SMUR = /équipe SMUR/i;
+const BARIATRIQUE = /équipement bariatrique adapté/i;
+const AIDES = /aides ou conditions particulières/i;
 
-    await terminerParcours(user, [[/équipe SMUR/i, "Oui"]]);
+function afficher(onPasserAuSecretariat = () => {}) {
+  render(
+    <Prescripteur
+      onPasserAuSecretariat={onPasserAuSecretariat}
+      onNouvelleSimulation={() => {}}
+    />,
+  );
+  return userEvent.setup();
+}
+
+describe("prescripteur — résultat médical", () => {
+  it("SMUR → cas tranché en Partie 1, la main passe au résultat final", async () => {
+    const passer = vi.fn();
+    const user = afficher(passer);
+
+    await terminerParcours(user, [[SMUR]]);
 
     expect(
-      screen.getByRole("heading", { name: /avis médical favorable/i }),
+      screen.getByRole("heading", { name: /transport par une équipe SMUR/i }),
     ).toBeInTheDocument();
 
-    // Cas tranché dès la Partie 1 : le CTA mène directement au document.
-    await user.click(screen.getByRole("button", { name: /voir le document/i }));
+    // Cas tranché dès la Partie 1 : le CTA mène directement au résultat final.
+    await user.click(
+      screen.getByRole("button", { name: /voir le résultat final/i }),
+    );
     expect(passer).toHaveBeenCalledTimes(1);
   });
-  it("contrainte bariatrique seule → avis défavorable", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
 
-    await terminerParcours(user, [[/contrainte bariatrique/i, "Oui"]]);
+  it("contrainte bariatrique seule → aucun transport prescriptible", async () => {
+    const user = afficher();
+
+    await terminerParcours(user, [[BARIATRIQUE]]);
 
     expect(
-      screen.getByRole("heading", { name: /non justifié médicalement/i }),
+      screen.getByRole("heading", {
+        name: /aucun transport prescriptible sur le seul fondement bariatrique/i,
+      }),
     ).toBeInTheDocument();
   });
 
-  it("favorable : le bloc « Information destinée au patient » liste critères et motifs retenus", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+  it("décision établie : le bloc patient liste critères et cas particuliers retenus", async () => {
+    const user = afficher();
 
-    await passerFiltresM0(user);
-
-    // Motif : hospitalisation → attendu dans les motifs ouvrant droit.
-    await user.click(
-      within(
-        screen.getByRole("group", {
-          name: /quelle situation justifie le transport/i,
-        }),
-      ).getByRole("checkbox", { name: /hospitalisation/i }),
-    );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-
+    // Q1 : besoin d'un professionnel → Q1.1 est posée.
     await user.click(
       within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
         "radio",
-        { name: /aucune de ces situations/i },
+        { name: /prise en charge spécifique/i },
       ),
     );
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 
-    // Critère : « Aucune situation » → attendu dans les critères retenus.
+    // Q1.1 : un critère d'ambulance → attendu dans les critères retenus.
     await user.click(
-      within(
-        screen.getByRole("group", { name: /prise en charge plus encadrée/i }),
-      ).getByRole("checkbox", { name: /aucune de ces situations/i }),
+      within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
+        name: /administration d’oxygène/i,
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // M0 : une séance → attendue dans les cas particuliers médicaux.
+    await user.click(
+      screen.getByRole("checkbox", { name: /séance de dialyse/i }),
     );
     await user.click(screen.getByRole("button", { name: /^voir/i }));
 
@@ -87,28 +83,22 @@ describe("prescripteur — résultat médical", () => {
       screen.getByRole("heading", { name: /critères médicaux retenus/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        /aucune situation nécessitant une prise en charge plus encadrée/i,
-      ),
+      screen.getAllByText(/administration d’oxygène/i).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("heading", {
+        name: /cas particuliers médicaux retenus/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /motifs ouvrant droit/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/entrée ou sortie d’hospitalisation/i),
+      screen.getByText(/séance de soins répétée ou spécialisée/i),
     ).toBeInTheDocument();
   });
 
-  it("défavorable : le bloc patient explique les deux conditions manquantes", async () => {
-    const user = userEvent.setup();
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+  it("cas tranché : le bloc patient explique les deux conditions manquantes", async () => {
+    const user = afficher();
 
-    await terminerParcours(user, [[/contrainte bariatrique/i, "Oui"]]);
+    await terminerParcours(user, [[BARIATRIQUE]]);
 
     expect(
       screen.getByRole("heading", { name: /information destinée au patient/i }),
@@ -122,7 +112,7 @@ describe("prescripteur — résultat médical", () => {
     expect(
       screen.getByText(/un besoin médical de transport adapté/i),
     ).toBeInTheDocument();
-    // Aucune section « critères/motifs retenus » quand l'avis est défavorable.
+    // Aucune section « critères retenus » quand la Partie 1 a tranché.
     expect(
       screen.queryByRole("heading", { name: /critères médicaux retenus/i }),
     ).toBeNull();

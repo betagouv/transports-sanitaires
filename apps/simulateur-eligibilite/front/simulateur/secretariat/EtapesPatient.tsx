@@ -249,13 +249,14 @@ function AucunTransportPrescrit() {
 
 const ETAPES: Record<string, (contexte: Contexte) => React.ReactNode> = {
   "prescription médicale de transport": EtapesPMT,
-  "demande accord préalable": EtapesDAP,
-  "convocation ou avis audience": EtapesConvocation,
-  "transport charge établissement": EtapesChargeEtablissement,
+  "demande d’accord préalable": EtapesDAP,
+  "convocation ou avis d’audience": EtapesConvocation,
+  "transport à la charge de l’établissement": EtapesChargeEtablissement,
   SMUR: EtapesSMUR,
   "bariatrique seul": EtapesBariatriqueSeul,
-  "permission sortie sans motif médical": EtapesPermissionSortie,
-  "prestation non prise en charge par assurance maladie":
+  "permission de sortie sans motif médical": EtapesPermissionSortie,
+  "prestation non prise en charge par l’Assurance Maladie":
     EtapesPrestationNonPriseEnCharge,
-  "non éligible assurance maladie dans ce parcours": EtapesNonEligible,
+  "non éligible à une prise en charge par l’Assurance Maladie":
+    EtapesNonEligible,
 };

@@ -1,7 +1,7 @@
 // Briques de mise en page du bloc « Information destinée au patient », partagées
 // entre la Page Résultat 1 (résultat médical, prescripteur) et la Page Résultat 2
 // (document administratif, secrétariat). Le contenu en langage clair (critères et
-// motifs) vient du dictionnaire `Vulgarisation.tsx` ; ce module ne fait que
+// cas particuliers) vient du dictionnaire `Vulgarisation.tsx` ; ce module ne fait que
 // l'agencer. Seuls les intitulés diffèrent d'une page à l'autre (ton « résultat »
 // vs « document ») : ils sont passés en props, le texte restant est identique.
 
@@ -24,20 +24,20 @@ export function SousTitre({
   );
 }
 
-// Séquence favorable : explication du choix + critères et motifs retenus.
+// Explication du choix, puis les deux listes que la Partie 1 a retenues.
 // Structure identique entre les deux pages ; seuls les intitulés diffèrent.
 export function PourquoiCeTransport({
   titreExplication,
   criteres,
   titreCriteres,
-  motifs,
-  titreMotifs,
+  casParticuliers,
+  titreCasParticuliers,
 }: {
   titreExplication: string;
   criteres: EntreeVulgarisee[];
   titreCriteres: string;
-  motifs: EntreeVulgarisee[];
-  titreMotifs: string;
+  casParticuliers: EntreeVulgarisee[];
+  titreCasParticuliers: string;
 }) {
   return (
     <>
@@ -56,12 +56,12 @@ export function PourquoiCeTransport({
         </>
       )}
 
-      {motifs.length > 0 && (
+      {casParticuliers.length > 0 && (
         <>
           <SousTitre icone="fr-icon-checkbox-circle-line">
-            {titreMotifs}
+            {titreCasParticuliers}
           </SousTitre>
-          <ListeVulgarisee entrees={motifs} />
+          <ListeVulgarisee entrees={casParticuliers} />
         </>
       )}
     </>

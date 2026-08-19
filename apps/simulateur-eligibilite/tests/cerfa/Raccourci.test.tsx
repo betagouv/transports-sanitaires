@@ -45,7 +45,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
 
     // Le parcours est bien à sa première question, et la galerie est offerte.
     expect(
-      await screen.findByRole("group", { name: /équipe SMUR/i }),
+      await screen.findByRole("group", { name: /^le patient/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", GALERIE)).toBeInTheDocument();
   });
@@ -69,7 +69,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
       await screen.findByRole("button", TELECHARGER, { timeout: 10_000 }),
     ).toBeInTheDocument();
     // Plus aucune question du parcours n'est affichée.
-    expect(screen.queryByRole("group", { name: /équipe SMUR/i })).toBeNull();
+    expect(screen.queryByRole("group", { name: /^le patient/i })).toBeNull();
   });
 
   it("permet de générer le CERFA dans la foulée", async () => {
@@ -115,7 +115,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
       />,
     );
     expect(
-      screen.getByRole("group", { name: /équipe SMUR/i }),
+      screen.getByRole("group", { name: /^le patient/i }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", GALERIE)).toBeNull();
   });
