@@ -10,6 +10,7 @@
 // même d'ouvrir un parcours.
 
 import { useMemo } from "react";
+import { EcranPleinePage } from "../../app/EcranPleinePage";
 import type { Outil } from "../../app/outil";
 import { moteur } from "../../simulateur/moteur";
 import { SEEDS } from "./catalogue";
@@ -67,50 +68,7 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
   );
 
   return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-    >
-      <Introduction />
-      <VerdictGlobal lignes={lignes} />
-
-      <Sections lignes={lignes} onOuvrir={onOuvrir} />
-
-      <button
-        type="button"
-        className="fr-btn fr-btn--secondary"
-        onClick={onRetour}
-      >
-        Retour
-      </button>
-    </main>
-  );
-}
-
-// ---- implémentation ----
-
-type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
-
-function Sections({
-  lignes,
-  onOuvrir,
-}: {
-  lignes: LigneSeed[];
-  onOuvrir: (seed: Seed) => void;
-}) {
-  return SECTIONS.map((section) => (
-    <TableauSection
-      key={section.outil}
-      section={section}
-      lignes={lignes.filter(({ seed }) => seed.outil === section.outil)}
-      onOuvrir={onOuvrir}
-    />
-  ));
-}
-
-function Introduction() {
-  return (
-    <>
+    <EcranPleinePage>
       <h1 className="fr-h3">Galerie de seeds</h1>
       <p className="fr-text--sm">
         Les {SEEDS.length} situations de référence du simulateur (
@@ -118,13 +76,26 @@ function Introduction() {
         une pour consulter son résultat — et, pour un cas de prescription, le
         CERFA pré-rempli.
       </p>
-    </>
+      <ConformiteDuCatalogue lignes={lignes} />
+      <SeedsParEcranDAtterrissage lignes={lignes} onOuvrir={onOuvrir} />
+      <button
+        type="button"
+        className="fr-btn fr-btn--secondary"
+        onClick={onRetour}
+      >
+        Retour
+      </button>
+    </EcranPleinePage>
   );
 }
 
+// ---- implémentation ----
+
+type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
+
 // Le moteur effectivement chargé confirme-t-il les attendus du catalogue ? En
 // mode labo, ce bandeau est le premier signal qu'une règle de test a bougé.
-function VerdictGlobal({ lignes }: { lignes: LigneSeed[] }) {
+function ConformiteDuCatalogue({ lignes }: { lignes: LigneSeed[] }) {
   const enEcart = lignes.filter(
     ({ evaluation }) => evaluation.ecarts.length > 0,
   );
@@ -145,6 +116,28 @@ function VerdictGlobal({ lignes }: { lignes: LigneSeed[] }) {
   );
 }
 
+// Le catalogue est présenté en deux tableaux, un par écran sur lequel la seed
+// atterrit : c'est ce qui distingue une situation tranchée en Partie 1 d'une
+// situation complète, et donc ce qu'on vient chercher ici.
+function SeedsParEcranDAtterrissage({
+  lignes,
+  onOuvrir,
+}: {
+  lignes: LigneSeed[];
+  onOuvrir: (seed: Seed) => void;
+}) {
+  return SECTIONS.map((section) => (
+    <TableauSection
+      key={section.outil}
+      section={section}
+      lignes={lignes.filter(({ seed }) => seed.outil === section.outil)}
+      onOuvrir={onOuvrir}
+    />
+  ));
+}
+
+// Le titre de section passe par la légende du tableau : DSFR la rend visible
+// (`.fr-table caption`), un `fr-sr-only` y serait annulé.
 function TableauSection({
   section,
   lignes,
@@ -158,13 +151,11 @@ function TableauSection({
     <section className="fr-mb-6w">
       <div className="fr-table fr-table--bordered">
         <table>
-          {/* Le titre de section passe par la légende du tableau : DSFR la rend
-              visible (`.fr-table caption`), un `fr-sr-only` y serait annulé. */}
           <caption>
             {section.titre}
             <span className="fr-table__detail">{section.sousTitre}</span>
           </caption>
-          <EnTetes />
+          <ColonnesDuCatalogue />
           <tbody>
             {lignes.map(({ seed, evaluation }) => (
               <Ligne
@@ -181,6 +172,9 @@ function TableauSection({
   );
 }
 
+// La colonne « Qui paie » porte le régime de financement : c'est lui qui dit d'un
+// coup d'œil si le transport est à la charge de l'Assurance Maladie — donc si la
+// situation est une non-conformité. Toutes les seeds le déclarent.
 function Ligne({
   seed,
   evaluation,
@@ -192,10 +186,7 @@ function Ligne({
 }) {
   return (
     <tr>
-      <Intitule seed={seed} />
-      {/* Le régime de financement a sa colonne : c'est lui qui dit d'un coup d'œil
-          si le transport est à la charge de l'Assurance Maladie — donc si la
-          situation est une non-conformité. Toutes les seeds le déclarent. */}
+      <IdentiteDeLaSeed seed={seed} />
       <td className="fr-text--sm">
         <strong>{String(seed.attendu.cible_regime_financement)}</strong>
       </td>
@@ -219,21 +210,10 @@ function Ligne({
   );
 }
 
-function Intitule({ seed }: { seed: Seed }) {
-  return (
-    <th scope="row" style={{ maxWidth: "22rem" }}>
-      <span className="fr-text--bold">{seed.libelle}</span>
-      <br />
-      <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
-        {seed.description}
-      </span>
-      <br />
-      <code className="fr-text--xs">{seed.id}</code>
-    </th>
-  );
-}
-
-function EnTetes() {
+// Les cinq colonnes décrivant une seed, identiques dans les deux tableaux : ce
+// qu'elle pose, qui paie, ce qu'elle attend, ce que le moteur en dit, et de quoi
+// l'ouvrir.
+function ColonnesDuCatalogue() {
   return (
     <thead>
       <tr>
@@ -246,6 +226,22 @@ function EnTetes() {
         </th>
       </tr>
     </thead>
+  );
+}
+
+// Ce qui désigne la seed : son libellé, ce qu'elle raconte, et l'identifiant par
+// lequel les tests et `apercu-cerfa` la nomment.
+function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
+  return (
+    <th scope="row" style={{ maxWidth: "22rem" }}>
+      <span className="fr-text--bold">{seed.libelle}</span>
+      <br />
+      <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
+        {seed.description}
+      </span>
+      <br />
+      <code className="fr-text--xs">{seed.id}</code>
+    </th>
   );
 }
 

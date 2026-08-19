@@ -30,32 +30,30 @@ export function ResultatFinal({
   onNouvelleSimulation,
   documentTelechargeable,
 }: Props) {
-  const e = moteur.setSituation(situation);
-  const { casFinal, doc, transport, transportPrescrit, article80 } = cibles(e);
-
   return (
     <div>
       <h2>Document à imprimer et à remettre au patient</h2>
-
-      <Blocs
-        e={e}
-        casFinal={casFinal}
-        doc={doc}
-        transport={transport}
-        transportPrescrit={transportPrescrit}
-        article80={article80}
-      />
-
-      {/* Un accord préalable relève du formulaire S3139, une prise en charge par
-          l'établissement ne donne lieu à aucun CERFA : seule la prescription
-          médicale de transport ouvre un document. À qui il est ouvert, en
-          revanche, ne se décide pas ici (cf. `documentTelechargeable`). */}
-      {casFinal === "prescription médicale de transport" &&
-        documentTelechargeable?.(situation)}
-
-      <PiedDePage
+      <DocumentARemettre
         situation={situation}
-        onNouvelleSimulation={onNouvelleSimulation}
+        documentTelechargeable={documentTelechargeable}
+      />
+      <div className="fr-btns-group fr-btns-group--inline">
+        <button
+          type="button"
+          className="fr-btn fr-btn--secondary"
+          onClick={onNouvelleSimulation}
+        >
+          Faire une nouvelle simulation
+        </button>
+      </div>
+      <TraceDebug
+        titre="résultat administratif"
+        situation={situation}
+        sorties={[
+          "cible_cas_final",
+          "cible_transport_sanitaire_prescrit",
+          "cible_document_a_remettre_au_patient",
+        ]}
       />
     </div>
   );
@@ -63,16 +61,18 @@ export function ResultatFinal({
 
 // ---- implémentation ----
 
-// Les trois blocs, dans le seul ordre qui vaille : le verdict, ce que le patient
-// doit en faire, puis ce que le corps médical doit reporter.
-function Blocs({
-  e,
-  casFinal,
-  doc,
-  transport,
-  transportPrescrit,
-  article80,
-}: ReturnType<typeof cibles> & { e: typeof moteur }) {
+// Ce que le patient emporte : le verdict, ce qu'il doit en faire, ce que le corps
+// médical doit reporter — et, s'il y a lieu, le CERFA pré-rempli. Un accord
+// préalable relève du formulaire S3139, une prise en charge par l'établissement ne
+// donne lieu à aucun CERFA : seule la prescription médicale de transport ouvre un
+// document. À qui il est ouvert, en revanche, ne se décide pas ici (cf.
+// `documentTelechargeable`).
+function DocumentARemettre({
+  situation,
+  documentTelechargeable,
+}: Pick<Props, "situation" | "documentTelechargeable">) {
+  const e = moteur.setSituation(situation);
+  const { casFinal, doc, transport, transportPrescrit, article80 } = cibles(e);
   return (
     <>
       <Bloc1Resultat
@@ -94,6 +94,8 @@ function Blocs({
         doc={doc}
         article80={article80}
       />
+      {casFinal === "prescription médicale de transport" &&
+        documentTelechargeable?.(situation)}
     </>
   );
 }
@@ -115,33 +117,4 @@ function cibles(e: typeof moteur) {
       ),
     } satisfies Article80,
   };
-}
-
-function PiedDePage({
-  situation,
-  onNouvelleSimulation,
-}: Pick<Props, "situation" | "onNouvelleSimulation">) {
-  return (
-    <>
-      <div className="fr-btns-group fr-btns-group--inline">
-        <button
-          type="button"
-          className="fr-btn fr-btn--secondary"
-          onClick={onNouvelleSimulation}
-        >
-          Faire une nouvelle simulation
-        </button>
-      </div>
-
-      <TraceDebug
-        titre="résultat administratif"
-        situation={situation}
-        sorties={[
-          "cible_cas_final",
-          "cible_transport_sanitaire_prescrit",
-          "cible_document_a_remettre_au_patient",
-        ]}
-      />
-    </>
-  );
 }

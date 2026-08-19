@@ -30,7 +30,7 @@ export function ResultatMedical({
     <div>
       <Verdict favorable={favorable} transport={transport} />
       <InformationPatient e={e} favorable={favorable} transport={transport} />
-      <Actions
+      <SuiteDuParcours
         labelSuite={
           partie2Requise
             ? "Compléter la partie administrative"
@@ -107,7 +107,7 @@ function InformationPatient({
       </h3>
       <div className="fr-callout__text">
         {favorable ? (
-          <TransportRetenu e={e} transport={transport} />
+          <TransportJustifie e={e} transport={transport} />
         ) : (
           <ExplicationTransportImpossible />
         )}
@@ -116,7 +116,8 @@ function InformationPatient({
   );
 }
 
-function TransportRetenu({
+// Cas favorable : le transport retenu, et ce qui l'a justifié.
+function TransportJustifie({
   e,
   transport,
 }: {
@@ -143,7 +144,9 @@ function TransportRetenu({
   );
 }
 
-function Actions({
+// Les deux suites possibles depuis le résultat médical : repartir de zéro, ou
+// poursuivre — vers la Partie 2 si elle est requise, vers le document sinon.
+function SuiteDuParcours({
   labelSuite,
   onContinuer,
   onRecommencer,

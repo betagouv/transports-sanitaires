@@ -22,7 +22,14 @@ function PmtVehiculePerso() {
         Organisez votre trajet avec votre véhicule personnel ou les transports
         en commun.
       </li>
-      <Justificatifs />
+      <li>
+        Conservez les justificatifs nécessaires : billets, reçus, justificatifs
+        de trajet ou de distance selon le cas.
+      </li>
+      <li>
+        Transmettez les justificatifs à votre organisme d’Assurance Maladie
+        selon les modalités indiquées.
+      </li>
     </>
   );
 }
@@ -47,7 +54,13 @@ function PmtVslTaxiTpmr() {
         Organisez le transport avec un transporteur adapté au fauteuil roulant,
         ou avec l’aide du secrétariat médical selon l’organisation prévue.
       </li>
-      <SansQuitterLeFauteuil />
+      <li>
+        Précisez que le transport doit se faire{" "}
+        <strong>
+          sans quitter votre fauteuil roulant manuel ou électrique
+        </strong>
+        .
+      </li>
       <li>Présentez la prescription au transporteur avant le transport.</li>
     </>
   );
@@ -76,7 +89,14 @@ function DapVehiculePerso() {
         Une fois l’accord obtenu, organisez votre trajet avec votre véhicule
         personnel ou les transports en commun.
       </li>
-      <Justificatifs />
+      <li>
+        Conservez les justificatifs nécessaires : billets, reçus, justificatifs
+        de trajet ou de distance selon le cas.
+      </li>
+      <li>
+        Transmettez les justificatifs à votre organisme d’Assurance Maladie
+        selon les modalités indiquées.
+      </li>
     </>
   );
 }
@@ -102,7 +122,13 @@ function DapVslTaxiTpmr() {
         adapté au fauteuil roulant, ou avec l’aide du secrétariat médical selon
         l’organisation prévue.
       </li>
-      <SansQuitterLeFauteuil />
+      <li>
+        Précisez que le transport doit se faire{" "}
+        <strong>
+          sans quitter votre fauteuil roulant manuel ou électrique
+        </strong>
+        .
+      </li>
       <li>Présentez la demande au transporteur.</li>
     </>
   );
@@ -118,32 +144,6 @@ function DapAmbulance() {
       </li>
       <li>Présentez la demande au transporteur, sauf situation d’urgence.</li>
     </>
-  );
-}
-
-// Le trajet en véhicule personnel se rembourse sur justificatifs : les deux
-// mêmes étapes closent la modalité, que l'accord préalable soit requis ou non.
-function Justificatifs() {
-  return (
-    <>
-      <li>
-        Conservez les justificatifs nécessaires : billets, reçus, justificatifs
-        de trajet ou de distance selon le cas.
-      </li>
-      <li>
-        Transmettez les justificatifs à votre organisme d’Assurance Maladie
-        selon les modalités indiquées.
-      </li>
-    </>
-  );
-}
-
-function SansQuitterLeFauteuil() {
-  return (
-    <li>
-      Précisez que le transport doit se faire{" "}
-      <strong>sans quitter votre fauteuil roulant manuel ou électrique</strong>.
-    </li>
   );
 }
 

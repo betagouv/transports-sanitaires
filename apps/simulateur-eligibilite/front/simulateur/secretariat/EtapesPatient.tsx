@@ -80,7 +80,7 @@ function EtapesConvocation({ transport }: Contexte) {
 function ConvocationVehiculePerso() {
   return (
     <ol>
-      <ConserverConvocation />
+      <li>Conservez votre convocation ou votre avis d’audience.</li>
       <li>
         Le transport retenu est :{" "}
         <strong>véhicule personnel ou transport en commun</strong>.
@@ -100,8 +100,10 @@ function ConvocationVehiculePerso() {
 function ConvocationTransporteur({ transport }: { transport: string }) {
   return (
     <ol>
-      <ConserverConvocation />
-      <TransportRetenu transport={transport} />
+      <li>Conservez votre convocation ou votre avis d’audience.</li>
+      <li>
+        Le transport retenu est : <strong>{transport}</strong>.
+      </li>
       <li>
         Organisez le transport selon les indications figurant sur la
         convocation, l’avis ou les consignes données par le service concerné.
@@ -114,7 +116,9 @@ function ConvocationTransporteur({ transport }: { transport: string }) {
 function EtapesChargeEtablissement({ transport }: Contexte) {
   return (
     <ol>
-      <TransportRetenu transport={transport} />
+      <li>
+        Le transport retenu est : <strong>{transport}</strong>.
+      </li>
       <li>
         Le transport doit être organisé ou encadré par l’établissement de santé.
       </li>
@@ -197,20 +201,18 @@ function EtapesPrestationNonPriseEnCharge() {
 }
 
 function EtapesNonEligible({ transport, transportPrescrit }: Contexte) {
-  if (!transportPrescrit) {
-    return (
-      <ol>
-        <li>
-          Aucun transport sanitaire ne peut être prescrit par votre médecin sur
-          la base des informations indiquées.
-        </li>
-        <li>
-          Le transport reste à votre charge si vous décidez de l’organiser.
-        </li>
-        <SeRapprocherDuSecretariat />
-      </ol>
-    );
-  }
+  return transportPrescrit ? (
+    <TransportPrescritNonPrisEnCharge transport={transport} />
+  ) : (
+    <AucunTransportPrescrit />
+  );
+}
+
+function TransportPrescritNonPrisEnCharge({
+  transport,
+}: {
+  transport: string;
+}) {
   return (
     <ol>
       <li>
@@ -221,29 +223,27 @@ function EtapesNonEligible({ transport, transportPrescrit }: Contexte) {
         charge par l’Assurance Maladie dans ce cadre.
       </li>
       <li>Le transport reste à votre charge.</li>
-      <SeRapprocherDuSecretariat />
+      <li>
+        Rapprochez-vous du secrétariat médical ou de l’établissement pour
+        connaître la suite à donner.
+      </li>
     </ol>
   );
 }
 
-function TransportRetenu({ transport }: { transport: string }) {
+function AucunTransportPrescrit() {
   return (
-    <li>
-      Le transport retenu est : <strong>{transport}</strong>.
-    </li>
-  );
-}
-
-function ConserverConvocation() {
-  return <li>Conservez votre convocation ou votre avis d’audience.</li>;
-}
-
-function SeRapprocherDuSecretariat() {
-  return (
-    <li>
-      Rapprochez-vous du secrétariat médical ou de l’établissement pour
-      connaître la suite à donner.
-    </li>
+    <ol>
+      <li>
+        Aucun transport sanitaire ne peut être prescrit par votre médecin sur la
+        base des informations indiquées.
+      </li>
+      <li>Le transport reste à votre charge si vous décidez de l’organiser.</li>
+      <li>
+        Rapprochez-vous du secrétariat médical ou de l’établissement pour
+        connaître la suite à donner.
+      </li>
+    </ol>
   );
 }
 

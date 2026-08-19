@@ -30,6 +30,7 @@ import { moteur } from "../simulateur/moteur";
 import { emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../simulateur/secretariat/Secretariat";
+import { EcranPleinePage } from "./EcranPleinePage";
 import type { Navigation } from "./navigation";
 import { outilDeLUrl, useNavigation } from "./navigation";
 
@@ -65,10 +66,9 @@ export function App({
       )}
       {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
       {navigation.ecran === "simulateur" && (
-        <EcranSimulateur
-          navigation={navigation}
-          chargerGabarit={chargerGabarit}
-        />
+        <EcranPleinePage>
+          <Simulateur navigation={navigation} chargerGabarit={chargerGabarit} />
+        </EcranPleinePage>
       )}
     </>
   );
@@ -123,17 +123,6 @@ type SimulateurProps = {
   navigation: Navigation;
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
-
-function EcranSimulateur(props: SimulateurProps) {
-  return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-    >
-      <Simulateur {...props} />
-    </main>
-  );
-}
 
 function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
   if (navigation.outil === "secretariat") {

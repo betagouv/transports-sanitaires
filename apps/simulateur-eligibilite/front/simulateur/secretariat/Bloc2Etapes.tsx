@@ -52,7 +52,7 @@ export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
         Information destinée au patient
       </h3>
       <div className="fr-callout__text">
-        <TransportRetenu e={e} {...contexte} />
+        <PourquoiCeResultat e={e} {...contexte} />
         <SousTitre icone="fr-icon-money-euro-circle-line">
           Prise en charge / reste à charge
         </SousTitre>
@@ -86,14 +86,20 @@ function OrganisationEtDefraiement({
   );
 }
 
-// Le transport retenu et ce qui l'a justifié — ou, faute de transport prescrit,
-// l'explication de ce qui l'empêche.
-function TransportRetenu({
+// Pourquoi ce transport — ou, faute de transport prescrit, pourquoi aucun.
+function PourquoiCeResultat({
   e,
   transport,
   transportPrescrit,
 }: Omit<Props, "casFinal" | "article80">) {
-  if (!transportPrescrit) return <ExplicationTransportImpossible />;
+  return transportPrescrit ? (
+    <TransportJustifie e={e} transport={transport} />
+  ) : (
+    <ExplicationTransportImpossible />
+  );
+}
+
+function TransportJustifie({ e, transport }: Pick<Props, "e" | "transport">) {
   return (
     <>
       <p>

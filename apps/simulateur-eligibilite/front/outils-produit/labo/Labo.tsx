@@ -5,6 +5,7 @@
 // Identification.tsx + `estServiceProduit`).
 
 import { useState } from "react";
+import { EcranPleinePage } from "../../app/EcranPleinePage";
 import {
   activerLabo,
   desactiverLabo,
@@ -25,59 +26,46 @@ export function Labo({ onRetour }: Props) {
   const [candidat, setCandidat] = useState<Candidat | null>(null);
   const active = versionLaboActive();
 
-  async function chargerFichier(fichier: File | undefined) {
-    if (!fichier) return;
-    const contenu = await fichier.text();
-    setCandidat({
-      nom: fichier.name,
-      yaml: contenu,
-      validation: validerRegles(contenu),
-    });
-  }
-
   return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem", maxWidth: "60rem" }}
-    >
-      <Introduction />
-      {active && <VersionActive active={active} />}
-      <ChampFichier onFichier={chargerFichier} />
-      {candidat && <ApercuCandidat candidat={candidat} onActiver={activer} />}
-      <Historique active={active} />
-
-      <BoutonRetour onRetour={onRetour} />
-    </main>
-  );
-}
-
-// ---- implémentation ----
-
-function BoutonRetour({ onRetour }: Props) {
-  return (
-    <div className="fr-btns-group fr-mt-4w">
-      <button
-        type="button"
-        className="fr-btn fr-btn--tertiary"
-        onClick={onRetour}
-      >
-        Retour au simulateur
-      </button>
-    </div>
-  );
-}
-
-function Introduction() {
-  return (
-    <>
+    <EcranPleinePage etroit>
       <h1 className="fr-h3">Mode test des règles</h1>
       <p className="fr-text--sm fr-mb-3w">
         Chargez une version du fichier de règles (<code>.publicodes</code>) pour
         tester le simulateur avec, sans déploiement. Le test reste local à ce
         navigateur ; il n'affecte ni la production ni les autres utilisateurs.
       </p>
-    </>
+      {active && <VersionActive active={active} />}
+      <ChampFichier
+        onFichier={async (fichier) =>
+          setCandidat(fichier ? await lireCandidat(fichier) : null)
+        }
+      />
+      {candidat && <ApercuCandidat candidat={candidat} onActiver={activer} />}
+      <Historique active={active} />
+      <div className="fr-btns-group fr-mt-4w">
+        <button
+          type="button"
+          className="fr-btn fr-btn--tertiary"
+          onClick={onRetour}
+        >
+          Retour au simulateur
+        </button>
+      </div>
+    </EcranPleinePage>
   );
+}
+
+// ---- implémentation ----
+
+// Lit le fichier déposé et le valide dans la foulée : un candidat porte toujours
+// son verdict, il n'existe pas d'état « chargé mais pas encore validé ».
+async function lireCandidat(fichier: File): Promise<Candidat> {
+  const contenu = await fichier.text();
+  return {
+    nom: fichier.name,
+    yaml: contenu,
+    validation: validerRegles(contenu),
+  };
 }
 
 // Active une version puis recharge : le moteur (singleton construit au boot) est

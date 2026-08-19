@@ -13,6 +13,7 @@ import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel";
+import { EcranPleinePage } from "../app/EcranPleinePage";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
 import type { SaisieIdentite } from "./saisie-identite";
 import { useSaisieIdentite } from "./saisie-identite";
@@ -53,10 +54,7 @@ export function Identification({
   };
 
   return (
-    <main
-      className="fr-container"
-      style={{ paddingTop: "2rem", paddingBottom: "4rem", maxWidth: "60rem" }}
-    >
+    <EcranPleinePage etroit>
       <h1 className="fr-h3">Commencez par vous identifier</h1>
       <form
         onSubmit={(e) => {
@@ -64,10 +62,10 @@ export function Identification({
           entrer("simulateur");
         }}
       >
-        <Champs saisie={saisie} />
-        <Actions saisie={saisie} onEntrer={entrer} />
+        <FormulaireProgressif saisie={saisie} />
+        <EntreesDansLApplication saisie={saisie} onEntrer={entrer} />
       </form>
-    </main>
+    </EcranPleinePage>
   );
 }
 
@@ -75,7 +73,9 @@ export function Identification({
 
 type ChampsProps = { saisie: SaisieIdentite };
 
-function Champs({ saisie }: ChampsProps) {
+// Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
+// que leur branche n'est pas empruntée (workflow §4).
+function FormulaireProgressif({ saisie }: ChampsProps) {
   return (
     <>
       <ChampEtablissement saisie={saisie} />
@@ -162,7 +162,10 @@ function ChampsIdentiteLibre({ saisie }: ChampsProps) {
   );
 }
 
-function Actions({
+// Les deux sorties de cet écran — le simulateur, et les outils produit pour le
+// service n° 4 — sont des entrées dans l'application, et passent donc par le
+// même `onValide` (ADR-1).
+function EntreesDansLApplication({
   saisie,
   onEntrer,
 }: ChampsProps & {
