@@ -4,9 +4,9 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import type { TrajetRow } from "../contrats.ts";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import type { TrajetRow } from "../contrats.ts";
 
 export class Staging {
   execute(): void {
@@ -16,12 +16,20 @@ export class Staging {
   }
 
   #readAll(): TrajetRow[] {
-    const files = readdirSync(Paths.EXTRACT_TRAJETS).filter((f) => f.endsWith(".csv"));
+    const files = readdirSync(Paths.EXTRACT_TRAJETS).filter((f) =>
+      f.endsWith(".csv"),
+    );
     return files.flatMap((f) => this.#readFile(join(Paths.EXTRACT_TRAJETS, f)));
   }
 
   #readFile(path: string): TrajetRow[] {
-    return Csv.read(path).map((raw) => ({ ...raw, nb_trajets: Number(raw.nb_trajets) }) as unknown as TrajetRow);
+    return Csv.read(path).map(
+      (raw) =>
+        ({
+          ...raw,
+          nb_trajets: Number(raw.nb_trajets),
+        }) as unknown as TrajetRow,
+    );
   }
 
   #aggregate(rows: TrajetRow[]): TrajetRow[] {
@@ -39,8 +47,14 @@ export class Staging {
 
   #cle(t: TrajetRow): string {
     return [
-      t.role, t.source, t.finess_juridique, t.finess_geographique,
-      t.ght_libelle, t.enveloppe, t.annee, t.vehicule_canonique,
+      t.role,
+      t.source,
+      t.finess_juridique,
+      t.finess_geographique,
+      t.ght_libelle,
+      t.enveloppe,
+      t.annee,
+      t.vehicule_canonique,
     ].join("|");
   }
 }

@@ -6,10 +6,10 @@
 
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
-import { Paths } from "../paths.ts";
 import { Mapping } from "../mapping.ts";
-import { FORMATS } from "./adapteurs/registry.ts";
+import { Paths } from "../paths.ts";
 import type { AdapterOutput, FormatRegistry, MappingEntry } from "../types.ts";
+import { FORMATS } from "./adapteurs/registry.ts";
 
 export class Extract {
   readonly #formats: FormatRegistry;
@@ -27,32 +27,48 @@ export class Extract {
 
   #runAdapter(entry: MappingEntry): Result {
     const AdapterClass = this.#formats[entry.format];
-    if (!AdapterClass) throw new Error(`Format inconnu dans le mapping : « ${entry.format} ».`);
+    if (!AdapterClass)
+      throw new Error(`Format inconnu dans le mapping : « ${entry.format} ».`);
     const output = new AdapterClass(entry.location, entry).execute();
-    console.log(`extract ${entry.label.padEnd(14)} [${entry.role}] : ${output.trajets.length} lignes`);
+    console.log(
+      `extract ${entry.label.padEnd(14)} [${entry.role}] : ${output.trajets.length} lignes`,
+    );
     return { entry, output };
   }
 
   #writeTrajets(results: Result[]): void {
     for (const { entry, output } of results)
-      Csv.write(join(Paths.EXTRACT_TRAJETS, `${entry.label}.csv`), output.trajets as unknown as Row[]);
+      Csv.write(
+        join(Paths.EXTRACT_TRAJETS, `${entry.label}.csv`),
+        output.trajets as unknown as Row[],
+      );
   }
 
   #writeEtablissements(results: Result[]): void {
-    const etablissements = results.flatMap((r) => r.output.etablissements ?? []);
-    Csv.write(join(Paths.EXTRACT, "etablissements.csv"), etablissements as unknown as Row[]);
-    console.log(`extract etablissements       : ${etablissements.length} lignes`);
+    const etablissements = results.flatMap(
+      (r) => r.output.etablissements ?? [],
+    );
+    Csv.write(
+      join(Paths.EXTRACT, "etablissements.csv"),
+      etablissements as unknown as Row[],
+    );
+    console.log(
+      `extract etablissements       : ${etablissements.length} lignes`,
+    );
   }
 
   #writeGht(results: Result[]): void {
     const ght = results.flatMap((r) => r.output.ght ?? []);
     if (ght.length === 0) return; // aucune source referentiel-ght déclarée
     Csv.write(join(Paths.EXTRACT, "ght.csv"), ght as unknown as Row[]);
-    console.log(`extract ght                  : ${ght.length} finess juridiques rattachés`);
+    console.log(
+      `extract ght                  : ${ght.length} finess juridiques rattachés`,
+    );
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) new Extract(FORMATS).execute();
+if (import.meta.url === `file://${process.argv[1]}`)
+  new Extract(FORMATS).execute();
 
 // ---- implémentation ----
 

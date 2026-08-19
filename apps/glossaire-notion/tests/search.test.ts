@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { normalize, searchGlossary } from "../src/search";
 import type { GlossaryEntry } from "../src/notion";
+import { normalize, searchGlossary } from "../src/search";
 
 const entries: GlossaryEntry[] = [
   { id: "1", terme: "ALD", definition: "Affection de Longue Durée" },
-  { id: "2", terme: "Ambulance", definition: "Transport adapté pour patient allongé" },
+  {
+    id: "2",
+    terme: "Ambulance",
+    definition: "Transport adapté pour patient allongé",
+  },
   { id: "3", terme: "ANS", definition: "Agence du Numérique en Santé" },
 ];
 
@@ -20,16 +24,24 @@ describe("searchGlossary", () => {
   });
 
   it("matches on the terme, case and accent insensitively", () => {
-    expect(searchGlossary(entries, "ambulance").map((e) => e.terme)).toEqual(["Ambulance"]);
-    expect(searchGlossary(entries, "AMBULANCE").map((e) => e.terme)).toEqual(["Ambulance"]);
+    expect(searchGlossary(entries, "ambulance").map((e) => e.terme)).toEqual([
+      "Ambulance",
+    ]);
+    expect(searchGlossary(entries, "AMBULANCE").map((e) => e.terme)).toEqual([
+      "Ambulance",
+    ]);
   });
 
   it("matches on the definition", () => {
-    expect(searchGlossary(entries, "numerique").map((e) => e.terme)).toEqual(["ANS"]);
+    expect(searchGlossary(entries, "numerique").map((e) => e.terme)).toEqual([
+      "ANS",
+    ]);
   });
 
   it("ignores accents in the query itself", () => {
-    expect(searchGlossary(entries, "longue durée").map((e) => e.terme)).toEqual(["ALD"]);
+    expect(searchGlossary(entries, "longue durée").map((e) => e.terme)).toEqual(
+      ["ALD"],
+    );
   });
 
   it("returns no entries when nothing matches", () => {

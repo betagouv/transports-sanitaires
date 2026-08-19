@@ -12,17 +12,17 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { Csv } from "../csv.ts";
-import { Paths } from "../paths.ts";
-import { MartRatio } from "./mart-ratio.ts";
-import { MartArticle80 } from "./mart-article80.ts";
-import { MartGht2024 } from "./mart-ght-2024.ts";
 import type {
   EtablissementDimensionRow,
   EtablissementRow,
   GhtRattachementRow,
   TrajetReconcilieRow,
 } from "../contrats.ts";
+import { Csv } from "../csv.ts";
+import { Paths } from "../paths.ts";
+import { MartArticle80 } from "./mart-article80.ts";
+import { MartGht2024 } from "./mart-ght-2024.ts";
+import { MartRatio } from "./mart-ratio.ts";
 
 export class Marts {
   #juridique = new Map<string, EtablissementDimensionRow>();
@@ -32,7 +32,9 @@ export class Marts {
   execute(): void {
     this.#loadDimensions();
     const trajets = this.#loadTrajets();
-    this.#martsRatio().forEach((mart) => mart.execute(trajets));
+    this.#martsRatio().forEach((mart) => {
+      mart.execute(trajets);
+    });
     new MartArticle80(
       (cle) => this.#juridique.get(cle)?.nom ?? "",
       (cle) => this.#ght.get(cle)?.ght_libelle ?? "",
@@ -45,7 +47,8 @@ export class Marts {
       new MartRatio({
         fichier: "mart_geographique.csv",
         log: "geographique",
-        grain: (t) => (this.#usable(t.finess_geographique) ? t.finess_geographique : ""),
+        grain: (t) =>
+          this.#usable(t.finess_geographique) ? t.finess_geographique : "",
         identite: (cle) => this.#identiteGeo(cle),
       }),
       new MartRatio({
@@ -82,31 +85,51 @@ export class Marts {
 
   #identiteJuridique(cle: string): Row {
     const e = this.#juridique.get(cle);
-    return { finess_juridique: cle, nom: e?.nom ?? "", ville: e?.ville ?? "", departement: e?.departement ?? "" };
+    return {
+      finess_juridique: cle,
+      nom: e?.nom ?? "",
+      ville: e?.ville ?? "",
+      departement: e?.departement ?? "",
+    };
   }
 
   #identiteGht(cle: string): Row {
     const g = this.#ght.get(cle);
-    return { ght_code: cle, region: g?.region ?? "", ght_libelle: g?.ght_libelle ?? "" };
+    return {
+      ght_code: cle,
+      region: g?.region ?? "",
+      ght_libelle: g?.ght_libelle ?? "",
+    };
   }
 
   #loadDimensions(): void {
-    this.#juridique = new Map(this.#readDimension().map((r) => [r.finess_juridique, r]));
+    this.#juridique = new Map(
+      this.#readDimension().map((r) => [r.finess_juridique, r]),
+    );
     this.#geo = this.#geoDimension();
     this.#ght = this.#ghtDimension();
   }
 
   #readDimension(): EtablissementDimensionRow[] {
-    return Csv.read(join(Paths.RECONCILE, "etablissements.csv")) as unknown as EtablissementDimensionRow[];
+    return Csv.read(
+      join(Paths.RECONCILE, "etablissements.csv"),
+    ) as unknown as EtablissementDimensionRow[];
   }
 
   // Un site (finess géographique) peut apparaître plusieurs fois : on garde le plus gros volume.
   #geoDimension(): Map<string, EtablissementRow> {
     const map = new Map<string, EtablissementRow>();
     for (const raw of Csv.read(join(Paths.EXTRACT, "etablissements.csv"))) {
-      const e = { ...raw, score: Number(raw.score) } as unknown as EtablissementRow;
+      const e = {
+        ...raw,
+        score: Number(raw.score),
+      } as unknown as EtablissementRow;
       const courant = map.get(e.finess_geographique);
-      if (this.#usable(e.finess_geographique) && (!courant || e.score > courant.score)) map.set(e.finess_geographique, e);
+      if (
+        this.#usable(e.finess_geographique) &&
+        (!courant || e.score > courant.score)
+      )
+        map.set(e.finess_geographique, e);
     }
     return map;
   }
@@ -126,18 +149,31 @@ export class Marts {
   // Les mappings manuels peuvent introduire des codes hors référentiel (ex. « AP-HP ») : on
   // les habille avec leur libellé (colonne ght_officiel) pour qu'ils s'affichent proprement.
   #completerAvecMappingManuel(map: Map<string, GhtRattachementRow>): void {
-    for (const fichier of ["plateforme-ght-mapping.csv", "finess-ght-manuel.csv"]) {
+    for (const fichier of [
+      "plateforme-ght-mapping.csv",
+      "finess-ght-manuel.csv",
+    ]) {
       const path = join(Paths.REF, fichier);
       if (!existsSync(path)) continue;
       for (const r of Csv.read(path))
         if (r.ght_code && !map.has(r.ght_code))
-          map.set(r.ght_code, { ght_code: r.ght_code, ght_libelle: r.ght_officiel ?? r.ght_code, region: "", finess_juridique: "", raison_sociale: "" });
+          map.set(r.ght_code, {
+            ght_code: r.ght_code,
+            ght_libelle: r.ght_officiel ?? r.ght_code,
+            region: "",
+            finess_juridique: "",
+            raison_sociale: "",
+          });
     }
   }
 
   #loadTrajets(): TrajetReconcilieRow[] {
     return Csv.read(join(Paths.RECONCILE, "trajets.csv")).map(
-      (raw) => ({ ...raw, nb_trajets: Number(raw.nb_trajets) }) as unknown as TrajetReconcilieRow,
+      (raw) =>
+        ({
+          ...raw,
+          nb_trajets: Number(raw.nb_trajets),
+        }) as unknown as TrajetReconcilieRow,
     );
   }
 

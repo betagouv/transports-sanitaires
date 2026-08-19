@@ -3,8 +3,8 @@
 //
 // L'emplacement des sources d'entrée est configurable : voir mapping.ts / mapping.json.
 
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export class Paths {
   static readonly #root = join(dirname(fileURLToPath(import.meta.url)), "..");

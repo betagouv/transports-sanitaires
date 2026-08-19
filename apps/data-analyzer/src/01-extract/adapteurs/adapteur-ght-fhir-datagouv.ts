@@ -23,7 +23,8 @@ export class AdapterGhtFhirDatagouv implements Adapter {
 
   execute(): AdapterOutput {
     const parJuridique = new Map<string, GhtRattachementRow>();
-    for (const fichier of this.#bundles()) this.#collectBundle(fichier, parJuridique);
+    for (const fichier of this.#bundles())
+      this.#collectBundle(fichier, parJuridique);
     return { trajets: [], ght: [...parJuridique.values()] };
   }
 
@@ -34,12 +35,16 @@ export class AdapterGhtFhirDatagouv implements Adapter {
       .map((f) => join(this.#location, f));
   }
 
-  #collectBundle(fichier: string, parJuridique: Map<string, GhtRattachementRow>): void {
+  #collectBundle(
+    fichier: string,
+    parJuridique: Map<string, GhtRattachementRow>,
+  ): void {
     const orgs = this.#organizations(fichier);
     const ght = orgs.find((o) => this.#identifiant(o, SUFFIXE_SYSTEME.ght));
     if (!ght) return; // bundle sans GHT : ignoré
     const code = this.#identifiant(ght, SUFFIXE_SYSTEME.ght)!;
-    for (const org of orgs) this.#collectJuridique(org, code, ght.name ?? "", parJuridique);
+    for (const org of orgs)
+      this.#collectJuridique(org, code, ght.name ?? "", parJuridique);
   }
 
   #collectJuridique(
@@ -49,7 +54,8 @@ export class AdapterGhtFhirDatagouv implements Adapter {
     parJuridique: Map<string, GhtRattachementRow>,
   ): void {
     const finess = this.#identifiant(org, SUFFIXE_SYSTEME.ej);
-    if (!finess || !FINESS_VALIDE.test(finess) || parJuridique.has(finess)) return; // pas une EJ valide, ou déjà vue
+    if (!finess || !FINESS_VALIDE.test(finess) || parJuridique.has(finess))
+      return; // pas une EJ valide, ou déjà vue
     parJuridique.set(finess, {
       finess_juridique: finess,
       ght_code: ghtCode,

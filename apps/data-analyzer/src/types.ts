@@ -2,7 +2,11 @@
 //
 // Les DTO échangés entre étapes de la pipeline sont, eux, dans contrats.ts.
 
-import type { EtablissementRow, GhtRattachementRow, TrajetRow } from "./contrats.ts";
+import type {
+  EtablissementRow,
+  GhtRattachementRow,
+  TrajetRow,
+} from "./contrats.ts";
 
 /** Enveloppe de financement, normalisée. */
 export type Enveloppe = "Article 80" | "Hors Article 80";
@@ -47,7 +51,10 @@ export interface Adapter {
 }
 
 /** Constructeur d'adaptateur, tel qu'enregistré dans le registre des formats. */
-export type AdapterConstructor = new (location: string, entry: MappingEntry) => Adapter;
+export type AdapterConstructor = new (
+  location: string,
+  entry: MappingEntry,
+) => Adapter;
 
 /** Registre des formats : clé `format` du mapping → classe d'adaptateur. */
 export type FormatRegistry = Record<string, AdapterConstructor>;

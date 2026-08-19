@@ -16,7 +16,9 @@ export class MartGht2024 {
   execute(): void {
     const rows = this.calculer(Csv.read(join(Paths.MARTS, "mart_ght.csv")));
     Csv.write(join(Paths.MARTS, "mart_ght_2024.csv"), rows);
-    console.log(`marts ght_2024        : ${rows.length} GHT (année ${ANNEE}, tous transports)`);
+    console.log(
+      `marts ght_2024        : ${rows.length} GHT (année ${ANNEE}, tous transports)`,
+    );
   }
 
   /** Calcul pur (sans I/O) : agrège les véhicules du mart GHT par GHT, pour l'année cible. */
@@ -33,10 +35,20 @@ export class MartGht2024 {
       .map(([ght_code, accu]) => this.#toRow(ght_code, accu));
   }
 
-  #accu(parGht: Map<string, Accu>, ght_code: string, r: Record<string, string>): Accu {
-    let accu = parGht.get(ght_code);
-    if (!accu)
-      parGht.set(ght_code, (accu = { region: r.region ?? "", ght_libelle: r.ght_libelle ?? "", nb_plateforme: 0, nb_cnam: 0 }));
+  #accu(
+    parGht: Map<string, Accu>,
+    ght_code: string,
+    r: Record<string, string>,
+  ): Accu {
+    const connu = parGht.get(ght_code);
+    if (connu) return connu;
+    const accu: Accu = {
+      region: r.region ?? "",
+      ght_libelle: r.ght_libelle ?? "",
+      nb_plateforme: 0,
+      nb_cnam: 0,
+    };
+    parGht.set(ght_code, accu);
     return accu;
   }
 
@@ -48,12 +60,16 @@ export class MartGht2024 {
       annee: ANNEE,
       nb_plateforme: accu.nb_plateforme,
       nb_cnam: accu.nb_cnam,
-      ratio: accu.nb_cnam > 0 ? Number((accu.nb_plateforme / accu.nb_cnam).toFixed(4)) : "",
+      ratio:
+        accu.nb_cnam > 0
+          ? Number((accu.nb_plateforme / accu.nb_cnam).toFixed(4))
+          : "",
     };
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) new MartGht2024().execute();
+if (import.meta.url === `file://${process.argv[1]}`)
+  new MartGht2024().execute();
 
 // ---- implémentation ----
 

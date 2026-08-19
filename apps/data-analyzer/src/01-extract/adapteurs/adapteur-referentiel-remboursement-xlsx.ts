@@ -7,9 +7,14 @@
 //  - données à partir de la ligne 2.
 // Ce référentiel ne couvre que le **hors Article 80** (enveloppe posée en dur ici).
 
-import { Xlsx } from "./xlsx.ts";
 import type { EtablissementRow, TrajetRow } from "../../contrats.ts";
-import type { Adapter, AdapterOutput, MappingEntry, VehiculeCanonique } from "../../types.ts";
+import type {
+  Adapter,
+  AdapterOutput,
+  MappingEntry,
+  VehiculeCanonique,
+} from "../../types.ts";
+import { Xlsx } from "./xlsx.ts";
 
 export class AdapterReferentielRemboursementXlsx implements Adapter {
   readonly #location: string;
@@ -39,14 +44,16 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     if (periode) annee = String(SIECLE + Number(periode[1]));
     const label = Xlsx.str(ws, LIGNE_COLONNES, c);
     this.#registerIdCol(label, c);
-    if (annee && VEHICULE[label]) this.#valueCols.push({ c, annee, vehicule: label });
+    if (annee && VEHICULE[label])
+      this.#valueCols.push({ c, annee, vehicule: label });
     return annee;
   }
 
   #registerIdCol(label: string, c: number): void {
     for (const [key, needle] of Object.entries(ID_LABELS)) {
       const k = key as IdKey;
-      if (this.#idCols[k] === undefined && label.toLowerCase().includes(needle)) this.#idCols[k] = c;
+      if (this.#idCols[k] === undefined && label.toLowerCase().includes(needle))
+        this.#idCols[k] = c;
     }
   }
 
@@ -59,7 +66,12 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     return { trajets, etablissements };
   }
 
-  #collectRow(ws: XlsxSheet, r: number, trajets: TrajetRow[], etabs: EtablissementRow[]): void {
+  #collectRow(
+    ws: XlsxSheet,
+    r: number,
+    trajets: TrajetRow[],
+    etabs: EtablissementRow[],
+  ): void {
     const juridique = this.#id(ws, r, "finess_juridique");
     if (!juridique) return;
     const geographique = this.#id(ws, r, "finess_geographique");
@@ -67,7 +79,13 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     etabs.push(this.#etablissement(ws, r, juridique, geographique, score));
   }
 
-  #collectTrajets(ws: XlsxSheet, r: number, jur: string, geo: string, trajets: TrajetRow[]): number {
+  #collectTrajets(
+    ws: XlsxSheet,
+    r: number,
+    jur: string,
+    geo: string,
+    trajets: TrajetRow[],
+  ): number {
     let score = 0;
     for (const { c, annee, vehicule } of this.#valueCols) {
       const nb = Xlsx.num(ws, r, c);
@@ -78,7 +96,13 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     return score;
   }
 
-  #trajet(jur: string, geo: string, annee: string, vehicule: string, nb: number): TrajetRow {
+  #trajet(
+    jur: string,
+    geo: string,
+    annee: string,
+    vehicule: string,
+    nb: number,
+  ): TrajetRow {
     return {
       role: this.#entry.role,
       source: this.#entry.label,
@@ -92,7 +116,13 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     };
   }
 
-  #etablissement(ws: XlsxSheet, r: number, jur: string, geo: string, score: number): EtablissementRow {
+  #etablissement(
+    ws: XlsxSheet,
+    r: number,
+    jur: string,
+    geo: string,
+    score: number,
+  ): EtablissementRow {
     return {
       finess_juridique: jur,
       finess_geographique: geo,

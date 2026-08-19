@@ -7,9 +7,15 @@
 //    (total − détail) est imputé à « Autre » (TPMR & autres modes) pour que la somme des
 //    véhicules égale le total hors art. 80 annoncé.
 
-import { Xlsx } from "./xlsx.ts";
 import type { TrajetRow } from "../../contrats.ts";
-import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
+import type {
+  Adapter,
+  AdapterOutput,
+  Enveloppe,
+  MappingEntry,
+  VehiculeCanonique,
+} from "../../types.ts";
+import { Xlsx } from "./xlsx.ts";
 
 export class AdapterPlateformeFinessXlsx implements Adapter {
   readonly #location: string;
@@ -24,23 +30,44 @@ export class AdapterPlateformeFinessXlsx implements Adapter {
     const ws = Xlsx.sheet(this.#location);
     const derniere = Xlsx.range(ws).e.r;
     const trajets: TrajetRow[] = [];
-    for (let r = PREMIERE_LIGNE_DONNEES; r <= derniere; r++) this.#collectRow(ws, r, trajets);
+    for (let r = PREMIERE_LIGNE_DONNEES; r <= derniere; r++)
+      this.#collectRow(ws, r, trajets);
     return { trajets };
   }
 
   #collectRow(ws: XlsxSheet, r: number, trajets: TrajetRow[]): void {
     const finess = Xlsx.str(ws, r, Xlsx.col(COLONNE_FINESS));
     if (!finess) return;
-    for (const annee of ANNEES) this.#collectYear(ws, r, finess, annee, trajets);
+    for (const annee of ANNEES)
+      this.#collectYear(ws, r, finess, annee, trajets);
   }
 
-  #collectYear(ws: XlsxSheet, r: number, finess: string, annee: string, trajets: TrajetRow[]): void {
-    this.#add(trajets, finess, "Article 80", annee, "Total", this.#value(ws, r, COLONNES_ART80[annee]!));
+  #collectYear(
+    ws: XlsxSheet,
+    r: number,
+    finess: string,
+    annee: string,
+    trajets: TrajetRow[],
+  ): void {
+    this.#add(
+      trajets,
+      finess,
+      "Article 80",
+      annee,
+      "Total",
+      this.#value(ws, r, COLONNES_ART80[annee]!),
+    );
     this.#collectHorsArt80(ws, r, finess, annee, trajets);
   }
 
   // Détail hors art. 80 : véhicules connus, puis reliquat imputé à « Autre ».
-  #collectHorsArt80(ws: XlsxSheet, r: number, finess: string, annee: string, trajets: TrajetRow[]): void {
+  #collectHorsArt80(
+    ws: XlsxSheet,
+    r: number,
+    finess: string,
+    annee: string,
+    trajets: TrajetRow[],
+  ): void {
     let detaille = 0;
     for (const { vehicule, colonnes } of COLONNES_HORS_DETAIL) {
       const nb = this.#value(ws, r, colonnes[annee]!);
@@ -86,14 +113,28 @@ const COLONNE_FINESS = "A";
 const ANNEES = ["2023", "2024", "2025"] as const;
 
 // Article 80 : total (sans détail véhicule), une colonne par année.
-const COLONNES_ART80: Record<string, string> = { "2023": "C", "2024": "D", "2025": "E" };
+const COLONNES_ART80: Record<string, string> = {
+  "2023": "C",
+  "2024": "D",
+  "2025": "E",
+};
 
 // Hors Article 80 : total, puis détail partiel par véhicule canonique, une colonne par année.
-const COLONNES_HORS_TOTAL: Record<string, string> = { "2023": "F", "2024": "G", "2025": "H" };
-const COLONNES_HORS_DETAIL: { vehicule: VehiculeCanonique; colonnes: Record<string, string> }[] = [
+const COLONNES_HORS_TOTAL: Record<string, string> = {
+  "2023": "F",
+  "2024": "G",
+  "2025": "H",
+};
+const COLONNES_HORS_DETAIL: {
+  vehicule: VehiculeCanonique;
+  colonnes: Record<string, string>;
+}[] = [
   { vehicule: "Assis", colonnes: { "2023": "I", "2024": "J", "2025": "K" } }, // Taxi
   { vehicule: "Assis", colonnes: { "2023": "L", "2024": "M", "2025": "N" } }, // VSL
-  { vehicule: "Ambulance", colonnes: { "2023": "O", "2024": "P", "2025": "Q" } },
+  {
+    vehicule: "Ambulance",
+    colonnes: { "2023": "O", "2024": "P", "2025": "Q" },
+  },
 ];
 
 type XlsxSheet = ReturnType<typeof Xlsx.sheet>;

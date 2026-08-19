@@ -15,7 +15,9 @@ export class FetchGht {
   async execute(): Promise<void> {
     const ressources = this.#dernieresVersions(await this.#listerJson());
     mkdirSync(Paths.REF_GHT, { recursive: true });
-    console.log(`fetch-ght : ${ressources.length} bundles GHT → ${Paths.REF_GHT}`);
+    console.log(
+      `fetch-ght : ${ressources.length} bundles GHT → ${Paths.REF_GHT}`,
+    );
     await this.#telechargerTout(ressources);
     console.log("fetch-ght : terminé.");
   }
@@ -23,8 +25,12 @@ export class FetchGht {
   // Certaines ressources JSON de data.gouv portent un titre en « .xml » (doublons mal
   // étiquetés) : on les écarte pour ne garder que des fichiers .json propres.
   async #listerJson(): Promise<Ressource[]> {
-    const dataset = (await this.#getJson(DATASET)) as { resources: Ressource[] };
-    return dataset.resources.filter((r) => r.format === "json" && r.title.endsWith(".json"));
+    const dataset = (await this.#getJson(DATASET)) as {
+      resources: Ressource[];
+    };
+    return dataset.resources.filter(
+      (r) => r.format === "json" && r.title.endsWith(".json"),
+    );
   }
 
   // Plusieurs versions par titre : on retient la plus récemment modifiée.
@@ -32,7 +38,8 @@ export class FetchGht {
     const parTitre = new Map<string, Ressource>();
     for (const r of ressources) {
       const courant = parTitre.get(r.title);
-      if (!courant || r.last_modified > courant.last_modified) parTitre.set(r.title, r);
+      if (!courant || r.last_modified > courant.last_modified)
+        parTitre.set(r.title, r);
     }
     return [...parTitre.values()];
   }
@@ -41,10 +48,10 @@ export class FetchGht {
     const file = [...ressources];
     let faits = 0;
     const worker = async (): Promise<void> => {
-      let r: Ressource | undefined;
-      while ((r = file.pop())) {
+      for (let r = file.pop(); r !== undefined; r = file.pop()) {
         await this.#telecharger(r);
-        if (++faits % 20 === 0) console.log(`  … ${faits}/${ressources.length}`);
+        if (++faits % 20 === 0)
+          console.log(`  … ${faits}/${ressources.length}`);
       }
     };
     await Promise.all(Array.from({ length: CONCURRENCE }, worker));
@@ -52,22 +59,26 @@ export class FetchGht {
 
   async #telecharger(r: Ressource): Promise<void> {
     const reponse = await fetch(r.url);
-    if (!reponse.ok) throw new Error(`Téléchargement échoué (${reponse.status}) : ${r.url}`);
+    if (!reponse.ok)
+      throw new Error(`Téléchargement échoué (${reponse.status}) : ${r.url}`);
     writeFileSync(join(Paths.REF_GHT, r.title), await reponse.text());
   }
 
   async #getJson(url: string): Promise<unknown> {
     const reponse = await fetch(url);
-    if (!reponse.ok) throw new Error(`Requête échouée (${reponse.status}) : ${url}`);
+    if (!reponse.ok)
+      throw new Error(`Requête échouée (${reponse.status}) : ${url}`);
     return reponse.json();
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await new FetchGht().execute();
+if (import.meta.url === `file://${process.argv[1]}`)
+  await new FetchGht().execute();
 
 // ---- implémentation ----
 
-const DATASET = "https://www.data.gouv.fr/api/1/datasets/etablissements-de-sante-par-ght/";
+const DATASET =
+  "https://www.data.gouv.fr/api/1/datasets/etablissements-de-sante-par-ght/";
 const CONCURRENCE = 8;
 
 interface Ressource {

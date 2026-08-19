@@ -1,0 +1,77 @@
+{
+  // Le socle commun aux trois apps. Chaque `apps/*/biome.jsonc` l'étend et n'y
+  // ajoute que ce qui lui est propre : son périmètre de fichiers et ses
+  // dérogations. Le format et les règles, eux, ne se discutent pas d'une app à
+  // l'autre — les faire diverger rouvrirait la discussion que Biome a close.
+  //
+  // Ce n'est pas de l'outillage de workspace : les apps restent indépendantes
+  // (leur propre `package.json`, leur propre `node_modules`). C'est un fichier
+  // de configuration partagé, rien de plus.
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "useImportType": "error",
+        "useConst": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 300
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        }
+      },
+      "complexity": {
+        // Biome compte des lignes *logiques* : un bloc de texte JSX ou une
+        // chaîne multiligne y pèse une ligne. C'est le test d'architecture du
+        // simulateur qui fait foi, en lignes réelles — Biome sert le retour
+        // immédiat dans l'éditeur.
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 30
+          }
+        }
+      }
+    }
+  }
+}

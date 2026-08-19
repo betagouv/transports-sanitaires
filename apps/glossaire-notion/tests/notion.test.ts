@@ -1,11 +1,16 @@
-import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { parseGlossaryEntries } from "../src/notion";
 import type { ExtendedRecordMap } from "notion-types";
+import { describe, expect, it } from "vitest";
+import { parseGlossaryEntries } from "../src/notion";
 
-const fixturePath = path.resolve(process.cwd(), "tests/fixtures/glossaire-recordmap.json");
-const recordMap = JSON.parse(readFileSync(fixturePath, "utf-8")) as ExtendedRecordMap;
+const fixturePath = path.resolve(
+  process.cwd(),
+  "tests/fixtures/glossaire-recordmap.json",
+);
+const recordMap = JSON.parse(
+  readFileSync(fixturePath, "utf-8"),
+) as ExtendedRecordMap;
 
 describe("parseGlossaryEntries", () => {
   it("extracts every glossary row from the recordMap", () => {
@@ -49,7 +54,13 @@ describe("parseGlossaryEntries", () => {
   });
 
   it("returns an empty array when there is no collection in the recordMap", () => {
-    const entries = parseGlossaryEntries({ block: {}, collection: {}, collection_view: {}, notion_user: {}, collection_query: {} } as ExtendedRecordMap);
+    const entries = parseGlossaryEntries({
+      block: {},
+      collection: {},
+      collection_view: {},
+      notion_user: {},
+      collection_query: {},
+    } as ExtendedRecordMap);
     expect(entries).toEqual([]);
   });
 });

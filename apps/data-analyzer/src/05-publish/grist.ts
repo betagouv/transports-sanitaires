@@ -28,26 +28,39 @@ export class GristDoc {
     const tables = await this.#get<{ tables?: { id: string }[] }>("/tables");
     const existe = (tables.tables ?? []).some((t) => t.id === table);
     if (!existe) {
-      await this.#post("/tables", { tables: [{ id: table, columns: columns.map(colDef) }] });
+      await this.#post("/tables", {
+        tables: [{ id: table, columns: columns.map(colDef) }],
+      });
       return;
     }
-    const cols = await this.#get<{ columns?: { id: string }[] }>(`/tables/${table}/columns`);
+    const cols = await this.#get<{ columns?: { id: string }[] }>(
+      `/tables/${table}/columns`,
+    );
     const presentes = new Set((cols.columns ?? []).map((c) => c.id));
     const manquantes = columns.filter((c) => !presentes.has(c.id));
     if (manquantes.length > 0) {
-      await this.#post(`/tables/${table}/columns`, { columns: manquantes.map(colDef) });
+      await this.#post(`/tables/${table}/columns`, {
+        columns: manquantes.map(colDef),
+      });
     }
   }
 
   /** Vide la table puis réinsère toutes les lignes (par lots). */
-  async replaceAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
-    const existants = await this.#get<{ records?: GristRecord[] }>(`/tables/${table}/records`);
+  async replaceAll(
+    table: string,
+    rows: Record<string, unknown>[],
+  ): Promise<void> {
+    const existants = await this.#get<{ records?: GristRecord[] }>(
+      `/tables/${table}/records`,
+    );
     const ids = (existants.records ?? []).map((r) => r.id);
     if (ids.length > 0) {
       await this.#post(`/tables/${table}/data/delete`, ids);
     }
     for (const lot of chunk(rows, 500)) {
-      await this.#post(`/tables/${table}/records`, { records: lot.map((fields) => ({ fields })) });
+      await this.#post(`/tables/${table}/records`, {
+        records: lot.map((fields) => ({ fields })),
+      });
     }
   }
 
@@ -55,17 +68,26 @@ export class GristDoc {
     const res = await fetch(`${this.#base}${path}`, {
       headers: { Authorization: `Bearer ${this.#apiKey}` },
     });
-    if (!res.ok) throw new Error(`Grist GET ${path} → HTTP ${res.status} ${await res.text()}`);
+    if (!res.ok)
+      throw new Error(
+        `Grist GET ${path} → HTTP ${res.status} ${await res.text()}`,
+      );
     return res.json() as Promise<T>;
   }
 
   async #post(path: string, body: unknown): Promise<void> {
     const res = await fetch(`${this.#base}${path}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${this.#apiKey}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${this.#apiKey}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`Grist POST ${path} → HTTP ${res.status} ${await res.text()}`);
+    if (!res.ok)
+      throw new Error(
+        `Grist POST ${path} → HTTP ${res.status} ${await res.text()}`,
+      );
   }
 }
 
@@ -86,6 +108,7 @@ function colDef(c: ColumnSpec) {
 
 function chunk<T>(items: T[], size: number): T[][] {
   const lots: T[][] = [];
-  for (let i = 0; i < items.length; i += size) lots.push(items.slice(i, i + size));
+  for (let i = 0; i < items.length; i += size)
+    lots.push(items.slice(i, i + size));
   return lots;
 }

@@ -3,9 +3,15 @@
 // Colonnes fixes (cf. constantes) ; les colonnes finess varient d'un fichier à l'autre →
 // passées en options du mapping : { colFinessJuridique: number, colFinessGeographique: number }.
 
-import { Csv } from "../../csv.ts";
 import type { TrajetRow } from "../../contrats.ts";
-import type { Adapter, AdapterOutput, Enveloppe, MappingEntry, VehiculeCanonique } from "../../types.ts";
+import { Csv } from "../../csv.ts";
+import type {
+  Adapter,
+  AdapterOutput,
+  Enveloppe,
+  MappingEntry,
+  VehiculeCanonique,
+} from "../../types.ts";
 
 export class AdapterPlateformeFinessTsv implements Adapter {
   readonly #location: string;
@@ -16,8 +22,14 @@ export class AdapterPlateformeFinessTsv implements Adapter {
   constructor(location: string, entry: MappingEntry) {
     this.#location = location;
     this.#entry = entry;
-    this.#colJuridique = AdapterPlateformeFinessTsv.#colOption(entry, "colFinessJuridique");
-    this.#colGeographique = AdapterPlateformeFinessTsv.#colOption(entry, "colFinessGeographique");
+    this.#colJuridique = AdapterPlateformeFinessTsv.#colOption(
+      entry,
+      "colFinessJuridique",
+    );
+    this.#colGeographique = AdapterPlateformeFinessTsv.#colOption(
+      entry,
+      "colFinessGeographique",
+    );
   }
 
   execute(): AdapterOutput {
@@ -39,14 +51,22 @@ export class AdapterPlateformeFinessTsv implements Adapter {
     return this.#build(cells, juridique, geographique, nb);
   }
 
-  #build(cells: string[], juridique: string, geographique: string, nb: number): TrajetRow {
+  #build(
+    cells: string[],
+    juridique: string,
+    geographique: string,
+    nb: number,
+  ): TrajetRow {
     return {
       role: this.#entry.role,
       source: this.#entry.label,
       finess_juridique: juridique,
-      finess_geographique: geographique === FINESS_GEOGRAPHIQUE_ABSENT ? "" : geographique,
+      finess_geographique:
+        geographique === FINESS_GEOGRAPHIQUE_ABSENT ? "" : geographique,
       ght_libelle: "",
-      enveloppe: AdapterPlateformeFinessTsv.#toEnveloppe(cells[COL_ENVELOPPE] ?? ""),
+      enveloppe: AdapterPlateformeFinessTsv.#toEnveloppe(
+        cells[COL_ENVELOPPE] ?? "",
+      ),
       annee: cells[COL_ANNEE] ?? "",
       vehicule_canonique: this.#vehicule(cells[COL_VEHICULE] ?? ""),
       nb_trajets: nb,
@@ -56,7 +76,9 @@ export class AdapterPlateformeFinessTsv implements Adapter {
   #vehicule(source: string): VehiculeCanonique {
     const canonique = VEHICULE[source];
     if (!canonique)
-      throw new Error(`Véhicule non mappé : ${JSON.stringify(source)} (${this.#entry.label}).`);
+      throw new Error(
+        `Véhicule non mappé : ${JSON.stringify(source)} (${this.#entry.label}).`,
+      );
     return canonique;
   }
 
@@ -68,7 +90,9 @@ export class AdapterPlateformeFinessTsv implements Adapter {
   static #colOption(entry: MappingEntry, key: string): number {
     const value = entry.options[key];
     if (typeof value !== "number" || !Number.isInteger(value) || value < 0)
-      throw new Error(`options.${key} attendu (index de colonne entier ≥ 0) pour ${entry.label}.`);
+      throw new Error(
+        `options.${key} attendu (index de colonne entier ≥ 0) pour ${entry.label}.`,
+      );
     return value;
   }
 }

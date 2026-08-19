@@ -12,7 +12,11 @@
     "reconcile": "node src/03-reconcile/reconcile.ts",
     "marts": "node src/04-marts/marts.ts",
     "publish-grist": "node src/05-publish/publish.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "typecheck": "tsc -b",
+    "verifier": "npm run lint && npm run typecheck && npm test"
   },
   "engines": {
     "node": "24.x"
@@ -21,6 +25,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.9",
     "@types/node": "^24.13.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"

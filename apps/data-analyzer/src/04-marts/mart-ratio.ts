@@ -6,9 +6,9 @@
 // "part>1"` quand le numérateur dépasse le dénominateur (signal de qualité, non corrigé).
 
 import { join } from "node:path";
+import type { CelluleRatio, TrajetReconcilieRow } from "../contrats.ts";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import type { CelluleRatio, TrajetReconcilieRow } from "../contrats.ts";
 import type { VehiculeCanonique } from "../types.ts";
 
 export interface MartRatioConfig {
@@ -51,14 +51,21 @@ export class MartRatio {
     if (t.enveloppe !== "Hors Article 80") return;
     const grain = this.#config.grain(t);
     if (!grain) return;
-    const accu = this.#accu(cellules, `${grain}|${t.annee}|${t.vehicule_canonique}`);
-    if (t.role === "referentiel-national") accu.nb_reference += Number(t.nb_trajets);
-    else if (t.role === "plateforme") accu.nb_plateforme += Number(t.nb_trajets);
+    const accu = this.#accu(
+      cellules,
+      `${grain}|${t.annee}|${t.vehicule_canonique}`,
+    );
+    if (t.role === "referentiel-national")
+      accu.nb_reference += Number(t.nb_trajets);
+    else if (t.role === "plateforme")
+      accu.nb_plateforme += Number(t.nb_trajets);
   }
 
   #accu(cellules: Map<string, Accu>, cle: string): Accu {
-    let accu = cellules.get(cle);
-    if (!accu) cellules.set(cle, (accu = { nb_plateforme: 0, nb_reference: 0 }));
+    const connu = cellules.get(cle);
+    if (connu) return connu;
+    const accu: Accu = { nb_plateforme: 0, nb_reference: 0 };
+    cellules.set(cle, accu);
     return accu;
   }
 
@@ -69,12 +76,26 @@ export class MartRatio {
   }
 
   #toRow(cle: string, accu: Accu): Row {
-    const [grain, annee, vehicule] = cle.split("|") as [string, string, VehiculeCanonique];
-    return { ...this.#config.identite(grain), ...this.#cellule(annee, vehicule, accu) };
+    const [grain, annee, vehicule] = cle.split("|") as [
+      string,
+      string,
+      VehiculeCanonique,
+    ];
+    return {
+      ...this.#config.identite(grain),
+      ...this.#cellule(annee, vehicule, accu),
+    };
   }
 
-  #cellule(annee: string, vehicule: VehiculeCanonique, accu: Accu): CelluleRatio {
-    const part = accu.nb_reference > 0 ? Number((accu.nb_plateforme / accu.nb_reference).toFixed(4)) : "";
+  #cellule(
+    annee: string,
+    vehicule: VehiculeCanonique,
+    accu: Accu,
+  ): CelluleRatio {
+    const part =
+      accu.nb_reference > 0
+        ? Number((accu.nb_plateforme / accu.nb_reference).toFixed(4))
+        : "";
     return {
       annee,
       vehicule,
@@ -88,7 +109,9 @@ export class MartRatio {
   #report(rows: Row[]): void {
     const sansDenominateur = rows.filter((r) => r.part === "").length;
     const anomalies = rows.filter((r) => r.alerte_qualite === "part>1").length;
-    console.log(`marts ${this.#config.log.padEnd(15)}: ${rows.length} lignes (${sansDenominateur} sans dénominateur, ${anomalies} part>1)`);
+    console.log(
+      `marts ${this.#config.log.padEnd(15)}: ${rows.length} lignes (${sansDenominateur} sans dénominateur, ${anomalies} part>1)`,
+    );
   }
 }
 

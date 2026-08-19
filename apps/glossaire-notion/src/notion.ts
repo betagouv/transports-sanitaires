@@ -2,8 +2,14 @@
 // collection rows into flat entries.
 
 import { NotionAPI } from "notion-client";
+import type {
+  Block,
+  Collection,
+  Decoration,
+  ExtendedRecordMap,
+  PageBlock,
+} from "notion-types";
 import { getBlockValue } from "notion-utils";
-import type { Collection, Decoration, ExtendedRecordMap, PageBlock } from "notion-types";
 import { PAGE_ID } from "./config";
 
 export { GLOSSARY_EDIT_URL } from "./config";
@@ -27,45 +33,18 @@ export async function fetchGlossary(): Promise<GlossaryEntry[]> {
   return parseGlossaryEntries(recordMap);
 }
 
-export function parseGlossaryEntries(recordMap: ExtendedRecordMap): GlossaryEntry[] {
-  const collection = Object.values(recordMap.collection ?? {})
-    .map((entry) => getBlockValue(entry) as Collection | undefined)
-    .find((value) => value !== undefined);
+export function parseGlossaryEntries(
+  recordMap: ExtendedRecordMap,
+): GlossaryEntry[] {
+  const collection = findCollection(recordMap);
   if (!collection) return [];
 
-  const schema = collection.schema;
-  const termePropId = findPropertyId(schema, "Terme") ?? "title";
-  const definitionPropId = findPropertyId(schema, "Définition");
-  const categoriePropId = findPropertyId(schema, "Catégorie");
-  const statutPropId = findPropertyId(schema, "Statut");
-  const sourcePropId = findPropertyId(schema, "Source");
-  const structureParentePropId = findPropertyId(schema, "Structure parente");
-
-  const entries: GlossaryEntry[] = [];
-  for (const entry of Object.values(recordMap.block ?? {})) {
-    const block = getBlockValue(entry);
-    if (!block || block.parent_id !== collection.id || block.parent_table !== "collection") {
-      continue;
-    }
-    const page = block as PageBlock;
-    const properties = (page.properties ?? {}) as RowProperties;
-    const terme = richTextToPlainText(properties[termePropId]).trim();
-    if (!terme) continue;
-
-    entries.push({
-      id: page.id,
-      terme,
-      definition: richTextToPlainText(definitionPropId ? properties[definitionPropId] : undefined).trim(),
-      categorie: categoriePropId ? richTextToPlainText(properties[categoriePropId]).trim() || undefined : undefined,
-      statut: statutPropId ? richTextToPlainText(properties[statutPropId]).trim() || undefined : undefined,
-      source: sourcePropId ? richTextToPlainText(properties[sourcePropId]).trim() || undefined : undefined,
-      structureParente: structureParentePropId
-        ? richTextToPlainText(properties[structureParentePropId]).trim() || undefined
-        : undefined,
-    });
-  }
-
-  return entries.sort((a, b) => a.terme.localeCompare(b.terme, "fr"));
+  const propertyIds = resolvePropertyIds(collection.schema);
+  return Object.values(recordMap.block ?? {})
+    .map((entry) => getBlockValue(entry))
+    .filter((block) => isRowOf(block, collection))
+    .flatMap((block) => entryFromRow(block as PageBlock, propertyIds) ?? [])
+    .sort((a, b) => a.terme.localeCompare(b.terme, "fr"));
 }
 
 // ---- implementation ----
@@ -81,5 +60,68 @@ function findPropertyId(
   schema: Record<string, { name: string }>,
   name: string,
 ): string | undefined {
-  return Object.keys(schema).find((propertyId) => schema[propertyId].name === name);
+  return Object.keys(schema).find(
+    (propertyId) => schema[propertyId]?.name === name,
+  );
+}
+
+type PropertyIds = {
+  terme: string;
+  definition?: string;
+  categorie?: string;
+  statut?: string;
+  source?: string;
+  structureParente?: string;
+};
+
+function findCollection(recordMap: ExtendedRecordMap): Collection | undefined {
+  return Object.values(recordMap.collection ?? {})
+    .map((entry) => getBlockValue(entry) as Collection | undefined)
+    .find((value) => value !== undefined);
+}
+
+function resolvePropertyIds(
+  schema: Record<string, { name: string }>,
+): PropertyIds {
+  return {
+    terme: findPropertyId(schema, "Terme") ?? "title",
+    definition: findPropertyId(schema, "Définition"),
+    categorie: findPropertyId(schema, "Catégorie"),
+    statut: findPropertyId(schema, "Statut"),
+    source: findPropertyId(schema, "Source"),
+    structureParente: findPropertyId(schema, "Structure parente"),
+  };
+}
+
+function isRowOf(block: Block | undefined, collection: Collection): boolean {
+  return (
+    !!block &&
+    block.parent_id === collection.id &&
+    block.parent_table === "collection"
+  );
+}
+
+/** A collection row, or `undefined` when it carries no term to show. */
+function entryFromRow(
+  page: PageBlock,
+  propertyIds: PropertyIds,
+): GlossaryEntry | undefined {
+  const properties = (page.properties ?? {}) as RowProperties;
+  const read = (propertyId: string | undefined): string | undefined =>
+    propertyId
+      ? richTextToPlainText(properties[propertyId]).trim() || undefined
+      : undefined;
+
+  const terme = richTextToPlainText(properties[propertyIds.terme]).trim();
+  if (!terme) return undefined;
+
+  return {
+    id: page.id,
+    terme,
+    definition: read(propertyIds.definition) ?? "",
+    categorie: read(propertyIds.categorie),
+    statut: read(propertyIds.statut),
+    source: read(propertyIds.source),
+    structureParente: read(propertyIds.structureParente),
+  };
 }

@@ -14,7 +14,7 @@
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import { GristDoc, coerce, type ColumnSpec } from "./grist.ts";
+import { type ColumnSpec, coerce, GristDoc } from "./grist.ts";
 
 export class PublishMart {
   readonly #doc: GristDoc;
@@ -26,11 +26,15 @@ export class PublishMart {
   async execute(spec: MartSpec): Promise<void> {
     const source = Csv.read(join(Paths.MARTS, spec.fichier));
     const rows = source.map((row) =>
-      Object.fromEntries(spec.columns.map((c) => [c.id, coerce(row[c.id] ?? "", c.type)])),
+      Object.fromEntries(
+        spec.columns.map((c) => [c.id, coerce(row[c.id] ?? "", c.type)]),
+      ),
     );
     await this.#doc.ensureTable(spec.table, spec.columns);
     await this.#doc.replaceAll(spec.table, rows);
-    console.log(`Grist ${spec.table.padEnd(16)} ← ${rows.length} lignes publiées.`);
+    console.log(
+      `Grist ${spec.table.padEnd(16)} ← ${rows.length} lignes publiées.`,
+    );
   }
 }
 
@@ -49,7 +53,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const filtre = process.argv[2]?.trim();
   const specs = filtre ? marts().filter((m) => m.nom === filtre) : marts();
   if (specs.length === 0) {
-    console.error(`Mart inconnu : « ${filtre} ». Disponibles : ${marts().map((m) => m.nom).join(", ")}.`);
+    console.error(
+      `Mart inconnu : « ${filtre} ». Disponibles : ${marts()
+        .map((m) => m.nom)
+        .join(", ")}.`,
+    );
     process.exit(1);
   }
   const publisher = new PublishMart(new GristDoc(docUrl, apiKey));

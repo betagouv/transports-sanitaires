@@ -11,7 +11,9 @@ export interface CachedGlossary {
 
 export async function getOrFetchGlossary({
   forceRefresh = false,
-}: { forceRefresh?: boolean } = {}): Promise<CachedGlossary> {
+}: {
+  forceRefresh?: boolean;
+} = {}): Promise<CachedGlossary> {
   if (!forceRefresh) {
     const cached = await readCache();
     if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {

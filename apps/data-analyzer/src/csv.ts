@@ -7,7 +7,7 @@
 //    des virgules, avec échappement RFC 4180 (indispensable : des libellés de GHT
 //    contiennent des virgules).
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 export class Csv {
@@ -21,7 +21,10 @@ export class Csv {
   /** Écrit un tableau d'objets en CSV UTF-8 (virgule, RFC 4180). Crée le dossier au besoin. */
   static write(path: string, rows: Record<string, string | number>[]): void {
     mkdirSync(dirname(path), { recursive: true });
-    if (rows.length === 0) return writeFileSync(path, "");
+    if (rows.length === 0) {
+      writeFileSync(path, "");
+      return;
+    }
     writeFileSync(path, Csv.#serialize(Object.keys(rows[0]!), rows));
   }
 
@@ -33,15 +36,22 @@ export class Csv {
     return header ? body.map((fields) => Csv.#toObject(header, fields)) : [];
   }
 
-  static #serialize(columns: string[], rows: Record<string, string | number>[]): string {
+  static #serialize(
+    columns: string[],
+    rows: Record<string, string | number>[],
+  ): string {
     const header = columns.map(Csv.#encode).join(",");
-    const body = rows.map((row) => columns.map((c) => Csv.#encode(String(row[c] ?? ""))).join(","));
-    return [header, ...body].join("\n") + "\n";
+    const body = rows.map((row) =>
+      columns.map((c) => Csv.#encode(String(row[c] ?? ""))).join(","),
+    );
+    return `${[header, ...body].join("\n")}\n`;
   }
 
   static #toObject(header: string[], fields: string[]): Record<string, string> {
     const obj: Record<string, string> = {};
-    header.forEach((col, i) => (obj[col] = fields[i] ?? ""));
+    header.forEach((col, i) => {
+      obj[col] = fields[i] ?? "";
+    });
     return obj;
   }
 
@@ -82,8 +92,11 @@ class CsvParser {
 
   #stepInQuotes(ch: string): void {
     if (ch !== '"') this.#field += ch;
-    else if (this.#text[this.#i] === '"') this.#i++, (this.#field += '"');
-    else this.#inQuotes = false;
+    else if (this.#text[this.#i] === '"') {
+      // Guillemet doublé : c'en est un vrai, et il consomme les deux caractères.
+      this.#i++;
+      this.#field += '"';
+    } else this.#inQuotes = false;
   }
 
   #stepOutQuotes(ch: string): void {

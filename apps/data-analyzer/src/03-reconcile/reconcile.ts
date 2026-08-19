@@ -13,8 +13,6 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { Csv } from "../csv.ts";
-import { Paths } from "../paths.ts";
 import type {
   EtablissementDimensionRow,
   EtablissementRow,
@@ -22,20 +20,31 @@ import type {
   TrajetReconcilieRow,
   TrajetRow,
 } from "../contrats.ts";
+import { Csv } from "../csv.ts";
+import { Paths } from "../paths.ts";
 
 export class Reconcile {
   execute(): void {
     const etablissements = this.#readEtablissements();
     this.#writeDimension(etablissements);
-    this.#writeTrajets(this.#geoToJuridique(etablissements), this.#juridiqueToGht(), this.#libelleToGht());
+    this.#writeTrajets(
+      this.#geoToJuridique(etablissements),
+      this.#juridiqueToGht(),
+      this.#libelleToGht(),
+    );
   }
 
   // --- Dimension établissements (un libellé représentatif par finess juridique) ---
 
   #writeDimension(etablissements: EtablissementRow[]): void {
     const representatifs = this.#representatifs(etablissements);
-    Csv.write(join(Paths.RECONCILE, "etablissements.csv"), representatifs as unknown as Row[]);
-    console.log(`reconcile etablissements     : ${representatifs.length} établissements`);
+    Csv.write(
+      join(Paths.RECONCILE, "etablissements.csv"),
+      representatifs as unknown as Row[],
+    );
+    console.log(
+      `reconcile etablissements     : ${representatifs.length} établissements`,
+    );
   }
 
   #representatifs(rows: EtablissementRow[]): EtablissementDimensionRow[] {
@@ -44,9 +53,13 @@ export class Reconcile {
     return [...parJuridique.values()].map((e) => this.#toDimension(e));
   }
 
-  #garderMeilleur(parJuridique: Map<string, EtablissementRow>, row: EtablissementRow): void {
+  #garderMeilleur(
+    parJuridique: Map<string, EtablissementRow>,
+    row: EtablissementRow,
+  ): void {
     const courant = parJuridique.get(row.finess_juridique);
-    if (!courant || row.score > courant.score) parJuridique.set(row.finess_juridique, row);
+    if (!courant || row.score > courant.score)
+      parJuridique.set(row.finess_juridique, row);
   }
 
   #toDimension(e: EtablissementRow): EtablissementDimensionRow {
@@ -66,11 +79,18 @@ export class Reconcile {
     juridiqueToGht: Map<string, string>,
     libelleToGht: Map<string, string>,
   ): void {
-    const trajets = this.#readTrajets().map((t) => this.#recle(t, geoToJuridique, juridiqueToGht, libelleToGht));
+    const trajets = this.#readTrajets().map((t) =>
+      this.#recle(t, geoToJuridique, juridiqueToGht, libelleToGht),
+    );
     const reagreges = this.#reagreger(trajets);
-    Csv.write(join(Paths.RECONCILE, "trajets.csv"), reagreges as unknown as Row[]);
+    Csv.write(
+      join(Paths.RECONCILE, "trajets.csv"),
+      reagreges as unknown as Row[],
+    );
     const rattaches = reagreges.filter((t) => t.ght_code).length;
-    console.log(`reconcile trajets            : ${reagreges.length} lignes (${rattaches} rattachées à un GHT)`);
+    console.log(
+      `reconcile trajets            : ${reagreges.length} lignes (${rattaches} rattachées à un GHT)`,
+    );
   }
 
   // Rattachement au GHT : par finess (référentiel) ; à défaut, par libellé libre (plateforme
@@ -82,9 +102,14 @@ export class Reconcile {
     libelleToGht: Map<string, string>,
   ): TrajetReconcilieRow {
     const geo = t.finess_geographique;
-    const juridique = (this.#usable(geo) && geoToJuridique.get(geo)) || t.finess_juridique;
+    const juridique =
+      (this.#usable(geo) && geoToJuridique.get(geo)) || t.finess_juridique;
     const ghtParFiness = juridiqueToGht.get(juridique) ?? "";
-    const ght_code = ghtParFiness || (t.ght_libelle ? (libelleToGht.get(this.#normaliserLibelle(t.ght_libelle)) ?? "") : "");
+    const ght_code =
+      ghtParFiness ||
+      (t.ght_libelle
+        ? (libelleToGht.get(this.#normaliserLibelle(t.ght_libelle)) ?? "")
+        : "");
     return { ...t, finess_juridique: juridique, ght_code };
   }
 
@@ -107,8 +132,15 @@ export class Reconcile {
 
   #cle(t: TrajetReconcilieRow): string {
     return [
-      t.role, t.source, t.finess_juridique, t.finess_geographique,
-      t.ght_code, t.ght_libelle, t.enveloppe, t.annee, t.vehicule_canonique,
+      t.role,
+      t.source,
+      t.finess_juridique,
+      t.finess_geographique,
+      t.ght_code,
+      t.ght_libelle,
+      t.enveloppe,
+      t.annee,
+      t.vehicule_canonique,
     ].join("|");
   }
 
@@ -116,7 +148,9 @@ export class Reconcile {
 
   #geoToJuridique(rows: EtablissementRow[]): Map<string, string> {
     const map = new Map<string, string>();
-    for (const r of rows) if (this.#usable(r.finess_geographique)) map.set(r.finess_geographique, r.finess_juridique);
+    for (const r of rows)
+      if (this.#usable(r.finess_geographique))
+        map.set(r.finess_geographique, r.finess_juridique);
     return map;
   }
 
@@ -127,11 +161,17 @@ export class Reconcile {
     const map = new Map<string, string>();
     const openData = join(Paths.EXTRACT, "ght.csv");
     if (existsSync(openData))
-      for (const r of Csv.read(openData) as unknown as GhtRattachementRow[]) map.set(r.finess_juridique, r.ght_code);
-    else console.log("reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run extract`)");
+      for (const r of Csv.read(openData) as unknown as GhtRattachementRow[])
+        map.set(r.finess_juridique, r.ght_code);
+    else
+      console.log(
+        "reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run extract`)",
+      );
     const manuel = join(Paths.REF, "finess-ght-manuel.csv");
     if (existsSync(manuel))
-      for (const r of Csv.read(manuel)) if (r.finess_juridique && r.ght_code) map.set(r.finess_juridique, r.ght_code);
+      for (const r of Csv.read(manuel))
+        if (r.finess_juridique && r.ght_code)
+          map.set(r.finess_juridique, r.ght_code);
     return map;
   }
 
@@ -140,19 +180,30 @@ export class Reconcile {
     const path = join(Paths.REF, "plateforme-ght-mapping.csv");
     if (!existsSync(path)) return new Map();
     const rows = Csv.read(path);
-    return new Map(rows.filter((r) => r.ght_code).map((r) => [r.libelle!, r.ght_code!]));
+    return new Map(
+      rows.filter((r) => r.ght_code).map((r) => [r.libelle!, r.ght_code!]),
+    );
   }
 
   // --- Lecture ---
 
   #readEtablissements(): EtablissementRow[] {
     const path = join(Paths.EXTRACT, "etablissements.csv");
-    return Csv.read(path).map((raw) => ({ ...raw, score: Number(raw.score) }) as unknown as EtablissementRow);
+    return Csv.read(path).map(
+      (raw) =>
+        ({ ...raw, score: Number(raw.score) }) as unknown as EtablissementRow,
+    );
   }
 
   #readTrajets(): TrajetRow[] {
     const path = join(Paths.STAGING, "trajets.csv");
-    return Csv.read(path).map((raw) => ({ ...raw, nb_trajets: Number(raw.nb_trajets) }) as unknown as TrajetRow);
+    return Csv.read(path).map(
+      (raw) =>
+        ({
+          ...raw,
+          nb_trajets: Number(raw.nb_trajets),
+        }) as unknown as TrajetRow,
+    );
   }
 
   #usable(finess: string): boolean {

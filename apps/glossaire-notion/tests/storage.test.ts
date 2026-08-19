@@ -23,7 +23,9 @@ vi.mock("webextension-polyfill", () => ({
 
 const { getOrFetchGlossary } = await import("../src/storage");
 
-const sampleEntries: GlossaryEntry[] = [{ id: "1", terme: "ALD", definition: "Affection de Longue Durée" }];
+const sampleEntries: GlossaryEntry[] = [
+  { id: "1", terme: "ALD", definition: "Affection de Longue Durée" },
+];
 
 beforeEach(() => {
   store = {};
@@ -51,9 +53,15 @@ describe("getOrFetchGlossary", () => {
 
   it("refetches when the cache is older than the TTL", async () => {
     await getOrFetchGlossary();
-    const cacheKey = Object.keys(store)[0];
-    const cached = store[cacheKey] as { entries: GlossaryEntry[]; fetchedAt: number };
-    store[cacheKey] = { ...cached, fetchedAt: cached.fetchedAt - 2 * 60 * 60 * 1000 };
+    const cacheKey = Object.keys(store)[0] as string;
+    const cached = store[cacheKey] as {
+      entries: GlossaryEntry[];
+      fetchedAt: number;
+    };
+    store[cacheKey] = {
+      ...cached,
+      fetchedAt: cached.fetchedAt - 2 * 60 * 60 * 1000,
+    };
     fetchGlossary.mockClear();
 
     await getOrFetchGlossary();

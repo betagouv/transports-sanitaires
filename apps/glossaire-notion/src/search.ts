@@ -2,7 +2,10 @@
 
 import type { GlossaryEntry } from "./notion";
 
-export function searchGlossary(entries: GlossaryEntry[], query: string): GlossaryEntry[] {
+export function searchGlossary(
+  entries: GlossaryEntry[],
+  query: string,
+): GlossaryEntry[] {
   const normalizedQuery = normalize(query.trim());
   if (!normalizedQuery) return entries;
   return entries.filter(
@@ -17,7 +20,10 @@ export function normalize(text: string): string {
   return Array.from(text.normalize("NFD"))
     .filter((char) => {
       const code = char.codePointAt(0) ?? 0;
-      return code < COMBINING_DIACRITICAL_MARKS_START || code > COMBINING_DIACRITICAL_MARKS_END;
+      return (
+        code < COMBINING_DIACRITICAL_MARKS_START ||
+        code > COMBINING_DIACRITICAL_MARKS_END
+      );
     })
     .join("")
     .toLowerCase();

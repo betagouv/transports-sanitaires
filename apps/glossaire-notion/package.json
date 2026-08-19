@@ -8,7 +8,11 @@
     "watch": "vite build --watch",
     "test": "vitest run",
     "prezip": "npm run build",
-    "zip": "rm -f glossaire-notion-*.zip && cd dist && zip -r ../glossaire-notion-$npm_package_version.zip . && cd .."
+    "zip": "rm -f glossaire-notion-*.zip && cd dist && zip -r ../glossaire-notion-$npm_package_version.zip . && cd ..",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "typecheck": "tsc -b",
+    "verifier": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "notion-client": "^7.10.0",
@@ -19,6 +23,7 @@
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.9",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -31,5 +36,8 @@
     "vite": "^8.0.16",
     "vite-plugin-static-copy": "^4.1.1",
     "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

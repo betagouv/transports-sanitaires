@@ -8,16 +8,20 @@
 // remonte pour l'instant ni au juridique ni au GHT — cf. Points d'attention métier du README.
 
 import { join } from "node:path";
+import type { TrajetReconcilieRow } from "../contrats.ts";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
-import type { TrajetReconcilieRow } from "../contrats.ts";
 
 export class MartArticle80 {
   readonly #grains: Grain[];
 
   constructor(libelleJuridique: Libelle, libelleGht: Libelle) {
     this.#grains = [
-      { nom: "juridique", cle: (t) => t.finess_juridique, libelle: libelleJuridique },
+      {
+        nom: "juridique",
+        cle: (t) => t.finess_juridique,
+        libelle: libelleJuridique,
+      },
       { nom: "ght", cle: (t) => t.ght_code, libelle: libelleGht },
     ];
   }
@@ -25,12 +29,16 @@ export class MartArticle80 {
   execute(trajets: TrajetReconcilieRow[]): void {
     const rows = this.calculer(trajets);
     Csv.write(join(Paths.MARTS, "mart_article80.csv"), rows);
-    console.log(`marts article80       : ${rows.length} lignes (volumes + part par plateforme)`);
+    console.log(
+      `marts article80       : ${rows.length} lignes (volumes + part par plateforme)`,
+    );
   }
 
   /** Le calcul pur (sans écriture), pour le test comme pour `execute`. */
   calculer(trajets: TrajetReconcilieRow[]): Row[] {
-    const art80 = trajets.filter((t) => t.enveloppe === "Article 80" && t.role === "plateforme");
+    const art80 = trajets.filter(
+      (t) => t.enveloppe === "Article 80" && t.role === "plateforme",
+    );
     return this.#grains.flatMap((g) => this.#pourGrain(art80, g));
   }
 
@@ -62,7 +70,12 @@ export class MartArticle80 {
     return totaux;
   }
 
-  #toRow(grain: Grain, cle: string, nb: number, totaux: Map<string, number>): Row {
+  #toRow(
+    grain: Grain,
+    cle: string,
+    nb: number,
+    totaux: Map<string, number>,
+  ): Row {
     const [valeur, annee, vehicule, source] = cle.split("|");
     const total = totaux.get(`${valeur}|${annee}|${vehicule}`) ?? 0;
     return {

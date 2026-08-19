@@ -1,0 +1,70 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "extends": ["../../biome.base.jsonc"],
+  "files": {
+    "includes": [
+      "src/**",
+      "tests/**",
+      "*.ts",
+      "*.json",
+      "*.jsonc",
+      "!package-lock.json",
+      "!**/*.tsbuildinfo",
+      // Données et référentiels : des artefacts, pas du code à formater.
+      "!ref",
+      "!data",
+      "!build",
+      "!mapping.json",
+      "!mapping.example.json"
+    ]
+  },
+  "overrides": [
+    {
+      // Un ETL en ligne de commande : sa sortie console *est* son interface.
+      //
+      // `noNonNullAssertion` est éteinte ici pour une raison précise : le
+      // tsconfig active `noUncheckedIndexedAccess`, qui rend `ligne[colonne]`
+      // potentiellement `undefined`. C'est la garantie forte, et on la garde ;
+      // le `!` en est le prix, sur une colonne qu'on vient de lire dans
+      // l'en-tête. Éteindre la règle faible pour tenir la forte, pas l'inverse.
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      // Table de définition des colonnes Grist, pas un traitement : la découper
+      // pour tenir sous 30 lignes ne produirait qu'un morcellement arithmétique
+      // d'une donnée qui vaut d'être lue d'un seul tenant. Même raison que le
+      // catalogue de seeds du simulateur.
+      "includes": ["src/05-publish/publish.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    }
+  ]
+}

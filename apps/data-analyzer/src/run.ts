@@ -1,11 +1,11 @@
 // Point d'entrée de l'ETL : enchaîne les 4 étapes. Chaque étape reste lançable seule
 // (npm run <étape>).
 
+import { FORMATS } from "./01-extract/adapteurs/registry.ts";
 import { Extract } from "./01-extract/extract.ts";
 import { Staging } from "./02-staging/staging.ts";
 import { Reconcile } from "./03-reconcile/reconcile.ts";
 import { Marts } from "./04-marts/marts.ts";
-import { FORMATS } from "./01-extract/adapteurs/registry.ts";
 
 export class Etl {
   execute(): void {
