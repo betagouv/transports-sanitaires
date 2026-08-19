@@ -1,4 +1,10 @@
-# Page résultat administratif
+# Page Résultat 2 — document à remettre au patient
+
+Contenu rédactionnel de référence de la Page Résultat 2, aligné sur le modèle
+**v9.1**. Le code fait foi (`front/simulateur/secretariat/`) ; ce document dit
+ce qu'il doit porter. Les neuf cas finaux et les valeurs citées ci-dessous sont
+celles de `cible_cas_final` — `tests/regles-front.test.ts` vérifie que les trois
+blocs les traitent tous.
 
 Exemple de résultat
 
@@ -31,7 +37,7 @@ Elle ne peut afficher que l’un des cas finaux suivants :
 1. **Cas Prescription Médicale de Transport**
 2. **Cas Demande d’Accord Préalable**
 3. **Cas convocation ou avis d’audience**
-4. **Cas transport à charge de l’établissement**
+4. **Cas transport à la charge de l’établissement**
 5. **Cas SMUR**
 6. **Cas bariatrique seul**
 7. **Cas permission de sortie sans motif médical**
@@ -49,7 +55,7 @@ Le cas **Qualification complémentaire requise** est supprimé.
 
 Transport sanitaire prescrit : **[transport]**.
 
-Document à remettre au patient : **Prescription Médicale de Transport**.
+Document à remettre au patient : **PMT (Prescription Médicale de Transport)**.
 
 ---
 
@@ -59,7 +65,7 @@ Document à remettre au patient : **Prescription Médicale de Transport**.
 
 Transport sanitaire prescrit : **[transport]**.
 
-Document à remettre au patient : **Demande d’Accord Préalable**.
+Document à remettre au patient : **DAP (Demande d’Accord Préalable)**.
 
 ---
 
@@ -73,7 +79,7 @@ Document patient : **convocation ou avis d’audience**.
 
 ---
 
-## Cas transport à charge de l’établissement
+## Cas transport à la charge de l’établissement
 
 **Transport à charge de l’établissement de santé**
 
@@ -87,9 +93,9 @@ Document à remettre au patient : **formulaire établissement ou document intern
 
 ## Cas SMUR
 
-**Transport par équipe SMUR — Structure Mobile d’Urgence et de Réanimation**
+**Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation**
 
-Transport sanitaire prescrit : **transport par équipe SMUR**.
+Transport sanitaire prescrit : **transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)**.
 
 Le transport est organisé dans le cadre de l’urgence médicale, par l’équipe médicale ou l’établissement concerné.
 
@@ -144,10 +150,10 @@ Ce choix correspond à votre situation au moment du transport et à l’aide don
 - **[critère médical retenu]**
 [description vulgarisée du critère]
 
-### Motifs ouvrant droit identifiés ou déduits
+### Cas particuliers médicaux retenus
 
-- **[motif ouvrant droit]**
-[description vulgarisée du motif]
+- **[cas particulier médical retenu]**
+[description vulgarisée du cas]
 
 ### Prise en charge / reste à charge
 
@@ -209,7 +215,7 @@ La convocation ou l’avis d’audience sert de document patient pour votre tran
 
 ---
 
-## Cas transport à charge de l’établissement
+## Cas transport à la charge de l’établissement
 
 Ce transport est à la charge de l’établissement de santé. Le service ou le secrétariat de l’établissement vous indiquera les modalités d’organisation applicables.
 
@@ -257,12 +263,12 @@ Le transport reste à votre charge.
 2. Conservez les justificatifs nécessaires : billets, reçus, justificatifs de trajet ou de distance selon le cas.
 3. Transmettez les justificatifs à votre organisme d’Assurance Maladie selon les modalités indiquées.
 
-### Si transport = VSL ou taxi conventionné
+### Si transport = VSL (Véhicule Sanitaire Léger) ou taxi conventionné
 
 1. Organisez le transport avec un **VSL** ou un **taxi conventionné**, ou avec l’aide du secrétariat médical selon l’organisation prévue.
 2. Présentez la prescription au transporteur avant le transport.
 
-### Si transport = VSL TPMR ou taxi conventionné TPMR
+### Si transport = VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)
 
 1. Organisez le transport avec un transporteur adapté au fauteuil roulant, ou avec l’aide du secrétariat médical selon l’organisation prévue.
 2. Précisez que le transport doit se faire **sans quitter votre fauteuil roulant manuel ou électrique**.
@@ -294,12 +300,12 @@ Le transport reste à votre charge.
 2. Conservez les justificatifs nécessaires : billets, reçus, justificatifs de trajet ou de distance selon le cas.
 3. Transmettez les justificatifs à votre organisme d’Assurance Maladie selon les modalités indiquées.
 
-### Si transport = VSL ou taxi conventionné
+### Si transport = VSL (Véhicule Sanitaire Léger) ou taxi conventionné
 
 1. Une fois l’accord obtenu, organisez le transport avec un **VSL** ou un **taxi conventionné**, ou avec l’aide du secrétariat médical selon l’organisation prévue.
 2. Présentez la demande au transporteur.
 
-### Si transport = VSL TPMR ou taxi conventionné TPMR
+### Si transport = VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)
 
 1. Une fois l’accord obtenu, organisez le transport avec un transporteur adapté au fauteuil roulant, ou avec l’aide du secrétariat médical selon l’organisation prévue.
 2. Précisez que le transport doit se faire **sans quitter votre fauteuil roulant manuel ou électrique**.
@@ -335,7 +341,7 @@ Le transport reste à votre charge.
 
 ---
 
-## Cas transport à charge de l’établissement
+## Cas transport à la charge de l’établissement
 
 **Ce que vous devez faire maintenant :**
 
@@ -422,7 +428,7 @@ Le transport reste à votre charge.
 
 **Transport sanitaire prescrit :** [transport]
 
-**Document à remettre au patient :** Prescription Médicale de Transport
+**Document à remettre au patient :** PMT (Prescription Médicale de Transport)
 
 ### Cases à compléter ou cocher sur la PMT
 
@@ -466,7 +472,7 @@ Le transport reste à votre charge.
 
 **Transport sanitaire prescrit :** [transport]
 
-**Document à remettre au patient :** Demande d’Accord Préalable
+**Document à remettre au patient :** DAP (Demande d’Accord Préalable)
 
 ### Cases à compléter ou cocher sur la DAP
 
@@ -529,7 +535,7 @@ Le transport reste à votre charge.
 
 ---
 
-## Cas transport à charge de l’établissement
+## Cas transport à la charge de l’établissement
 
 **Cas retenu :** Transport à charge de l’établissement de santé
 
@@ -552,7 +558,7 @@ Le transport reste à votre charge.
 
 ## Cas SMUR
 
-**Cas retenu :** Transport par équipe SMUR
+**Cas retenu :** Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation
 
 **Transport sanitaire prescrit :** transport par équipe SMUR
 
