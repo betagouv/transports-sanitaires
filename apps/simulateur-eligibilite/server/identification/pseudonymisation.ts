@@ -29,13 +29,9 @@ export function pseudonymiser(
   enClair = false,
 ): IdentitePseudonymisee {
   const identite: IdentitePseudonymisee = { v: VERSION };
-
-  // Établissement.
   if (saisie.etabId) {
     identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
   }
-
-  // Service.
   if (saisie.serviceId) {
     identite.serviceRef = empreinte(
       secret,
@@ -43,27 +39,24 @@ export function pseudonymiser(
       enClair,
     );
   }
-
-  // Prescripteur (réel, ou identité libre si hors liste).
-  if (
-    saisie.prescripteurId &&
-    saisie.prescripteurId !== PRESCRIPTEUR_HORS_LISTE
-  ) {
-    identite.prescripteurRef = empreinte(
-      secret,
-      `prescripteur:${saisie.prescripteurId}`,
-      enClair,
-    );
-  } else if (saisie.nom && saisie.prenom) {
-    identite.prescripteurRef = refIdentite(
-      secret,
-      saisie.nom,
-      saisie.prenom,
-      enClair,
-    );
-  }
-
+  const prescripteurRef = refPrescripteur(secret, saisie, enClair);
+  if (prescripteurRef) identite.prescripteurRef = prescripteurRef;
   return identite;
+}
+
+// Le prescripteur est référencé par son identifiant de référentiel, ou — s'il
+// s'est déclaré hors liste — par son nom et prénom.
+function refPrescripteur(
+  secret: string,
+  saisie: IdentiteSaisie,
+  enClair: boolean,
+): string | undefined {
+  const { prescripteurId, nom, prenom } = saisie;
+  if (prescripteurId && prescripteurId !== PRESCRIPTEUR_HORS_LISTE) {
+    return empreinte(secret, `prescripteur:${prescripteurId}`, enClair);
+  }
+  if (nom && prenom) return refIdentite(secret, nom, prenom, enClair);
+  return undefined;
 }
 
 /**

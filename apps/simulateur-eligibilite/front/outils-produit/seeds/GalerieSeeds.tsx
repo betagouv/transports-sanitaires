@@ -66,74 +66,15 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
     [],
   );
 
-  const enEcart = lignes.filter(
-    ({ evaluation }) => evaluation.ecarts.length > 0,
-  );
-
   return (
     <main
       className="fr-container"
       style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
     >
-      <h1 className="fr-h3">Galerie de seeds</h1>
-      <p className="fr-text--sm">
-        Les {SEEDS.length} situations de référence du simulateur (
-        <code>seeds/</code>), celles-là mêmes que rejouent les tests. Ouvrez-en
-        une pour consulter son résultat — et, pour un cas de prescription, le
-        CERFA pré-rempli.
-      </p>
+      <Introduction />
+      <VerdictGlobal lignes={lignes} />
 
-      <div
-        className={`fr-alert fr-alert--sm fr-mb-4w fr-alert--${
-          enEcart.length === 0 ? "success" : "error"
-        }`}
-      >
-        <p>
-          {enEcart.length === 0
-            ? "Le moteur chargé confirme les attendus des seeds."
-            : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
-                .map(({ seed }) => seed.libelle)
-                .join(", ")}.`}
-        </p>
-      </div>
-
-      {SECTIONS.map(({ outil, titre, sousTitre }) => (
-        <section key={outil} className="fr-mb-6w">
-          <div className="fr-table fr-table--bordered">
-            <table>
-              {/* Le titre de section passe par la légende du tableau : DSFR la rend
-                  visible (`.fr-table caption`), un `fr-sr-only` y serait annulé. */}
-              <caption>
-                {titre}
-                <span className="fr-table__detail">{sousTitre}</span>
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Situation</th>
-                  <th scope="col">Qui paie</th>
-                  <th scope="col">Attendu</th>
-                  <th scope="col">État</th>
-                  <th scope="col">
-                    <span className="fr-sr-only">Action</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {lignes
-                  .filter(({ seed }) => seed.outil === outil)
-                  .map(({ seed, evaluation }) => (
-                    <Ligne
-                      key={seed.id}
-                      seed={seed}
-                      evaluation={evaluation}
-                      onOuvrir={() => onOuvrir(seed)}
-                    />
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ))}
+      <Sections lignes={lignes} onOuvrir={onOuvrir} />
 
       <button
         type="button"
@@ -146,6 +87,100 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
   );
 }
 
+// ---- implémentation ----
+
+type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
+
+function Sections({
+  lignes,
+  onOuvrir,
+}: {
+  lignes: LigneSeed[];
+  onOuvrir: (seed: Seed) => void;
+}) {
+  return SECTIONS.map((section) => (
+    <TableauSection
+      key={section.outil}
+      section={section}
+      lignes={lignes.filter(({ seed }) => seed.outil === section.outil)}
+      onOuvrir={onOuvrir}
+    />
+  ));
+}
+
+function Introduction() {
+  return (
+    <>
+      <h1 className="fr-h3">Galerie de seeds</h1>
+      <p className="fr-text--sm">
+        Les {SEEDS.length} situations de référence du simulateur (
+        <code>seeds/</code>), celles-là mêmes que rejouent les tests. Ouvrez-en
+        une pour consulter son résultat — et, pour un cas de prescription, le
+        CERFA pré-rempli.
+      </p>
+    </>
+  );
+}
+
+// Le moteur effectivement chargé confirme-t-il les attendus du catalogue ? En
+// mode labo, ce bandeau est le premier signal qu'une règle de test a bougé.
+function VerdictGlobal({ lignes }: { lignes: LigneSeed[] }) {
+  const enEcart = lignes.filter(
+    ({ evaluation }) => evaluation.ecarts.length > 0,
+  );
+  return (
+    <div
+      className={`fr-alert fr-alert--sm fr-mb-4w fr-alert--${
+        enEcart.length === 0 ? "success" : "error"
+      }`}
+    >
+      <p>
+        {enEcart.length === 0
+          ? "Le moteur chargé confirme les attendus des seeds."
+          : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
+              .map(({ seed }) => seed.libelle)
+              .join(", ")}.`}
+      </p>
+    </div>
+  );
+}
+
+function TableauSection({
+  section,
+  lignes,
+  onOuvrir,
+}: {
+  section: (typeof SECTIONS)[number];
+  lignes: LigneSeed[];
+  onOuvrir: (seed: Seed) => void;
+}) {
+  return (
+    <section className="fr-mb-6w">
+      <div className="fr-table fr-table--bordered">
+        <table>
+          {/* Le titre de section passe par la légende du tableau : DSFR la rend
+              visible (`.fr-table caption`), un `fr-sr-only` y serait annulé. */}
+          <caption>
+            {section.titre}
+            <span className="fr-table__detail">{section.sousTitre}</span>
+          </caption>
+          <EnTetes />
+          <tbody>
+            {lignes.map(({ seed, evaluation }) => (
+              <Ligne
+                key={seed.id}
+                seed={seed}
+                evaluation={evaluation}
+                onOuvrir={() => onOuvrir(seed)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function Ligne({
   seed,
   evaluation,
@@ -155,21 +190,9 @@ function Ligne({
   evaluation: EvaluationSeed;
   onOuvrir: () => void;
 }) {
-  const conforme = evaluation.ecarts.length === 0;
-  const proposeLeCerfa =
-    evaluation.valeurs.cible_cas_final === "prescription médicale de transport";
-
   return (
     <tr>
-      <th scope="row" style={{ maxWidth: "22rem" }}>
-        <span className="fr-text--bold">{seed.libelle}</span>
-        <br />
-        <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
-          {seed.description}
-        </span>
-        <br />
-        <code className="fr-text--xs">{seed.id}</code>
-      </th>
+      <Intitule seed={seed} />
       {/* Le régime de financement a sa colonne : c'est lui qui dit d'un coup d'œil
           si le transport est à la charge de l'Assurance Maladie — donc si la
           situation est une non-conformité. Toutes les seeds le déclarent. */}
@@ -177,38 +200,10 @@ function Ligne({
         <strong>{String(seed.attendu.cible_regime_financement)}</strong>
       </td>
       <td>
-        <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
-          {Object.entries(seed.attendu)
-            .filter(([cible]) => cible !== "cible_regime_financement")
-            .map(([cible, valeur]) => (
-              <li key={cible}>
-                {LIBELLE_CIBLE[cible as CibleSeed]} :{" "}
-                <strong>{String(valeur)}</strong>
-              </li>
-            ))}
-        </ul>
+        <Attendus seed={seed} />
       </td>
       <td>
-        <p
-          className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}
-        >
-          {conforme ? "conforme" : "écart"}
-        </p>
-        {!conforme && (
-          <ul
-            className="fr-text--xs"
-            style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
-          >
-            {evaluation.ecarts.map((e) => (
-              <li key={e.cible}>
-                {LIBELLE_CIBLE[e.cible]} : {String(e.obtenu)}
-              </li>
-            ))}
-          </ul>
-        )}
-        {proposeLeCerfa && (
-          <p className="fr-badge fr-badge--sm fr-badge--info fr-mt-1w">CERFA</p>
-        )}
+        <Etat evaluation={evaluation} />
       </td>
       <td>
         <button
@@ -221,5 +216,80 @@ function Ligne({
         </button>
       </td>
     </tr>
+  );
+}
+
+function Intitule({ seed }: { seed: Seed }) {
+  return (
+    <th scope="row" style={{ maxWidth: "22rem" }}>
+      <span className="fr-text--bold">{seed.libelle}</span>
+      <br />
+      <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
+        {seed.description}
+      </span>
+      <br />
+      <code className="fr-text--xs">{seed.id}</code>
+    </th>
+  );
+}
+
+function EnTetes() {
+  return (
+    <thead>
+      <tr>
+        <th scope="col">Situation</th>
+        <th scope="col">Qui paie</th>
+        <th scope="col">Attendu</th>
+        <th scope="col">État</th>
+        <th scope="col">
+          <span className="fr-sr-only">Action</span>
+        </th>
+      </tr>
+    </thead>
+  );
+}
+
+function Attendus({ seed }: { seed: Seed }) {
+  return (
+    <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
+      {Object.entries(seed.attendu)
+        .filter(([cible]) => cible !== "cible_regime_financement")
+        .map(([cible, valeur]) => (
+          <li key={cible}>
+            {LIBELLE_CIBLE[cible as CibleSeed]} :{" "}
+            <strong>{String(valeur)}</strong>
+          </li>
+        ))}
+    </ul>
+  );
+}
+
+function Etat({ evaluation }: Pick<LigneSeed, "evaluation">) {
+  const conforme = evaluation.ecarts.length === 0;
+  const proposeLeCerfa =
+    evaluation.valeurs.cible_cas_final === "prescription médicale de transport";
+  return (
+    <>
+      <p
+        className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}
+      >
+        {conforme ? "conforme" : "écart"}
+      </p>
+      {!conforme && (
+        <ul
+          className="fr-text--xs"
+          style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
+        >
+          {evaluation.ecarts.map((e) => (
+            <li key={e.cible}>
+              {LIBELLE_CIBLE[e.cible]} : {String(e.obtenu)}
+            </li>
+          ))}
+        </ul>
+      )}
+      {proposeLeCerfa && (
+        <p className="fr-badge fr-badge--sm fr-badge--info fr-mt-1w">CERFA</p>
+      )}
+    </>
   );
 }

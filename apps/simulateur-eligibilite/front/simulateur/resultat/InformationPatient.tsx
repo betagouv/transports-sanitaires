@@ -5,6 +5,7 @@
 // l'agencer. Seuls les intitulés diffèrent d'une page à l'autre (ton « résultat »
 // vs « document ») : ils sont passés en props, le texte restant est identique.
 
+import type { ReactNode } from "react";
 import { type Item, ListeVulgarisee } from "./Vulgarisation";
 
 // Sous-titre iconographié du bloc patient (h4 DSFR).
@@ -85,26 +86,33 @@ export function ExplicationTransportImpossible() {
         Pour qu’un transport sanitaire puisse être prescrit, deux éléments
         doivent être réunis :
       </p>
-      <p className="fr-mb-2w">
-        <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-          1. Une situation ouvrant droit à la prise en charge
-        </strong>
+      <Condition rang="1. Une situation ouvrant droit à la prise en charge">
         Par exemple : une hospitalisation, certains soins liés à une affection
         de longue durée, un accident du travail, une maladie professionnelle ou
         une autre situation prévue par l’Assurance Maladie.
-      </p>
-      <p className="fr-mb-2w">
-        <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-          2. Un besoin médical de transport adapté
-        </strong>
+      </Condition>
+      <Condition rang="2. Un besoin médical de transport adapté">
         Par exemple : un besoin d’être transporté en ambulance, en VSL, en taxi
         conventionné, dans un véhicule adapté au fauteuil roulant, ou avec un
         niveau d’aide compatible avec votre état de santé.
-      </p>
+      </Condition>
       <p>
         Dans les informations indiquées, au moins l’un de ces deux éléments
         n’est pas suffisamment établi.
       </p>
     </>
+  );
+}
+
+// L'une des deux conditions cumulatives d'une prescription : son intitulé en
+// gras, puis l'exemple qui l'illustre.
+function Condition({ rang, children }: { rang: string; children: ReactNode }) {
+  return (
+    <p className="fr-mb-2w">
+      <strong style={{ display: "block", marginBottom: "0.5rem" }}>
+        {rang}
+      </strong>
+      {children}
+    </p>
   );
 }

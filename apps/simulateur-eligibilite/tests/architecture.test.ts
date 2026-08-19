@@ -11,6 +11,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -150,3 +151,78 @@ describe("invariants métier", () => {
     expect(interdits).toEqual([]);
   });
 });
+
+// Biome porte les mêmes deux limites (`noExcessiveLinesPerFunction`,
+// `noExcessiveLinesPerFile`), mais il compte des lignes **logiques** : un bloc
+// de texte JSX ou une chaîne multiligne y vaut une seule ligne. Un composant de
+// 450 lignes réelles n'en pèse que 178 pour lui. Biome reste utile — il signale
+// dans l'éditeur, et tout ce qu'il refuse échoue aussi ici — mais c'est ce
+// fichier qui fait foi, en lignes réelles.
+describe("taille du code", () => {
+  it("aucune fonction ne dépasse 30 lignes", () => {
+    // Une fonction qu'on ne voit pas d'un écran fait plusieurs choses. Les
+    // fichiers de test sont exemptés : `describe` et `it` prennent un callback,
+    // et un bloc de cas n'est pas un traitement à découper.
+    const trop = sources("front", "server", "shared", "scripts").flatMap(
+      (fichier) =>
+        fonctionsDe(fichier)
+          .filter(({ lignes }) => lignes > 30)
+          .map(({ ligne, lignes }) => `${fichier}:${ligne} (${lignes} lignes)`),
+    );
+    expect(trop).toEqual([]);
+  });
+
+  it("aucun fichier ne dépasse 300 lignes", () => {
+    // Passé cette taille, un fichier porte plusieurs intentions. Seule exception :
+    // le catalogue de seeds, qui est une liste de données et vaut d'être lu d'un
+    // seul tenant.
+    const EXEMPTES = ["front/outils-produit/seeds/catalogue.ts"];
+    const trop = sources("front", "server", "shared", "scripts", "tests")
+      .filter((fichier) => !EXEMPTES.includes(fichier))
+      .map((fichier) => ({ fichier, lignes: lignesDe(fichier) }))
+      .filter(({ lignes }) => lignes > 300)
+      .map(({ fichier, lignes }) => `${fichier} (${lignes} lignes)`);
+    expect(trop).toEqual([]);
+  });
+});
+
+/** Nombre de lignes réelles d'un fichier. */
+function lignesDe(fichier: string): number {
+  return readFileSync(join(racine, fichier), "utf-8").split("\n").length;
+}
+
+/**
+ * Chaque fonction du fichier avec la taille réelle de son corps, accolades
+ * exclues. Les fonctions imbriquées comptent pour elles-mêmes *et* dans leur
+ * englobante — sortir un bloc d'une fonction trop longue ne suffit donc pas s'il
+ * reste sur place.
+ */
+function fonctionsDe(
+  fichier: string,
+): Array<{ ligne: number; lignes: number }> {
+  const texte = readFileSync(join(racine, fichier), "utf-8");
+  const source = ts.createSourceFile(
+    fichier,
+    texte,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const trouvees: Array<{ ligne: number; lignes: number }> = [];
+  const visiter = (noeud: ts.Node) => {
+    const corps =
+      ts.isFunctionDeclaration(noeud) ||
+      ts.isFunctionExpression(noeud) ||
+      ts.isArrowFunction(noeud) ||
+      ts.isMethodDeclaration(noeud)
+        ? noeud.body
+        : undefined;
+    if (corps && ts.isBlock(corps)) {
+      const debut = source.getLineAndCharacterOfPosition(corps.getStart()).line;
+      const fin = source.getLineAndCharacterOfPosition(corps.getEnd()).line;
+      trouvees.push({ ligne: debut + 1, lignes: fin - debut - 1 });
+    }
+    ts.forEachChild(noeud, visiter);
+  };
+  visiter(source);
+  return trouvees;
+}

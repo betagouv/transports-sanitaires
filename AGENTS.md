@@ -48,7 +48,7 @@ its own CI `working-directory`. Toolchain via `mise` (Node 24, Python 3.13).
 
 - `npm run verifier` — **the one to run before saying you are done**: lint, typecheck,
   rules validation, tests. Same gates as CI, same order.
-- `npm run lint` — Biome (format + lint + import sort); `npm run lint:fix` applies
+- `npm run lint` — Biome (`biome.jsonc`: format + lint + import sort); `npm run lint:fix` applies
   every safe fix. A `PostToolUse` hook already runs this on each `.ts`/`.tsx` you
   write, so formatting is never yours to argue about.
 - `npm run typecheck` — `tsc -b` over the **four** projects: front, node (scripts +
@@ -127,6 +127,12 @@ before working around one:
 - `front/outils-produit/beta/cerfa/` never references an `/api` route: the prescriber
   fills nominative health data there, and it must not leave the browser.
 - `regles.publicodes` holds eligibility logic only — no identification, no analytics.
+- **A function is at most 30 real lines, a file at most 300.** Biome carries the
+  same two limits (`noExcessiveLinesPerFunction`, `noExcessiveLinesPerFile`) for
+  editor feedback, but it counts *logical* lines — a JSX text block or a
+  multiline string weighs one. The test is what decides, and it counts real
+  lines. Exemptions: `describe` / `it` callbacks are outside the function limit,
+  and `seeds/catalogue.ts` outside the file limit.
 - `front/simulateur/` never imports `front/outils-produit/`: the product tools are
   built **on** the simulator, and `App.tsx` hands the simulator ready-made content
   (`panneauOutilsProduit`, `documentTelechargeable`). One named exception —

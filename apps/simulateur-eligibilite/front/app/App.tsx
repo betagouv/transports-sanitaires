@@ -10,18 +10,14 @@
 //
 // Deux outils partagent le même moteur derrière la porte : le parcours médical
 // du **prescripteur** et le parcours administratif du **secrétariat**. Le
-// premier passe la main au second via la passation (situation de Partie 1). Le
-// point d'entrée initial peut être forcé par `?outil=secretariat`.
+// premier passe la main au second via la passation (situation de Partie 1).
 
 import type { Situation } from "publicodes";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense } from "react";
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { Referentiel } from "../../shared/referentiel";
-import {
-  type AccesIdentification,
-  Identification,
-} from "../identification/Identification";
+import { Identification } from "../identification/Identification";
 import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
 import { referentielHttp } from "../identification/referentiel-http";
 import { rangerIdentite } from "../identification/session";
@@ -30,21 +26,12 @@ import type { OptionsGénération } from "../outils-produit/beta/cerfa/cerfa";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Labo } from "../outils-produit/labo/Labo";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
-import { type Seed, situationDe } from "../outils-produit/seeds/seed";
 import { moteur } from "../simulateur/moteur";
-import { effacerPassation, emettrePassation } from "../simulateur/passation";
+import { emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../simulateur/secretariat/Secretariat";
-import type { Outil } from "./outil";
-
-// Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
-// du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la
-// très grande majorité des prescripteurs ne le réclamera jamais.
-const GalerieSeeds = lazy(() =>
-  import("../outils-produit/seeds/GalerieSeeds").then((m) => ({
-    default: m.GalerieSeeds,
-  })),
-);
+import type { Navigation } from "./navigation";
+import { outilDeLUrl, useNavigation } from "./navigation";
 
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
@@ -56,159 +43,157 @@ type Props = {
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
 
-function outilInitial(): Outil {
-  const p = new URLSearchParams(window.location.search).get("outil");
-  return p === "secretariat" ? "secretariat" : "prescripteur";
-}
-
 export function App({
   referentiel = referentielHttp,
   pseudonymiser = pseudonymiserViaApi,
   chargerGabarit,
 }: Props = {}) {
-  const [identifie, setIdentifie] = useState(false);
-  // Galerie de seeds : catalogue des situations de référence, d'où l'on ouvre
-  // directement une page de résultat.
-  const [galerie, setGalerie] = useState(false);
-  // Le service identifié déverrouille-t-il les outils produit (service n° 4) ?
-  // Retenu à la validation pour pouvoir les reproposer au début du parcours —
-  // c'est un booléen, pas une identité : l'invariant de `docs/architecture` tient.
-  const [outilsProduit, setOutilsProduit] = useState(false);
-  // Écran labo (mode test des règles), superposé au parcours une fois identifié.
-  const [labo, setLabo] = useState(false);
-  const [outil, setOutil] = useState<Outil>(outilInitial);
-  // Remonté à chaque nouvelle simulation pour remonter (remount) l'outil et
-  // repartir d'un parcours vierge.
-  const [cle, setCle] = useState(0);
-  // Situation issue d'une seed, pour ouvrir directement la page de résultat.
-  const [situationDev, setSituationDev] = useState<Situation<string> | null>(
-    null,
-  );
-
-  async function handleValide(
-    saisie: IdentiteSaisie,
-    acces: AccesIdentification,
-  ) {
-    rangerIdentite(await pseudonymiser(saisie));
-    setOutilsProduit(acces.outilsProduit);
-    setIdentifie(true);
-    // Les outils produit s'ouvrent **après** la porte : on entre identifié, quelle
-    // que soit la destination.
-    if (acces.destination === "galerie") setGalerie(true);
-    if (acces.destination === "labo") setLabo(true);
-  }
-
-  // Galerie de seeds : ouvre la page de résultat de la seed choisie, en sautant le
-  // questionnaire — résultat médical (prescripteur) ou résultat final (secrétariat)
-  // selon l'écran d'atterrissage déclaré par la seed. L'identification, elle, a déjà
-  // eu lieu : on n'arrive ici que par la porte.
-  function ouvrirSeed(seed: Seed) {
-    setSituationDev(situationDe(seed));
-    setOutil(seed.outil);
-    setGalerie(false);
-  }
-
-  function recommencer() {
-    effacerPassation();
-    setGalerie(false);
-    setLabo(false);
-    setSituationDev(null);
-    setCle((c) => c + 1);
-    setOutil("prescripteur");
-  }
-
-  // Les outils produit se superposent au parcours : on y arrive identifié, et le
-  // retour redonne la main au simulateur.
-  if (labo) {
-    return (
-      <>
-        <BandeauLabo />
-        <Labo onRetour={() => setLabo(false)} />
-      </>
-    );
-  }
-
-  if (galerie) {
-    return (
-      <>
-        <BandeauLabo />
-        <Suspense fallback={null}>
-          <GalerieSeeds
-            onOuvrir={ouvrirSeed}
-            onRetour={() => setGalerie(false)}
-          />
-        </Suspense>
-      </>
-    );
-  }
-
-  if (!identifie) {
-    return (
-      <>
-        <BandeauLabo />
-        <Identification referentiel={referentiel} onValide={handleValide} />
-      </>
-    );
-  }
-
-  // Les deux branchements du simulateur vers les outils produit se décident ici,
-  // et nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
-  // n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
-  // d'œil, tout ce que le service n° 4 déverrouille dans le parcours.
-  //
-  // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
-  // l'écran-porte, sans avoir à ressortir du simulateur. Le mode test des règles,
-  // lui, reste à la porte — il recharge l'application, et perdrait le parcours.
-  const panneauOutilsProduit = outilsProduit ? (
-    <OutilsProduit>
-      <BoutonOutil onClick={() => setGalerie(true)}>
-        Galerie de seeds
-      </BoutonOutil>
-    </OutilsProduit>
-  ) : undefined;
-
-  // Le pré-remplissage du CERFA reste réservé au service n° 4, le temps d'être
-  // éprouvé. La Page Résultat 2 décide, elle, si le cas final ouvre un document.
-  const documentTelechargeable = outilsProduit
-    ? (situation: Situation<string>) => (
-        <BoutonCerfa
-          moteur={moteur}
-          situation={situation}
-          chargerGabarit={chargerGabarit}
-        />
-      )
-    : undefined;
-
-  const contenu =
-    outil === "prescripteur" ? (
-      <Prescripteur
-        key={cle}
-        situationInitiale={situationDev}
-        onPasserAuSecretariat={(situationP1: Situation<string>) => {
-          emettrePassation(situationP1);
-          setOutil("secretariat");
-        }}
-        onNouvelleSimulation={recommencer}
-        panneauOutilsProduit={panneauOutilsProduit}
-      />
-    ) : (
-      <Secretariat
-        key={cle}
-        situationFinale={situationDev}
-        onNouvelleSimulation={recommencer}
-        documentTelechargeable={documentTelechargeable}
-      />
-    );
+  const navigation = useNavigation(outilDeLUrl);
 
   return (
     <>
       <BandeauLabo />
-      <main
-        className="fr-container"
-        style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
-      >
-        {contenu}
-      </main>
+      {navigation.ecran === "identification" && (
+        <Porte
+          referentiel={referentiel}
+          pseudonymiser={pseudonymiser}
+          onIdentifie={navigation.identifier}
+        />
+      )}
+      {navigation.ecran === "labo" && (
+        <Labo onRetour={navigation.fermerOutil} />
+      )}
+      {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
+      {navigation.ecran === "simulateur" && (
+        <EcranSimulateur
+          navigation={navigation}
+          chargerGabarit={chargerGabarit}
+        />
+      )}
     </>
+  );
+}
+
+// ---- implémentation ----
+
+function Galerie({ navigation }: { navigation: Navigation }) {
+  return (
+    <Suspense fallback={null}>
+      <GalerieSeeds
+        onOuvrir={navigation.ouvrirSeed}
+        onRetour={navigation.fermerOutil}
+      />
+    </Suspense>
+  );
+}
+
+// L'écran-porte, plus la conversion de l'identité saisie en identité
+// pseudonymisée. Un échec de l'API n'empêche pas d'entrer : `rangerIdentite`
+// accepte `null`, et le suivi analytics est alors dégradé.
+function Porte({
+  referentiel,
+  pseudonymiser,
+  onIdentifie,
+}: {
+  referentiel: Referentiel;
+  pseudonymiser: NonNullable<Props["pseudonymiser"]>;
+  onIdentifie: Navigation["identifier"];
+}) {
+  return (
+    <Identification
+      referentiel={referentiel}
+      onValide={async (saisie, acces) => {
+        rangerIdentite(await pseudonymiser(saisie));
+        onIdentifie(acces);
+      }}
+    />
+  );
+}
+
+// Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
+// du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la
+// très grande majorité des prescripteurs ne le réclamera jamais.
+const GalerieSeeds = lazy(() =>
+  import("../outils-produit/seeds/GalerieSeeds").then((m) => ({
+    default: m.GalerieSeeds,
+  })),
+);
+
+type SimulateurProps = {
+  navigation: Navigation;
+  chargerGabarit?: OptionsGénération["chargerGabarit"];
+};
+
+function EcranSimulateur(props: SimulateurProps) {
+  return (
+    <main
+      className="fr-container"
+      style={{ paddingTop: "2rem", paddingBottom: "4rem" }}
+    >
+      <Simulateur {...props} />
+    </main>
+  );
+}
+
+function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
+  if (navigation.outil === "secretariat") {
+    return (
+      <Secretariat
+        key={navigation.cle}
+        situationFinale={navigation.situationDev}
+        onNouvelleSimulation={navigation.recommencer}
+        documentTelechargeable={documentTelechargeable(
+          navigation.outilsProduit,
+          chargerGabarit,
+        )}
+      />
+    );
+  }
+  return (
+    <Prescripteur
+      key={navigation.cle}
+      situationInitiale={navigation.situationDev}
+      onPasserAuSecretariat={(situationP1: Situation<string>) => {
+        emettrePassation(situationP1);
+        navigation.passerAuSecretariat();
+      }}
+      onNouvelleSimulation={navigation.recommencer}
+      panneauOutilsProduit={panneauOutilsProduit(navigation)}
+    />
+  );
+}
+
+// Les deux branchements du simulateur vers les outils produit se décident ici,
+// et nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
+// n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
+// d'œil, tout ce que le service n° 4 déverrouille dans le parcours.
+//
+// Galerie de seeds depuis le début du parcours : mêmes situations qu'à
+// l'écran-porte, sans avoir à ressortir du simulateur. Le mode test des règles,
+// lui, reste à la porte — il recharge l'application, et perdrait le parcours.
+function panneauOutilsProduit(navigation: Navigation) {
+  if (!navigation.outilsProduit) return undefined;
+  return (
+    <OutilsProduit>
+      <BoutonOutil onClick={navigation.ouvrirGalerie}>
+        Galerie de seeds
+      </BoutonOutil>
+    </OutilsProduit>
+  );
+}
+
+// Le pré-remplissage du CERFA reste réservé au service n° 4, le temps d'être
+// éprouvé. La Page Résultat 2 décide, elle, si le cas final ouvre un document.
+function documentTelechargeable(
+  outilsProduit: boolean,
+  chargerGabarit: OptionsGénération["chargerGabarit"] | undefined,
+) {
+  if (!outilsProduit) return undefined;
+  return (situation: Situation<string>) => (
+    <BoutonCerfa
+      moteur={moteur}
+      situation={situation}
+      chargerGabarit={chargerGabarit}
+    />
   );
 }

@@ -42,22 +42,24 @@ export function Secretariat({
   }
 
   if (!situationP1) {
-    return (
-      <div>
-        <div
-          className="fr-alert fr-alert--info"
-          style={{ marginBottom: "2rem" }}
-        >
-          <h3 className="fr-alert__title">Aucune prescription en attente</h3>
-          <p>Commencez par l'évaluation médicale du transport.</p>
-        </div>
-        <button type="button" className="fr-btn" onClick={onNouvelleSimulation}>
-          Aller à l'évaluation médicale
-        </button>
-      </div>
-    );
+    return <AucunePrescription onNouvelleSimulation={onNouvelleSimulation} />;
   }
 
+  return <Qualification situationP1={situationP1} onTermine={setSituation} />;
+}
+
+// ---- implémentation ----
+
+// Partie 2 du questionnaire : la Partie 1 étant déjà répondue, `Parcours` ne
+// pose que les questions administratives — et bascule droit au résultat quand le
+// cas était déjà tranché en Partie 1.
+function Qualification({
+  situationP1,
+  onTermine,
+}: {
+  situationP1: Situation<string>;
+  onTermine: (situation: Situation<string>) => void;
+}) {
   return (
     <>
       <h1 className="fr-h3">Qualification du document à remettre au patient</h1>
@@ -67,11 +69,31 @@ export function Secretariat({
         situationInitiale={situationP1}
         labelFin="Voir le document à remettre au patient"
         onTermine={(s) => {
-          setSituation(s);
-          const cas = texte(moteur.setSituation(s), "cible_cas_final");
-          trackResultat(cas, "secretariat");
+          onTermine(s);
+          trackResultat(
+            texte(moteur.setSituation(s), "cible_cas_final"),
+            "secretariat",
+          );
         }}
       />
     </>
+  );
+}
+
+// Le secrétariat a été ouvert sans passation : il n'y a rien à qualifier tant
+// que l'évaluation médicale n'a pas eu lieu.
+function AucunePrescription({
+  onNouvelleSimulation,
+}: Pick<Props, "onNouvelleSimulation">) {
+  return (
+    <div>
+      <div className="fr-alert fr-alert--info" style={{ marginBottom: "2rem" }}>
+        <h3 className="fr-alert__title">Aucune prescription en attente</h3>
+        <p>Commencez par l'évaluation médicale du transport.</p>
+      </div>
+      <button type="button" className="fr-btn" onClick={onNouvelleSimulation}>
+        Aller à l'évaluation médicale
+      </button>
+    </div>
   );
 }

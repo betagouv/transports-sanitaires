@@ -4,52 +4,25 @@
 // l'app avec le référentiel snapshot (comme le fait le backend quand
 // GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
 
-import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { creerApp } from "../../server/app.ts";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { empreinte } from "../../server/identification/pseudonymisation.ts";
-import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
+import { snapshotReferentiel } from "../../shared/referentiel.ts";
 import {
-  type Referentiel,
-  snapshotReferentiel,
-} from "../../shared/referentiel.ts";
+  type AppDeTest,
+  demarrer,
+  getFrom,
+  postTo,
+  SECRET,
+} from "./serveur-de-test.ts";
 
-const SECRET = "secret-de-test";
-
-let server: Server;
-let base: string;
-
+let app: AppDeTest;
 beforeAll(async () => {
-  const app = creerApp(snapshotReferentiel, { secret: SECRET });
-  await new Promise<void>((resolve) => {
-    // Express 5 passe une éventuelle erreur au callback : on ne la propage pas
-    // dans `resolve`, qui n'attend rien.
-    server = app.listen(0, () => resolve());
-  });
-  const { port } = server.address() as AddressInfo;
-  base = `http://127.0.0.1:${port}`;
+  app = await demarrer(snapshotReferentiel);
 });
+afterAll(() => app.close());
 
-afterAll(async () => {
-  await new Promise<void>((resolve, reject) => {
-    server.close((err) => (err ? reject(err) : resolve()));
-  });
-});
-
-const get = async (path: string) => {
-  const res = await fetch(base + path);
-  return { status: res.status, body: await res.json() };
-};
-
-const post = async (path: string, body: unknown) => {
-  const res = await fetch(base + path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, body: await res.json() };
-};
+const get = (path: string) => getFrom(app.base, path);
+const post = (path: string, body: unknown) => postTo(app.base, path, body);
 
 describe("API référentiel", () => {
   it("liste les établissements", async () => {
@@ -98,12 +71,12 @@ describe("API référentiel", () => {
 
 describe("non-indexation par les moteurs", () => {
   it("sert un X-Robots-Tag noindex sur toutes les réponses", async () => {
-    const res = await fetch(`${base}/api/etablissements`);
+    const res = await fetch(`${app.base}/api/etablissements`);
     expect(res.headers.get("x-robots-tag")).toBe("noindex, nofollow");
   });
 
   it("sert un robots.txt qui interdit tout", async () => {
-    const res = await fetch(`${base}/robots.txt`);
+    const res = await fetch(`${app.base}/robots.txt`);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toMatch(/text\/plain/);
     expect(await res.text()).toContain("Disallow: /");
@@ -212,164 +185,5 @@ describe("POST /api/identite-pseudonymisee", () => {
     });
     expect(status).toBe(400);
     expect(body.error).toMatch(/incompl/);
-  });
-});
-
-// Démarre une app dédiée sur un référentiel injecté, sans mock (vraie requête HTTP).
-async function demarrer(
-  referentiel: Referentiel,
-  pseudonymesEnClair = false,
-): Promise<{ base: string; close: () => Promise<void> }> {
-  const app = creerApp(referentiel, { secret: SECRET, pseudonymesEnClair });
-  const srv = await new Promise<Server>((resolve) => {
-    const s = app.listen(0, () => resolve(s));
-  });
-  const { port } = srv.address() as AddressInfo;
-  return {
-    base: `http://127.0.0.1:${port}`,
-    close: () =>
-      new Promise<void>((resolve, reject) =>
-        srv.close((err) => (err ? reject(err) : resolve())),
-      ),
-  };
-}
-
-const postTo = async (base: string, path: string, body: unknown) => {
-  const res = await fetch(base + path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, body: await res.json() };
-};
-
-describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (saisies libres)", () => {
-  // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
-  const appels: IdentiteSaisie[] = [];
-  const referentiel: Referentiel = {
-    getEtablissements: () => snapshotReferentiel.getEtablissements(),
-    getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-    getPrescripteurs: (serviceId) =>
-      snapshotReferentiel.getPrescripteurs(serviceId),
-    async enrichirDepuisSaisie(sel) {
-      appels.push(sel);
-    },
-  };
-
-  let base: string;
-  let close: () => Promise<void>;
-  beforeAll(async () => ({ base, close } = await demarrer(referentiel)));
-  afterAll(() => close());
-  beforeEach(() => {
-    appels.length = 0;
-  });
-
-  it("déclenche l'enrichissement pour un service « Autre » (vrai service saisi)", async () => {
-    const sel = {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_autre",
-      serviceEstAutre: true,
-      serviceLibre: "Néphrologie",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Durand",
-      prenom: "Léa",
-    };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
-    expect(status).toBe(200);
-    expect(appels).toEqual([sel]);
-  });
-
-  it("déclenche l'enrichissement pour la branche « prescripteur hors liste »", async () => {
-    const sel = {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Dupont",
-      prenom: "Marie",
-    };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
-    expect(status).toBe(200);
-    expect(appels).toEqual([sel]);
-  });
-
-  it("appelle quand même l'enrichissement pour une sélection issue des listes (no-op côté source)", async () => {
-    // La route délègue toujours ; c'est la source (Grist) qui décide de ne rien écrire.
-    const sel = {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "p_grenoble_cardio_1",
-    };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
-    expect(status).toBe(200);
-    expect(appels).toEqual([sel]);
-  });
-
-  it("ne bloque pas l'accès si l'enrichissement échoue", async () => {
-    const { base: baseKo, close: closeKo } = await demarrer({
-      getEtablissements: () => snapshotReferentiel.getEtablissements(),
-      getServices: (etabId) => snapshotReferentiel.getServices(etabId),
-      getPrescripteurs: (serviceId) =>
-        snapshotReferentiel.getPrescripteurs(serviceId),
-      async enrichirDepuisSaisie() {
-        throw new Error("Grist indisponible");
-      },
-    });
-    try {
-      const { status, body: ctx } = await postTo(
-        baseKo,
-        "/api/identite-pseudonymisee",
-        {
-          etabId: "e_chu_grenoble",
-          serviceId: "s_grenoble_cardio",
-          prescripteurId: "prescripteur_hors_liste",
-          nom: "Dupont",
-          prenom: "Marie",
-        },
-      );
-      expect(status).toBe(200);
-      expect(ctx.prescripteurRef).toBe(
-        empreinte(SECRET, "identite:dupont|marie"),
-      );
-    } finally {
-      await closeKo();
-    }
-  });
-});
-
-// Mode debug : `pseudonymesEnClair` renvoie les refs en clair (valeur préfixée)
-// au lieu du HMAC, pour lire directement les buckets dans Matomo en phase de test.
-describe("POST /api/identite-pseudonymisee — mode debug (refs en clair)", () => {
-  let base: string;
-  let close: () => Promise<void>;
-  beforeAll(
-    async () => ({ base, close } = await demarrer(snapshotReferentiel, true)),
-  );
-  afterAll(() => close());
-
-  it("renvoie les refs en clair (valeur préfixée), pas le HMAC", async () => {
-    const { status, body: ctx } = await postTo(
-      base,
-      "/api/identite-pseudonymisee",
-      {
-        etabId: "e_chu_grenoble",
-        serviceId: "s_grenoble_cardio",
-        prescripteurId: "p_grenoble_cardio_1",
-      },
-    );
-    expect(status).toBe(200);
-    expect(ctx.etabRef).toBe("etab:e_chu_grenoble");
-    expect(ctx.serviceRef).toBe("service:s_grenoble_cardio");
-    expect(ctx.prescripteurRef).toBe("prescripteur:p_grenoble_cardio_1");
-  });
-
-  it("expose l'identité libre en clair (nom/prénom normalisés) pour le debug", async () => {
-    const { body: ctx } = await postTo(base, "/api/identite-pseudonymisee", {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Dupont",
-      prenom: "Marie",
-    });
-    expect(ctx.prescripteurRef).toBe("identite:dupont|marie");
   });
 });

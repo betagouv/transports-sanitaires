@@ -1,0 +1,126 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "files": {
+    "includes": [
+      "front/**",
+      "server/**",
+      "shared/**",
+      "scripts/**",
+      "config/**",
+      "tests/**",
+      "*.ts",
+      "*.json",
+      "*.jsonc",
+      "!package-lock.json",
+      "!**/*.tsbuildinfo"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "useImportType": "error",
+        "useConst": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 300
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        }
+      },
+      "complexity": {
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 30
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      // `describe` et `it` prennent un callback : la limite de lignes par
+      // fonction y compterait un bloc de cas entier comme une fonction trop
+      // longue. Le découper n'aiderait personne — c'est un regroupement, pas
+      // un traitement. La limite par fichier, elle, reste active ici.
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["vite.config.ts", "scripts/**", "server/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      // Catalogue de données, pas de traitement : c'est la source unique des
+      // situations de référence. Le scinder pour tenir sous 300 lignes ne
+      // produirait qu'un découpage arithmétique, et ferait perdre la propriété
+      // qui compte — une seule liste à lire pour connaître tous les cas.
+      "includes": ["front/outils-produit/seeds/catalogue.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
+          }
+        }
+      }
+    }
+  ]
+}

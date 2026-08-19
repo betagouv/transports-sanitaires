@@ -11,6 +11,7 @@ import {
 } from "../resultat/InformationPatient";
 import { CRITERES, MOTIFS, retenus } from "../resultat/Vulgarisation";
 import { type Article80, Article80Patient } from "./Article80";
+import { EtapesPatient } from "./EtapesPatient";
 
 // Prise en charge / reste à charge, formulation propre à chaque cas final.
 const RESTE_A_CHARGE: Record<string, string> = {
@@ -32,365 +33,15 @@ const RESTE_A_CHARGE: Record<string, string> = {
     "Le transport reste à votre charge.",
 };
 
-// Étapes patient (« Ce que vous devez faire maintenant »), propres au cas final
-// et, pour la PMT / DAP / convocation, au transport retenu.
-function EtapesPatient({
-  casFinal,
-  transport,
-  transportPrescrit,
-}: {
-  casFinal: string;
-  transport: string;
-  transportPrescrit: boolean;
-}) {
-  const vehiculePerso =
-    transport === "véhicule personnel ou transport en commun";
-  const vslTaxi = transport === "VSL ou taxi conventionné";
-  const vslTaxiTpmr = transport === "VSL TPMR ou taxi conventionné TPMR";
-  const ambulance = transport === "ambulance";
-
-  const modaliteTransportPMT = () => {
-    if (vehiculePerso)
-      return (
-        <>
-          <li>
-            Organisez votre trajet avec votre véhicule personnel ou les
-            transports en commun.
-          </li>
-          <li>
-            Conservez les justificatifs nécessaires : billets, reçus,
-            justificatifs de trajet ou de distance selon le cas.
-          </li>
-          <li>
-            Transmettez les justificatifs à votre organisme d’Assurance Maladie
-            selon les modalités indiquées.
-          </li>
-        </>
-      );
-    if (vslTaxi)
-      return (
-        <>
-          <li>
-            Organisez le transport avec un <strong>VSL</strong> ou un{" "}
-            <strong>taxi conventionné</strong>, ou avec l’aide du secrétariat
-            médical selon l’organisation prévue.
-          </li>
-          <li>Présentez la prescription au transporteur avant le transport.</li>
-        </>
-      );
-    if (vslTaxiTpmr)
-      return (
-        <>
-          <li>
-            Organisez le transport avec un transporteur adapté au fauteuil
-            roulant, ou avec l’aide du secrétariat médical selon l’organisation
-            prévue.
-          </li>
-          <li>
-            Précisez que le transport doit se faire{" "}
-            <strong>
-              sans quitter votre fauteuil roulant manuel ou électrique
-            </strong>
-            .
-          </li>
-          <li>Présentez la prescription au transporteur avant le transport.</li>
-        </>
-      );
-    if (ambulance)
-      return (
-        <>
-          <li>
-            Organisez le transport avec le secrétariat médical, l’établissement
-            de santé ou une société d’ambulance, selon l’organisation prévue
-            pour votre situation.
-          </li>
-          <li>
-            Présentez la prescription au transporteur avant le transport, sauf
-            situation d’urgence.
-          </li>
-        </>
-      );
-    return null;
-  };
-
-  const modaliteTransportDAP = () => {
-    if (vehiculePerso)
-      return (
-        <>
-          <li>
-            Une fois l’accord obtenu, organisez votre trajet avec votre véhicule
-            personnel ou les transports en commun.
-          </li>
-          <li>
-            Conservez les justificatifs nécessaires : billets, reçus,
-            justificatifs de trajet ou de distance selon le cas.
-          </li>
-          <li>
-            Transmettez les justificatifs à votre organisme d’Assurance Maladie
-            selon les modalités indiquées.
-          </li>
-        </>
-      );
-    if (vslTaxi)
-      return (
-        <>
-          <li>
-            Une fois l’accord obtenu, organisez le transport avec un{" "}
-            <strong>VSL</strong> ou un <strong>taxi conventionné</strong>, ou
-            avec l’aide du secrétariat médical selon l’organisation prévue.
-          </li>
-          <li>Présentez la demande au transporteur.</li>
-        </>
-      );
-    if (vslTaxiTpmr)
-      return (
-        <>
-          <li>
-            Une fois l’accord obtenu, organisez le transport avec un
-            transporteur adapté au fauteuil roulant, ou avec l’aide du
-            secrétariat médical selon l’organisation prévue.
-          </li>
-          <li>
-            Précisez que le transport doit se faire{" "}
-            <strong>
-              sans quitter votre fauteuil roulant manuel ou électrique
-            </strong>
-            .
-          </li>
-          <li>Présentez la demande au transporteur.</li>
-        </>
-      );
-    if (ambulance)
-      return (
-        <>
-          <li>
-            Une fois l’accord obtenu, organisez le transport avec le secrétariat
-            médical, l’établissement de santé ou une société d’ambulance, selon
-            l’organisation prévue pour votre situation.
-          </li>
-          <li>
-            Présentez la demande au transporteur, sauf situation d’urgence.
-          </li>
-        </>
-      );
-    return null;
-  };
-
-  switch (casFinal) {
-    case "prescription médicale de transport":
-      return (
-        <ol>
-          <li>
-            Votre médecin vous remet une{" "}
-            <strong>Prescription Médicale de Transport</strong>.
-          </li>
-          <li>
-            Vérifiez que le transport indiqué correspond bien au transport
-            retenu : <strong>{transport}</strong>.
-          </li>
-          <li>
-            Utilisez uniquement le mode de transport indiqué sur la
-            prescription.
-          </li>
-          {modaliteTransportPMT()}
-        </ol>
-      );
-    case "demande accord préalable":
-      return (
-        <ol>
-          <li>
-            Votre médecin vous remet une{" "}
-            <strong>Demande d’Accord Préalable</strong>.
-          </li>
-          <li>Cette demande vaut aussi prescription médicale de transport.</li>
-          <li>
-            Vérifiez que le transport demandé correspond bien au transport
-            retenu : <strong>{transport}</strong>.
-          </li>
-          <li>
-            Envoyez la demande à l’Assurance Maladie, à l’attention du
-            médecin-conseil.
-          </li>
-          <li>
-            Attendez la réponse de l’Assurance Maladie avant d’organiser le
-            transport, sauf urgence.
-          </li>
-          <li>
-            En cas de refus, le transport ne sera pas pris en charge dans les
-            conditions demandées.
-          </li>
-          {modaliteTransportDAP()}
-        </ol>
-      );
-    case "convocation ou avis audience":
-      return vehiculePerso ? (
-        <ol>
-          <li>Conservez votre convocation ou votre avis d’audience.</li>
-          <li>
-            Le transport retenu est :{" "}
-            <strong>véhicule personnel ou transport en commun</strong>.
-          </li>
-          <li>
-            Organisez votre trajet selon les indications figurant sur la
-            convocation, l’avis ou les consignes données par le service
-            concerné.
-          </li>
-          <li>Conservez les justificatifs de trajet nécessaires.</li>
-          <li>
-            Présentez la convocation ou l’avis si un justificatif vous est
-            demandé.
-          </li>
-        </ol>
-      ) : (
-        <ol>
-          <li>Conservez votre convocation ou votre avis d’audience.</li>
-          <li>
-            Le transport retenu est : <strong>{transport}</strong>.
-          </li>
-          <li>
-            Organisez le transport selon les indications figurant sur la
-            convocation, l’avis ou les consignes données par le service
-            concerné.
-          </li>
-          <li>Présentez la convocation ou l’avis au transporteur.</li>
-        </ol>
-      );
-    case "transport charge établissement":
-      return (
-        <ol>
-          <li>
-            Le transport retenu est : <strong>{transport}</strong>.
-          </li>
-          <li>
-            Le transport doit être organisé ou encadré par l’établissement de
-            santé.
-          </li>
-          <li>
-            Rapprochez-vous du service ou du secrétariat de l’établissement.
-          </li>
-          <li>
-            L’établissement vous indiquera le document interne ou la procédure à
-            suivre.
-          </li>
-        </ol>
-      );
-    case "SMUR":
-      return (
-        <ol>
-          <li>
-            Ce transport relève d’une prise en charge médicale urgente par une
-            équipe SMUR — Structure Mobile d’Urgence et de Réanimation.
-          </li>
-          <li>
-            L’organisation du transport relève de l’équipe médicale ou de
-            l’établissement concerné.
-          </li>
-          <li>
-            Suivez les consignes données par l’équipe médicale ou
-            l’établissement.
-          </li>
-        </ol>
-      );
-    case "bariatrique seul":
-      return (
-        <ol>
-          <li>
-            Aucun transport sanitaire ne peut être prescrit par votre médecin
-            sur la base du seul motif bariatrique.
-          </li>
-          <li>
-            Rapprochez-vous du service médical ou du secrétariat pour connaître
-            les solutions possibles selon votre situation.
-          </li>
-        </ol>
-      );
-    case "permission sortie sans motif médical":
-      return (
-        <ol>
-          <li>Le transport reste à votre charge.</li>
-          <li>
-            Vous pouvez organiser vous-même le transport adapté à votre sortie.
-          </li>
-          <li>
-            En cas de changement de situation ou de motif médical, une nouvelle
-            évaluation médicale peut être nécessaire.
-          </li>
-        </ol>
-      );
-    case "prestation non prise en charge par assurance maladie":
-      return (
-        <ol>
-          <li>
-            La consultation, le soin, l’examen ou la prestation à l’origine de
-            votre déplacement n’est pas pris en charge par l’Assurance Maladie.
-          </li>
-          <li>
-            Dans cette situation, le transport ne peut pas être pris en charge
-            par l’Assurance Maladie, même si un mode de transport particulier
-            est médicalement adapté.
-          </li>
-          <li>
-            N’adressez aucune Prescription Médicale de Transport, Demande
-            d’Accord Préalable ou demande de remboursement à votre caisse pour
-            ce déplacement.
-          </li>
-        </ol>
-      );
-    case "non éligible assurance maladie dans ce parcours":
-      return transportPrescrit ? (
-        <ol>
-          <li>
-            Le transport retenu par le médecin est :{" "}
-            <strong>{transport}</strong>.
-          </li>
-          <li>
-            Ce résultat signifie que le transport ne relève pas d’une prise en
-            charge par l’Assurance Maladie dans ce cadre.
-          </li>
-          <li>Le transport reste à votre charge.</li>
-          <li>
-            Rapprochez-vous du secrétariat médical ou de l’établissement pour
-            connaître la suite à donner.
-          </li>
-        </ol>
-      ) : (
-        <ol>
-          <li>
-            Aucun transport sanitaire ne peut être prescrit par votre médecin
-            sur la base des informations indiquées.
-          </li>
-          <li>
-            Le transport reste à votre charge si vous décidez de l’organiser.
-          </li>
-          <li>
-            Rapprochez-vous du secrétariat médical ou de l’établissement pour
-            connaître la suite à donner.
-          </li>
-        </ol>
-      );
-    default:
-      return null;
-  }
-}
-
-export function Bloc2Etapes({
-  e,
-  casFinal,
-  transport,
-  transportPrescrit,
-  article80,
-}: {
+type Props = {
   e: typeof moteur;
   casFinal: string;
   transport: string;
   transportPrescrit: boolean;
   article80: Article80;
-}) {
-  const criteresRetenus = transportPrescrit ? retenus(e, CRITERES) : [];
-  const motifsRetenus = transportPrescrit ? retenus(e, MOTIFS) : [];
-  const resteACharge = RESTE_A_CHARGE[casFinal] ?? "";
-  const estArticle80 = casFinal === "transport charge établissement";
+};
 
+export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
   return (
     <div className="fr-callout" style={{ marginBottom: "2rem" }}>
       <h3 className="fr-callout__title">
@@ -400,50 +51,62 @@ export function Bloc2Etapes({
         />
         Information destinée au patient
       </h3>
-
       <div className="fr-callout__text">
-        {transportPrescrit ? (
-          <>
-            <p>
-              Votre médecin a retenu le transport suivant :{" "}
-              <strong>{transport}</strong>.
-            </p>
-
-            <PourquoiCeTransport
-              titreExplication="Pourquoi ce transport ?"
-              criteres={criteresRetenus}
-              titreCriteres="Critères médicaux retenus"
-              motifs={motifsRetenus}
-              titreMotifs="Motifs ouvrant droit identifiés ou déduits"
-            />
-          </>
-        ) : (
-          <ExplicationTransportImpossible />
-        )}
-
+        <TransportRetenu e={e} {...contexte} />
         <SousTitre icone="fr-icon-money-euro-circle-line">
           Prise en charge / reste à charge
         </SousTitre>
-        <p>{resteACharge}</p>
-
+        <p>{RESTE_A_CHARGE[casFinal] ?? ""}</p>
         <SousTitre icone="fr-icon-todo-line">
           Ce que vous devez faire maintenant
         </SousTitre>
-        <EtapesPatient
-          casFinal={casFinal}
-          transport={transport}
-          transportPrescrit={transportPrescrit}
-        />
-
-        {estArticle80 && (
-          <>
-            <SousTitre icone="fr-icon-bank-line">
-              Organisation et défraiement
-            </SousTitre>
-            <Article80Patient article80={article80} />
-          </>
-        )}
+        <EtapesPatient casFinal={casFinal} {...contexte} />
+        <OrganisationEtDefraiement casFinal={casFinal} article80={article80} />
       </div>
     </div>
+  );
+}
+
+// ---- implémentation ----
+
+// L'article 80 encadre les transports à charge de l'établissement : qui les
+// organise, et comment ils sont défrayés. Muet pour tous les autres cas finaux.
+function OrganisationEtDefraiement({
+  casFinal,
+  article80,
+}: Pick<Props, "casFinal" | "article80">) {
+  if (casFinal !== "transport charge établissement") return null;
+  return (
+    <>
+      <SousTitre icone="fr-icon-bank-line">
+        Organisation et défraiement
+      </SousTitre>
+      <Article80Patient article80={article80} />
+    </>
+  );
+}
+
+// Le transport retenu et ce qui l'a justifié — ou, faute de transport prescrit,
+// l'explication de ce qui l'empêche.
+function TransportRetenu({
+  e,
+  transport,
+  transportPrescrit,
+}: Omit<Props, "casFinal" | "article80">) {
+  if (!transportPrescrit) return <ExplicationTransportImpossible />;
+  return (
+    <>
+      <p>
+        Votre médecin a retenu le transport suivant :{" "}
+        <strong>{transport}</strong>.
+      </p>
+      <PourquoiCeTransport
+        titreExplication="Pourquoi ce transport ?"
+        criteres={retenus(e, CRITERES)}
+        titreCriteres="Critères médicaux retenus"
+        motifs={retenus(e, MOTIFS)}
+        titreMotifs="Motifs ouvrant droit identifiés ou déduits"
+      />
+    </>
   );
 }

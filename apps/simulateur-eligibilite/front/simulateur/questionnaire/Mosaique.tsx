@@ -27,11 +27,38 @@ export function Mosaique({
   onToggleOption,
   onToggleAucun,
 }: Props) {
+  return (
+    <Checkbox
+      legend={question}
+      options={casesACocher(options, aucun, onToggleOption, onToggleAucun)}
+      classes={{ legend: "fr-text--lead" }}
+      style={{ marginBottom: "1.5rem" }}
+    />
+  );
+}
+
+// ---- implémentation ----
+
+type CaseACocher = {
+  label: string;
+  nativeInputProps: {
+    name: string;
+    checked: boolean;
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  };
+};
+
+function casesACocher(
+  options: OptionField[],
+  aucun: Props["aucun"],
+  onToggleOption: Props["onToggleOption"],
+  onToggleAucun: Props["onToggleAucun"],
+): CaseACocher[] {
   // On ignore `disabled`/`hidden` (divulgation progressive de @publicodes/forms,
   // qui « ferme » les options dès que l'agrégat OU est satisfait) : dans une
   // mosaïque — vrai choix multiple — toute combinaison doit rester cochable. On
   // respecte en revanche une non-applicabilité réelle (`applicable si`).
-  const optionsCheckbox = options
+  const cases = options
     .filter((opt) => opt.applicable !== false)
     .map((opt) => ({
       label: opt.label,
@@ -44,7 +71,7 @@ export function Mosaique({
     }));
 
   if (aucun && onToggleAucun) {
-    optionsCheckbox.push({
+    cases.push({
       label: aucun.label,
       nativeInputProps: {
         name: "mosaique-aucun",
@@ -55,12 +82,5 @@ export function Mosaique({
     });
   }
 
-  return (
-    <Checkbox
-      legend={question}
-      options={optionsCheckbox}
-      classes={{ legend: "fr-text--lead" }}
-      style={{ marginBottom: "1.5rem" }}
-    />
-  );
+  return cases;
 }

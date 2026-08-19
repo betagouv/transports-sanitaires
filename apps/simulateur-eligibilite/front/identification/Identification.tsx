@@ -7,21 +7,15 @@
 // référentiel par défaut est
 // le snapshot factice (dev / tests) ; en production App injecte le client HTTP.
 
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { PRESCRIPTEUR_HORS_LISTE } from "../../shared/identite-saisie";
 import {
-  type IdentiteSaisie,
-  PRESCRIPTEUR_HORS_LISTE,
-  saisieComplete,
-} from "../../shared/identite-saisie";
-import {
-  type Etablissement,
-  type Prescripteur,
   type Referentiel,
-  type Service,
   snapshotReferentiel,
 } from "../../shared/referentiel";
-import { estServiceProduit } from "../outils-produit/deverrouillage";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+import type { SaisieIdentite } from "./saisie-identite";
+import { useSaisieIdentite } from "./saisie-identite";
 
 /**
  * Ce que la validation emporte, en plus de l'identité saisie : l'écran à ouvrir et
@@ -37,114 +31,25 @@ export type AccesIdentification = {
 
 type Props = {
   referentiel?: Referentiel;
-  onValide: (saisie: IdentiteSaisie, acces: AccesIdentification) => void;
+  onValide: (
+    saisie: SaisieIdentite["saisie"],
+    acces: AccesIdentification,
+  ) => void;
 };
-
-const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";
-
-// « Autre » (service / unité non listé du référentiel) reste toujours en **fin**
-// de liste, quel que soit l'ordre alphabétique.
-const estAutre = (libelle: string): boolean =>
-  libelle.trim().toLowerCase() === "autre";
-
-// Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
-// aux accents), « Autre » repoussé en fin de liste. L'option spéciale « hors
-// liste » est ajoutée séparément après la liste et garde sa place.
-const triParLibelle = <T extends { libelle: string }>(liste: T[]): T[] =>
-  [...liste].sort((a, b) => {
-    if (estAutre(a.libelle) !== estAutre(b.libelle)) {
-      return estAutre(a.libelle) ? 1 : -1;
-    }
-    return a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" });
-  });
 
 export function Identification({
   referentiel = snapshotReferentiel,
   onValide,
 }: Props) {
-  const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [prescripteurs, setPrescripteurs] = useState<Prescripteur[]>([]);
-
-  const [etabId, setEtabId] = useState("");
-  const [serviceId, setServiceId] = useState("");
-  const [serviceLibre, setServiceLibre] = useState("");
-  const [prescripteurId, setPrescripteurId] = useState("");
-  const [nom, setNom] = useState("");
-  const [prenom, setPrenom] = useState("");
-
-  useEffect(() => {
-    referentiel
-      .getEtablissements()
-      .then((l) => setEtablissements(triParLibelle(l)));
-  }, [referentiel]);
-
-  // Changement d'établissement → réinitialise l'aval, recharge les services.
-  useEffect(() => {
-    setServiceId("");
-    setServiceLibre("");
-    setPrescripteurId("");
-    setNom("");
-    setPrenom("");
-    setServices([]);
-    setPrescripteurs([]);
-    if (etabId) {
-      referentiel
-        .getServices(etabId)
-        .then((l) => setServices(triParLibelle(l)));
-    }
-  }, [referentiel, etabId]);
-
-  // Changement de service → réinitialise l'aval, recharge les prescripteurs.
-  useEffect(() => {
-    setServiceLibre("");
-    setPrescripteurId("");
-    setNom("");
-    setPrenom("");
-    setPrescripteurs([]);
-    if (serviceId) {
-      referentiel
-        .getPrescripteurs(serviceId)
-        .then((l) => setPrescripteurs(triParLibelle(l)));
-    }
-  }, [referentiel, serviceId]);
-
-  const etabChoisi = etabId !== "";
-  const serviceChoisi = serviceId !== "";
-  // « Autre » sélectionné → saisie du service/unité réel obligatoire.
-  const serviceEstAutre = estAutre(
-    services.find((s) => s.id === serviceId)?.libelle ?? "",
-  );
-  const prescripteurHorsListe = prescripteurId === PRESCRIPTEUR_HORS_LISTE;
-  const identiteLibre = serviceChoisi && prescripteurHorsListe;
-  // Les outils produit (galerie de seeds, mode test des règles) ne sont proposés
-  // que pour le service dédié du référentiel — sur tous les environnements.
-  const serviceSelectionne = services.find((s) => s.id === serviceId);
-  const outilsProduit =
-    !!serviceSelectionne && estServiceProduit(serviceSelectionne);
-
-  function buildSaisie(): IdentiteSaisie {
-    const saisie: IdentiteSaisie = { etabId };
-    if (etabChoisi && serviceId) {
-      saisie.serviceId = serviceId;
-      if (serviceEstAutre) {
-        saisie.serviceEstAutre = true;
-        saisie.serviceLibre = serviceLibre;
-      }
-      saisie.prescripteurId = prescripteurId;
-      if (prescripteurHorsListe) {
-        saisie.nom = nom;
-        saisie.prenom = prenom;
-      }
-    }
-    return saisie;
-  }
-
-  const saisie = buildSaisie();
-  const valide = saisieComplete(saisie);
+  const saisie = useSaisieIdentite(referentiel);
 
   const entrer = (destination: AccesIdentification["destination"]) => {
-    if (valide) onValide(saisie, { destination, outilsProduit });
+    if (saisie.valide) {
+      onValide(saisie.saisie, {
+        destination,
+        outilsProduit: saisie.outilsProduit,
+      });
+    }
   };
 
   return (
@@ -159,145 +64,222 @@ export function Identification({
           entrer("simulateur");
         }}
       >
-        <div className="fr-select-group">
-          <label className="fr-label" htmlFor="etablissement">
-            Établissement
-          </label>
-          <select
-            className="fr-select"
-            id="etablissement"
-            value={etabId}
-            onChange={(e) => setEtabId(e.target.value)}
-          >
-            <option value="" disabled hidden>
-              Sélectionnez un établissement
-            </option>
-            {etablissements.map((etab) => (
-              <option key={etab.id} value={etab.id}>
-                {etab.libelle}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {etabChoisi && (
-          <div className="fr-select-group">
-            <label className="fr-label" htmlFor="service">
-              Nom du service
-            </label>
-            <select
-              className="fr-select"
-              id="service"
-              value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
-            >
-              <option value="" disabled hidden>
-                Sélectionnez un service
-              </option>
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.libelle}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {serviceEstAutre && (
-          <div className="fr-input-group">
-            <label className="fr-label" htmlFor="service-libre">
-              Nom de votre service / unité
-            </label>
-            <input
-              className="fr-input"
-              id="service-libre"
-              type="text"
-              value={serviceLibre}
-              onChange={(e) => setServiceLibre(e.target.value)}
-            />
-          </div>
-        )}
-
-        {serviceChoisi && (
-          <div className="fr-select-group">
-            <label className="fr-label" htmlFor="prescripteur">
-              Vous êtes
-            </label>
-            <select
-              className="fr-select"
-              id="prescripteur"
-              value={prescripteurId}
-              onChange={(e) => setPrescripteurId(e.target.value)}
-            >
-              <option value="" disabled hidden>
-                Sélectionnez
-              </option>
-              {prescripteurs.map((prescripteur) => (
-                <option key={prescripteur.id} value={prescripteur.id}>
-                  {prescripteur.libelle}
-                </option>
-              ))}
-              <option value={PRESCRIPTEUR_HORS_LISTE}>
-                {OPTION_HORS_LISTE}
-              </option>
-            </select>
-          </div>
-        )}
-
-        {identiteLibre && (
-          <>
-            <div className="fr-input-group">
-              <label className="fr-label" htmlFor="nom">
-                Votre nom
-              </label>
-              <input
-                className="fr-input"
-                id="nom"
-                type="text"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
-              />
-            </div>
-            <div className="fr-input-group">
-              <label className="fr-label" htmlFor="prenom">
-                Votre prénom
-              </label>
-              <input
-                className="fr-input"
-                id="prenom"
-                type="text"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-              />
-            </div>
-          </>
-        )}
-
-        <div
-          className="fr-btns-group fr-btns-group--inline"
-          style={{ marginTop: "2rem" }}
-        >
-          <button type="submit" className="fr-btn" disabled={!valide}>
-            Accéder au simulateur
-          </button>
-        </div>
-
-        {/* Les deux outils produit sont côte à côte, hors des actions nominales.
-            Ils restent désactivés tant que l'identification n'est pas complète :
-            y entrer reste une entrée dans l'application, elle passe par la porte.
-            Les situations de la galerie vivent dans `seeds/`, pas dans cet écran —
-            les y égrener en boutons ne passait pas l'échelle. */}
-        {outilsProduit && (
-          <OutilsProduit>
-            <BoutonOutil onClick={() => entrer("galerie")} disabled={!valide}>
-              Galerie de seeds
-            </BoutonOutil>
-            <BoutonOutil onClick={() => entrer("labo")} disabled={!valide}>
-              Mode test des règles
-            </BoutonOutil>
-          </OutilsProduit>
-        )}
+        <Champs saisie={saisie} />
+        <Actions saisie={saisie} onEntrer={entrer} />
       </form>
     </main>
   );
 }
+
+// ---- implémentation ----
+
+type ChampsProps = { saisie: SaisieIdentite };
+
+function Champs({ saisie }: ChampsProps) {
+  return (
+    <>
+      <ChampEtablissement saisie={saisie} />
+      <ChampService saisie={saisie} />
+      <ChampServiceLibre saisie={saisie} />
+      <ChampPrescripteur saisie={saisie} />
+      <ChampsIdentiteLibre saisie={saisie} />
+    </>
+  );
+}
+
+function ChampEtablissement({ saisie }: ChampsProps) {
+  return (
+    <ListeDeroulante
+      id="etablissement"
+      label="Établissement"
+      invite="Sélectionnez un établissement"
+      valeur={saisie.champs.etabId}
+      options={saisie.etablissements}
+      onChange={(v) => saisie.modifier("etabId", v)}
+    />
+  );
+}
+
+function ChampService({ saisie }: ChampsProps) {
+  if (!saisie.etabChoisi) return null;
+  return (
+    <ListeDeroulante
+      id="service"
+      label="Nom du service"
+      invite="Sélectionnez un service"
+      valeur={saisie.champs.serviceId}
+      options={saisie.services}
+      onChange={(v) => saisie.modifier("serviceId", v)}
+    />
+  );
+}
+
+function ChampServiceLibre({ saisie }: ChampsProps) {
+  if (!saisie.serviceEstAutre) return null;
+  return (
+    <ChampTexte
+      id="service-libre"
+      label="Nom de votre service / unité"
+      valeur={saisie.champs.serviceLibre}
+      onChange={(v) => saisie.modifier("serviceLibre", v)}
+    />
+  );
+}
+
+function ChampPrescripteur({ saisie }: ChampsProps) {
+  if (!saisie.serviceChoisi) return null;
+  return (
+    <ListeDeroulante
+      id="prescripteur"
+      label="Vous êtes"
+      invite="Sélectionnez"
+      valeur={saisie.champs.prescripteurId}
+      options={saisie.prescripteurs}
+      onChange={(v) => saisie.modifier("prescripteurId", v)}
+    >
+      <option value={PRESCRIPTEUR_HORS_LISTE}>{OPTION_HORS_LISTE}</option>
+    </ListeDeroulante>
+  );
+}
+
+function ChampsIdentiteLibre({ saisie }: ChampsProps) {
+  if (!saisie.identiteLibre) return null;
+  return (
+    <>
+      <ChampTexte
+        id="nom"
+        label="Votre nom"
+        valeur={saisie.champs.nom}
+        onChange={(v) => saisie.modifier("nom", v)}
+      />
+      <ChampTexte
+        id="prenom"
+        label="Votre prénom"
+        valeur={saisie.champs.prenom}
+        onChange={(v) => saisie.modifier("prenom", v)}
+      />
+    </>
+  );
+}
+
+function Actions({
+  saisie,
+  onEntrer,
+}: ChampsProps & {
+  onEntrer: (destination: AccesIdentification["destination"]) => void;
+}) {
+  return (
+    <>
+      <div
+        className="fr-btns-group fr-btns-group--inline"
+        style={{ marginTop: "2rem" }}
+      >
+        <button type="submit" className="fr-btn" disabled={!saisie.valide}>
+          Accéder au simulateur
+        </button>
+      </div>
+      {saisie.outilsProduit && (
+        <PanneauOutils valide={saisie.valide} onEntrer={onEntrer} />
+      )}
+    </>
+  );
+}
+
+// Les deux outils produit sont côte à côte, hors des actions nominales. Ils
+// restent désactivés tant que l'identification n'est pas complète : y entrer
+// reste une entrée dans l'application, elle passe par la porte. Les situations
+// de la galerie vivent dans `seeds/`, pas dans cet écran — les y égrener en
+// boutons ne passait pas l'échelle.
+function PanneauOutils({
+  valide,
+  onEntrer,
+}: {
+  valide: boolean;
+  onEntrer: (destination: AccesIdentification["destination"]) => void;
+}) {
+  return (
+    <OutilsProduit>
+      <BoutonOutil onClick={() => onEntrer("galerie")} disabled={!valide}>
+        Galerie de seeds
+      </BoutonOutil>
+      <BoutonOutil onClick={() => onEntrer("labo")} disabled={!valide}>
+        Mode test des règles
+      </BoutonOutil>
+    </OutilsProduit>
+  );
+}
+
+type ListeProps = {
+  id: string;
+  label: string;
+  // Option affichée tant que rien n'est sélectionné.
+  invite: string;
+  valeur: string;
+  options: Array<{ id: string; libelle: string }>;
+  onChange: (valeur: string) => void;
+  // Options supplémentaires ajoutées après la liste (ex. « hors liste »).
+  children?: ReactNode;
+};
+
+function ListeDeroulante({
+  id,
+  label,
+  invite,
+  valeur,
+  options,
+  onChange,
+  children,
+}: ListeProps) {
+  return (
+    <div className="fr-select-group">
+      <label className="fr-label" htmlFor={id}>
+        {label}
+      </label>
+      <select
+        className="fr-select"
+        id={id}
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="" disabled hidden>
+          {invite}
+        </option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.libelle}
+          </option>
+        ))}
+        {children}
+      </select>
+    </div>
+  );
+}
+
+function ChampTexte({
+  id,
+  label,
+  valeur,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  valeur: string;
+  onChange: (valeur: string) => void;
+}) {
+  return (
+    <div className="fr-input-group">
+      <label className="fr-label" htmlFor={id}>
+        {label}
+      </label>
+      <input
+        className="fr-input"
+        id={id}
+        type="text"
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";

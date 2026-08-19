@@ -14,34 +14,52 @@ type Props = {
 // du parcours n'est plus disponible.
 export function TraceDebug({ titre, situation, sorties = [] }: Props) {
   if (!import.meta.env.DEV) return null;
-  const e = moteur.setSituation(situation);
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — {titre}</summary>
       <div style={{ marginTop: "0.75rem" }}>
-        {sorties.length > 0 && (
-          <>
-            <strong>Sorties évaluées :</strong>
-            <ul style={{ margin: "0.25rem 0 1rem" }}>
-              {sorties.map((id) => (
-                <li key={id}>
-                  <code>{id}</code> ={" "}
-                  <code>{JSON.stringify(e.evaluate(id).nodeValue)}</code>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        <SortiesEvaluees situation={situation} sorties={sorties} />
         <strong>Réponses saisies :</strong>
-        <ul style={{ margin: "0.25rem 0" }}>
-          {Object.keys(situation).length === 0 && <li>(aucune)</li>}
-          {Object.entries(situation).map(([id, valeur]) => (
-            <li key={id}>
-              <code>{id}</code> = <code>{JSON.stringify(valeur)}</code>
-            </li>
-          ))}
-        </ul>
+        <ListeValeurs valeurs={Object.entries(situation)} marge="0.25rem 0" />
       </div>
     </details>
+  );
+}
+
+// ---- implémentation ----
+
+function SortiesEvaluees({
+  situation,
+  sorties,
+}: Required<Omit<Props, "titre">>) {
+  if (sorties.length === 0) return null;
+  const e = moteur.setSituation(situation);
+  return (
+    <>
+      <strong>Sorties évaluées :</strong>
+      <ListeValeurs
+        valeurs={sorties.map((id) => [id, e.evaluate(id).nodeValue])}
+        marge="0.25rem 0 1rem"
+      />
+    </>
+  );
+}
+
+function ListeValeurs({
+  valeurs,
+  marge,
+}: {
+  valeurs: Array<[string, unknown]>;
+  marge: string;
+}) {
+  return (
+    <ul style={{ margin: marge }}>
+      {valeurs.length === 0 && <li>(aucune)</li>}
+      {valeurs.map(([id, valeur]) => (
+        <li key={id}>
+          <code>{id}</code> = <code>{JSON.stringify(valeur)}</code>
+        </li>
+      ))}
+    </ul>
   );
 }

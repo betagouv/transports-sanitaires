@@ -27,61 +27,70 @@ export function identificationRoutes(
       res.json(await referentiel.getEtablissements());
     }),
   );
-
   router.get(
     "/services",
-    handle(async (req, res) => {
-      const etabId = String(req.query.etabId ?? "");
-      if (!etabId) {
-        res.status(400).json({ error: "etabId requis" });
-        return;
-      }
-      res.json(await referentiel.getServices(etabId));
-    }),
+    handle(lister("etabId", (id) => referentiel.getServices(id))),
   );
-
   router.get(
     "/prescripteurs",
-    handle(async (req, res) => {
-      const serviceId = String(req.query.serviceId ?? "");
-      if (!serviceId) {
-        res.status(400).json({ error: "serviceId requis" });
-        return;
-      }
-      res.json(await referentiel.getPrescripteurs(serviceId));
-    }),
+    handle(lister("serviceId", (id) => referentiel.getPrescripteurs(id))),
   );
-
-  // Pseudonymise l'identité saisie (refs HMAC). Reçoit la saisie brute, renvoie
-  // l'objet refs en JSON — le secret HMAC ne quitte jamais le serveur. Le front
-  // garde ces refs en mémoire pour Matomo.
   router.post(
     "/identite-pseudonymisee",
-    handle(async (req, res) => {
-      const saisie = (req.body ?? {}) as IdentiteSaisie;
-      if (!saisieComplete(saisie)) {
-        res
-          .status(400)
-          .json({ error: "sélection d'identification incomplète" });
-        return;
-      }
-      // Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
-      // prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
-      // d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
-      // Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
-      try {
-        await referentiel.enrichirDepuisSaisie?.(saisie);
-      } catch (err) {
-        console.error("[simulateur] enrichissement référentiel échoué:", err);
-      }
-      res.json(pseudonymiser(secret, saisie, pseudonymesEnClair));
-    }),
+    handle(identifier(referentiel, secret, pseudonymesEnClair)),
   );
 
   return router;
 }
 
 // ---- implémentation ----
+
+// Pseudonymise l'identité saisie (refs HMAC). Reçoit la saisie brute, renvoie
+// l'objet refs en JSON — le secret HMAC ne quitte jamais le serveur. Le front
+// garde ces refs en mémoire pour Matomo.
+function identifier(
+  referentiel: Referentiel,
+  secret: string,
+  pseudonymesEnClair: boolean,
+) {
+  return async (req: Request, res: Response) => {
+    const saisie = (req.body ?? {}) as IdentiteSaisie;
+    if (!saisieComplete(saisie)) {
+      res.status(400).json({ error: "sélection d'identification incomplète" });
+      return;
+    }
+    await enrichir(referentiel, saisie);
+    res.json(pseudonymiser(secret, saisie, pseudonymesEnClair));
+  };
+}
+
+// Les services d'un établissement, les prescripteurs d'un service : même forme —
+// un identifiant parent obligatoire en query, la liste filtrée en réponse.
+function lister(
+  parametre: string,
+  charger: (valeur: string) => Promise<unknown>,
+) {
+  return async (req: Request, res: Response) => {
+    const valeur = String(req.query[parametre] ?? "");
+    if (!valeur) {
+      res.status(400).json({ error: `${parametre} requis` });
+      return;
+    }
+    res.json(await charger(valeur));
+  };
+}
+
+// Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
+// prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
+// d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
+// Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
+async function enrichir(referentiel: Referentiel, saisie: IdentiteSaisie) {
+  try {
+    await referentiel.enrichirDepuisSaisie?.(saisie);
+  } catch (err) {
+    console.error("[simulateur] enrichissement référentiel échoué:", err);
+  }
+}
 
 // Enrobe un handler async pour router les rejets vers une réponse d'erreur.
 function handle(handler: (req: Request, res: Response) => Promise<void>) {

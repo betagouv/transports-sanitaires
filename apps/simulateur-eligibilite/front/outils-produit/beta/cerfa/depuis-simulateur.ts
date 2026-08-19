@@ -8,6 +8,7 @@
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
 import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
+import type { ChampCase } from "./champs-cerfa.ts";
 import {
   MODE_TRANSPORT,
   PRESCRIPTION,
@@ -53,75 +54,14 @@ export function saisiesDepuisSituation(
   if (casFinal !== "prescription médicale de transport")
     throw new CerfaNonApplicable(casFinal);
 
-  const saisies: Saisie[] = [];
-
-  // ❶ Situation permettant la prise en charge (plusieurs choix possibles).
-  if (
-    vrai("p1_motif_hospitalisation") ||
-    vrai("p1_motif_seance_chimio_radio_hemodialyse")
-  ) {
-    // Le CERFA réunit sur une seule case l'hospitalisation et les séances
-    // (chimio / radio / hémodialyse) que le simulateur distingue.
-    saisies.push({ case: SITUATION.entréeSortieHospitalisation });
-  }
-  if (vrai("p1_motif_accident_travail_maladie_professionnelle")) {
-    saisies.push({ case: SITUATION.accidentTravailMaladiePro });
-  }
-  // `p1_motif_ald` ne dit rien du caractère **exonérant** de l'ALD, seule
-  // distinction que le CERFA demande : la case reste au prescripteur.
-
-  // ❷ Mode de transport. `cible_transport_sanitaire_prescrit` est la conclusion du
-  // moteur ; les critères cochés en sont la justification, exigée par le CERFA.
-  // Nommé `transport` comme partout ailleurs : `mode` désigne, dans les pages de
-  // résultat, `cible_article_80_mode` — dont les valeurs ne diffèrent que d'un « s »
-  // (« transports en commun »). Deux règles distinctes, un seul nom de variable :
-  // l'ambiguïté ne survit pas ici.
-  const transport = valeur(
-    "cible_transport_sanitaire_prescrit",
-  ) as ModePrescrit;
-
-  if (transport === "ambulance") {
-    const justifications = [
-      [
-        "p1_critere_position_allongee_demi_assise",
-        MODE_TRANSPORT.positionAllongéeDemiAssise,
-      ],
-      ["p1_critere_brancardage_portage", MODE_TRANSPORT.brancardagePortage],
-      [
-        "p1_critere_surveillance_personne_qualifiee",
-        MODE_TRANSPORT.surveillancePersonneQualifiée,
-      ],
-      ["p1_critere_oxygene", MODE_TRANSPORT.oxygène],
-      ["p1_critere_asepsie", MODE_TRANSPORT.asepsieRigoureuse],
-    ] as const;
-    for (const [règle, champ] of justifications) {
-      if (vrai(règle)) saisies.push({ case: champ });
-    }
-  }
-
-  if (
-    transport === "VSL ou taxi conventionné" ||
-    transport === "VSL TPMR ou taxi conventionné TPMR"
-  ) {
-    saisies.push({ case: MODE_TRANSPORT.assisProfessionnalisé });
-    if (transport === "VSL TPMR ou taxi conventionné TPMR") {
-      saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
-    }
-    if (vrai("cible_transport_partage_incompatible")) {
-      saisies.push({ case: MODE_TRANSPORT.transportPartagéIncompatible });
-    }
-  }
-
-  if (transport === "véhicule personnel ou transport en commun") {
-    // Le CERFA sépare deux cases (véhicule individuel / transports en commun) là
-    // où le simulateur n'en a qu'une : on ne peut pas trancher à sa place.
-    if (vrai("cible_accompagnant_necessaire")) {
-      saisies.push({ case: MODE_TRANSPORT.accompagnantNécessaire });
-    }
-  }
-
-  saisies.push(...saisiesTrajet(valeur));
-  return saisies;
+  return [
+    ...saisiesSituation(vrai),
+    ...saisiesModeTransport(
+      vrai,
+      valeur("cible_transport_sanitaire_prescrit") as ModePrescrit,
+    ),
+    ...saisiesTrajet(valeur),
+  ];
 }
 
 /**
@@ -183,7 +123,85 @@ type ModePrescrit =
   | "ambulance"
   | "transport par équipe SMUR";
 
+const JUSTIFICATIONS_AMBULANCE = [
+  [
+    "p1_critere_position_allongee_demi_assise",
+    MODE_TRANSPORT.positionAllongéeDemiAssise,
+  ],
+  ["p1_critere_brancardage_portage", MODE_TRANSPORT.brancardagePortage],
+  [
+    "p1_critere_surveillance_personne_qualifiee",
+    MODE_TRANSPORT.surveillancePersonneQualifiée,
+  ],
+  ["p1_critere_oxygene", MODE_TRANSPORT.oxygène],
+  ["p1_critere_asepsie", MODE_TRANSPORT.asepsieRigoureuse],
+] as const satisfies ReadonlyArray<readonly [CleDeRegle, ChampCase]>;
+
 type Lecteur = (règle: CleDeRegle) => unknown;
+type Predicat = (règle: CleDeRegle) => boolean;
+
+/** ❶ Situation permettant la prise en charge (plusieurs choix possibles). */
+function saisiesSituation(vrai: Predicat): Saisie[] {
+  const saisies: Saisie[] = [];
+  if (
+    vrai("p1_motif_hospitalisation") ||
+    vrai("p1_motif_seance_chimio_radio_hemodialyse")
+  ) {
+    // Le CERFA réunit sur une seule case l'hospitalisation et les séances
+    // (chimio / radio / hémodialyse) que le simulateur distingue.
+    saisies.push({ case: SITUATION.entréeSortieHospitalisation });
+  }
+  if (vrai("p1_motif_accident_travail_maladie_professionnelle")) {
+    saisies.push({ case: SITUATION.accidentTravailMaladiePro });
+  }
+  // `p1_motif_ald` ne dit rien du caractère **exonérant** de l'ALD, seule
+  // distinction que le CERFA demande : la case reste au prescripteur.
+  return saisies;
+}
+
+/**
+ * ❷ Mode de transport. `cible_transport_sanitaire_prescrit` est la conclusion du
+ * moteur ; les critères cochés en sont la justification, exigée par le CERFA.
+ * Nommé `transport` comme partout ailleurs : `mode` désigne, dans les pages de
+ * résultat, `cible_article_80_mode` — dont les valeurs ne diffèrent que d'un « s »
+ * (« transports en commun »). Deux règles distinctes, un seul nom de variable :
+ * l'ambiguïté ne survit pas ici.
+ */
+function saisiesModeTransport(
+  vrai: Predicat,
+  transport: ModePrescrit,
+): Saisie[] {
+  if (transport === "ambulance") {
+    return JUSTIFICATIONS_AMBULANCE.filter(([règle]) => vrai(règle)).map(
+      ([, champ]) => ({ case: champ }),
+    );
+  }
+
+  if (
+    transport === "VSL ou taxi conventionné" ||
+    transport === "VSL TPMR ou taxi conventionné TPMR"
+  ) {
+    const saisies: Saisie[] = [{ case: MODE_TRANSPORT.assisProfessionnalisé }];
+    if (transport === "VSL TPMR ou taxi conventionné TPMR") {
+      saisies.push({ case: MODE_TRANSPORT.fauteuilRoulantTPMR });
+    }
+    if (vrai("cible_transport_partage_incompatible")) {
+      saisies.push({ case: MODE_TRANSPORT.transportPartagéIncompatible });
+    }
+    return saisies;
+  }
+
+  // Le CERFA sépare deux cases (véhicule individuel / transports en commun) là
+  // où le simulateur n'en a qu'une : on ne peut pas trancher à sa place.
+  if (
+    transport === "véhicule personnel ou transport en commun" &&
+    vrai("cible_accompagnant_necessaire")
+  ) {
+    return [{ case: MODE_TRANSPORT.accompagnantNécessaire }];
+  }
+
+  return [];
+}
 
 /** Rubriques du trajet, de l'urgence et de l'accident — issues de la Partie 2. */
 function saisiesTrajet(valeur: Lecteur): Saisie[] {
@@ -207,34 +225,28 @@ function saisiesTrajet(valeur: Lecteur): Saisie[] {
   if (urgence === "Autre urgence")
     saisies.push({ case: PRESCRIPTION.urgenceAutre });
 
-  if (
-    valeur("p2_accident_cause_par_tiers") ===
-    "Oui, en rapport avec un accident causé par un tiers"
-  ) {
+  const tiers = valeur("p2_accident_cause_par_tiers");
+  if (tiers === "Oui, en rapport avec un accident causé par un tiers") {
     saisies.push({ case: SITUATION.accidentTiersOui });
-  } else if (valeur("p2_accident_cause_par_tiers") === "Non") {
+  } else if (tiers === "Non") {
     saisies.push({ case: SITUATION.accidentTiersNon });
   }
 
-  // La notice réserve « nombre de transports itératifs » aux transports répétés
-  // **ne correspondant pas** à la définition du transport en série (≥ 4 transports
-  // sur deux mois, chacun à plus de 50 km). Y reporter le compte d'une série
-  // remplirait une rubrique que la notice interdit dans ce cas.
-  //
-  // Le garde `CerfaNonApplicable` ne suffit pas à l'écarter : une série n'exige un
-  // accord préalable que si l'ALD n'est pas validée (`p2_transport_serie_declenche_dap`),
-  // si bien qu'une série sous ALD validée reste bien une prescription — et arrive ici.
-  const nombre = valeur("p2_nombre_transports_prevus");
-  if (
-    typeof nombre === "number" &&
-    nombre > 1 &&
-    valeur("p2_transport_en_serie") !== true
-  ) {
-    saisies.push({
-      champ: TRAJET.nombreTransportsItératifs,
-      texte: String(nombre),
-    });
-  }
-
+  saisies.push(...saisieTransportsItératifs(valeur));
   return saisies;
+}
+
+// La notice réserve « nombre de transports itératifs » aux transports répétés
+// **ne correspondant pas** à la définition du transport en série (≥ 4 transports
+// sur deux mois, chacun à plus de 50 km). Y reporter le compte d'une série
+// remplirait une rubrique que la notice interdit dans ce cas.
+//
+// Le garde `CerfaNonApplicable` ne suffit pas à l'écarter : une série n'exige un
+// accord préalable que si l'ALD n'est pas validée (`p2_transport_serie_declenche_dap`),
+// si bien qu'une série sous ALD validée reste bien une prescription — et arrive ici.
+function saisieTransportsItératifs(valeur: Lecteur): Saisie[] {
+  const nombre = valeur("p2_nombre_transports_prevus");
+  const enSérie = valeur("p2_transport_en_serie") === true;
+  if (typeof nombre !== "number" || nombre <= 1 || enSérie) return [];
+  return [{ champ: TRAJET.nombreTransportsItératifs, texte: String(nombre) }];
 }
