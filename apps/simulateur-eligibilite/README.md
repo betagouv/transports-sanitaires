@@ -119,17 +119,30 @@ reste modifiable :
 
 ### Le correctif local à la v9.1
 
-Le modèle livré déclare les **douze saisies d'adresse** (`p2_depart_*`,
-`p2_arrivee_*`) sans type. Publicodes en déduit alors `booléen` — toute règle
-portant `question` et rien d'autre l'est — et `@publicodes/forms` rend une case à
-cocher là où le contrat d'interface 2.0.0 demande un champ texte. On ajoute donc
-`type: texte` sur ces douze règles, et les trois règles qui les consommaient comme
-des booléens (`p2_depart_nom_complete`, `p2_arrivee_nom_complete`,
-`p2_adresses_obligatoires_completes`) testent leur présence par `est défini`.
+Le correctif tient en deux morceaux, et il les faut tous les deux.
 
-**À rejouer à chaque livraison** tant que le fournisseur ne l'a pas intégré : une
-recopie brute du YAML annule le correctif, et le symptôme est silencieux — douze
-cases à cocher au lieu de douze champs.
+**Le type.** Le modèle livré déclare les **douze saisies d'adresse**
+(`p2_depart_*`, `p2_arrivee_*`) sans type. Publicodes en déduit alors `booléen` —
+toute règle portant `question` et rien d'autre l'est — et `@publicodes/forms` rend
+une case à cocher là où le contrat d'interface 2.0.0 demande un champ texte. On
+ajoute donc `type: texte` sur ces douze règles.
+
+**Leurs consommateurs.** Trois règles les lisent comme des booléens
+(`p2_depart_nom_complete`, `p2_arrivee_nom_complete`,
+`p2_adresses_obligatoires_completes`). Publicodes ne lève pas : il rend la dernière
+valeur de la conjonction, si bien que `p2_adresses_obligatoires_completes` cesse
+d'être un booléen et que `cible_resultat_2_affichable` ne vaut plus jamais `false`.
+Les trois testent donc qu'un champ obligatoire est **défini** *et* **non vide** —
+`est défini` attrape la question jamais répondue, `!= ''` la saisie effacée.
+
+**À rejouer à chaque livraison** tant que le fournisseur ne l'a pas intégré. Le
+symptôme du premier morceau est visible (douze cases à cocher au lieu de douze
+champs) ; celui du second ne l'est pas, d'où
+[`tests/simulateur/correctif-adresses.test.ts`](tests/simulateur/correctif-adresses.test.ts) :
+c'est lui qui échoue si une recopie du modèle emporte le correctif.
+
+> La v9.2 livrée n'apporte que le premier morceau. Une demande de v9.2.1 est
+> partie ; le correctif local reste entier en attendant.
 
 ## Configuration
 

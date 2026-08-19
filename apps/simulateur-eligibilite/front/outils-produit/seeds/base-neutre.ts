@@ -81,18 +81,20 @@ export const BASE_NEUTRE: SituationTypee = {
   // Saisies libres (v9.1) : ni vérifiées ni normalisées par le modèle. Des
   // valeurs de fond de carte, reconnaissables comme telles à l'écran et sur le
   // CERFA d'aperçu.
-  p2_depart_nom_lieu: "''",
+  //
+  // Une saisie non remplie est **absente** de la base, jamais une chaîne vide :
+  // c'est ce que produit l'interface (`@publicodes/forms` retire la clé dès que
+  // le champ est vidé), et une chaîne vide y ferait passer pour renseigné un
+  // champ obligatoire qui ne l'est pas. Sont donc absents ici les quatre champs
+  // facultatifs (complément, pays) et le nom du lieu de départ — la base part
+  // du domicile, qui n'en demande pas.
   p2_depart_adresse: "'1 rue du Départ'",
-  p2_depart_complement_adresse: "''",
   p2_depart_code_postal: "'75001'",
   p2_depart_commune: "'Paris'",
-  p2_depart_pays: "''",
   p2_arrivee_nom_lieu: "'Centre hospitalier'",
   p2_arrivee_adresse: "'2 rue de l’Arrivée'",
-  p2_arrivee_complement_adresse: "''",
   p2_arrivee_code_postal: "'75002'",
   p2_arrivee_commune: "'Paris'",
-  p2_arrivee_pays: "''",
 
   p2_accident_cause_par_tiers: "non",
 };

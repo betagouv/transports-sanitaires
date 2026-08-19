@@ -1255,7 +1255,9 @@ p2_depart_nom_complete:
     variations:
     - si: p2_depart_nom_requis
       alors:
-        est défini: p2_depart_nom_lieu
+        toutes ces conditions:
+        - est défini: p2_depart_nom_lieu
+        - p2_depart_nom_lieu != ''
     - sinon: oui
 
 p2_arrivee_nom_complete:
@@ -1264,20 +1266,34 @@ p2_arrivee_nom_complete:
     variations:
     - si: p2_arrivee_nom_requis
       alors:
-        est défini: p2_arrivee_nom_lieu
+        toutes ces conditions:
+        - est défini: p2_arrivee_nom_lieu
+        - p2_arrivee_nom_lieu != ''
     - sinon: oui
 
 p2_adresses_obligatoires_completes:
   titre: Adresses obligatoires complétées
   toutes ces conditions:
   - p2_depart_nom_complete
-  - est défini: p2_depart_adresse
-  - est défini: p2_depart_code_postal
-  - est défini: p2_depart_commune
+  - toutes ces conditions:
+    - est défini: p2_depart_adresse
+    - p2_depart_adresse != ''
+  - toutes ces conditions:
+    - est défini: p2_depart_code_postal
+    - p2_depart_code_postal != ''
+  - toutes ces conditions:
+    - est défini: p2_depart_commune
+    - p2_depart_commune != ''
   - p2_arrivee_nom_complete
-  - est défini: p2_arrivee_adresse
-  - est défini: p2_arrivee_code_postal
-  - est défini: p2_arrivee_commune
+  - toutes ces conditions:
+    - est défini: p2_arrivee_adresse
+    - p2_arrivee_adresse != ''
+  - toutes ces conditions:
+    - est défini: p2_arrivee_code_postal
+    - p2_arrivee_code_postal != ''
+  - toutes ces conditions:
+    - est défini: p2_arrivee_commune
+    - p2_arrivee_commune != ''
 
 p2_accident_cause_par_tiers:
   titre: Accident causé par un tiers
