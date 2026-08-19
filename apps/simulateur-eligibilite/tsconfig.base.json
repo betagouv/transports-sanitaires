@@ -2,6 +2,16 @@
   // Socle commun aux quatre projets (`app`, `node`, `server`, `tests`) : cible,
   // sémantique de module et niveau de rigueur. Chaque projet n'exprime ensuite
   // que ce qui le distingue (bibliothèques DOM, JSX, `types`, racines).
+  //
+  // `verbatimModuleSyntax` : aucun outil d'ici ne transpile en voyant le
+  // programme entier (esbuild pour Vite et Vitest, effacement de types natif
+  // pour Node). Aucun ne peut donc deviner seul qu'un import ne porte qu'un
+  // type — c'est au code de le dire.
+  //
+  // `erasableSyntaxOnly` : techniquement exigé par le seul Node, qui efface
+  // les types sans les compiler. Généralisé pour que l'app parle un seul
+  // dialecte TypeScript — `shared/` y était déjà soumis par `server`, et un
+  // fichier doit pouvoir passer d'une racine à l'autre sans changer de sens.
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
@@ -12,6 +22,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,
+
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
