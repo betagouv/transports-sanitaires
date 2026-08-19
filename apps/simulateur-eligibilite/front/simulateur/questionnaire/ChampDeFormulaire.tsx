@@ -8,6 +8,7 @@ import type {
   EvaluatedNumberInput,
   EvaluatedRadioGroup,
   EvaluatedSelect,
+  EvaluatedStringInput,
   FormPageElementProp,
 } from "@publicodes/forms";
 
@@ -31,6 +32,9 @@ export function ChampDeFormulaire({ champ, onChange }: Props) {
       )}
       {champ.element === "input" && champ.type === "number" && (
         <SaisieNombre champ={champ} onChange={onChange} />
+      )}
+      {champ.element === "input" && champ.type === "text" && (
+        <SaisieTexte champ={champ} onChange={onChange} />
       )}
     </div>
   );
@@ -122,6 +126,28 @@ function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
         min: 0,
         value: champ.value ?? champ.defaultValue ?? "",
         onChange: (e) => onChange(Number(e.target.value)),
+        autoFocus: champ.autofocus,
+      }}
+    />
+  );
+}
+
+// Les douze saisies d'adresse de la v9.1 (D1-D12). Le modèle ne les vérifie ni
+// ne les normalise — aucun contrôle d'adresse, aucune interface externe —, elles
+// ne servent qu'à préremplir le document.
+function SaisieTexte({ champ, onChange }: ChampProps<EvaluatedStringInput>) {
+  return (
+    <Input
+      label={champ.label}
+      hintText={champ.description}
+      disabled={champ.disabled}
+      classes={{ label: "fr-text--lead" }}
+      nativeInputProps={{
+        id: champ.id,
+        name: champ.id,
+        type: "text",
+        value: champ.value ?? "",
+        onChange: (e) => onChange(e.target.value),
         autoFocus: champ.autofocus,
       }}
     />

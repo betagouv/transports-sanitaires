@@ -78,6 +78,11 @@ function Etapeur({
         data-fr-current-step={current}
         data-fr-steps={pageCount}
       />
+      {/* L'avancement automatique change d'écran sans clic : le lecteur d'écran
+          doit l'annoncer, sans quoi le changement passe inaperçu. */}
+      <p className="fr-sr-only" aria-live="polite">
+        Étape {current} sur {pageCount}
+      </p>
     </div>
   );
 }
@@ -103,13 +108,17 @@ function Navigation({
           Précédent
         </button>
       )}
-      <button
-        type="submit"
-        className="fr-btn"
-        disabled={passation.questionsEnAttente}
-      >
-        {passation.parcoursTermine ? libelleFin : "Suivant"}
-      </button>
+      {/* Une page à choix unique avance d'elle-même : lui donner un bouton de
+          validation contredirait le geste qu'on attend de l'utilisateur. */}
+      {!passation.avancerSeul && (
+        <button
+          type="submit"
+          className="fr-btn"
+          disabled={passation.questionsEnAttente}
+        >
+          {passation.parcoursTermine ? libelleFin : "Suivant"}
+        </button>
+      )}
     </div>
   );
 }

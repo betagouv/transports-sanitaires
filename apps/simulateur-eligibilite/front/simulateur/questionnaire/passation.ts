@@ -1,6 +1,7 @@
 // Pilotage d'un parcours de questions `@publicodes/forms` : l'état dérivé du
-// formulaire, ce qu'il reste à répondre, la navigation entre pages, et le suivi
-// analytics qui les accompagne. Le rendu, lui, est dans `Parcours.tsx`.
+// formulaire, ce qu'il reste à répondre et la navigation entre pages. Le rendu
+// est dans `Parcours.tsx`, l'avancement automatique dans
+// `avancement-automatique.ts`, le suivi analytics dans `suivi-de-parcours.ts`.
 
 import type {
   EvaluatedFormElement,
@@ -9,16 +10,17 @@ import type {
 } from "@publicodes/forms";
 import { FormBuilder } from "@publicodes/forms";
 import type { Situation } from "publicodes";
-import { type RefObject, useEffect, useRef, useState } from "react";
-import {
-  trackSimulationAbandon,
-  trackSimulationComplete,
-  trackSimulationStart,
-  trackSimulationStep,
-} from "../../analytics/evenements";
+import { type RefObject, useEffect, useState } from "react";
 import { moteur } from "../moteur";
+import type { AvancementAutomatique } from "./avancement-automatique";
+import {
+  pageAChoixUnique,
+  useAvancementAutomatique,
+} from "./avancement-automatique";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
+import type { SuiviDeParcours } from "./suivi-de-parcours";
+import { useSuiviDeParcours } from "./suivi-de-parcours";
 
 export type Champ = EvaluatedFormElement & FormPageElementProp;
 
@@ -33,7 +35,11 @@ export type Options = {
   // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions
   // correspondantes ne sont pas reposées.
   situationInitiale?: Situation<string>;
-  onTermine: (situation: Situation<string>) => void;
+  // Reprise d'un parcours déjà mené — le retour depuis une page de résultat.
+  // Le questionnaire rouvre sur sa dernière page, réponses intactes, et le
+  // suivi analytics ne réémet pas un début de simulation.
+  etatInitial?: FormState<string>;
+  onTermine: (situation: Situation<string>, etat: FormState<string>) => void;
 };
 
 type Etat = {
@@ -51,6 +57,9 @@ type Etat = {
   questionsEnAttente: boolean;
   // Avancer conclura le parcours au lieu d'ouvrir une page de plus.
   parcoursTermine: boolean;
+  // La page n'est faite que de choix uniques : elle relève de l'avancement
+  // automatique, et non du bouton « Suivant » (cf. `useAvancementAutomatique`).
+  pageAChoixUnique: boolean;
 };
 
 type Actions = {
@@ -60,29 +69,36 @@ type Actions = {
   reculer: () => void;
 };
 
-export type Passation = Etat & Actions;
+export type Passation = Etat &
+  Actions & {
+    // La page avancera d'elle-même : le bouton « Suivant » n'a pas à s'afficher.
+    avancerSeul: boolean;
+  };
 
 // Un même moteur amorcé avec une situation initiale différente produit deux
 // questionnaires distincts (Partie 1 vs Partie 2), sans logique dédiée.
 export function usePassation(options: Options): Passation {
   const [formState, setFormState] = useState<FormState<string>>(() =>
-    formBuilder.start(
-      FormBuilder.newState(options.situationInitiale),
-      ...options.cibles,
-    ),
+    etatDeDepart(options),
   );
   const etat = lireEtat(formState);
-  const termineRef = useSuiviAnalytics(
+  const suivi = useSuiviDeParcours(
     options.outil,
     etat.current,
-    !etat.aucuneQuestion,
+    // Une reprise ne réémet pas un début de simulation : c'est le même parcours.
+    !etat.aucuneQuestion && options.etatInitial === undefined,
   );
-  useConclusionSansQuestion(etat, formState, options, termineRef);
+  useConclusionSansQuestion(etat, formState, options, suivi.termine);
 
-  return {
-    ...etat,
-    ...actions({ formState, setFormState, etat, options, termineRef }),
-  };
+  const gestes = actions({ formState, setFormState, etat, options, suivi });
+  const avancement = useAvancementAutomatique(
+    etat.current,
+    etat.pageAChoixUnique,
+    etat.questionsEnAttente,
+    gestes.avancer,
+  );
+
+  return { ...etat, ...avecRelance(gestes, avancement) };
 }
 
 // ---- implémentation ----
@@ -100,7 +116,7 @@ type Contexte = {
   setFormState: (etat: FormState<string>) => void;
   etat: Etat;
   options: Options;
-  termineRef: RefObject<boolean>;
+  suivi: SuiviDeParcours;
 };
 
 function lireEtat(formState: FormState<string>): Etat {
@@ -121,7 +137,18 @@ function lireEtat(formState: FormState<string>): Etat {
     aucuneQuestion: !hasNextPage && page.elements.length === 0,
     questionsEnAttente,
     parcoursTermine: !hasNextPage && !questionsEnAttente,
+    pageAChoixUnique: pageAChoixUnique(page.elements),
   };
+}
+
+function etatDeDepart(options: Options): FormState<string> {
+  return (
+    options.etatInitial ??
+    formBuilder.start(
+      FormBuilder.newState(options.situationInitiale),
+      ...options.cibles,
+    )
+  );
 }
 
 function actions({
@@ -129,7 +156,7 @@ function actions({
   setFormState,
   etat,
   options,
-  termineRef,
+  suivi,
 }: Contexte): Actions {
   return {
     repondre: (id, valeur) =>
@@ -143,15 +170,29 @@ function actions({
       // question posée reste sans réponse — le bouton est déjà désactivé, ceci
       // couvre une soumission clavier éventuelle.
       if (etat.questionsEnAttente) return;
-      if (!etat.hasNextPage) return conclure(formState, options, termineRef);
+      if (!etat.hasNextPage) return conclure(formState, options, suivi);
       const suivante = formBuilder.goToNextPage(formState);
       setFormState(suivante);
-      trackSimulationStep(
-        formBuilder.pagination(suivante).current,
-        options.outil,
-      );
+      suivi.etapeFranchie(formBuilder.pagination(suivante).current);
     },
     reculer: () => setFormState(pagePrecedente(formState)),
+  };
+}
+
+// Toute saisie relance l'avancement automatique — y compris au retour sur une
+// page déjà répondue, où il avait rendu la main au bouton « Suivant ».
+function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
+  return {
+    ...gestes,
+    avancerSeul: avancement.avancerSeul,
+    repondre: (id: string, valeur: unknown) => {
+      avancement.aLaSaisie();
+      gestes.repondre(id, valeur);
+    },
+    repondrePlusieurs: (reponses: Reponses) => {
+      avancement.aLaSaisie();
+      gestes.repondrePlusieurs(reponses);
+    },
   };
 }
 
@@ -217,11 +258,10 @@ function pagePrecedente(formState: FormState<string>): FormState<string> {
 function conclure(
   formState: FormState<string>,
   options: Options,
-  termineRef: RefObject<boolean>,
+  suivi: SuiviDeParcours,
 ) {
-  termineRef.current = true;
-  trackSimulationComplete(options.outil);
-  options.onTermine(formState.situation);
+  suivi.parcoursConclu();
+  options.onTermine(formState.situation, formState);
 }
 
 // Parcours court (ex. cas tranché dès la Partie 1) : aucune question à poser,
@@ -236,34 +276,9 @@ function useConclusionSansQuestion(
   useEffect(() => {
     if (aucuneQuestion && !termineRef.current) {
       termineRef.current = true;
-      options.onTermine(formState.situation);
+      options.onTermine(formState.situation, formState);
     }
   }, [aucuneQuestion, formState, options, termineRef]);
-}
-
-// Début du parcours, et abandon si l'onglet est quitté avant la fin. Le ref
-// retourné dit si le parcours s'est conclu — sans lui, l'abandon serait émis
-// même après une fin normale.
-function useSuiviAnalytics(outil: string, current: number, actif: boolean) {
-  const termineRef = useRef(false);
-  // Refs pour éviter les valeurs périmées dans le gestionnaire : déclarer
-  // `actif` et `outil` en dépendances rejouerait `simulation_start` à chaque
-  // changement, `currentRef` existe justement pour lire la valeur fraîche sans
-  // redéclarer l'écouteur.
-  const currentRef = useRef(current);
-  currentRef.current = current;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: amorçage unique au montage
-  useEffect(() => {
-    if (!actif) return;
-    trackSimulationStart(outil);
-    const onLeave = () => {
-      if (!termineRef.current)
-        trackSimulationAbandon(currentRef.current, outil);
-    };
-    window.addEventListener("pagehide", onLeave);
-    return () => window.removeEventListener("pagehide", onLeave);
-  }, []);
-  return termineRef;
 }
 
 type ValeurSaisie = string | number | boolean | undefined;

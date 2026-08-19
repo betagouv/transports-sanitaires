@@ -122,9 +122,10 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
 
     const encadre = screen.getByRole("region", ENCADRE);
     expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
-    // Le bouton de navigation du parcours reste au-dehors.
+    // L'étapeur du parcours reste au-dehors. (La première question est à choix
+    // unique : elle n'a pas de bouton de navigation, elle avance d'elle-même.)
     expect(encadre).not.toContainElement(
-      screen.getByRole("button", { name: /^suivant$/i }),
+      screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     );
   });
 

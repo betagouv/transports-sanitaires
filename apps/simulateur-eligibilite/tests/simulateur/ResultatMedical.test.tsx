@@ -53,18 +53,19 @@ describe("prescripteur — résultat médical", () => {
   it("décision établie : le bloc patient liste critères et cas particuliers retenus", async () => {
     const user = afficher();
 
-    // Q1 : besoin d'un professionnel → Q1.1 est posée.
+    // Q1 : besoin d'un professionnel → Q1.1 est posée. Choix unique : la page
+    // avance d'elle-même, sans bouton.
     await user.click(
       within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
         "radio",
         { name: /prise en charge spécifique/i },
       ),
     );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    const aides = await screen.findByRole("group", { name: AIDES });
 
     // Q1.1 : un critère d'ambulance → attendu dans les critères retenus.
     await user.click(
-      within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
+      within(aides).getByRole("checkbox", {
         name: /administration d’oxygène/i,
       }),
     );

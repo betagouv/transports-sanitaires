@@ -9,7 +9,7 @@
 // exclusive pour une mosaïque, la première possibilité pour un choix unique, et
 // un texte quelconque pour une saisie libre.
 
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
 
 type User = ReturnType<typeof userEvent.setup>;
@@ -30,19 +30,36 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
     await completerGroupe(user, groupe);
   for (const champ of screen.queryAllByRole("textbox"))
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "x");
+  for (const champ of screen.queryAllByRole("spinbutton"))
+    if ((champ as HTMLInputElement).value === "") await user.type(champ, "1");
 }
 
-/** Remplit le parcours page par page jusqu'au bouton de fin (tout sauf « Suivant »). */
+/**
+ * Remplit le parcours page par page jusqu'à sa conclusion. Trois façons d'en
+ * sortir, selon la page : cliquer « Suivant », cliquer le bouton de fin, ou —
+ * sur une page à choix unique — attendre qu'elle avance d'elle-même.
+ */
 export async function terminerParcours(user: User, reponses: Reponse[]) {
   for (let i = 0; i < 40; i++) {
+    const etapeAvant = etape();
     await repondrePage(user, reponses);
+
     const suivant = screen.queryByRole("button", { name: /^suivant$/i });
     if (suivant) {
       await user.click(suivant);
       continue;
     }
-    await user.click(screen.getByRole("button", { name: /^voir|^compléter/i }));
-    return;
+    const fin = screen.queryByRole("button", { name: /^voir|^compléter/i });
+    if (fin) {
+      await user.click(fin);
+      return;
+    }
+    // Avancement automatique : aucun bouton, la page part seule au bout de
+    // 200 ms — vers la suivante, ou vers le résultat si c'était la dernière.
+    await waitFor(() => {
+      if (etape() === etapeAvant) throw new Error("la page n'a pas avancé");
+    });
+    if (etape() === null) return;
   }
   throw new Error("parcours non terminé après 40 pages");
 }
@@ -89,4 +106,13 @@ async function completerMosaique(user: User, cases: HTMLElement[]) {
   if (cases.some((c) => (c as HTMLInputElement).checked)) return;
   const exclusive = cases[cases.length - 1];
   if (exclusive) await user.click(exclusive);
+}
+
+// L'étape affichée par l'étapeur, ou `null` s'il n'y en a plus — le parcours est
+// alors conclu et une page de résultat a pris sa place.
+function etape(): string | null {
+  return (
+    screen.queryByRole("heading", { name: /^étape \d+ sur \d+$/i })
+      ?.textContent ?? null
+  );
 }

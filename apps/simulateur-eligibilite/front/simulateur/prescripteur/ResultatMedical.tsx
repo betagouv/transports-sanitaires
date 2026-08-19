@@ -20,14 +20,19 @@ type Props = {
   situation: Situation<string>;
   onContinuer: () => void;
   onRecommencer: () => void;
+  /** Retour au questionnaire. Absent quand aucun parcours ne précède (seed). */
+  onPrecedent?: () => void;
 };
 
-// Le transport prescrit est figé ici : le secrétariat ne peut plus le modifier
-// (verrou structurel — il ne pose aucune question de Partie 1).
+// La décision affichée ici n'est pas encore figée : c'est l'action principale
+// qui la verrouille. Une fois franchie, le secrétariat ne peut plus la modifier
+// (verrou structurel — il ne pose aucune question de Partie 1) ni revenir en
+// deçà : seule une nouvelle simulation remet tout à zéro.
 export function ResultatMedical({
   situation,
   onContinuer,
   onRecommencer,
+  onPrecedent,
 }: Props) {
   const e = moteur.setSituation(situation);
   const casFinal = texte(e, "cible_cas_final");
@@ -45,7 +50,12 @@ export function ResultatMedical({
         libelleSuite={libelleSuite(e)}
         onContinuer={onContinuer}
         onRecommencer={onRecommencer}
+        onPrecedent={onPrecedent}
       />
+      <p className="fr-hint-text">
+        La décision médicale sera figée dès que vous aurez choisi «{" "}
+        {libelleSuite(e)} » : elle ne pourra plus être modifiée ensuite.
+      </p>
       <TraceDebug
         titre="résultat médical"
         situation={situation}
@@ -187,25 +197,37 @@ function MentionsDuVehicule({ e }: { e: typeof moteur }) {
   );
 }
 
-// Les deux suites possibles depuis le résultat médical : repartir de zéro, ou
-// poursuivre — vers la Partie 2 si elle est requise, vers le résultat sinon.
+// Les trois suites possibles depuis le résultat médical : revenir au
+// questionnaire tant que rien n'est figé, repartir de zéro, ou poursuivre —
+// vers la Partie 2 si elle est requise, vers le résultat sinon.
 function SuiteDuParcours({
   libelleSuite,
   onContinuer,
   onRecommencer,
+  onPrecedent,
 }: {
   libelleSuite: string;
   onContinuer: () => void;
   onRecommencer: () => void;
+  onPrecedent?: () => void;
 }) {
   return (
     <div className="fr-btns-group fr-btns-group--inline">
+      {onPrecedent && (
+        <button
+          type="button"
+          className="fr-btn fr-btn--secondary"
+          onClick={onPrecedent}
+        >
+          Précédent
+        </button>
+      )}
       <button
         type="button"
         className="fr-btn fr-btn--secondary"
         onClick={onRecommencer}
       >
-        Nouvelle simulation
+        Faire une nouvelle simulation
       </button>
       <button type="button" className="fr-btn" onClick={onContinuer}>
         {libelleSuite}

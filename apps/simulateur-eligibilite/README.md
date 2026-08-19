@@ -98,6 +98,25 @@ Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
 | Le code ne compare qu'à des **valeurs** existantes | `tests/regles-front.test.ts › valeurs comparées aux sorties du moteur` — c'est la seule garde contre une reformulation en amont, que le typage ne voit pas |
 | Chaque cas final est traité par les trois blocs de la Page Résultat 2 | `tests/regles-front.test.ts › exhaustivité de la Page Résultat 2` |
 
+### Deux comportements que le modèle ne porte pas
+
+Le contrat d'interface 2.0.0 décrit deux règles que le moteur ne peut pas
+appliquer seul — il calcule les cibles, il ne pilote ni les écrans ni ce qui
+reste modifiable :
+
+- **L'avancement automatique.** Une page qui n'est faite que de choix uniques
+  avance seule 200 ms après avoir été répondue, sans bouton « Suivant ». Au
+  **retour** sur une page déjà répondue, elle rend la main au bouton — faute de
+  quoi « Précédent » renverrait aussitôt d'où l'on vient — et modifier la
+  réponse relance l'avancement. Tout est dans
+  `questionnaire/avancement-automatique.ts`.
+- **Le verrouillage de la décision médicale.** Elle n'est *pas* figée à
+  l'ouverture du Résultat 1 : « Précédent » y rouvre le questionnaire sur sa
+  dernière page, réponses intactes. C'est l'action principale qui verrouille, et
+  elle est irréversible — la Partie 2 ne repose aucune question de Partie 1 et
+  son « Précédent » ne descend jamais sous sa première page. Seule une nouvelle
+  simulation remet tout à zéro.
+
 ### Le correctif local à la v9.1
 
 Le modèle livré déclare les **douze saisies d'adresse** (`p2_depart_*`,
@@ -157,8 +176,12 @@ front/                   front (bundlé par Vite)
     moteur.ts            moteur publicodes (règles officielles ou labo) +
                          `texte()` / `vrai()`, les deux lectures typées
     passation.ts         la couture prescripteur → secrétariat
-    questionnaire/       Parcours.tsx (stepper + FormBuilder)  FormField.tsx
+    questionnaire/       Parcours.tsx (stepper + FormBuilder)
+                         ChampDeFormulaire.tsx  ChampsDePage.tsx
                          Mosaique.tsx  mosaique.ts
+                         passation.ts  l'état du parcours et ses gestes
+                         avancement-automatique.ts  les 200 ms du contrat 2.0.0
+                         suivi-de-parcours.ts  ce qui part vers l'analytics
     resultat/            Vulgarisation.tsx (dictionnaire patient)
                          InformationPatient.tsx  TraceDebug.tsx
     prescripteur/        Prescripteur.tsx  ResultatMedical.tsx (Partie 1 → Résultat 1)

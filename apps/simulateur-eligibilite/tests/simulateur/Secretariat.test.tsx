@@ -1,8 +1,10 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
+import { terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -14,6 +16,14 @@ const BARIATRIQUE = {
   p1_m0_bariatrique: "oui",
   p1_m0_aucun: "non",
 };
+
+/** Une Partie 1 seule — et rien d'autre : la Partie 2 reste entière à poser. */
+const PARTIE_1_AMBULANCE = Object.fromEntries(
+  Object.entries(BASE_NEUTRE).filter(([cle]) => cle.startsWith("p1_")),
+) as Record<string, string>;
+PARTIE_1_AMBULANCE.p1_autonomie =
+  "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
+PARTIE_1_AMBULANCE.p1_critere_oxygene = "oui";
 
 describe("secrétariat — parcours administratif", () => {
   it("sans passation : invite à commencer par l'évaluation médicale", () => {
@@ -139,4 +149,26 @@ describe("secrétariat — parcours administratif", () => {
       }),
     ).toBeNull();
   });
+
+  it("traverse la Partie 2 jusqu'au résultat, saisies d'adresse comprises", async () => {
+    // Le seul test qui parcourt la Partie 2 de bout en bout : c'est lui qui voit
+    // les douze saisies libres d'adresse (D1-D12), rendues en champs texte.
+    //
+    // `delay: null` : sans lui, la temporisation par défaut de user-event
+    // s'ajoute aux 200 ms d'avancement automatique de chaque page à choix
+    // unique, et le parcours entier ne tient plus dans le délai d'un test.
+    const user = userEvent.setup({ delay: null });
+    // La passation ne porte que la Partie 1 : reprendre la base neutre entière
+    // répondrait aussi à la Partie 2, et il n'y aurait plus rien à demander.
+    emettrePassation(PARTIE_1_AMBULANCE);
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    await terminerParcours(user, [
+      [/dans quel contexte/i, /entrée ou sortie d’hospitalisation/i],
+    ]);
+
+    expect(
+      screen.getByRole("heading", { name: /document à imprimer/i }),
+    ).toBeInTheDocument();
+  }, 20_000);
 });

@@ -1,4 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
@@ -28,12 +33,16 @@ function afficher() {
 }
 
 const questionQ1 = () => screen.getByRole("group", { name: /^le patient/i });
-const suivant = () => screen.getByRole("button", { name: /^suivant$/i });
 const voirResultat = () =>
   screen.getByRole("button", { name: /voir le résultat médical/i });
 
+// Q1 est une question à choix unique : elle n'a pas de bouton « Suivant », elle
+// avance d'elle-même 200 ms après la réponse. On attend donc la page d'après.
 async function repondreQ1(user: ReturnType<typeof afficher>, option: RegExp) {
   await user.click(within(questionQ1()).getByRole("radio", { name: option }));
+  await waitForElementToBeRemoved(() =>
+    screen.queryByRole("group", { name: /^le patient/i }),
+  );
 }
 
 describe("prescripteur — parcours médical", () => {
@@ -44,26 +53,38 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
   });
 
-  it("n'affiche pas « Voir le résultat médical » tant que le parcours n'est pas terminé", async () => {
+  it("Q1 n'a aucun bouton : elle avance d'elle-même une fois répondue", async () => {
     const user = afficher();
 
-    // 1re page, question non répondue : bien que le moteur n'ait pas encore de
-    // page suivante (le séquencement conditionnel dépend de la réponse), le
-    // bouton de fin ne doit pas apparaître. Le bouton d'avancement reste
-    // « Suivant » et est désactivé (« toute question posée doit être répondue »).
+    // Une question à choix unique se passe de validation (contrat d'interface
+    // 2.0.0) : ni « Suivant », ni bouton de fin, à aucun moment de la page.
+    expect(screen.queryByRole("button", { name: /^suivant$/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
-    expect(suivant()).toBeDisabled();
 
-    // Après réponse, une page suivante existe : toujours pas de bouton de fin.
     await repondreQ1(user, PROFESSIONNEL);
-    expect(screen.queryByRole("button", { name: /voir/i })).toBeNull();
-    expect(suivant()).toBeEnabled();
+    expect(screen.getByRole("group", { name: AIDES })).toBeInTheDocument();
+  });
+
+  it("le retour rend la main au bouton, et modifier la réponse la reprend", async () => {
+    const user = afficher();
+    await repondreQ1(user, PROFESSIONNEL);
+    await user.click(screen.getByRole("button", { name: /précédent/i }));
+
+    // Page déjà répondue : elle n'avance plus seule, sans quoi « Précédent »
+    // renverrait aussitôt d'où l'on vient. Le bouton « Suivant » reprend la main.
+    expect(screen.getByRole("button", { name: /^suivant$/i })).toBeEnabled();
+    expect(
+      screen.getByRole("group", { name: /^le patient/i }),
+    ).toBeInTheDocument();
+
+    // Modifier la réponse relance l'avancement automatique.
+    await repondreQ1(user, AUTONOME);
+    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
   });
 
   it("Q1.1 : une seule question à cases à cocher, avec exclusivité « Aucune »", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
-    await user.click(suivant());
 
     const aides = screen.getByRole("group", { name: AIDES });
     const oxygene = within(aides).getByRole("checkbox", { name: /oxygène/i });
@@ -89,7 +110,6 @@ describe("prescripteur — parcours médical", () => {
   it("Q1.1 : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
-    await user.click(suivant());
 
     // La mosaïque fige toutes ses options dans la situation à chaque clic ; une
     // fois « répondues » au sens de @publicodes/forms, un coche→décoche laisse le
@@ -104,13 +124,12 @@ describe("prescripteur — parcours médical", () => {
     expect(oxygene).not.toBeChecked();
 
     expect(screen.queryByRole("button", { name: /^voir/i })).toBeNull();
-    expect(suivant()).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^suivant$/i })).toBeDisabled();
   });
 
   it("un patient autonome saute Q1.1 et obtient le véhicule personnel", async () => {
     const user = afficher();
     await repondreQ1(user, AUTONOME);
-    await user.click(suivant());
 
     // Q1.1 n'est pas posée : on passe droit aux cas particuliers médicaux.
     expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
@@ -134,13 +153,12 @@ describe("prescripteur — parcours médical", () => {
   it("une aide menant au VSL fait poser la question du transport partagé", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
-    await user.click(suivant());
     await user.click(
       within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
         name: /règles d’hygiène ou la désinfection/i,
       }),
     );
-    await user.click(suivant());
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 
     // Le mode retenu est un VSL ou taxi conventionné : M4 devient applicable et,
     // la sortie étant ciblée, la question est posée.
@@ -152,12 +170,10 @@ describe("prescripteur — parcours médical", () => {
   it("retour : changer Q1 recalcule la suite (pas de page suivante figée)", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
-    await user.click(suivant());
     expect(screen.getByRole("group", { name: AIDES })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /précédent/i }));
     await repondreQ1(user, PROCHE);
-    await user.click(suivant());
 
     // La page « aides et conditions particulières » ne doit plus être figée dans
     // l'état : le parcours se recalcule et passe droit aux cas particuliers.
