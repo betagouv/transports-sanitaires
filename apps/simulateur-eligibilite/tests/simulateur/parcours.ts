@@ -11,8 +11,23 @@
 
 import { screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
+import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 
 type User = ReturnType<typeof userEvent.setup>;
+
+/**
+ * Une Partie 1 seule — et rien d'autre : passée au secrétariat, elle laisse la
+ * Partie 2 entière à poser. Reprendre la base neutre complète répondrait aussi
+ * aux questions administratives, et il n'y aurait plus de parcours à conduire.
+ */
+export const PARTIE_1_AMBULANCE: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(BASE_NEUTRE).filter(([cle]) => cle.startsWith("p1_")),
+  ),
+  p1_autonomie:
+    "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
+  p1_critere_oxygene: "oui",
+};
 
 /**
  * Ce qu'un test veut voir coché. Deux formes, selon la question :
@@ -34,37 +49,62 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "1");
 }
 
-/**
- * Remplit le parcours page par page jusqu'à sa conclusion. Trois façons d'en
- * sortir, selon la page : cliquer « Suivant », cliquer le bouton de fin, ou —
- * sur une page à choix unique — attendre qu'elle avance d'elle-même.
- */
+/** Remplit le parcours page par page jusqu'à sa conclusion. */
 export async function terminerParcours(user: User, reponses: Reponse[]) {
-  for (let i = 0; i < 40; i++) {
-    const etapeAvant = etape();
-    await repondrePage(user, reponses);
-
-    const suivant = screen.queryByRole("button", { name: /^suivant$/i });
-    if (suivant) {
-      await user.click(suivant);
-      continue;
-    }
-    const fin = screen.queryByRole("button", { name: /^voir|^compléter/i });
-    if (fin) {
-      await user.click(fin);
-      return;
-    }
-    // Avancement automatique : aucun bouton, la page part seule au bout de
-    // 200 ms — vers la suivante, ou vers le résultat si c'était la dernière.
-    await waitFor(() => {
-      if (etape() === etapeAvant) throw new Error("la page n'a pas avancé");
-    });
-    if (etape() === null) return;
-  }
+  for (let i = 0; i < 40; i++)
+    if (!(await avancerDUnePage(user, reponses))) return;
   throw new Error("parcours non terminé après 40 pages");
 }
 
+/**
+ * Traverse le parcours jusqu'à la page qui pose `groupe`, sans y répondre : au
+ * retour, la question est affichée et intacte. Les autres questions rencontrées
+ * en chemin sont réglées par `reponses`, ou par défaut.
+ */
+export async function allerAuGroupe(
+  user: User,
+  groupe: RegExp,
+  reponses: Reponse[] = [],
+) {
+  for (let i = 0; i < 40; i++) {
+    if (screen.queryByRole("group", { name: groupe })) return;
+    if (!(await avancerDUnePage(user, reponses))) break;
+  }
+  throw new Error(`question jamais posée : ${groupe}`);
+}
+
 // ---- implémentation ----
+
+/**
+ * Répond à la page courante et en sort. Trois façons d'en sortir, selon la
+ * page : cliquer « Suivant », cliquer le bouton de fin, ou — sur une page à
+ * choix unique — attendre qu'elle avance d'elle-même. Rend `false` quand le
+ * parcours est conclu, `true` quand une page de plus a pris la main.
+ */
+async function avancerDUnePage(
+  user: User,
+  reponses: Reponse[],
+): Promise<boolean> {
+  const etapeAvant = etape();
+  await repondrePage(user, reponses);
+
+  const suivant = screen.queryByRole("button", { name: /^suivant$/i });
+  if (suivant) {
+    await user.click(suivant);
+    return true;
+  }
+  const fin = screen.queryByRole("button", { name: /^voir|^compléter/i });
+  if (fin) {
+    await user.click(fin);
+    return false;
+  }
+  // Avancement automatique : aucun bouton, la page part seule au bout de
+  // 200 ms — vers la suivante, ou vers le résultat si c'était la dernière.
+  await waitFor(() => {
+    if (etape() === etapeAvant) throw new Error("la page n'a pas avancé");
+  });
+  return etape() !== null;
+}
 
 // Une réponse ciblée. Sans `valeur`, `question` nomme directement l'option — le
 // cas d'une mosaïque, dont les cases portent l'énoncé complet. Avec `valeur`, la

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { repondrePage, terminerParcours } from "./parcours";
+import { PARTIE_1_AMBULANCE, repondrePage, terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -16,14 +16,6 @@ const BARIATRIQUE = {
   p1_m0_bariatrique: "oui",
   p1_m0_aucun: "non",
 };
-
-/** Une Partie 1 seule — et rien d'autre : la Partie 2 reste entière à poser. */
-const PARTIE_1_AMBULANCE = Object.fromEntries(
-  Object.entries(BASE_NEUTRE).filter(([cle]) => cle.startsWith("p1_")),
-) as Record<string, string>;
-PARTIE_1_AMBULANCE.p1_autonomie =
-  "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
-PARTIE_1_AMBULANCE.p1_critere_oxygene = "oui";
 
 describe("secrétariat — parcours administratif", () => {
   it("M1.1 porte le rappel sur la portée de la Partie 2, et elle seule", async () => {
