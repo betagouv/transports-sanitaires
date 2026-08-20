@@ -13,6 +13,17 @@ export default defineConfig({
     "import.meta.env.VITE_SHA_COMMIT": JSON.stringify(shaDuCommit()),
     "import.meta.env.VITE_VERSION_REGLES": JSON.stringify(versionDesRegles()),
   },
+  // `pdf-lib` n'est atteint que par import dynamique (`cerfa.ts` charge
+  // `remplir-cerfa.ts`, qui seul l'importe) : le scanner de dépendances de Vite,
+  // qui ne suit que les imports statiques depuis l'entrée, ne le voit pas au
+  // démarrage. Il le découvrait donc au **premier clic** sur « Télécharger la
+  // prescription », relançait le pré-bundling, et l'import en vol échouait sur un
+  // `/node_modules/.vite/deps/pdf-lib.js?v=…` devenu caduc — d'où un « document
+  // impossible à générer » qui n'existait qu'en dev. Le déclarer ici le fait
+  // pré-bundler au lancement du serveur. Sans effet sur la production : ce
+  // réglage ne concerne que le serveur de dev, et le découpage du build (vérifié
+  // par `verifier-bundle`) reste intact.
+  optimizeDeps: { include: ["pdf-lib"] },
   // En dev, l'API (référentiel + contexte) est servie par le backend Express
   // (port 3000) ; Vite proxifie `/api` pour reproduire le same-origin de la prod.
   server: {
