@@ -71,6 +71,7 @@ export const QUESTIONS = [
   "p2_arrivee_nom_lieu",
   "p2_arrivee_pays",
   "p2_chaque_trajet_aller_superieur_50km",
+  "p2_contexte_administratif",
   "p2_contexte_at_mp",
   "p2_contexte_aucun",
   "p2_contexte_hospitalisation",

@@ -51,6 +51,14 @@ export function Secretariat({
 
 // ---- implémentation ----
 
+// M1.1 ouvre la Partie 2 : c'est là qu'il faut dire ce que cette partie peut, et
+// surtout ne peut pas, changer — le mode de transport est arrêté en Partie 1.
+const RAPPEL_PORTEE_ADMINISTRATIVE = {
+  question: "p2_contexte_administratif",
+  texte:
+    "Les réponses apportées dans cette partie déterminent le régime de prise en charge et le document à utiliser. Elles ne peuvent pas modifier le mode de transport validé par le prescripteur.",
+} as const;
+
 // Partie 2 du questionnaire : la Partie 1 étant déjà répondue, `Parcours` ne
 // pose que les questions administratives — et bascule droit au résultat quand le
 // cas était déjà tranché en Partie 1.
@@ -69,6 +77,7 @@ function Qualification({
         cibles={["cible_cas_final", "cible_document_a_remettre_au_patient"]}
         situationInitiale={situationP1}
         libelleFin="Voir le document à remettre au patient"
+        bandeau={RAPPEL_PORTEE_ADMINISTRATIVE}
         onTermine={(s) => {
           onTermine(s);
           trackResultat(

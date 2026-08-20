@@ -4,6 +4,7 @@
 
 import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { ChampsDePage } from "./ChampsDePage";
+import { mosaiqueDe } from "./mosaique";
 import type { Champ, Options } from "./passation";
 import { usePassation } from "./passation";
 import { TraceParcours } from "./TraceParcours";
@@ -65,7 +66,9 @@ function Debug({
   );
 }
 
-// Le bandeau ne s'affiche que sur la page où sa question est posée.
+// Le bandeau ne s'affiche que sur la page où sa question est posée. Une
+// mosaïque se désigne par sa règle parente — celle qui porte l'intitulé —, pas
+// par l'une de ses options.
 function Bandeau({
   bandeau,
   champs,
@@ -74,7 +77,10 @@ function Bandeau({
   champs: readonly Champ[];
 }) {
   if (!bandeau) return null;
-  if (!champs.some((champ) => champ.id === bandeau.question)) return null;
+  const porteLaQuestion = (champ: Champ) =>
+    champ.id === bandeau.question ||
+    mosaiqueDe(champ.id)?.parentId === bandeau.question;
+  if (!champs.some(porteLaQuestion)) return null;
   return (
     <div
       className="fr-alert fr-alert--info fr-alert--sm"

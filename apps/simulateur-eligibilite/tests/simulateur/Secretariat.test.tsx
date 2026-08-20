@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { terminerParcours } from "./parcours";
+import { repondrePage, terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -26,6 +26,24 @@ PARTIE_1_AMBULANCE.p1_autonomie =
 PARTIE_1_AMBULANCE.p1_critere_oxygene = "oui";
 
 describe("secrétariat — parcours administratif", () => {
+  it("M1.1 porte le rappel sur la portée de la Partie 2, et elle seule", async () => {
+    const user = userEvent.setup({ delay: null });
+    emettrePassation(PARTIE_1_AMBULANCE);
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    const rappel = /ne peuvent pas modifier le mode de transport/i;
+    const contexte = /dans quel contexte/i;
+    expect(screen.getByRole("group", { name: contexte })).toBeInTheDocument();
+    expect(screen.getByText(rappel)).toBeInTheDocument();
+
+    await repondrePage(user, [
+      [contexte, /entrée ou sortie d’hospitalisation/i],
+    ]);
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    expect(screen.queryByRole("group", { name: contexte })).toBeNull();
+    expect(screen.queryByText(rappel)).toBeNull();
+  });
+
   it("sans passation : invite à commencer par l'évaluation médicale", () => {
     render(<Secretariat onNouvelleSimulation={() => {}} />);
     expect(
