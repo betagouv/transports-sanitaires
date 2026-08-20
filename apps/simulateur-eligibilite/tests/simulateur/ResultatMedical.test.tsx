@@ -118,4 +118,25 @@ describe("prescripteur — résultat médical", () => {
       screen.queryByRole("heading", { name: /critères médicaux retenus/i }),
     ).toBeNull();
   });
+
+  // Le verrou de la décision médicale ne s'annonce pas : l'écran nomme l'action
+  // à venir, il ne décrit pas ce qu'elle rendra impossible. La phrase était
+  // affichée sous les boutons du cas courant — précisément celui que ce test
+  // atteint, seul endroit où elle a jamais pu apparaître.
+  it("n’annonce pas que la décision sera figée", async () => {
+    const user = afficher();
+
+    await terminerParcours(user, [
+      [/^le patient/i, /prise en charge spécifique/i],
+      [/administration d’oxygène/i],
+    ]);
+
+    expect(
+      screen.getByRole("button", {
+        name: /compléter la partie administrative/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/figée/i)).toBeNull();
+    expect(screen.queryByText(/ne pourra plus être modifiée/i)).toBeNull();
+  });
 });

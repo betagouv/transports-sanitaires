@@ -30,6 +30,10 @@ type Props = {
 // structurel — il ne pose aucune question de Partie 1) ni revenir en deçà. Sans
 // question administrative, le document n'a rien entre lui et cet écran : son
 // « Précédent » y ramène.
+//
+// Ce verrou ne s'annonce pas à l'écran : l'interface n'avertit pas d'une
+// conséquence avant qu'elle survienne, elle se contente de nommer l'action. Le
+// « Précédent » de cette page dit déjà ce qui reste ouvert.
 export function ResultatMedical({
   situation,
   onContinuer,
@@ -54,7 +58,6 @@ export function ResultatMedical({
         onRecommencer={onRecommencer}
         onPrecedent={onPrecedent}
       />
-      <AvertissementDeVerrou e={e} />
       <TraceDebug
         titre="résultat médical"
         situation={situation}
@@ -65,20 +68,6 @@ export function ResultatMedical({
 }
 
 // ---- implémentation ----
-
-// Ce qui fige la décision, c'est d'entrer dans les pages de la Partie 2 : leurs
-// réponses ne survivraient pas à un retour en deçà, donc rien n'y ramène. Quand
-// la Partie 1 a déjà tranché, il n'y a pas de page à qualifier et le document se
-// laisse au contraire quitter par « Précédent » : plus rien à annoncer ici.
-function AvertissementDeVerrou({ e }: { e: typeof moteur }) {
-  if (texte(e, "cible_partie_2_requise") !== "oui") return null;
-  return (
-    <p className="fr-hint-text">
-      La décision médicale sera figée dès que vous aurez choisi «{" "}
-      {libelleSuite(e)} » : elle ne pourra plus être modifiée ensuite.
-    </p>
-  );
-}
 
 // La Partie 2 n'est requise que si la Partie 1 n'a pas déjà tranché.
 function libelleSuite(e: typeof moteur): string {
