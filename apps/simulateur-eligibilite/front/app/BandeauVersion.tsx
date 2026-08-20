@@ -7,19 +7,17 @@
 // prouve rien. Elles sont figées à la construction (cf. `vite.config.ts`) : le
 // navigateur n'a aucun moyen de les découvrir.
 //
-// `sticky` et non `fixed` : l'application est embarquée en iframe dans le CMS
-// (cf. `index.html`), et un pied de page fixé se collerait au bas de l'iframe —
-// c'est-à-dire n'importe où, selon la façon dont le CMS la dimensionne. En
-// `sticky`, le bandeau reste visible tant que la page défile et se pose sous le
-// contenu quand il n'y a rien à faire défiler. Il ne recouvre jamais rien.
+// Le bandeau reste dans le flux : c'est `PageDuSimulateur` qui le pousse au bas
+// de la fenêtre quand le contenu est trop court pour l'y amener, et il se
+// contente de suivre le contenu quand celui-ci défile. Ni `fixed` ni `sticky` —
+// l'application est embarquée en iframe dans le CMS (cf. `index.html`), et un
+// pied de page détaché du flux recouvrirait le contenu d'un cadre déjà court.
 
 export function BandeauVersion() {
   return (
     <footer
       className="fr-text--xs"
       style={{
-        position: "sticky",
-        bottom: 0,
         padding: "0.25rem 0",
         textAlign: "center",
         color: "var(--text-mention-grey)",

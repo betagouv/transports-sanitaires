@@ -13,7 +13,7 @@
 // premier passe la main au second via la passation (situation de Partie 1).
 
 import type { Situation } from "publicodes";
-import { lazy, Suspense } from "react";
+import { lazy, type ReactNode, Suspense } from "react";
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import type { IdentiteSaisie } from "../../shared/identite-saisie";
 import type { Referentiel } from "../../shared/referentiel";
@@ -67,7 +67,7 @@ export function App({
       )}
       {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
       {navigation.ecran === "simulateur" && (
-        <>
+        <PageDuSimulateur>
           <EcranPleinePage>
             <Simulateur
               navigation={navigation}
@@ -75,13 +75,34 @@ export function App({
             />
           </EcranPleinePage>
           <BandeauVersion />
-        </>
+        </PageDuSimulateur>
       )}
     </>
   );
 }
 
 // ---- implémentation ----
+
+// La page du simulateur fait au minimum la hauteur de la fenêtre et se répartit
+// en colonne : le contenu prend la place qu'il lui faut, le pied de page se pose
+// au bas. Sans cela, sur un écran où le contenu est court, le bandeau de version
+// flotte au milieu du vide au lieu de fermer la page.
+//
+// `100dvh` et non `100vh` : sur mobile, la barre d'adresse qui se rétracte
+// change la hauteur utile, et `vh` laisserait le bandeau sous le pli.
+function PageDuSimulateur({ children }: { children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100dvh",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function Galerie({ navigation }: { navigation: Navigation }) {
   return (
