@@ -1,16 +1,16 @@
-// Le correctif local sur les douze saisies d'adresse (D1-D12), et ce qu'il garantit.
+// Les douze saisies d'adresse (D1-D12), et ce qu'une adresse obligatoire garantit.
 //
-// Le modèle livré déclare ces règles `type: texte` mais les fait consommer comme
-// des booléens par `p2_depart_nom_complete`, `p2_arrivee_nom_complete` et
-// `p2_adresses_obligatoires_completes`. Publicodes ne lève pas : il rend la
-// dernière valeur de la conjonction. `p2_adresses_obligatoires_completes` cesse
-// alors d'être un booléen, et `cible_resultat_2_affichable` ne vaut plus jamais
-// `false` — alors que le contrat d'interface la garde par `block_when_false`.
+// Ces assertions sont nées d'un correctif local : la v9.1 déclarait ces règles
+// `type: texte` mais les faisait consommer comme des booléens, si bien que
+// `p2_adresses_obligatoires_completes` rendait la dernière chaîne de sa
+// conjonction et que `cible_resultat_2_affichable` ne valait jamais `false` —
+// alors que le contrat d'interface la garde par `block_when_false`. La v9.2.1
+// intègre le correctif en amont (huit règles `_renseigne(e)`), et le patch local
+// a disparu.
 //
-// `regles/regles.publicodes` corrige donc les trois règles : un champ obligatoire
-// est rempli s'il est **défini** ET **non vide**. Ce fichier est ce qui le dit à
-// la prochaine recopie du modèle : une livraison qui l'oublie fait échouer ces
-// assertions, et non un écran en production.
+// Le fichier reste : c'est lui qui le dira à la prochaine recopie du modèle. Une
+// livraison qui referait le défaut fait échouer ces assertions, et non un écran
+// en production. Il couvre les scénarios ADDRESS-002 à ADDRESS-004 du livrable.
 //
 // Les deux conditions ne se recouvrent pas : `est défini` attrape la question
 // jamais répondue, `!= ''` la saisie effacée. La seconde n'est pas atteignable
@@ -19,7 +19,7 @@
 // ce que font les seeds et le pré-remplissage du CERFA.
 
 import { describe, expect, it } from "vitest";
-import { evalue, HOSPITALISATION, PRO } from "./situations-v9-1";
+import { evalue, HOSPITALISATION, PRO } from "./situations-v9-2-1";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,
@@ -43,10 +43,10 @@ const FACULTATIFS = [
   "p2_arrivee_pays",
 ];
 
-describe("saisies d'adresse — le correctif local sur les règles livrées", () => {
+describe("saisies d'adresse — ce qu'une adresse obligatoire garantit", () => {
   it("conclut sur un booléen, jamais sur la valeur d'une saisie", () => {
-    // L'assertion qui aurait suffi à voir le défaut : sans le correctif, ces
-    // trois règles rendent la dernière chaîne de leur conjonction.
+    // L'assertion qui aurait suffi à voir le défaut de la v9.1 : ces trois
+    // règles y rendaient la dernière chaîne de leur conjonction.
     const moteur = evalue(PARCOURS_ADMINISTRATIF);
     for (const regle of [
       "p2_adresses_obligatoires_completes",
@@ -72,7 +72,7 @@ describe("saisies d'adresse — le correctif local sur les règles livrées", ()
   });
 
   it.each(OBLIGATOIRES)("%s vidé bloque le résultat", (regle) => {
-    // Le cas que `est défini` seul laissait passer.
+    // Le cas que `est défini` seul laisserait passer.
     const moteur = evalue({ ...PARCOURS_ADMINISTRATIF, [regle]: "''" });
     expect(moteur.evaluate("cible_resultat_2_affichable").nodeValue).toBe(
       false,

@@ -130,6 +130,31 @@ describe("secrétariat — parcours administratif", () => {
     expect(screen.queryByText("Administration d’oxygène.")).toBeNull();
     expect(screen.queryByText("VSL ou taxi conventionné.")).toBeNull();
     expect(screen.queryByText("Moyen de transport individuel.")).toBeNull();
+    expect(
+      screen.queryByText("Personne accompagnante si nécessaire."),
+    ).toBeNull();
+  });
+
+  it("Bloc 3 : coche l'accompagnant quand Q1 désigne un proche", () => {
+    // La ligne suit `cible_accompagnant_necessaire`, réintroduite en v9.2.1.
+    // Le test précédent la vérifie absente sur un besoin professionnel ; ici
+    // c'est la seule réponse de Q1 qui la fait apparaître.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={{
+          ...BASE_NEUTRE,
+          p1_autonomie:
+            "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
+          p2_contexte_hospitalisation: "oui",
+          p2_contexte_aucun: "non",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText("Personne accompagnante si nécessaire."),
+    ).toBeInTheDocument();
   });
 
   it("raccourci `situationFinale` : ouvre directement la Page Résultat 2, sans passation", () => {

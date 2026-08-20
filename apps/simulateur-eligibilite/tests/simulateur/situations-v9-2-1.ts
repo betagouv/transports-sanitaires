@@ -1,4 +1,4 @@
-// Le vocabulaire des scénarios v9.1 : les réponses qu'on cite constamment, et la
+// Le vocabulaire des scénarios v9.2.1 : les réponses qu'on cite constamment, et la
 // façon d'amorcer un moteur dessus. Partagé par les deux fichiers qui rejouent la
 // matrice du livrable — la liste nommée et les familles engendrées.
 

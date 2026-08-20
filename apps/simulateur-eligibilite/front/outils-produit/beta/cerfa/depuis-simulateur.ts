@@ -59,7 +59,6 @@ export function saisiesDepuisSituation(
     ...saisiesSituation(vrai),
     ...saisiesModeTransport(
       vrai,
-      valeur,
       valeur("cible_transport_sanitaire_prescrit") as ModePrescrit,
     ),
     ...saisiesTrajet(valeur),
@@ -180,13 +179,12 @@ function saisiesSituation(vrai: Predicat): Saisie[] {
  */
 function saisiesModeTransport(
   vrai: Predicat,
-  valeur: Lecteur,
   transport: ModePrescrit,
 ): Saisie[] {
   if (transport === MODE.ambulance) return justificationsAmbulance(vrai);
   if (transport === MODE.assis || transport === MODE.assisTPMR)
     return transportAssis(vrai, transport);
-  if (transport === MODE.véhiculePersonnel) return véhiculePersonnel(valeur);
+  if (transport === MODE.véhiculePersonnel) return véhiculePersonnel(vrai);
   return [];
 }
 
@@ -210,8 +208,8 @@ function transportAssis(vrai: Predicat, transport: ModePrescrit): Saisie[] {
 // Le CERFA sépare deux cases (véhicule individuel / transports en commun) là où
 // le simulateur n'en a qu'une : on ne peut pas trancher à sa place. Seul
 // l'accompagnant se déduit.
-function véhiculePersonnel(valeur: Lecteur): Saisie[] {
-  return accompagnantNécessaire(valeur)
+function véhiculePersonnel(vrai: Predicat): Saisie[] {
+  return vrai("cible_accompagnant_necessaire")
     ? [{ case: MODE_TRANSPORT.accompagnantNécessaire }]
     : [];
 }
@@ -249,16 +247,6 @@ function saisiesAccidentTiers(valeur: Lecteur): Saisie[] {
   if (tiers === false) return [{ case: SITUATION.accidentTiersNon }];
   return [];
 }
-
-// Le proche accompagnant : la v9.1 n'expose plus de cible dédiée, c'est la
-// deuxième réponse de Q1 qui le dit — un patient qui se déplace avec un proche
-// pour l'aider ou transmettre les informations à l'équipe soignante.
-function accompagnantNécessaire(valeur: Lecteur): boolean {
-  return valeur("p1_autonomie") === PROCHE_ACCOMPAGNANT;
-}
-
-const PROCHE_ACCOMPAGNANT =
-  "Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.";
 
 // La notice réserve « nombre de transports itératifs » aux transports répétés
 // **ne correspondant pas** à la définition du transport en série (≥ 4 transports

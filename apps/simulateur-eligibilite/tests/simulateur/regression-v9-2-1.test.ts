@@ -1,7 +1,7 @@
-// Portage de la matrice de non-régression du livrable v9.1
-// (tmp/9.1/transports-sanitaires.tests.v9-1.yaml → dynamic_scenarios).
+// Portage de la matrice de non-régression du livrable v9.2.1
+// (tmp/9.2.1/transports-sanitaires.tests.v9-2-1.yaml → dynamic_scenarios).
 //
-// Le livrable v9.1 énonce ses dix-neuf scénarios en prose, là où la v8.10 les
+// Le livrable énonce ses scénarios en prose, là où la v8.10 les
 // donnait en `given`/`expect` exploitables. Ils sont donc réencodés ici, un cas
 // par scénario, en gardant l'identifiant du livrable : c'est lui qu'on cite
 // quand un désaccord doit remonter au fournisseur du modèle.
@@ -24,9 +24,9 @@ import {
   PROCHE,
   type Reponses,
   VSL,
-} from "./situations-v9-1";
+} from "./situations-v9-2-1";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-1`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-2-1`.
 type Cas = {
   id: string;
   given: Reponses;
@@ -133,6 +133,10 @@ const matrice: Cas[] = [
     expect: { p2_transport_en_serie: false, cible_cas_final: PMT },
   },
   {
+    // La v9.2.1 durcit ce scénario : une réponse à A3.4 laissée dans la
+    // situation ne doit plus faire passer pour complète une série dont A3.3
+    // reste sans réponse. C'est `p2_situations_accord_prealable_applicables`
+    // qui rend les cinq questions A3.4 non applicables tant qu'A3.3 manque.
     id: "A3.3-002",
     given: {
       p1_autonomie: PRO,
@@ -140,8 +144,15 @@ const matrice: Cas[] = [
       ...HOSPITALISATION,
       p2_nombre_transports_prevus: "4",
       p2_chaque_trajet_aller_superieur_50km: null,
+      p2_special_avion_bateau: "oui",
+      p2_special_aucune: "non",
     },
-    expect: { cible_resultat_2_affichable: false },
+    expect: {
+      // Répondue « oui » dans la situation : sans la neutralisation elle
+      // vaudrait `true`. Non applicable, elle ne vaut plus rien.
+      p2_special_avion_bateau: undefined,
+      cible_resultat_2_affichable: false,
+    },
   },
   {
     id: "ARTICLE80-001",
@@ -220,6 +231,29 @@ const matrice: Cas[] = [
     },
   },
   {
+    // ACCOMPAGNANT-001 : la cible réintroduite en v9.2.1, qui remplace la
+    // dérivation que l'application tenait depuis Q1. Ses quatre états — dont
+    // l'absence de valeur avant réponse, qui interdit un « non » par défaut.
+    id: "ACCOMPAGNANT-001 · proche accompagnant",
+    given: { p1_autonomie: PROCHE, ...HOSPITALISATION },
+    expect: { cible_accompagnant_necessaire: true },
+  },
+  {
+    id: "ACCOMPAGNANT-001 · autonome",
+    given: { p1_autonomie: AUTONOME, ...HOSPITALISATION },
+    expect: { cible_accompagnant_necessaire: false },
+  },
+  {
+    id: "ACCOMPAGNANT-001 · aide d’un professionnel",
+    given: { p1_autonomie: PRO, ...HOSPITALISATION },
+    expect: { cible_accompagnant_necessaire: false },
+  },
+  {
+    id: "ACCOMPAGNANT-001 · Q1 sans réponse",
+    given: { p1_autonomie: null, ...HOSPITALISATION },
+    expect: { cible_accompagnant_necessaire: undefined },
+  },
+  {
     id: "A4.1-001",
     given: {
       p1_autonomie: PRO,
@@ -231,7 +265,7 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.1 — matrice de non-régression du livrable", () => {
+describe("modèle v9.2.1 — matrice de non-régression du livrable", () => {
   for (const cas of matrice) {
     it(cas.id, () => {
       const moteur = evalue(cas.given);

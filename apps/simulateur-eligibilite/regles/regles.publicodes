@@ -93,16 +93,21 @@ cible_cas_final:
 
 cible_resultat_2_affichable:
   titre: Page Résultat 2 affichable
-  une de ces conditions:
-  - cible_cas_final = 'prescription médicale de transport'
-  - cible_cas_final = 'demande d’accord préalable'
-  - cible_cas_final = 'convocation ou avis d’audience'
-  - cible_cas_final = 'transport à la charge de l’établissement'
-  - cible_cas_final = 'prestation non prise en charge par l’Assurance Maladie'
-  - cible_cas_final = 'SMUR'
-  - cible_cas_final = 'bariatrique seul'
-  - cible_cas_final = 'permission de sortie sans motif médical'
-  - cible_cas_final = 'non éligible à une prise en charge par l’Assurance Maladie'
+  valeur:
+    variations:
+    - si:
+        une de ces conditions:
+        - cible_cas_final = 'prescription médicale de transport'
+        - cible_cas_final = 'demande d’accord préalable'
+        - cible_cas_final = 'convocation ou avis d’audience'
+        - cible_cas_final = 'transport à la charge de l’établissement'
+        - cible_cas_final = 'prestation non prise en charge par l’Assurance Maladie'
+        - cible_cas_final = 'SMUR'
+        - cible_cas_final = 'bariatrique seul'
+        - cible_cas_final = 'permission de sortie sans motif médical'
+        - cible_cas_final = 'non éligible à une prise en charge par l’Assurance Maladie'
+      alors: oui
+    - sinon: non
 
 cible_document_a_remettre_au_patient:
   titre: Document à remettre au patient
@@ -144,6 +149,11 @@ cible_regime_financement:
     - si: cible_cas_final = 'SMUR'
       alors: '''urgence spécifique'''
     - sinon: '''aucune prise en charge dans ce parcours'''
+
+cible_accompagnant_necessaire:
+  titre: Accompagnant nécessaire
+  description: Valeur médicale issue de Q1 et destinée notamment au préremplissage de la case correspondante du CERFA.
+  valeur: p1_accompagnant_necessaire
 
 cible_transport_partage_applicable:
   titre: Transport partagé applicable
@@ -277,6 +287,15 @@ p1_autonomie_repondue:
   - p1_autonomie = 'Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'
   - p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
   - p1_autonomie = 'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'
+
+p1_accompagnant_necessaire:
+  titre: Accompagnant nécessaire
+  valeur:
+    variations:
+    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+      alors: oui
+    - si: p1_autonomie_repondue
+      alors: non
 
 p1_autonomie_professionnel_requis:
   titre: Intervention d’un professionnel requise
@@ -963,32 +982,41 @@ p2_transport_serie_declenche_dap:
   - p2_transport_en_serie
   - p1_ald_validee = non
 
+p2_situations_accord_prealable_applicables:
+  titre: Situations particulières relatives à l’accord préalable applicables
+  toutes ces conditions:
+  - p2_accord_prealable_applicable
+  - p2_nombre_transports_prevus_valide
+  - p2_distance_aller_superieure_150km = non
+  - p2_transport_serie_declenche_dap = non
+  - p2_exception_avion_bateau = non
+  - une de ces conditions:
+    - p2_nombre_transports_prevus < 4
+    - p2_distance_serie_repondue
+
 p2_special_avion_bateau:
   question: Transport par avion ou par bateau de ligne régulière.
-  applicable si:
-    toutes ces conditions:
-    - p2_accord_prealable_applicable
-    - p2_exception_avion_bateau = non
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_special_camsp_cmpp:
   question: Soins ou traitements dans un CAMSP (Centre d’Action Médico-Sociale Précoce) ou un CMPP (Centre Médico-Psycho-Pédagogique).
-  applicable si: p2_accord_prealable_applicable
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_special_engagement_maternite:
   question: Transport vers une maternité éloignée dans le cadre du dispositif Engagement maternité.
-  applicable si: p2_accord_prealable_applicable
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_special_samsah:
   question: Soins ou traitements dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés).
-  applicable si: p2_accord_prealable_applicable
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_special_aucune:
   question: Aucune de ces situations ne concerne le transport.
-  applicable si: p2_accord_prealable_applicable
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_situations_accord_prealable:
@@ -1003,16 +1031,7 @@ p2_situations_accord_prealable:
     - p2_special_engagement_maternite
     - p2_special_samsah
     option aucun: p2_special_aucune
-  applicable si:
-    toutes ces conditions:
-    - p2_accord_prealable_applicable
-    - p2_nombre_transports_prevus_valide
-    - p2_distance_aller_superieure_150km = non
-    - p2_transport_serie_declenche_dap = non
-    - p2_exception_avion_bateau = non
-    - une de ces conditions:
-      - p2_nombre_transports_prevus < 4
-      - p2_distance_serie_repondue
+  applicable si: p2_situations_accord_prealable_applicables
   spec_id: A3.4
 
 p2_situations_accord_prealable_repondues:
@@ -1023,6 +1042,7 @@ p2_situations_accord_prealable_repondues:
   - p2_special_engagement_maternite
   - p2_special_samsah
   - p2_special_aucune
+  applicable si: p2_situations_accord_prealable_applicables
 
 p2_situation_speciale_declenche_dap:
   titre: Situation particulière déclenchant une DAP (Demande d’Accord Préalable)
@@ -1149,8 +1169,8 @@ p2_trajet_arrivee_repondu:
 
 p2_depart_nom_lieu:
   titre: Nom de la structure ou du lieu de départ
-  type: texte
   question: Quel est le nom de la structure ou du lieu de départ ?
+  type: texte
   applicable si:
     toutes ces conditions:
     - p2_trajet_depart_repondu
@@ -1159,43 +1179,43 @@ p2_depart_nom_lieu:
 
 p2_depart_adresse:
   titre: Adresse du lieu de départ
-  type: texte
   question: Quelle est l’adresse du lieu de départ ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D2
 
 p2_depart_complement_adresse:
   titre: Complément d’adresse du lieu de départ
-  type: texte
   question: Quel est le complément d’adresse du lieu de départ ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D3
 
 p2_depart_code_postal:
   titre: Code postal du lieu de départ
-  type: texte
   question: Quel est le code postal du lieu de départ ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D4
 
 p2_depart_commune:
   titre: Commune du lieu de départ
-  type: texte
   question: Quelle est la commune du lieu de départ ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D5
 
 p2_depart_pays:
   titre: Pays du lieu de départ
-  type: texte
   question: Quel est le pays du lieu de départ si celui-ci se situe hors de France ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D6
 
 p2_arrivee_nom_lieu:
   titre: Nom de la structure ou du lieu d’arrivée
-  type: texte
   question: Quel est le nom de la structure ou du lieu d’arrivée ?
+  type: texte
   applicable si:
     toutes ces conditions:
     - p2_trajet_arrivee_repondu
@@ -1204,36 +1224,36 @@ p2_arrivee_nom_lieu:
 
 p2_arrivee_adresse:
   titre: Adresse du lieu d’arrivée
-  type: texte
   question: Quelle est l’adresse du lieu d’arrivée ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D8
 
 p2_arrivee_complement_adresse:
   titre: Complément d’adresse du lieu d’arrivée
-  type: texte
   question: Quel est le complément d’adresse du lieu d’arrivée ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D9
 
 p2_arrivee_code_postal:
   titre: Code postal du lieu d’arrivée
-  type: texte
   question: Quel est le code postal du lieu d’arrivée ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D10
 
 p2_arrivee_commune:
   titre: Commune du lieu d’arrivée
-  type: texte
   question: Quelle est la commune du lieu d’arrivée ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D11
 
 p2_arrivee_pays:
   titre: Pays du lieu d’arrivée
-  type: texte
   question: Quel est le pays du lieu d’arrivée si celui-ci se situe hors de France ?
+  type: texte
   applicable si: p2_trajet_arrivee_repondu
   spec_id: D12
 
@@ -1249,15 +1269,60 @@ p2_arrivee_nom_requis:
   - p2_trajet_arrivee = 'Une structure de soins différente du lieu de départ.'
   - p2_trajet_arrivee = 'Un autre lieu différent du lieu de départ.'
 
+p2_depart_nom_lieu_renseigne:
+  titre: Nom de la structure ou du lieu de départ renseigné
+  toutes ces conditions:
+  - est défini: p2_depart_nom_lieu
+  - p2_depart_nom_lieu != ''
+
+p2_depart_adresse_renseignee:
+  titre: Adresse du lieu de départ renseignée
+  toutes ces conditions:
+  - est défini: p2_depart_adresse
+  - p2_depart_adresse != ''
+
+p2_depart_code_postal_renseigne:
+  titre: Code postal du lieu de départ renseigné
+  toutes ces conditions:
+  - est défini: p2_depart_code_postal
+  - p2_depart_code_postal != ''
+
+p2_depart_commune_renseignee:
+  titre: Commune du lieu de départ renseignée
+  toutes ces conditions:
+  - est défini: p2_depart_commune
+  - p2_depart_commune != ''
+
+p2_arrivee_nom_lieu_renseigne:
+  titre: Nom de la structure ou du lieu d’arrivée renseigné
+  toutes ces conditions:
+  - est défini: p2_arrivee_nom_lieu
+  - p2_arrivee_nom_lieu != ''
+
+p2_arrivee_adresse_renseignee:
+  titre: Adresse du lieu d’arrivée renseignée
+  toutes ces conditions:
+  - est défini: p2_arrivee_adresse
+  - p2_arrivee_adresse != ''
+
+p2_arrivee_code_postal_renseigne:
+  titre: Code postal du lieu d’arrivée renseigné
+  toutes ces conditions:
+  - est défini: p2_arrivee_code_postal
+  - p2_arrivee_code_postal != ''
+
+p2_arrivee_commune_renseignee:
+  titre: Commune du lieu d’arrivée renseignée
+  toutes ces conditions:
+  - est défini: p2_arrivee_commune
+  - p2_arrivee_commune != ''
+
 p2_depart_nom_complete:
   titre: Nom du lieu de départ complété lorsqu’il est requis
   valeur:
     variations:
     - si: p2_depart_nom_requis
-      alors:
-        toutes ces conditions:
-        - est défini: p2_depart_nom_lieu
-        - p2_depart_nom_lieu != ''
+      alors: p2_depart_nom_lieu_renseigne
     - sinon: oui
 
 p2_arrivee_nom_complete:
@@ -1265,35 +1330,20 @@ p2_arrivee_nom_complete:
   valeur:
     variations:
     - si: p2_arrivee_nom_requis
-      alors:
-        toutes ces conditions:
-        - est défini: p2_arrivee_nom_lieu
-        - p2_arrivee_nom_lieu != ''
+      alors: p2_arrivee_nom_lieu_renseigne
     - sinon: oui
 
 p2_adresses_obligatoires_completes:
   titre: Adresses obligatoires complétées
   toutes ces conditions:
   - p2_depart_nom_complete
-  - toutes ces conditions:
-    - est défini: p2_depart_adresse
-    - p2_depart_adresse != ''
-  - toutes ces conditions:
-    - est défini: p2_depart_code_postal
-    - p2_depart_code_postal != ''
-  - toutes ces conditions:
-    - est défini: p2_depart_commune
-    - p2_depart_commune != ''
+  - p2_depart_adresse_renseignee
+  - p2_depart_code_postal_renseigne
+  - p2_depart_commune_renseignee
   - p2_arrivee_nom_complete
-  - toutes ces conditions:
-    - est défini: p2_arrivee_adresse
-    - p2_arrivee_adresse != ''
-  - toutes ces conditions:
-    - est défini: p2_arrivee_code_postal
-    - p2_arrivee_code_postal != ''
-  - toutes ces conditions:
-    - est défini: p2_arrivee_commune
-    - p2_arrivee_commune != ''
+  - p2_arrivee_adresse_renseignee
+  - p2_arrivee_code_postal_renseigne
+  - p2_arrivee_commune_renseignee
 
 p2_accident_cause_par_tiers:
   titre: Accident causé par un tiers

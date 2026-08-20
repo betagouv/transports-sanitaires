@@ -82,14 +82,14 @@ Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle
 ## Le modèle de règles
 
 `regles/regles.publicodes` est **livré de l'extérieur et intégré par recopie** —
-aujourd'hui la **v9.1** (161 règles). Le fichier livré ne porte pas sa version :
+aujourd'hui la **v9.2.1** (172 règles). Le fichier livré ne porte pas sa version :
 `regles/VERSION` la porte à côté de lui, et c'est elle que le pied de page
 affiche. **Une recopie met les deux à jour**, sans quoi l'application annonce une
 version qu'elle n'exécute pas. Le paquet du fournisseur apporte aussi un
 contrat d'interface (`*.ui.yaml`, schéma 2.0.0) et une matrice de tests, tous deux
 réencodés ici plutôt que chargés : le contrat d'interface se lit dans les
-composants, la matrice dans `tests/simulateur/regression-v9-1.test.ts` et
-`familles-v9-1.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
+composants, la matrice dans `tests/simulateur/regression-v9-2-1.test.ts` et
+`familles-v9-2-1.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
 `SERIE-001`, `ARTICLE80-003`…) pour qu'un désaccord remonte au fournisseur sous
 son nom.
 
@@ -120,36 +120,32 @@ reste modifiable :
   son « Précédent » ne descend jamais sous sa première page. Seule une nouvelle
   simulation remet tout à zéro.
 
-### Le correctif local à la v9.1
+### Les adresses obligatoires, et le correctif qui n'est plus local
 
-Le correctif tient en deux morceaux, et il les faut tous les deux.
+La v9.1 laissait les **douze saisies d'adresse** (`p2_depart_*`, `p2_arrivee_*`)
+sans type — Publicodes en déduisait `booléen`, et `@publicodes/forms` rendait
+douze cases à cocher là où le contrat d'interface 2.0.0 demande des champs texte.
+Plus discret : trois règles les lisaient comme des booléens. Publicodes ne lève
+pas, il rend la dernière valeur de la conjonction, si bien que
+`p2_adresses_obligatoires_completes` cessait d'être un booléen et que
+`cible_resultat_2_affichable` ne valait plus jamais `false` — alors que le contrat
+la garde par `block_when_false`.
 
-**Le type.** Le modèle livré déclare les **douze saisies d'adresse**
-(`p2_depart_*`, `p2_arrivee_*`) sans type. Publicodes en déduit alors `booléen` —
-toute règle portant `question` et rien d'autre l'est — et `@publicodes/forms` rend
-une case à cocher là où le contrat d'interface 2.0.0 demande un champ texte. On
-ajoute donc `type: texte` sur ces douze règles.
+Les deux morceaux ont vécu ici en correctif local, le temps d'une demande au
+fournisseur. **La v9.2.1 les intègre en amont** : `type: texte` sur les douze
+règles, et huit règles `_renseigne(e)` qui testent qu'un champ obligatoire est
+**défini** *et* **non vide** — `est défini` attrape la question jamais répondue,
+`!= ''` la saisie effacée. Le modèle est donc recopié tel quel, sans retouche.
 
-**Leurs consommateurs.** Trois règles les lisent comme des booléens
-(`p2_depart_nom_complete`, `p2_arrivee_nom_complete`,
-`p2_adresses_obligatoires_completes`). Publicodes ne lève pas : il rend la dernière
-valeur de la conjonction, si bien que `p2_adresses_obligatoires_completes` cesse
-d'être un booléen et que `cible_resultat_2_affichable` ne vaut plus jamais `false`.
-Les trois testent donc qu'un champ obligatoire est **défini** *et* **non vide** —
-`est défini` attrape la question jamais répondue, `!= ''` la saisie effacée.
-
-**À rejouer à chaque livraison** tant que le fournisseur ne l'a pas intégré. Le
-symptôme du premier morceau est visible (douze cases à cocher au lieu de douze
-champs) ; celui du second ne l'est pas, d'où
-[`tests/simulateur/correctif-adresses.test.ts`](tests/simulateur/correctif-adresses.test.ts) :
-c'est lui qui échoue si une recopie du modèle emporte le correctif.
-
-> La v9.2 livrée n'apporte que le premier morceau. Une demande de v9.2.1 est
-> partie ; le correctif local reste entier en attendant.
+Ce qui reste, c'est la garde :
+[`tests/simulateur/adresses-obligatoires.test.ts`](tests/simulateur/adresses-obligatoires.test.ts).
+Le symptôme du premier morceau se voit à l'œil nu ; celui du second, non — une
+livraison qui referait le défaut ferait échouer ce fichier plutôt qu'un écran en
+production.
 
 ## Savoir ce qui tourne
 
-Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.1`.
+Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.2.1`.
 C'est un outil de support — quand un prescripteur signale un résultat surprenant,
 ces deux valeurs disent quel code et quel modèle il avait sous les yeux.
 

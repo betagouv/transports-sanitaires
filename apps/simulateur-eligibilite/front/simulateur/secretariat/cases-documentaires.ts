@@ -79,8 +79,7 @@ const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
   },
   {
     texte: "Personne accompagnante si nécessaire.",
-    visible: (e) =>
-      e.evaluate("p1_autonomie").nodeValue === PROCHE_ACCOMPAGNANT,
+    visible: (e) => vrai(e, "cible_accompagnant_necessaire"),
   },
 ];
 
@@ -230,8 +229,3 @@ export function texteDeCase(laCase: CaseDocumentaire): string {
 function vrai(e: typeof moteur, id: CleDeRegle): boolean {
   return e.evaluate(id).nodeValue === true;
 }
-
-// La v9.1 n'expose plus de cible « accompagnant nécessaire » : c'est la deuxième
-// réponse de Q1 qui l'établit.
-const PROCHE_ACCOMPAGNANT =
-  "Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.";
