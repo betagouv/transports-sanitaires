@@ -66,14 +66,43 @@ export async function allerAuGroupe(
   groupe: RegExp,
   reponses: Reponse[] = [],
 ) {
-  for (let i = 0; i < 40; i++) {
-    if (screen.queryByRole("group", { name: groupe })) return;
-    if (!(await avancerDUnePage(user, reponses))) break;
-  }
-  throw new Error(`question jamais posée : ${groupe}`);
+  await allerJusqua(
+    user,
+    () => screen.queryByRole("group", { name: groupe }) !== null,
+    reponses,
+    `question jamais posée : ${groupe}`,
+  );
+}
+
+/**
+ * Traverse le parcours jusqu'à la première page qui porte une saisie libre —
+ * les douze adresses du trajet, seul endroit du questionnaire où l'on tape.
+ */
+export async function allerAuChampTexte(user: User, reponses: Reponse[] = []) {
+  await allerJusqua(
+    user,
+    () => screen.queryAllByRole("textbox").length > 0,
+    reponses,
+    "aucune saisie libre dans le parcours",
+  );
 }
 
 // ---- implémentation ----
+
+// Avance page par page tant que la page cherchée n'est pas là, sans jamais
+// répondre à celle-ci : au retour, elle est affichée et intacte.
+async function allerJusqua(
+  user: User,
+  atteinte: () => boolean,
+  reponses: Reponse[],
+  echec: string,
+) {
+  for (let i = 0; i < 40; i++) {
+    if (atteinte()) return;
+    if (!(await avancerDUnePage(user, reponses))) break;
+  }
+  throw new Error(echec);
+}
 
 /**
  * Répond à la page courante et en sort. Trois façons d'en sortir, selon la

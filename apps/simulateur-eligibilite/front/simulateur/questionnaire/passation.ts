@@ -19,6 +19,7 @@ import {
 } from "./avancement-automatique";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
+import { pagesDuParcours } from "./pagination";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
 
@@ -32,6 +33,10 @@ export type Options = {
   outil: string;
   // Règles cibles : leur graphe de dépendances détermine les questions posées.
   cibles: readonly string[];
+  // Questions posées mais non bloquantes : la page se quitte sans y répondre.
+  // Une question ciblée l'est d'ordinaire parce qu'il *faut* sa réponse ; ces
+  // règles-là sont ciblées pour être offertes, pas pour être exigées.
+  facultatives?: readonly string[];
   // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions
   // correspondantes ne sont pas reposées.
   situationInitiale?: Situation<string>;
@@ -81,7 +86,7 @@ export function usePassation(options: Options): Passation {
   const [formState, setFormState] = useState<FormState<string>>(() =>
     etatDeDepart(options),
   );
-  const etat = lireEtat(formState);
+  const etat = lireEtat(formState, options.facultatives ?? []);
   const suivi = useSuiviDeParcours(
     options.outil,
     etat.current,
@@ -103,13 +108,16 @@ export function usePassation(options: Options): Passation {
 
 // ---- implémentation ----
 
-// `pageBuilder` par défaut : depuis le séquencement conditionnel du modèle
-// (`applicable si`, v6), la pagination naturelle suffit — le pageBuilder custom
-// est désactivé.
+// `pageBuilder` : la pagination naturelle de la bibliothèque, à une exception
+// près — les douze saisies d'adresse tiennent sur une page (cf. `pagination.ts`).
 // `selectTreshold` (sic, orthographe de la lib) : une question à N possibilités
 // est rendue en boutons radio jusqu'à ce seuil (défaut 5), en liste déroulante
 // au-delà. Relevé à 10 pour garder le radio sur les listes un peu longues.
-const formBuilder = new FormBuilder({ engine: moteur, selectTreshold: 10 });
+const formBuilder = new FormBuilder({
+  engine: moteur,
+  pageBuilder: pagesDuParcours,
+  selectTreshold: 10,
+});
 
 type Contexte = {
   formState: FormState<string>;
@@ -119,12 +127,15 @@ type Contexte = {
   suivi: SuiviDeParcours;
 };
 
-function lireEtat(formState: FormState<string>): Etat {
+function lireEtat(
+  formState: FormState<string>,
+  facultatives: readonly string[],
+): Etat {
   const { current, pageCount, hasNextPage, hasPreviousPage } =
     formBuilder.pagination(formState);
   const page = formBuilder.currentPage(formState);
   const questionsEnAttente = resteUneQuestion(
-    page.elements,
+    page.elements.filter((champ) => !facultatives.includes(champ.id)),
     formState.situation,
   );
   return {

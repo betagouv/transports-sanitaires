@@ -115,6 +115,32 @@ describe("saisiesDepuisSituation", () => {
     );
   });
 
+  it("aplatit le complément d'adresse et le pays sur la ligne du lieu", async () => {
+    // Ces deux saisies sont facultatives et longtemps restées inatteignables :
+    // aucune cible ne les portait, donc le questionnaire ne les posait pas. Elles
+    // le sont depuis que le secrétariat cible les sorties document.
+    const saisies = saisiesDepuisSituation(
+      moteurDeTest(),
+      situation({
+        p1_autonomie: AIDE_PROFESSIONNEL,
+        p1_critere_brancardage_portage: "oui",
+        ...HOSPITALISATION,
+        p2_arrivee_nom_lieu: "'Clinique Saint-Roch'",
+        p2_arrivee_adresse: "'12 avenue des Thermes'",
+        p2_arrivee_complement_adresse: "'Bâtiment B, 3e étage'",
+        p2_arrivee_code_postal: "'1201'",
+        p2_arrivee_commune: "'Genève'",
+        p2_arrivee_pays: "'Suisse'",
+      }),
+    );
+    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+
+    expect(lu[TRAJET.arrivéeStructureSoins]).toBe(
+      "Clinique Saint-Roch, 12 avenue des Thermes, Bâtiment B, 3e étage, " +
+        "1201, Genève, Suisse",
+    );
+  });
+
   it("laisse « transports itératifs » vide pour un transport en série", async () => {
     // La notice réserve cette rubrique aux transports répétés **ne correspondant
     // pas** à la définition du transport en série (≥ 4 sur deux mois, chacun à
