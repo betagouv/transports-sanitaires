@@ -11,6 +11,7 @@ import type {
   EvaluatedStringInput,
   FormPageElementProp,
 } from "@publicodes/forms";
+import { libelleDeReponse } from "./libelle-de-reponse";
 
 type Props = {
   champ: EvaluatedFormElement & FormPageElementProp;
@@ -64,7 +65,7 @@ function ChoixRadio({ champ, onChange }: ChampProps<EvaluatedRadioGroup>) {
       classes={{ inputGroup: "fr-radio-rich", legend: "fr-text--lead" }}
       disabled={champ.disabled}
       options={champ.options.map((opt) => ({
-        label: opt.label,
+        label: libelleDeReponse(opt.label),
         nativeInputProps: {
           value: String(opt.value),
           checked: (champ.value as unknown) === opt.value,
@@ -97,7 +98,7 @@ function ChoixDeroulant({ champ, onChange }: ChampProps<EvaluatedSelect>) {
       </option>
       {champ.options.map((opt) => (
         <option key={String(opt.value)} value={String(opt.value)}>
-          {opt.label}
+          {libelleDeReponse(opt.label)}
         </option>
       ))}
     </Select>

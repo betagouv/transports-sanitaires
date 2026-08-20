@@ -10,6 +10,9 @@ import { reglesBrutes } from "../moteur";
 export type Mosaique = {
   parentId: string;
   question: string;
+  // Phrase indicative affichée sous la question — la `description` de la règle
+  // parente. Le modèle la porte, l'interface la rend : rien ne la recopie.
+  information?: string;
   // Règles booléennes cochables (l'ordre suit la déclaration `options`).
   optionIds: string[];
   // Option d'exclusivité « aucun » : la cocher décoche toutes les autres.
@@ -45,6 +48,7 @@ export function mosaiqueDe(id: string): Mosaique | undefined {
 type CorpsRegle = {
   question?: string;
   titre?: string;
+  description?: string;
   mosaique?: { options?: string[]; "option aucun"?: string };
 };
 
@@ -65,12 +69,14 @@ function indexParOption(): Map<string, Mosaique> {
 function construire(): Mosaique[] {
   const res: Mosaique[] = [];
   for (const nom of Object.keys(reglesBrutes)) {
-    const meta = corps(nom)?.mosaique;
-    if (!meta) continue;
+    const regle = corps(nom);
+    if (!regle?.mosaique) continue;
+    const meta = regle.mosaique;
     const aucunId = meta["option aucun"];
     res.push({
       parentId: nom,
       question: libelle(nom),
+      information: regle.description,
       optionIds: meta.options ?? [],
       aucun: aucunId ? { id: aucunId, libelle: libelle(aucunId) } : undefined,
     });

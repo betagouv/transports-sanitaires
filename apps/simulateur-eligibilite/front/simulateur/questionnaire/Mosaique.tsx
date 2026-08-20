@@ -7,12 +7,15 @@ import type {
   FormPageElementProp,
 } from "@publicodes/forms";
 import type { ChangeEvent, ComponentProps } from "react";
+import { libelleDeReponse } from "./libelle-de-reponse";
 import { valeurBool } from "./mosaique";
 
 type ChampOption = EvaluatedFormElement & FormPageElementProp;
 
 type Props = {
   question: string;
+  // Phrase indicative rendue sous la question, quand la règle parente en porte une.
+  information?: string;
   // Éléments booléens des options présents sur la page courante.
   options: ChampOption[];
   // Option d'exclusivité « aucun » (état dérivé : toutes les options décochées).
@@ -23,6 +26,7 @@ type Props = {
 
 export function Mosaique({
   question,
+  information,
   options,
   aucun,
   onToggleOption,
@@ -31,6 +35,7 @@ export function Mosaique({
   return (
     <Checkbox
       legend={question}
+      hintText={information}
       options={casesACocher(options, aucun, onToggleOption, onToggleAucun)}
       classes={{ legend: "fr-text--lead" }}
       style={{ marginBottom: "1.5rem" }}
@@ -58,7 +63,7 @@ function casesACocher(
   const cases: CaseACocher[] = options
     .filter((opt) => opt.applicable !== false)
     .map((opt) => ({
-      label: opt.label,
+      label: libelleDeReponse(opt.label),
       nativeInputProps: {
         name: opt.id,
         checked: valeurBool(opt) === true,
@@ -69,7 +74,7 @@ function casesACocher(
 
   if (aucun && onToggleAucun) {
     cases.push({
-      label: aucun.libelle,
+      label: libelleDeReponse(aucun.libelle),
       nativeInputProps: {
         name: "mosaique-aucun",
         checked: aucun.coche,

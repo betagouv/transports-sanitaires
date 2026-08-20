@@ -49,10 +49,20 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "1");
 }
 
-/** Remplit le parcours page par page jusqu'à sa conclusion. */
-export async function terminerParcours(user: User, reponses: Reponse[]) {
-  for (let i = 0; i < 40; i++)
+/**
+ * Remplit le parcours page par page jusqu'à sa conclusion. `surLaPage` est
+ * appelé sur chaque page **avant** qu'on y réponde — de quoi inspecter ce que
+ * le parcours affiche, page après page, sans le conduire soi-même.
+ */
+export async function terminerParcours(
+  user: User,
+  reponses: Reponse[],
+  surLaPage: () => void = () => {},
+) {
+  for (let i = 0; i < 40; i++) {
+    surLaPage();
     if (!(await avancerDUnePage(user, reponses))) return;
+  }
   throw new Error("parcours non terminé après 40 pages");
 }
 

@@ -73,6 +73,7 @@ function GroupeMosaique({ groupe, parId, situation, onReponses }: GroupeProps) {
   return (
     <Mosaique
       question={groupe.question}
+      information={groupe.information}
       options={options}
       aucun={aucun ? { libelle: aucun.libelle, coche: aucunCoche } : undefined}
       onToggleOption={(id, coche) =>
