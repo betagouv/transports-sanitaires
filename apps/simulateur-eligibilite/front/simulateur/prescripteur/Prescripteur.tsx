@@ -64,6 +64,15 @@ export function Prescripteur({
 
 // ---- implémentation ----
 
+// Q1 raisonne sur un seul sens de trajet : le prescripteur doit savoir, avant
+// d'y répondre, qu'un aller et un retour aux besoins différents demandent deux
+// évaluations.
+const RAPPEL_ALLER_RETOUR = {
+  question: "p1_autonomie",
+  texte:
+    "Si les besoins du patient diffèrent entre l’aller et le retour, réalisez une évaluation pour chaque sens.",
+} as const;
+
 function EvaluationMedicale({
   etatInitial,
   panneauOutilsProduit,
@@ -89,6 +98,7 @@ function EvaluationMedicale({
           "cible_transport_partage_incompatible",
         ]}
         libelleFin="Voir le résultat médical"
+        bandeau={RAPPEL_ALLER_RETOUR}
         onTermine={(s, etat) => {
           onTermine(s, etat);
           trackResultat(

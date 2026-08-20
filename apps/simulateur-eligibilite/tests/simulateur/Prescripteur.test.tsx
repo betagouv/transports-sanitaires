@@ -53,6 +53,15 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
   });
 
+  it("Q1 porte le rappel sur l'aller et le retour, et elle seule", async () => {
+    const user = afficher();
+    const rappel = /réalisez une évaluation pour chaque sens/i;
+    expect(screen.getByText(rappel)).toBeInTheDocument();
+
+    await repondreQ1(user, PROFESSIONNEL);
+    expect(screen.queryByText(rappel)).toBeNull();
+  });
+
   it("Q1 n'a aucun bouton : elle avance d'elle-même une fois répondue", async () => {
     const user = afficher();
 

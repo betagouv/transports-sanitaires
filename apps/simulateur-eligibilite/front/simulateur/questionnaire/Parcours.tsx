@@ -2,17 +2,22 @@
 // les champs de la page courante, et les boutons de navigation. Toute la
 // mécanique d'état est dans `passation.ts`.
 
+import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { ChampsDePage } from "./ChampsDePage";
-import type { Options } from "./passation";
+import type { Champ, Options } from "./passation";
 import { usePassation } from "./passation";
 import { TraceParcours } from "./TraceParcours";
 
 type Props = Options & {
   // Libellé du bouton de la dernière page.
   libelleFin: string;
+  // Message d'information affiché sous l'étapeur, sur la seule page qui pose la
+  // question désignée. Le parcours reste générique : c'est l'appelant qui dit
+  // quelle question porte quel message.
+  bandeau?: { question: CleDeRegle; texte: string };
 };
 
-export function Parcours({ libelleFin, ...options }: Props) {
+export function Parcours({ libelleFin, bandeau, ...options }: Props) {
   const passation = usePassation(options);
 
   // En cours de bascule vers la page de résultat : rien à afficher.
@@ -21,6 +26,7 @@ export function Parcours({ libelleFin, ...options }: Props) {
   return (
     <>
       <Etapeur current={passation.current} pageCount={passation.pageCount} />
+      <Bandeau bandeau={bandeau} champs={passation.champs} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -56,6 +62,26 @@ function Debug({
       current={passation.current}
       outil={outil}
     />
+  );
+}
+
+// Le bandeau ne s'affiche que sur la page où sa question est posée.
+function Bandeau({
+  bandeau,
+  champs,
+}: {
+  bandeau?: { question: CleDeRegle; texte: string };
+  champs: readonly Champ[];
+}) {
+  if (!bandeau) return null;
+  if (!champs.some((champ) => champ.id === bandeau.question)) return null;
+  return (
+    <div
+      className="fr-alert fr-alert--info fr-alert--sm"
+      style={{ marginBottom: "2rem" }}
+    >
+      <p>{bandeau.texte}</p>
+    </div>
   );
 }
 
