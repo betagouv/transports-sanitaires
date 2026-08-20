@@ -3,15 +3,19 @@
 // La décision médicale n'est **pas** figée à l'ouverture du Résultat 1 : tant
 // que le prescripteur n'a pas choisi l'action principale, « Précédent » rouvre
 // le questionnaire sur sa dernière page, réponses intactes (contrat d'interface
-// 2.0.0). C'est le passage au secrétariat qui verrouille — et il est
-// irréversible, la Partie 2 ne reposant aucune question de Partie 1.
+// 2.0.0). C'est l'entrée dans les pages de la Partie 2 qui verrouille — elle est
+// irréversible, la Partie 2 ne reposant aucune question de Partie 1. Quand la
+// Partie 1 a déjà tranché, il n'y a pas de page à entrer : le document ramène
+// ici par « Précédent », et une seed y ramène comme une saisie.
 
 import type { FormState } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/evenements";
+import { CIBLES_MEDICALES } from "../cibles-du-parcours";
 import { moteur, texte } from "../moteur";
 import { Parcours } from "../questionnaire/Parcours";
+import { rejouerLesReponses } from "../questionnaire/rejeu";
 import { ResultatMedical } from "./ResultatMedical";
 
 type Props = {
@@ -32,13 +36,8 @@ export function Prescripteur({
   situationInitiale = null,
   panneauOutilsProduit,
 }: Props) {
-  const [situation, setSituation] = useState<Situation<string> | null>(
-    situationInitiale,
-  );
-  // L'état du questionnaire, gardé pour pouvoir y revenir. Absent quand le
-  // résultat vient d'une seed : il n'y a alors aucun parcours derrière lui.
-  const [etatQuestionnaire, setEtatQuestionnaire] =
-    useState<FormState<string>>();
+  const parcours = useParcoursMedical(situationInitiale);
+  const { situation } = parcours;
 
   if (situation)
     return (
@@ -46,23 +45,47 @@ export function Prescripteur({
         situation={situation}
         onContinuer={() => onPasserAuSecretariat(situation)}
         onRecommencer={onNouvelleSimulation}
-        onPrecedent={etatQuestionnaire && (() => setSituation(null))}
+        onPrecedent={parcours.retourAuQuestionnaire}
       />
     );
 
   return (
     <EvaluationMedicale
-      etatInitial={etatQuestionnaire}
+      etatInitial={parcours.etatQuestionnaire}
       panneauOutilsProduit={panneauOutilsProduit}
-      onTermine={(s, etat) => {
-        setEtatQuestionnaire(etat);
-        setSituation(s);
-      }}
+      onTermine={parcours.conclure}
     />
   );
 }
 
 // ---- implémentation ----
+
+// L'avancement du parcours médical : la décision atteinte, et derrière elle le
+// questionnaire à rouvrir.
+//
+// Une seed ouvre le résultat sans avoir traversé le questionnaire : on lui
+// rejoue le parcours que ses réponses auraient produit, faute de quoi elle
+// n'aurait rien derrière elle — alors qu'elle n'est qu'un pré-remplissage.
+function useParcoursMedical(situationInitiale: Situation<string> | null) {
+  const [situation, setSituation] = useState(situationInitiale);
+  const [etatQuestionnaire, setEtatQuestionnaire] = useState(() =>
+    situationInitiale
+      ? rejouerLesReponses({
+          cibles: CIBLES_MEDICALES,
+          reponses: situationInitiale,
+        })
+      : undefined,
+  );
+  return {
+    situation,
+    etatQuestionnaire,
+    retourAuQuestionnaire: etatQuestionnaire && (() => setSituation(null)),
+    conclure: (s: Situation<string>, etat: FormState<string>) => {
+      setEtatQuestionnaire(etat);
+      setSituation(s);
+    },
+  };
+}
 
 // Q1 raisonne sur un seul sens de trajet : le prescripteur doit savoir, avant
 // d'y répondre, qu'un aller et un retour aux besoins différents demandent deux
@@ -88,15 +111,7 @@ function EvaluationMedicale({
       <Parcours
         outil="prescripteur"
         etatInitial={etatInitial}
-        // Décision médicale + sorties Partie 1 destinées au document : cibler ces
-        // sorties fait collecter leurs questions propres (sinon jamais posées, car
-        // applicables mais hors du graphe des cibles). Toutes sont P1 (aucune
-        // dépendance p2_*), donc aucune question Partie 2 ici.
-        cibles={[
-          "cible_transport_sanitaire_prescrit",
-          "cible_partie_2_requise",
-          "cible_transport_partage_incompatible",
-        ]}
+        cibles={CIBLES_MEDICALES}
         libelleFin="Voir le résultat médical"
         bandeau={RAPPEL_ALLER_RETOUR}
         onTermine={(s, etat) => {

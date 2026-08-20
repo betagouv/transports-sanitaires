@@ -25,7 +25,8 @@ export type Navigation = {
   // Retenu à la validation pour pouvoir les reproposer au début du parcours —
   // c'est un booléen, pas une identité : l'invariant de `docs/architecture` tient.
   outilsProduit: boolean;
-  // Situation issue d'une seed, pour ouvrir directement la page de résultat.
+  // Situation qui ouvre directement une page de résultat : celle d'une seed, ou
+  // celle du retour au résultat médical depuis le document.
   situationDev: Situation<string> | null;
   // Remontée à chaque nouvelle simulation pour remonter (remount) l'outil et
   // repartir d'un parcours vierge.
@@ -40,6 +41,10 @@ export type Navigation = {
   ouvrirGalerie: () => void;
   fermerOutil: () => void;
   passerAuSecretariat: () => void;
+  // Retour du document au résultat médical, quand la Partie 2 n'a rien eu à
+  // poser : l'écran d'avant, c'est celui-là. Le parcours médical est rouvert sur
+  // sa situation, donc sur son résultat (cf. `questionnaire/rejeu.ts`).
+  revenirAuResultatMedical: (situationP1: Situation<string>) => void;
   recommencer: () => void;
 };
 
@@ -85,7 +90,17 @@ function actions(
     ouvrirSeed: (seed) => ouvrirLaSeed(seed, etat, modifier),
     ouvrirGalerie: () => modifier({ ecran: "galerie" }),
     fermerOutil: () => modifier({ ecran: "simulateur" }),
-    passerAuSecretariat: () => modifier({ outil: "secretariat" }),
+    // La situation de seed est déposée en passant : le secrétariat qualifie ce
+    // que la passation lui porte, il n'ouvre pas un résultat tout fait.
+    passerAuSecretariat: () =>
+      modifier({ outil: "secretariat", situationDev: null }),
+    revenirAuResultatMedical: (situationP1) =>
+      modifier({
+        ecran: "simulateur",
+        outil: "prescripteur",
+        situationDev: situationP1,
+        cle: etat.cle + 1,
+      }),
     recommencer: () => {
       effacerPassation();
       modifier({

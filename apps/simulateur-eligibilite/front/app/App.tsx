@@ -159,6 +159,7 @@ function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
         key={navigation.cle}
         situationFinale={navigation.situationDev}
         onNouvelleSimulation={navigation.recommencer}
+        onRetourAuResultatMedical={navigation.revenirAuResultatMedical}
         documentTelechargeable={documentTelechargeable(
           navigation.outilsProduit,
           chargerGabarit,

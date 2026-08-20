@@ -17,9 +17,9 @@ import {
   pageAChoixUnique,
   useAvancementAutomatique,
 } from "./avancement-automatique";
+import { formBuilder } from "./constructeur-de-formulaire";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
-import { pagesDuParcours } from "./pagination";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
 
@@ -107,17 +107,6 @@ export function usePassation(options: Options): Passation {
 }
 
 // ---- implémentation ----
-
-// `pageBuilder` : la pagination naturelle de la bibliothèque, à une exception
-// près — les douze saisies d'adresse tiennent sur une page (cf. `pagination.ts`).
-// `selectTreshold` (sic, orthographe de la lib) : une question à N possibilités
-// est rendue en boutons radio jusqu'à ce seuil (défaut 5), en liste déroulante
-// au-delà. Relevé à 10 pour garder le radio sur les listes un peu longues.
-const formBuilder = new FormBuilder({
-  engine: moteur,
-  pageBuilder: pagesDuParcours,
-  selectTreshold: 10,
-});
 
 type Contexte = {
   formState: FormState<string>;

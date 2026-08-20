@@ -17,6 +17,12 @@ type Props = {
   situation: Situation<string>;
   onNouvelleSimulation: () => void;
   /**
+   * Retour à la Partie 2, réponses intactes. Absent quand aucun parcours ne
+   * précède le document — seed ouverte droit sur le résultat, ou cas tranché dès
+   * la Partie 1, où le questionnaire administratif n'a posé aucune question.
+   */
+  onPrecedent?: () => void;
+  /**
    * Rendu du document téléchargeable proposé quand le cas final est une
    * prescription médicale de transport. Fourni par l'appelant : le simulateur
    * sait *quand* un document a lieu d'être, pas comment il se fabrique ni à qui
@@ -28,6 +34,7 @@ type Props = {
 export function ResultatFinal({
   situation,
   onNouvelleSimulation,
+  onPrecedent,
   documentTelechargeable,
 }: Props) {
   return (
@@ -37,15 +44,10 @@ export function ResultatFinal({
         situation={situation}
         documentTelechargeable={documentTelechargeable}
       />
-      <div className="fr-btns-group fr-btns-group--inline">
-        <button
-          type="button"
-          className="fr-btn fr-btn--secondary"
-          onClick={onNouvelleSimulation}
-        >
-          Faire une nouvelle simulation
-        </button>
-      </div>
+      <SuiteDuParcours
+        onNouvelleSimulation={onNouvelleSimulation}
+        onPrecedent={onPrecedent}
+      />
       <TraceDebug
         titre="résultat administratif"
         situation={situation}
@@ -60,6 +62,35 @@ export function ResultatFinal({
 }
 
 // ---- implémentation ----
+
+// Les deux suites possibles depuis le document : revenir sur les réponses
+// administratives, ou repartir de zéro. Rien ici ne peut rouvrir la décision
+// médicale — elle a été figée au passage au secrétariat.
+function SuiteDuParcours({
+  onNouvelleSimulation,
+  onPrecedent,
+}: Pick<Props, "onNouvelleSimulation" | "onPrecedent">) {
+  return (
+    <div className="fr-btns-group fr-btns-group--inline">
+      {onPrecedent && (
+        <button
+          type="button"
+          className="fr-btn fr-btn--secondary"
+          onClick={onPrecedent}
+        >
+          Précédent
+        </button>
+      )}
+      <button
+        type="button"
+        className="fr-btn fr-btn--secondary"
+        onClick={onNouvelleSimulation}
+      >
+        Faire une nouvelle simulation
+      </button>
+    </div>
+  );
+}
 
 // Ce que le patient emporte : le verdict, ce qu'il doit en faire, ce que le corps
 // médical doit reporter — et, s'il y a lieu, le CERFA pré-rempli. Un accord

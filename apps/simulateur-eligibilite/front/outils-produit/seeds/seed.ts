@@ -53,8 +53,11 @@ type EntreesSeed = { [Question in keyof SituationTypee]: string | null };
 /**
  * Où la galerie dépose l'utilisateur.
  *
- * `resultat` (le défaut) saute le questionnaire et ouvre la page de résultat ;
- * la seed doit alors être complète, et ses attendus sont vérifiés.
+ * `resultat` (le défaut) ouvre directement la page de résultat ; la seed doit
+ * alors être complète, et ses attendus sont vérifiés. Le questionnaire n'est pas
+ * pour autant escamoté : le parcours que ces réponses auraient produit est
+ * rejoué derrière la page (cf. `simulateur/questionnaire/rejeu.ts`), pour que
+ * « Précédent » y ramène comme après une saisie.
  *
  * `questionnaire` fait l'inverse : la seed s'arrête volontairement en chemin, et
  * le parcours s'ouvre sur la première question qu'elle laisse sans réponse. Elle

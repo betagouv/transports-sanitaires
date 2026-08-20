@@ -1,19 +1,37 @@
 // Outil 2 — le parcours administratif du secrétariat : Partie 2 puis Résultat 2.
+//
+// Comme côté prescripteur, le résultat n'est pas un cul-de-sac : « Précédent »
+// rouvre la Partie 2 sur sa dernière page, réponses intactes — et, quand elle
+// n'avait rien à poser, ramène au résultat médical, qui est alors l'écran d'avant
+// (cf. `ecranPrecedent`). Peu importe comment on est arrivé au document : une
+// seed rejoue le parcours que ses réponses auraient produit.
 
+import type { FormState } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
 import { trackResultat } from "../../analytics/evenements";
-import type { Cible, CleDeRegle } from "../contrat-regles-publicodes";
+import {
+  CIBLES_ADMINISTRATIVES,
+  CIBLES_MEDICALES,
+} from "../cibles-du-parcours";
+import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
+import { rejouerLesReponses } from "../questionnaire/rejeu";
 import { ResultatFinal } from "./ResultatFinal";
 
 type Props = {
   onNouvelleSimulation: () => void;
   // Seed : situation complète (P1 + P2) ouvrant directement la Page Résultat 2,
-  // sans passation ni parcours administratif.
+  // sans passation. Le parcours qui y mène est rejoué (cf. `amorceDuParcours`).
   situationFinale?: Situation<string> | null;
+  /**
+   * Retour au résultat médical, seul écran en deçà du document quand la Partie 2
+   * n'a rien eu à poser. Le secrétariat sait *quand* il n'a rien derrière lui ;
+   * changer d'outil ne lui appartient pas, c'est `App` qui l'opère.
+   */
+  onRetourAuResultatMedical?: (situationP1: Situation<string>) => void;
   /** Transmis tel quel à la Page Résultat 2 (cf. `ResultatFinal`). */
   documentTelechargeable?: (situation: Situation<string>) => ReactNode;
 };
@@ -24,58 +42,109 @@ type Props = {
 export function Secretariat({
   onNouvelleSimulation,
   situationFinale = null,
+  onRetourAuResultatMedical,
   documentTelechargeable,
 }: Props) {
-  const situationP1 = reprendrePassation();
-  const [situation, setSituation] = useState<Situation<string> | null>(
-    situationFinale,
-  );
+  const parcours = useParcoursAdministratif(situationFinale);
 
   // Situation complète déjà connue (parcours P2 terminé, ou seed ouverte) :
   // affiche directement la Page Résultat 2.
-  if (situation) {
+  if (parcours.situation) {
     return (
       <ResultatFinal
-        situation={situation}
+        situation={parcours.situation}
         onNouvelleSimulation={onNouvelleSimulation}
+        onPrecedent={ecranPrecedent(parcours, onRetourAuResultatMedical)}
         documentTelechargeable={documentTelechargeable}
       />
     );
   }
 
-  if (!situationP1) {
+  if (!parcours.situationP1) {
     return <AucunePrescription onNouvelleSimulation={onNouvelleSimulation} />;
   }
 
-  return <Qualification situationP1={situationP1} onTermine={setSituation} />;
+  return (
+    <Qualification
+      situationP1={parcours.situationP1}
+      etatInitial={parcours.etatQuestionnaire}
+      onTermine={parcours.conclure}
+    />
+  );
 }
 
 // ---- implémentation ----
 
-// Le cas final et le document, plus les douze sorties qui portent les saisies
-// d'adresse. Cibler ces sorties fait collecter leurs questions propres, et rien
-// d'autre ne le ferait : le complément et le pays ne sont dans le graphe d'aucune
-// autre cible — le CERFA les lit, et les recevait donc toujours vides. Quant aux
-// huit obligatoires, la conjonction `p2_adresses_obligatoires_completes` les
-// révélait **une par une** : publicodes n'évalue pas ce qui suit sa première
-// condition non satisfaite, si bien qu'une seule adresse manquait à la fois — et
-// qu'aucune pagination n'aurait pu les réunir.
-const CIBLES_ADMINISTRATIVES = [
-  "cible_cas_final",
-  "cible_document_a_remettre_au_patient",
-  "cible_document_depart_nom",
-  "cible_document_depart_adresse",
-  "cible_document_depart_complement",
-  "cible_document_depart_code_postal",
-  "cible_document_depart_commune",
-  "cible_document_depart_pays",
-  "cible_document_arrivee_nom",
-  "cible_document_arrivee_adresse",
-  "cible_document_arrivee_complement",
-  "cible_document_arrivee_code_postal",
-  "cible_document_arrivee_commune",
-  "cible_document_arrivee_pays",
-] as const satisfies readonly Cible[];
+/**
+ * L'écran en deçà du document : la dernière page de la Partie 2 quand elle a posé
+ * des questions, le résultat médical sinon — un cas tranché dès la Partie 1 n'a
+ * rien à qualifier, et c'est de là qu'on vient.
+ *
+ * Le retour au résultat médical ne rouvre donc *pas* une décision qu'un
+ * questionnaire administratif aurait qualifiée : là où la Partie 2 a été
+ * répondue, « Précédent » ramène dans ses pages, et ses réponses — qui ne
+ * survivraient pas à un changement d'outil — restent où elles sont.
+ */
+function ecranPrecedent(
+  parcours: ReturnType<typeof useParcoursAdministratif>,
+  onRetourAuResultatMedical: Props["onRetourAuResultatMedical"],
+) {
+  const { retourAuQuestionnaire, situationP1 } = parcours;
+  if (retourAuQuestionnaire) return retourAuQuestionnaire;
+  if (!onRetourAuResultatMedical || !situationP1) return undefined;
+  return () => onRetourAuResultatMedical(situationP1);
+}
+
+// L'avancement du parcours administratif : les réponses acquises en Partie 1, la
+// situation conclue, et derrière elle le questionnaire à rouvrir.
+// `retourAuQuestionnaire` est absent quand la Partie 2 n'a rien eu à poser (cf.
+// `retourPossible`).
+function useParcoursAdministratif(situationFinale: Situation<string> | null) {
+  const [situation, setSituation] = useState<Situation<string> | null>(
+    situationFinale,
+  );
+  const [amorce] = useState(() => amorceDuParcours(situationFinale));
+  const [etatQuestionnaire, setEtatQuestionnaire] = useState(amorce.parcours);
+  return {
+    situation,
+    situationP1: amorce.situationP1,
+    etatQuestionnaire,
+    retourAuQuestionnaire: etatQuestionnaire && (() => setSituation(null)),
+    conclure: (s: Situation<string>, etat: FormState<string>) => {
+      setEtatQuestionnaire(retourPossible(etat) ? etat : undefined);
+      setSituation(s);
+    },
+  };
+}
+
+/**
+ * Ce dont part le secrétariat. Le cas courant est la passation : le prescripteur
+ * a mené la Partie 1, sa situation attend, et le questionnaire administratif se
+ * pose par-dessus.
+ *
+ * Une seed de résultat, elle, n'a traversé ni l'une ni l'autre — elle n'est
+ * qu'un pré-remplissage des réponses. On lui rejoue donc les deux parcours à la
+ * suite : la Partie 1 pour retrouver la situation que la passation aurait
+ * portée, puis la Partie 2 par-dessus. Sans quoi le document n'aurait rien
+ * derrière lui, et le « Précédent » manquerait là où un utilisateur l'aurait eu.
+ */
+function amorceDuParcours(situationFinale: Situation<string> | null) {
+  const passation = reprendrePassation();
+  if (!situationFinale) return { situationP1: passation, parcours: undefined };
+  const partie1 = rejouerLesReponses({
+    cibles: CIBLES_MEDICALES,
+    reponses: situationFinale,
+  });
+  const partie2 = rejouerLesReponses({
+    cibles: CIBLES_ADMINISTRATIVES,
+    reponses: situationFinale,
+    situationInitiale: partie1.situation,
+  });
+  return {
+    situationP1: partie1.situation,
+    parcours: retourPossible(partie2) ? partie2 : undefined,
+  };
+}
 
 // Le complément d'adresse et le pays sont offerts, pas exigés : le modèle ne les
 // compte pas dans `p2_adresses_obligatoires_completes`. Les cibler les fait poser
@@ -102,23 +171,26 @@ const RAPPEL_PORTEE_ADMINISTRATIVE = {
 // cas était déjà tranché en Partie 1.
 function Qualification({
   situationP1,
+  etatInitial,
   onTermine,
 }: {
   situationP1: Situation<string>;
-  onTermine: (situation: Situation<string>) => void;
+  etatInitial?: FormState<string>;
+  onTermine: (situation: Situation<string>, etat: FormState<string>) => void;
 }) {
   return (
     <>
       <h1 className="fr-h3">Qualification du document à remettre au patient</h1>
       <Parcours
         outil="secretariat"
+        etatInitial={etatInitial}
         cibles={CIBLES_ADMINISTRATIVES}
         facultatives={SAISIES_FACULTATIVES}
         situationInitiale={situationP1}
         libelleFin="Voir le document à remettre au patient"
         bandeau={RAPPEL_PORTEE_ADMINISTRATIVE}
-        onTermine={(s) => {
-          onTermine(s);
+        onTermine={(s, etat) => {
+          onTermine(s, etat);
           trackResultat(
             texte(moteur.setSituation(s), "cible_cas_final"),
             "secretariat",
@@ -127,6 +199,14 @@ function Qualification({
       />
     </>
   );
+}
+
+// Un cas tranché dès la Partie 1 ne pose aucune question administrative : le
+// parcours conclut sans écran, et « Précédent » rouvrirait un questionnaire qui
+// se refermerait aussitôt. Le retour n'a de sens qu'après une page réellement
+// présentée.
+function retourPossible(etat: FormState<string>): boolean {
+  return etat.pages.some((page) => page.elements.length > 0);
 }
 
 // Le secrétariat a été ouvert sans passation : il n'y a rien à qualifier tant

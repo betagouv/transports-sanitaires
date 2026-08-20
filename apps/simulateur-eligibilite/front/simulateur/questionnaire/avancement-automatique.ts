@@ -7,7 +7,10 @@
 //
 // Sauf au **retour** sur une page déjà répondue : elle rend la main au bouton,
 // faute de quoi un « Précédent » renverrait aussitôt d'où l'on vient. Modifier
-// la réponse relance l'avancement automatique.
+// la réponse relance l'avancement automatique. Peu importe d'où vient le
+// retour : le « Précédent » d'une page garde le parcours monté, celui d'une page
+// de résultat le remonte — une page déjà répondue à l'ouverture est donc, elle
+// aussi, une page où l'on revient.
 
 import { useEffect, useRef, useState } from "react";
 import { mosaiqueDe } from "./mosaique";
@@ -30,7 +33,7 @@ export function useAvancementAutomatique(
   avancerRef.current = avancer;
 
   const [pageVue, setPageVue] = useState(page);
-  const [rendreLaMain, setRendreLaMain] = useState(false);
+  const [rendreLaMain, setRendreLaMain] = useState(!questionsEnAttente);
   if (pageVue !== page) {
     setPageVue(page);
     setRendreLaMain(!questionsEnAttente);

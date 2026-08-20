@@ -25,9 +25,11 @@ type Props = {
 };
 
 // La décision affichée ici n'est pas encore figée : c'est l'action principale
-// qui la verrouille. Une fois franchie, le secrétariat ne peut plus la modifier
-// (verrou structurel — il ne pose aucune question de Partie 1) ni revenir en
-// deçà : seule une nouvelle simulation remet tout à zéro.
+// qui la verrouille — et seulement s'il y a une Partie 2 à qualifier. Une fois
+// dans ses pages, le secrétariat ne peut plus modifier la décision (verrou
+// structurel — il ne pose aucune question de Partie 1) ni revenir en deçà. Sans
+// question administrative, le document n'a rien entre lui et cet écran : son
+// « Précédent » y ramène.
 export function ResultatMedical({
   situation,
   onContinuer,
@@ -52,10 +54,7 @@ export function ResultatMedical({
         onRecommencer={onRecommencer}
         onPrecedent={onPrecedent}
       />
-      <p className="fr-hint-text">
-        La décision médicale sera figée dès que vous aurez choisi «{" "}
-        {libelleSuite(e)} » : elle ne pourra plus être modifiée ensuite.
-      </p>
+      <AvertissementDeVerrou e={e} />
       <TraceDebug
         titre="résultat médical"
         situation={situation}
@@ -66,6 +65,20 @@ export function ResultatMedical({
 }
 
 // ---- implémentation ----
+
+// Ce qui fige la décision, c'est d'entrer dans les pages de la Partie 2 : leurs
+// réponses ne survivraient pas à un retour en deçà, donc rien n'y ramène. Quand
+// la Partie 1 a déjà tranché, il n'y a pas de page à qualifier et le document se
+// laisse au contraire quitter par « Précédent » : plus rien à annoncer ici.
+function AvertissementDeVerrou({ e }: { e: typeof moteur }) {
+  if (texte(e, "cible_partie_2_requise") !== "oui") return null;
+  return (
+    <p className="fr-hint-text">
+      La décision médicale sera figée dès que vous aurez choisi «{" "}
+      {libelleSuite(e)} » : elle ne pourra plus être modifiée ensuite.
+    </p>
+  );
+}
 
 // La Partie 2 n'est requise que si la Partie 1 n'a pas déjà tranché.
 function libelleSuite(e: typeof moteur): string {

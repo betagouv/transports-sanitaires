@@ -113,6 +113,47 @@ describe("écran de galerie", () => {
 });
 
 describe("galerie branchée sur l'App", () => {
+  it("depuis un cas tranché en Partie 1, le document ramène au résultat médical", async () => {
+    // Aucune question administrative à poser : l'écran en deçà du document est
+    // le résultat médical, et « Précédent » doit y ramener — quel que soit ce
+    // qu'a conclu la Partie 1, et quelle que soit la façon d'être arrivé là.
+    const user = userEvent.setup({ delay: null });
+    render(
+      <App
+        referentiel={snapshotReferentiel}
+        pseudonymiser={async () => null}
+      />,
+    );
+
+    await ouvrirGalerie(user);
+    const seed = seedParId("prescripteur-smur");
+    // La galerie est chargée à la demande, et l'ouverture d'une seed rejoue son
+    // parcours : de quoi dépasser la seconde par défaut quand la suite tourne en
+    // parallèle.
+    await user.click(
+      await screen.findByRole(
+        "button",
+        { name: `Ouvrir : ${seed.libelle}` },
+        { timeout: 10_000 },
+      ),
+    );
+    await user.click(
+      screen.getByRole("button", { name: /voir le résultat final/i }),
+    );
+    expect(
+      screen.getByRole("heading", { name: /document à imprimer/i }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    expect(
+      screen.getByRole("heading", { name: /équipe SMUR/i }),
+    ).toBeInTheDocument();
+    // Et l'on repart d'où l'on vient : le résultat médical rouvre le document.
+    expect(
+      screen.getByRole("button", { name: /voir le résultat final/i }),
+    ).toBeInTheDocument();
+  }, 20_000);
+
   it("ouvre une seed de Partie 1 sur la page de résultat médical", async () => {
     const user = userEvent.setup();
     render(

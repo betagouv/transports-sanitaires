@@ -82,7 +82,9 @@ describe("accès au CERFA via la galerie de seeds", () => {
     // Timeouts élargis sur toute la fin de ce test : la Page Résultat 2 est un
     // gros DOM (la recherche par nom accessible y coûte cher) et la génération
     // relit puis réécrit un gabarit de 767 ko. La seconde par défaut ne suffit
-    // pas quand la suite tourne en parallèle.
+    // pas quand la suite tourne en parallèle — pas plus que les cinq du test
+    // lui-même, l'ouverture d'une seed rejouant en plus son parcours (cf.
+    // `simulateur/questionnaire/rejeu.ts`).
     const attendreBouton = () =>
       screen.findByRole("button", TELECHARGER, { timeout: 10_000 });
 
@@ -90,7 +92,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
     // Le bouton reprend son libellé une fois le PDF produit.
     await attendreBouton();
     expect(screen.queryByRole("alert")).toBeNull();
-  });
+  }, 20_000);
 
   it("disparaît une fois le parcours engagé sur la page de résultat", async () => {
     const { user } = setup();
