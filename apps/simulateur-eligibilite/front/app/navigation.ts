@@ -8,8 +8,12 @@
 import type { Situation } from "publicodes";
 import { useState } from "react";
 import type { AccesIdentification } from "../identification/Identification";
-import { type Seed, situationDe } from "../outils-produit/seeds/seed";
-import { effacerPassation } from "../simulateur/passation";
+import {
+  ouvreLeQuestionnaire,
+  type Seed,
+  situationDe,
+} from "../outils-produit/seeds/seed";
+import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import type { Outil } from "./outil";
 
 type Ecran = "identification" | "galerie" | "labo" | "simulateur";
@@ -29,10 +33,9 @@ export type Navigation = {
   // Les outils produit s'ouvrent **après** la porte : on entre identifié,
   // quelle que soit la destination.
   identifier: (acces: AccesIdentification) => void;
-  // Ouvre la page de résultat de la seed choisie, en sautant le questionnaire —
-  // résultat médical (prescripteur) ou résultat final (secrétariat) selon
-  // l'écran d'atterrissage déclaré par la seed. L'identification, elle, a déjà
-  // eu lieu : on n'arrive ici que par la porte.
+  // Ouvre la seed choisie sur l'écran qu'elle déclare : sa page de résultat en
+  // sautant le questionnaire, ou le questionnaire lui-même là où elle s'arrête.
+  // L'identification, elle, a déjà eu lieu : on n'arrive ici que par la porte.
   ouvrirSeed: (seed: Seed) => void;
   ouvrirGalerie: () => void;
   fermerOutil: () => void;
@@ -79,12 +82,7 @@ function actions(
   return {
     identifier: (acces) =>
       modifier({ ecran: ecranDe(acces), outilsProduit: acces.outilsProduit }),
-    ouvrirSeed: (seed) =>
-      modifier({
-        ecran: "simulateur",
-        outil: seed.outil,
-        situationDev: situationDe(seed),
-      }),
+    ouvrirSeed: (seed) => ouvrirLaSeed(seed, etat, modifier),
     ouvrirGalerie: () => modifier({ ecran: "galerie" }),
     fermerOutil: () => modifier({ ecran: "simulateur" }),
     passerAuSecretariat: () => modifier({ outil: "secretariat" }),
@@ -98,6 +96,32 @@ function actions(
       });
     },
   };
+}
+
+// Une seed de résultat entre par `situationDev`, qui court-circuite le
+// questionnaire. Une seed de questionnaire prend au contraire le chemin normal :
+// elle se **passe** au secrétariat comme le ferait un prescripteur, et le
+// parcours s'ouvre sur la première question qu'elle laisse sans réponse. La clé
+// remonte pour repartir d'un parcours vierge, la seed pouvant être rouverte.
+function ouvrirLaSeed(
+  seed: Seed,
+  etat: Etat,
+  modifier: (partiel: Partial<Etat>) => void,
+) {
+  const situation = situationDe(seed);
+  if (!ouvreLeQuestionnaire(seed))
+    return modifier({
+      ecran: "simulateur",
+      outil: seed.outil,
+      situationDev: situation,
+    });
+  emettrePassation(situation);
+  modifier({
+    ecran: "simulateur",
+    outil: seed.outil,
+    situationDev: null,
+    cle: etat.cle + 1,
+  });
 }
 
 function ecranDe(acces: AccesIdentification): Ecran {

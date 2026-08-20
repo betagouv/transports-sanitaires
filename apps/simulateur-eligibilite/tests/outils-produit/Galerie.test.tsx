@@ -33,21 +33,34 @@ describe("écran de galerie", () => {
     }
   });
 
-  it("sépare les seeds selon l'écran de résultat sur lequel elles atterrissent", () => {
+  it("sépare les seeds selon l'écran sur lequel elles atterrissent", () => {
     render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
 
+    // Trois tableaux : les deux pages de résultat, puis les seeds qui s'arrêtent
+    // en chemin et ouvrent le questionnaire.
     const compte = (outil: "prescripteur" | "secretariat") =>
-      SEEDS.filter((s) => s.outil === outil).length;
+      SEEDS.filter(
+        (s) => s.outil === outil && s.atterrissage !== "questionnaire",
+      ).length;
 
     const tables = screen.getAllByRole("table");
-    expect(tables).toHaveLength(2); // une section par outil
-    const [p1, p2] = tables as [HTMLElement, HTMLElement];
+    expect(tables).toHaveLength(3);
+    const [p1, p2, questionnaire] = tables as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ];
     expect(
       within(p1).getAllByRole("button", { name: /^Ouvrir :/ }),
     ).toHaveLength(compte("prescripteur"));
     expect(
       within(p2).getAllByRole("button", { name: /^Ouvrir :/ }),
     ).toHaveLength(compte("secretariat"));
+    expect(
+      within(questionnaire).getAllByRole("button", { name: /^Ouvrir :/ }),
+    ).toHaveLength(
+      SEEDS.filter((s) => s.atterrissage === "questionnaire").length,
+    );
   });
 
   it("donne à chaque seed son régime de financement, non-conformités comprises", () => {

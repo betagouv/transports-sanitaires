@@ -1,8 +1,12 @@
 // Galerie de seeds — écran réservé au **service produit** (n° 4), sur tous les
-// environnements (cf. `App.tsx`). Il liste le catalogue de `seeds/` et ouvre, d'un
-// clic, la page de résultat correspondante : Page Résultat 1 pour les seeds de
-// Partie 1, Page Résultat 2 pour celles dont l'intérêt est le cas final — d'où l'on
-// télécharge le CERFA pré-rempli quand le cas s'y prête.
+// environnements (cf. `App.tsx`). Il range le catalogue de `seeds/` par écran
+// d'atterrissage et ouvre celui-ci d'un clic : Page Résultat 1 pour les seeds de
+// Partie 1, Page Résultat 2 pour celles dont l'intérêt est le cas final — d'où
+// l'on télécharge le CERFA pré-rempli quand le cas s'y prête —, et le
+// questionnaire lui-même pour celles qui s'arrêtent en chemin.
+//
+// Le tableau, lui, est dans `TableauDesSeeds.tsx` : ici on sait quels écrans
+// existent, pas comment une seed se lit.
 //
 // La galerie rejoue chaque seed dans le moteur **du navigateur** — donc, en mode
 // labo, sous les règles en cours de test : la colonne « État » dit alors tout de
@@ -11,48 +15,44 @@
 
 import { useMemo } from "react";
 import { EcranPleinePage } from "../../app/EcranPleinePage";
-import type { Outil } from "../../app/outil";
 import { moteur } from "../../simulateur/moteur";
 import { SEEDS } from "./catalogue";
-import {
-  type CibleSeed,
-  type EvaluationSeed,
-  evaluerSeed,
-  type Seed,
-} from "./seed";
+import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
+import { type LigneSeed, TableauDesSeeds } from "./TableauDesSeeds";
 
 type Props = {
   onOuvrir: (seed: Seed) => void;
   onRetour: () => void;
 };
 
-// Intitulés courts des cibles, pour tenir dans une colonne.
-const LIBELLE_CIBLE: Record<CibleSeed, string> = {
-  cible_resultat_medical: "Résultat médical",
-  cible_transport_sanitaire_prescrit: "Transport",
-  cible_partie_2_requise: "Partie 2 requise",
-  cible_cas_final: "Cas final",
-  cible_document_a_remettre_au_patient: "Document",
-  cible_regime_financement: "Qui paie",
-  cible_article_80_situation_specifique: "Article 80 — situation spécifique",
-};
-
 const SECTIONS: ReadonlyArray<{
-  outil: Outil;
+  cle: string;
   titre: string;
   sousTitre: string;
+  retient: (seed: Seed) => boolean;
 }> = [
   {
-    outil: "prescripteur",
+    cle: "prescripteur",
     titre: "Page Résultat 1 — résultat médical",
     sousTitre:
       "Situations tranchées en Partie 1. Le parcours reste franchissable jusqu'au résultat final.",
+    retient: (seed) =>
+      seed.outil === "prescripteur" && !ouvreLeQuestionnaire(seed),
   },
   {
-    outil: "secretariat",
+    cle: "secretariat",
     titre: "Page Résultat 2 — résultat final",
     sousTitre:
       "Situations complètes (Partie 1 + Partie 2), ouvertes directement sur le cas final.",
+    retient: (seed) =>
+      seed.outil === "secretariat" && !ouvreLeQuestionnaire(seed),
+  },
+  {
+    cle: "questionnaire",
+    titre: "Questionnaire — là où la seed s'arrête",
+    sousTitre:
+      "Situations volontairement incomplètes, ouvertes sur la première question sans réponse. Elles ne décident aucune cible : leurs colonnes sont donc vides, et c'est normal.",
+    retient: ouvreLeQuestionnaire,
   },
 ];
 
@@ -72,7 +72,8 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
         Les {SEEDS.length} situations de référence du simulateur (
         <code>seeds/</code>), celles-là mêmes que rejouent les tests. Ouvrez-en
         une pour consulter son résultat — et, pour un cas de prescription, le
-        CERFA pré-rempli.
+        CERFA pré-rempli. Les dernières ouvrent le questionnaire au lieu d'un
+        résultat : elles s'arrêtent en chemin, à l'écran qu'on veut voir.
       </p>
       <ConformiteDuCatalogue lignes={lignes} />
       <SeedsParEcranDAtterrissage lignes={lignes} onOuvrir={onOuvrir} />
@@ -88,8 +89,6 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
 }
 
 // ---- implémentation ----
-
-type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
 
 // Le moteur effectivement chargé confirme-t-il les attendus du catalogue ? En
 // mode labo, ce bandeau est le premier signal qu'une règle de test a bougé.
@@ -114,9 +113,10 @@ function ConformiteDuCatalogue({ lignes }: { lignes: LigneSeed[] }) {
   );
 }
 
-// Le catalogue est présenté en deux tableaux, un par écran sur lequel la seed
-// atterrit : c'est ce qui distingue une situation tranchée en Partie 1 d'une
-// situation complète, et donc ce qu'on vient chercher ici.
+// Le catalogue est présenté par écran d'atterrissage : c'est ce qui distingue une
+// situation tranchée en Partie 1 d'une situation complète, et donc ce qu'on vient
+// chercher ici. Un troisième tableau ne mène pas à un résultat mais au
+// questionnaire, là où la seed s'arrête.
 function SeedsParEcranDAtterrissage({
   lignes,
   onOuvrir,
@@ -125,165 +125,11 @@ function SeedsParEcranDAtterrissage({
   onOuvrir: (seed: Seed) => void;
 }) {
   return SECTIONS.map((section) => (
-    <TableauSection
-      key={section.outil}
+    <TableauDesSeeds
+      key={section.cle}
       section={section}
-      lignes={lignes.filter(({ seed }) => seed.outil === section.outil)}
+      lignes={lignes.filter(({ seed }) => section.retient(seed))}
       onOuvrir={onOuvrir}
     />
   ));
-}
-
-// Le titre de section passe par la légende du tableau : DSFR la rend visible
-// (`.fr-table caption`), un `fr-sr-only` y serait annulé.
-function TableauSection({
-  section,
-  lignes,
-  onOuvrir,
-}: {
-  section: (typeof SECTIONS)[number];
-  lignes: LigneSeed[];
-  onOuvrir: (seed: Seed) => void;
-}) {
-  return (
-    <section className="fr-mb-6w">
-      <div className="fr-table fr-table--bordered">
-        <table>
-          <caption>
-            {section.titre}
-            <span className="fr-table__detail">{section.sousTitre}</span>
-          </caption>
-          <ColonnesDuCatalogue />
-          <tbody>
-            {lignes.map(({ seed, evaluation }) => (
-              <Ligne
-                key={seed.id}
-                seed={seed}
-                evaluation={evaluation}
-                onOuvrir={() => onOuvrir(seed)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-// La colonne « Qui paie » porte le régime de financement : c'est lui qui dit d'un
-// coup d'œil si le transport est à la charge de l'Assurance Maladie — donc si la
-// situation est une non-conformité. Toutes les seeds le déclarent.
-function Ligne({
-  seed,
-  evaluation,
-  onOuvrir,
-}: {
-  seed: Seed;
-  evaluation: EvaluationSeed;
-  onOuvrir: () => void;
-}) {
-  return (
-    <tr>
-      <IdentiteDeLaSeed seed={seed} />
-      <td className="fr-text--sm">
-        <strong>{String(seed.attendu.cible_regime_financement)}</strong>
-      </td>
-      <td>
-        <Attendus seed={seed} />
-      </td>
-      <td>
-        <Etat evaluation={evaluation} />
-      </td>
-      <td>
-        <button
-          type="button"
-          className="fr-btn fr-btn--sm fr-btn--tertiary"
-          aria-label={`Ouvrir : ${seed.libelle}`}
-          onClick={onOuvrir}
-        >
-          Ouvrir
-        </button>
-      </td>
-    </tr>
-  );
-}
-
-// Les cinq colonnes décrivant une seed, identiques dans les deux tableaux : ce
-// qu'elle pose, qui paie, ce qu'elle attend, ce que le moteur en dit, et de quoi
-// l'ouvrir.
-function ColonnesDuCatalogue() {
-  return (
-    <thead>
-      <tr>
-        <th scope="col">Situation</th>
-        <th scope="col">Qui paie</th>
-        <th scope="col">Attendu</th>
-        <th scope="col">État</th>
-        <th scope="col">
-          <span className="fr-sr-only">Action</span>
-        </th>
-      </tr>
-    </thead>
-  );
-}
-
-// Ce qui désigne la seed : son libellé, ce qu'elle raconte, et l'identifiant par
-// lequel les tests et `apercu-cerfa` la nomment.
-function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
-  return (
-    <th scope="row" style={{ maxWidth: "22rem" }}>
-      <span className="fr-text--bold">{seed.libelle}</span>
-      <br />
-      <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
-        {seed.description}
-      </span>
-      <br />
-      <code className="fr-text--xs">{seed.id}</code>
-    </th>
-  );
-}
-
-function Attendus({ seed }: { seed: Seed }) {
-  return (
-    <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
-      {Object.entries(seed.attendu)
-        .filter(([cible]) => cible !== "cible_regime_financement")
-        .map(([cible, valeur]) => (
-          <li key={cible}>
-            {LIBELLE_CIBLE[cible as CibleSeed]} :{" "}
-            <strong>{String(valeur)}</strong>
-          </li>
-        ))}
-    </ul>
-  );
-}
-
-function Etat({ evaluation }: Pick<LigneSeed, "evaluation">) {
-  const conforme = evaluation.ecarts.length === 0;
-  const proposeLeCerfa =
-    evaluation.valeurs.cible_cas_final === "prescription médicale de transport";
-  return (
-    <>
-      <p
-        className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}
-      >
-        {conforme ? "conforme" : "écart"}
-      </p>
-      {!conforme && (
-        <ul
-          className="fr-text--xs"
-          style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
-        >
-          {evaluation.ecarts.map((e) => (
-            <li key={e.cible}>
-              {LIBELLE_CIBLE[e.cible]} : {String(e.obtenu)}
-            </li>
-          ))}
-        </ul>
-      )}
-      {proposeLeCerfa && (
-        <p className="fr-badge fr-badge--sm fr-badge--info fr-mt-1w">CERFA</p>
-      )}
-    </>
-  );
 }

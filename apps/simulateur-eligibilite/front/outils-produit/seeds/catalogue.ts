@@ -11,6 +11,12 @@
 // Résultat 1 (résultat médical) pour les seeds qui se jouent en Partie 1, Page
 // Résultat 2 (résultat final) pour celles dont l'intérêt est le cas final. Depuis
 // la Page Résultat 1, le parcours reste franchissable jusqu'au résultat final.
+//
+// Une seed peut aussi déclarer `atterrissage: "questionnaire"` : elle s'arrête
+// alors volontairement en chemin (une entrée à `null` **retire** la réponse de la
+// base neutre) et la galerie ouvre le parcours sur la première question restée
+// sans réponse. Ce n'est pas un cas de non-régression — elle ne décide aucune
+// cible — mais un raccourci vers un écran qu'on veut voir.
 
 import type { Seed } from "./seed.ts";
 
@@ -44,6 +50,24 @@ const CONTEXTE_HOSPITALISATION = {
 
 // Cas particulier médical (M0) : même mécanique d'option exclusive.
 const M0_AUCUN_DECOCHE = { p1_m0_aucun: "non" } as const;
+
+// Les douze saisies d'adresse (D1-D12) retirées de la base neutre : `null` ôte la
+// réponse, là où une surcharge ne saurait que la remplacer. C'est ce qui laisse
+// une seed s'arrêter sur la page qui les demande.
+const SANS_ADRESSES = {
+  p2_depart_nom_lieu: null,
+  p2_depart_adresse: null,
+  p2_depart_complement_adresse: null,
+  p2_depart_code_postal: null,
+  p2_depart_commune: null,
+  p2_depart_pays: null,
+  p2_arrivee_nom_lieu: null,
+  p2_arrivee_adresse: null,
+  p2_arrivee_complement_adresse: null,
+  p2_arrivee_code_postal: null,
+  p2_arrivee_commune: null,
+  p2_arrivee_pays: null,
+} as const;
 
 // Exception A0.2 qui laisse le transport dans le champ de l'Assurance Maladie :
 // c'est la réponse qui ouvre la branche « patient détenu » (A1.x) au lieu de
@@ -685,5 +709,26 @@ export const SEEDS: readonly Seed[] = [
       cible_regime_financement: "Assurance Maladie",
       cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
     },
+  },
+  {
+    id: "secretariat-saisie-adresses",
+    libelle: "Questionnaire — saisie des adresses du trajet",
+    description:
+      "Tout est répondu jusqu'aux adresses, et elles seules manquent : le parcours " +
+      "s'ouvre donc sur la page du lieu de départ. Le trajet va d'une structure de " +
+      "soins à une autre, la variante qui demande le plus — les six saisies de " +
+      "chaque lieu, nom compris.",
+    outil: "secretariat",
+    atterrissage: "questionnaire",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CONTEXTE_HOSPITALISATION,
+      // Hors domicile aux deux bouts : c'est ce qui rend applicables D1 et D7.
+      p2_trajet_depart: "'Structure de soins'",
+      ...SANS_ADRESSES,
+    },
+    // Une seed de questionnaire ne décide rien : c'est son propos.
+    attendu: {},
   },
 ] as const;

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
-import { evaluerSeed } from "../../front/outils-produit/seeds/seed";
+import {
+  evaluerSeed,
+  ouvreLeQuestionnaire,
+} from "../../front/outils-produit/seeds/seed";
 import { moteurDeTest } from "./moteur";
 
 // Matrice de non-régression métier (règles plates v9.2.1). Elle n'a pas de scénarios
@@ -10,8 +13,16 @@ import { moteurDeTest } from "./moteur";
 
 const moteur = moteurDeTest();
 
+// Le catalogue porte deux natures de seed. Les **complètes** décident toutes
+// leurs cibles et forment la matrice de non-régression. Celles qui **ouvrent le
+// questionnaire** s'arrêtent volontairement en chemin : elles ne décident rien,
+// et ne prétendent rien — ce sont des raccourcis vers un écran. Les confondre
+// ferait porter les attendus des unes sur le vide des autres.
+const COMPLETES = SEEDS.filter((seed) => !ouvreLeQuestionnaire(seed));
+const ARRETS = SEEDS.filter(ouvreLeQuestionnaire);
+
 describe("modèle v9.2.1 — le moteur confirme les attendus des seeds", () => {
-  for (const seed of SEEDS) {
+  for (const seed of COMPLETES) {
     it(seed.id, () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
       // La base neutre répond à tout le questionnaire : aucune cible ne doit
@@ -38,7 +49,7 @@ describe("modèle v9.2.1 — couverture des cas finaux", () => {
       "non éligible à une prise en charge par l’Assurance Maladie",
     ];
     const couverts = new Set(
-      SEEDS.map(
+      COMPLETES.map(
         (seed) => evaluerSeed(moteur, seed).valeurs.cible_cas_final as string,
       ),
     );
@@ -58,7 +69,7 @@ describe("modèle v9.2.1 — couverture des régimes de financement", () => {
       "aucune prise en charge dans ce parcours",
     ];
     const couverts = new Set(
-      SEEDS.map(
+      COMPLETES.map(
         (seed) => evaluerSeed(moteur, seed).valeurs.cible_regime_financement,
       ),
     );
@@ -100,9 +111,31 @@ describe("catalogue de seeds", () => {
     // apprendrait rien, et ne verrouillerait rien non plus. Le régime est exigé de
     // toutes : c'est lui qui dit d'un mot si le transport est à la charge de
     // l'Assurance Maladie — donc si la situation est conforme ou non.
-    for (const seed of SEEDS) {
+    for (const seed of COMPLETES) {
       expect(seed.attendu.cible_cas_final, `${seed.id}`).toBeTruthy();
       expect(seed.attendu.cible_regime_financement, `${seed.id}`).toBeTruthy();
     }
+  });
+});
+
+describe("seeds qui ouvrent le questionnaire", () => {
+  it.each(ARRETS.map((seed) => seed.id))("%s s'arrête bien en chemin", (id) => {
+    const seed = ARRETS.find((s) => s.id === id)!;
+    // Une seed qui déciderait tout ouvrirait un résultat, quoi qu'elle déclare :
+    // c'est la question laissée sans réponse qui la fait atterrir plus tôt.
+    expect(
+      evaluerSeed(moteur, seed).manquantes,
+      `${id} — aucune cible indécise, le questionnaire n'aurait rien à demander`,
+    ).not.toEqual([]);
+    // Et rien à annoncer : ses cibles n'ont pas de valeur à confronter.
+    expect(
+      seed.attendu,
+      `${id} — attendus sur une situation incomplète`,
+    ).toEqual({});
+    // La reprise passe par la passation, que seul le secrétariat lit.
+    expect(
+      seed.outil,
+      `${id} — atterrissage impossible côté prescripteur`,
+    ).toBe("secretariat");
   });
 });

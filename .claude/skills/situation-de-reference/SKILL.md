@@ -41,6 +41,32 @@ invisible à qui parcourt le catalogue pour savoir ce qui est couvert.
 }
 ```
 
+## Une seed qui s'arrête en chemin
+
+Le défaut est qu'une seed soit **complète** : elle décide toutes ses cibles, ses
+attendus sont vérifiés, elle ouvre une page de résultat. Une seed peut au
+contraire déclarer `atterrissage: "questionnaire"` : elle s'arrête alors
+volontairement avant la fin, et la galerie ouvre le parcours sur la première
+question restée sans réponse. C'est un **raccourci vers un écran**, pas un cas de
+non-régression.
+
+```ts
+{
+  id: "secretariat-saisie-adresses",
+  …
+  outil: "secretariat",          // obligatoire : l'ouverture passe par la passation
+  atterrissage: "questionnaire",
+  // `null` **retire** la réponse de la base neutre — une surcharge ne saurait
+  // que la remplacer, et la base répond à tout.
+  entrees: { …, p2_depart_adresse: null, … },
+  attendu: {},                   // elle ne décide rien : c'est son propos
+}
+```
+
+`scenarios.test.ts` range ces seeds à part : elles échappent aux attendus
+obligatoires, mais doivent prouver qu'elles laissent bien une cible indécise —
+sans quoi elles ouvriraient un résultat, quoi qu'elles déclarent.
+
 `entrees` et `attendu` sont typés par le contrat
 (`front/simulateur/contrat-regles-publicodes.ts`) : une clé qui n'y est pas est
 refusée à la compilation. Les cibles déclarables dans `attendu` sont celles de

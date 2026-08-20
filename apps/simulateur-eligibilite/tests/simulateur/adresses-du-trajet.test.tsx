@@ -13,6 +13,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue";
+import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import type { Reponse } from "./parcours";
@@ -75,6 +77,18 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
     await user.click(suivant());
     expect(intitulés()).toEqual(SAISIES_ARRIVEE);
   }, 30_000);
+
+  it("s'atteint d'un clic depuis la galerie de seeds", () => {
+    // `secretariat-saisie-adresses` existe pour cet écran : elle répond à tout
+    // sauf aux adresses, et la galerie la passe au secrétariat comme le ferait un
+    // prescripteur. Aucune traversée, donc — la page s'ouvre directement.
+    emettrePassation(situationDe(seedParId("secretariat-saisie-adresses")));
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    expect(intitulés()).toEqual(SAISIES_DEPART);
+    for (const champ of screen.getAllByRole("textbox"))
+      expect(champ).toHaveValue("");
+  });
 
   it("retire le nom du lieu quand le trajet part d'un domicile", async () => {
     // D1 n'est applicable qu'ailleurs qu'au domicile ; les cinq autres restent,

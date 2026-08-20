@@ -43,6 +43,26 @@ export type CibleSeed = (typeof CIBLES_SEED)[number];
  */
 type AttenduSeed = Partial<Record<CibleSeed, string | boolean>>;
 
+/**
+ * Réponses d'une seed, surchargées sur la base neutre. `null` **retire** la
+ * réponse : c'est ainsi qu'une seed laisse une question sans réponse, ce
+ * qu'aucune surcharge ne saurait exprimer — la base neutre répond à tout.
+ */
+type EntreesSeed = { [Question in keyof SituationTypee]: string | null };
+
+/**
+ * Où la galerie dépose l'utilisateur.
+ *
+ * `resultat` (le défaut) saute le questionnaire et ouvre la page de résultat ;
+ * la seed doit alors être complète, et ses attendus sont vérifiés.
+ *
+ * `questionnaire` fait l'inverse : la seed s'arrête volontairement en chemin, et
+ * le parcours s'ouvre sur la première question qu'elle laisse sans réponse. Elle
+ * ne décide donc aucune cible et n'annonce aucun attendu — ce n'est pas un cas
+ * de non-régression, c'est un raccourci vers un écran qu'on veut voir.
+ */
+type Atterrissage = "resultat" | "questionnaire";
+
 export type Seed = {
   /** Identifiant stable (kebab-case) — cité par les tests, les scripts et la doc. */
   readonly id: string;
@@ -52,14 +72,26 @@ export type Seed = {
   readonly description: string;
   /** Écran ouvert par la galerie : résultat médical (P1) ou résultat final (P2). */
   readonly outil: Outil;
+  /** Résultat (défaut) ou questionnaire — cf. `Atterrissage`. */
+  readonly atterrissage?: Atterrissage;
   /** Réponses qui distinguent cette seed, surchargées sur `BASE_NEUTRE`. */
-  readonly entrees: SituationTypee;
+  readonly entrees: EntreesSeed;
   readonly attendu: AttenduSeed;
 };
 
-/** Situation publicodes complète de la seed : base neutre + ses entrées. */
+/** La seed s'arrête-t-elle en chemin, pour ouvrir le questionnaire ? */
+export function ouvreLeQuestionnaire(seed: Seed): boolean {
+  return seed.atterrissage === "questionnaire";
+}
+
+/** Situation publicodes de la seed : base neutre + ses entrées, `null` retirant. */
 export function situationDe(seed: Seed): Situation<string> {
-  return { ...BASE_NEUTRE, ...seed.entrees };
+  const situation: Situation<string> = { ...BASE_NEUTRE };
+  for (const [cle, valeur] of Object.entries(seed.entrees)) {
+    if (valeur === null) delete situation[cle];
+    else situation[cle] = valeur;
+  }
+  return situation;
 }
 
 type EcartSeed = {

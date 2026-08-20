@@ -163,6 +163,13 @@ tient l'ensemble, du point de vue de l'utilisateur : six champs par lieu, dans
 l'ordre du formulaire papier, le départ puis l'arrivée — cinq seulement pour un
 trajet qui part du domicile, le nom du lieu n'y étant pas applicable.
 
+Pour voir l'écran sans traverser la Partie 2, la galerie porte la seed
+`secretariat-saisie-adresses` : elle répond à tout **sauf** aux adresses, et ouvre
+donc le questionnaire là-dessus. C'est la première seed d'une nature nouvelle —
+`atterrissage: "questionnaire"` —, qui ne décide aucune cible et n'est donc pas un
+cas de non-régression, mais un raccourci vers un écran. `scenarios.test.ts` la
+range à part et vérifie qu'elle s'arrête bel et bien en chemin.
+
 ## Savoir ce qui tourne
 
 Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.2.1`.
@@ -246,7 +253,9 @@ front/                   front (bundlé par Vite)
     deverrouillage.ts    estServiceProduit — la garde, commune à tout ce dossier
     OutilsProduit.tsx    l'encadré partagé par l'écran-porte et le parcours
     labo/                Labo.tsx  BandeauLabo.tsx  labo.ts (test de règles par le produit)
-    seeds/               catalogue des situations de référence + GalerieSeeds.tsx
+    seeds/               catalogue des situations de référence, base-neutre.ts
+                         GalerieSeeds.tsx  les écrans d'atterrissage
+                         TableauDesSeeds.tsx  comment une seed se lit en tableau
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
       cerfa/             prescription CERFA pré-remplie, générée dans le navigateur
                          depuis-simulateur.ts  la traduction situation → saisies
