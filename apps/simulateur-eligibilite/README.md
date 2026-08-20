@@ -143,24 +143,25 @@ Le symptôme du premier morceau se voit à l'œil nu ; celui du second, non — 
 livraison qui referait le défaut ferait échouer ce fichier plutôt qu'un écran en
 production.
 
-### La page des adresses, seule exception à « une question par écran »
+### Les pages d'adresse, seule exception à « une question par écran »
 
-Les douze saisies composent **une** information : le livrable les veut les unes
-sous les autres, pas sur douze écrans. Deux mécaniques s'y opposaient, et il a
-fallu les deux pour y arriver — [`secretariat/Secretariat.tsx`](front/simulateur/secretariat/Secretariat.tsx)
+Une adresse est **une** information : le livrable la veut d'un seul tenant, pas
+sur six écrans. Le parcours pose donc le lieu de départ sur une page et le lieu
+d'arrivée sur la suivante. Deux mécaniques s'y opposaient, et il a fallu les deux
+pour y arriver — [`secretariat/Secretariat.tsx`](front/simulateur/secretariat/Secretariat.tsx)
 et [`questionnaire/pagination.ts`](front/simulateur/questionnaire/pagination.ts) :
 
 | Ce qui bloquait | Ce qui le lève |
 |---|---|
 | `p2_adresses_obligatoires_completes` est une conjonction, et publicodes n'évalue pas ce qui suit sa première condition non satisfaite : **une seule adresse manquait à la fois** | le secrétariat cible les douze sorties `cible_document_*`, qui ne sont que des `valeur:` — les douze questions manquent alors ensemble |
 | le complément et le pays ne sont dans le graphe d'aucune cible : ils n'étaient **jamais posés**, alors que le CERFA les lit | les mêmes douze cibles |
-| `groupByNamespace` (pagination par défaut) regroupe sur le premier segment d'un nom **pointé**, or le modèle est plat : une question, une page | un `pageBuilder` qui réunit les douze saisies, et les place **en dernier** — sinon le nom du lieu de départ, applicable un cran plus tôt, partirait devant |
+| `groupByNamespace` (pagination par défaut) regroupe sur le premier segment d'un nom **pointé**, or le modèle est plat : une question, une page | un `pageBuilder` qui réunit les saisies d'un même lieu, et place ces pages **en dernier** — sinon le nom du lieu de départ, applicable un cran plus tôt, partirait devant |
 | une question posée doit être répondue pour quitter la page — poser le pays reviendrait à l'exiger | `facultatives`, la liste que le secrétariat passe au parcours : posées, non bloquantes |
 
 [`tests/simulateur/adresses-du-trajet.test.tsx`](tests/simulateur/adresses-du-trajet.test.tsx)
-tient l'ensemble, du point de vue de l'utilisateur : les douze champs, sur un
-écran, dans l'ordre du formulaire papier — dix seulement quand le trajet va d'un
-domicile à un autre, les deux noms de lieu n'y étant pas applicables.
+tient l'ensemble, du point de vue de l'utilisateur : six champs par lieu, dans
+l'ordre du formulaire papier, le départ puis l'arrivée — cinq seulement pour un
+trajet qui part du domicile, le nom du lieu n'y étant pas applicable.
 
 ## Savoir ce qui tourne
 
@@ -230,6 +231,7 @@ front/                   front (bundlé par Vite)
                          passation.ts  l'état du parcours et ses gestes
                          avancement-automatique.ts  les 200 ms du contrat 2.0.0
                          pagination.ts  une question par page, sauf les adresses
+                         (un lieu par page)
                          suivi-de-parcours.ts  ce qui part vers l'analytics
     resultat/            Vulgarisation.tsx (dictionnaire patient)
                          InformationPatient.tsx  TraceDebug.tsx
