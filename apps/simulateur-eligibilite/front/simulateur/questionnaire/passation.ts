@@ -20,6 +20,7 @@ import {
 import { formBuilder } from "./constructeur-de-formulaire";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
+import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
 
@@ -170,12 +171,18 @@ function actions({
       // question posée reste sans réponse — le bouton est déjà désactivé, ceci
       // couvre une soumission clavier éventuelle.
       if (etat.questionsEnAttente) return;
-      if (!etat.hasNextPage) return conclure(formState, options, suivi);
-      const suivante = formBuilder.goToNextPage(formState);
+      const revu = avecSuiteRevue(formState);
+      if (!formBuilder.pagination(revu).hasNextPage)
+        return conclure(revu, options, suivi);
+      const suivante = formBuilder.goToNextPage(revu);
       setFormState(suivante);
       suivi.etapeFranchie(formBuilder.pagination(suivante).current);
     },
-    reculer: () => setFormState(pagePrecedente(formState)),
+    // Revenir en arrière ne retire aucune réponse et ne raccourcit pas le
+    // parcours : la page rouvre telle qu'elle a été quittée, et les pages en
+    // aval restent dans `pages`. Les en sortir les perdrait — `computeNextFields`
+    // ne rend que ce qui *manque*, et une question répondue ne manque plus.
+    reculer: () => setFormState(formBuilder.goToPreviousPage(formState)),
   };
 }
 
@@ -236,23 +243,6 @@ function avecReponses(formState: FormState<string>, reponses: Reponses) {
   for (const [id, valeur] of reponses)
     etat = formBuilder.handleInputChange(etat, id, valeur);
   return etat;
-}
-
-function pagePrecedente(formState: FormState<string>): FormState<string> {
-  // `goToPreviousPage` se contente de décrémenter l'index : les pages en aval
-  // restent dans `pages`. Or `computeNextFields` (appelé à chaque saisie)
-  // exclut tout ce qui figure déjà dans `pages` — un changement de réponse sur
-  // la page de retour ne recalculerait donc jamais la suite du parcours (page
-  // suivante figée). On restaure l'état tel qu'il était à l'arrivée sur cette
-  // page : les pages en aval repassent de `pages` vers `nextPages`, dans leur
-  // ordre d'origine.
-  const precedente = formBuilder.goToPreviousPage(formState);
-  const i = precedente.currentPageIndex;
-  return {
-    ...precedente,
-    pages: precedente.pages.slice(0, i + 1),
-    nextPages: [...precedente.pages.slice(i + 1), ...precedente.nextPages],
-  };
 }
 
 function conclure(

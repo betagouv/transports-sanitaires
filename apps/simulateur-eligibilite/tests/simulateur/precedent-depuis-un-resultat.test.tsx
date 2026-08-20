@@ -153,4 +153,32 @@ describe("retour depuis une page de résultat", () => {
       screen.getByText(/la décision ci-dessous est établie/i),
     ).toBeInTheDocument();
   }, 20_000);
+
+  it("modifier une réponse en arrière ne raccourcit pas le parcours", async () => {
+    // Revenir en arrière ne retire aucune réponse : les pages déjà traversées
+    // restent des pages du parcours, et une saisie sur l'une d'elles ne doit pas
+    // faire disparaître les suivantes — elles ne « manquent » plus au moteur,
+    // c'est tout.
+    const user = userEvent.setup({ delay: null });
+    emettrePassation(PARTIE_1_AMBULANCE);
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+    await terminerParcours(user, [
+      [/dans quel contexte/i, /entrée ou sortie d’hospitalisation/i],
+    ]);
+
+    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    const accident = /accident causé par un tiers/i;
+    expect(screen.getByRole("group", { name: accident })).toBeInTheDocument();
+
+    // Une page plus tôt : les adresses. On y change une réponse déjà donnée.
+    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    const codePostal = screen.getByRole("textbox", { name: /code postal/i });
+    await user.clear(codePostal);
+    await user.type(codePostal, "75004");
+
+    // La question suivante est toujours au programme : c'est « Suivant » qui
+    // s'offre, pas le bouton de fin, et elle se repose telle qu'on l'a laissée.
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    expect(screen.getByRole("group", { name: accident })).toBeInTheDocument();
+  }, 20_000);
 });
