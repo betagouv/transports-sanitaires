@@ -6,7 +6,7 @@ import {
 } from "../../front/outils-produit/seeds/seed";
 import { moteurDeTest } from "./moteur";
 
-// Matrice de non-régression métier (règles plates v9.2.1). Elle n'a pas de scénarios
+// Matrice de non-régression métier (règles plates v9.4.0). Elle n'a pas de scénarios
 // à elle : elle rejoue le **catalogue de seeds** (`front/outils-produit/seeds/`), qui est
 // aussi ce qu'affiche la galerie dev. Ajouter une situation de référence, c'est
 // donc l'ajouter au catalogue — elle devient du même geste testée et consultable.
@@ -21,7 +21,7 @@ const moteur = moteurDeTest();
 const COMPLETES = SEEDS.filter((seed) => !ouvreLeQuestionnaire(seed));
 const ARRETS = SEEDS.filter(ouvreLeQuestionnaire);
 
-describe("modèle v9.2.1 — le moteur confirme les attendus des seeds", () => {
+describe("modèle v9.4.0 — le moteur confirme les attendus des seeds", () => {
   for (const seed of COMPLETES) {
     it(seed.id, () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
@@ -35,7 +35,7 @@ describe("modèle v9.2.1 — le moteur confirme les attendus des seeds", () => {
   }
 });
 
-describe("modèle v9.2.1 — couverture des cas finaux", () => {
+describe("modèle v9.4.0 — couverture des cas finaux", () => {
   it("les 9 cas finaux sont atteints par le catalogue", () => {
     const attendus = [
       "prescription médicale de transport",
@@ -57,7 +57,7 @@ describe("modèle v9.2.1 — couverture des cas finaux", () => {
   });
 });
 
-describe("modèle v9.2.1 — couverture des régimes de financement", () => {
+describe("modèle v9.4.0 — couverture des régimes de financement", () => {
   it("les 5 régimes sont atteints par le catalogue", () => {
     // L'axe sur lequel se lit une non-conformité : un transport dont le régime
     // n'est pas « assurance maladie » ne doit pas lui être facturé.

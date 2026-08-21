@@ -82,14 +82,14 @@ Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle
 ## Le modèle de règles
 
 `regles/regles.publicodes` est **livré de l'extérieur et intégré par recopie** —
-aujourd'hui la **v9.2.1** (172 règles). Le fichier livré ne porte pas sa version :
+aujourd'hui la **v9.4.0** (186 règles, 39 cibles). Le fichier livré ne porte pas sa version :
 `regles/VERSION` la porte à côté de lui, et c'est elle que le pied de page
 affiche. **Une recopie met les deux à jour**, sans quoi l'application annonce une
 version qu'elle n'exécute pas. Le paquet du fournisseur apporte aussi un
-contrat d'interface (`*.ui.yaml`, schéma 2.0.0) et une matrice de tests, tous deux
+contrat d'interface (`*.ui.yaml`, schéma 2.1.0) et une matrice de tests, tous deux
 réencodés ici plutôt que chargés : le contrat d'interface se lit dans les
-composants, la matrice dans `tests/simulateur/regression-v9-2-1.test.ts` et
-`familles-v9-2-1.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
+composants, la matrice dans `tests/simulateur/regression-v9-4-0.test.ts` et
+`familles-v9-4-0.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
 `SERIE-001`, `ARTICLE80-003`…) pour qu'un désaccord remonte au fournisseur sous
 son nom.
 
@@ -172,7 +172,7 @@ range à part et vérifie qu'elle s'arrête bel et bien en chemin.
 
 ## Savoir ce qui tourne
 
-Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.2.1`.
+Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.4.0`.
 C'est un outil de support — quand un prescripteur signale un résultat surprenant,
 ces deux valeurs disent quel code et quel modèle il avait sous les yeux.
 

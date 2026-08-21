@@ -1,5 +1,5 @@
-// Portage de la matrice de non-régression du livrable v9.2.1
-// (tmp/9.2.1/transports-sanitaires.tests.v9-2-1.yaml → dynamic_scenarios).
+// Portage de la matrice de non-régression du livrable v9.4.0
+// (tmp/9.4/transports-sanitaires.tests.v9-4-0.yaml → dynamic_scenarios).
 //
 // Le livrable énonce ses scénarios en prose, là où la v8.10 les
 // donnait en `given`/`expect` exploitables. Ils sont donc réencodés ici, un cas
@@ -24,9 +24,9 @@ import {
   PROCHE,
   type Reponses,
   VSL,
-} from "./situations-v9-2-1";
+} from "./situations-v9-4-0";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-2-1`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-4-0`.
 type Cas = {
   id: string;
   given: Reponses;
@@ -271,7 +271,7 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.2.1 — matrice de non-régression du livrable", () => {
+describe("modèle v9.4.0 — matrice de non-régression du livrable", () => {
   for (const cas of matrice) {
     it(cas.id, () => {
       const moteur = evalue(cas.given);

@@ -1,8 +1,8 @@
-// Les trois familles engendrées de la matrice v9.2.1 : l'exploration exhaustive de
+// Les trois familles engendrées de la matrice v9.4.0 : l'exploration exhaustive de
 // la Partie 1 (P1-EXHAUSTIVE), les sept types de convocation (CONVOCATION-001) et
 // les neuf exceptions restant à la charge de l'Assurance Maladie (EXCEPTION-001).
 // Le livrable les décrit par un générateur plutôt que par des cas nommés — d'où
-// leur séparation d'avec `regression-v9-2-1.test.ts`.
+// leur séparation d'avec `regression-v9-4-0.test.ts`.
 
 import { describe, expect, it } from "vitest";
 import {
@@ -13,9 +13,9 @@ import {
   PRO,
   TPMR,
   VSL,
-} from "./situations-v9-2-1";
+} from "./situations-v9-4-0";
 
-describe("modèle v9.2.1 — P1-EXHAUSTIVE", () => {
+describe("modèle v9.4.0 — P1-EXHAUSTIVE", () => {
   const CRITERES_AMBULANCE = [
     "p1_critere_position_allongee_demi_assise",
     "p1_critere_brancardage_portage",
@@ -82,7 +82,7 @@ describe("modèle v9.2.1 — P1-EXHAUSTIVE", () => {
   });
 });
 
-describe("modèle v9.2.1 — générateurs du livrable", () => {
+describe("modèle v9.4.0 — générateurs du livrable", () => {
   const CONVOCATIONS = [
     "Convocation du contrôle médical.",
     "Convocation d’un médecin-expert ou consultant désigné par une juridiction.",
