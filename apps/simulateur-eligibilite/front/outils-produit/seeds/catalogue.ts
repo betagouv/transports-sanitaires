@@ -485,6 +485,32 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-ald-non-retenue-autre-motif",
+    libelle:
+      "Secrétariat — ALD non retenue, mais hospitalisation ouvrant droit",
+    description:
+      "Même ALD sans incapacité que la seed précédente, mais le déplacement " +
+      "est une entrée ou sortie d'hospitalisation : le motif ALD n'est pas " +
+      "retenu et le droit est pourtant ouvert. C'est ce que le Résultat 2 doit " +
+      "savoir dire — l'ALD écartée n'écarte pas les autres motifs.",
+    outil: "secretariat",
+    entrees: {
+      p1_m0_ald: "oui",
+      ...M0_AUCUN_DECOCHE,
+      ...CONTEXTE_HOSPITALISATION,
+    },
+    attendu: {
+      cible_resultat_medical: "décision établie",
+      cible_transport_sanitaire_prescrit:
+        "véhicule personnel ou transport en commun",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient:
+        "PMT (Prescription Médicale de Transport)",
+    },
+  },
+  {
     id: "prescripteur-ald-proche-accompagnant",
     libelle: "Prescripteur — ALD validée par un proche accompagnant",
     description:

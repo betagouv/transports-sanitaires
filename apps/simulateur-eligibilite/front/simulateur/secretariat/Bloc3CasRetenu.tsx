@@ -2,7 +2,7 @@
 // retenu et les cases documentaires à reporter sur le formulaire. Chaque case n'est
 // listée que si la simulation l'a établie, d'où le moteur en paramètre.
 
-import type { moteur } from "../moteur";
+import { type moteur, vrai } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
 import type { Groupe } from "./cases-documentaires";
 import { casesRetenues, texteDeCase } from "./cases-documentaires";
@@ -40,6 +40,7 @@ export function Bloc3CasRetenu({
           <strong>Document à remettre au patient :</strong> {doc}
         </p>
         <NoteCorpsMedical casFinal={casFinal} article80={article80} />
+        <QualificationDuMotifAld e={e} />
         <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />
       </div>
     </div>
@@ -105,6 +106,29 @@ function NoteCorpsMedical({
     );
   }
   return null;
+}
+
+// Le pendant médical de l'information patient sur l'ALD : dire que le motif n'est
+// pas retenu, et surtout borner la portée de cette conclusion — elle ne touche ni
+// le mode verrouillé, ni les autres motifs réglementaires.
+function QualificationDuMotifAld({ e }: Pick<Props, "e">) {
+  if (!vrai(e, "cible_ald_non_retenue_absence_incapacite_deficience"))
+    return null;
+  return (
+    <div className="fr-mt-2w">
+      <p className="fr-mb-1v">
+        <strong>Qualification du motif ALD (Affection de Longue Durée)</strong>
+      </p>
+      <p>
+        Le motif ALD (Affection de Longue Durée) n’est pas retenu, car aucune
+        incapacité ou déficience définie par le référentiel n’a été identifiée.
+      </p>
+      <p>
+        Cette conclusion ne modifie pas le mode médical verrouillé et n’empêche
+        pas l’application d’un autre motif réglementaire.
+      </p>
+    </div>
+  );
 }
 
 function CasesACompleter({ groupes }: { groupes: Groupe[] }) {

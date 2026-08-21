@@ -3,7 +3,7 @@
 // transport. Le contenu en langage clair vient de `resultat/` ; ce module choisit
 // quoi dire selon le cas final et le transport retenu.
 
-import type { moteur } from "../moteur";
+import { type moteur, vrai } from "../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
@@ -54,6 +54,7 @@ export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
       </h3>
       <div className="fr-callout__text">
         <PourquoiCeResultat e={e} {...contexte} />
+        <AldNonRetenue e={e} />
         <SousTitre icone="fr-icon-money-euro-circle-line">
           Prise en charge / reste à charge
         </SousTitre>
@@ -69,6 +70,32 @@ export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
 }
 
 // ---- implémentation ----
+
+// Une ALD reconnue et liée aux soins, mais sans incapacité ni déficience : le
+// patient a déclaré une ALD et pourrait croire qu'elle ouvre le droit à elle
+// seule. Le modèle dit qu'elle ne le fait pas, et c'est cette conclusion-là qu'il
+// faut lui expliquer — indépendamment du cas final, qu'un autre motif peut très
+// bien avoir ouvert.
+function AldNonRetenue({ e }: Pick<Props, "e">) {
+  if (!vrai(e, "cible_ald_non_retenue_absence_incapacite_deficience"))
+    return null;
+  return (
+    <>
+      <SousTitre icone="fr-icon-info-line">
+        Information relative à l’ALD (Affection de Longue Durée)
+      </SousTitre>
+      <p>
+        L’ALD (Affection de Longue Durée) est reconnue et le déplacement est lié
+        aux soins ou examens concernés.
+      </p>
+      <p>
+        Toutefois, l’absence d’incapacité ou de déficience définie par le
+        référentiel ne permet pas de retenir l’ALD (Affection de Longue Durée)
+        comme motif de prise en charge du transport.
+      </p>
+    </>
+  );
+}
 
 // L'article 80 encadre les transports à charge de l'établissement : qui les
 // organise, et comment ils sont défrayés. Muet pour tous les autres cas finaux.

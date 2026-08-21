@@ -21,6 +21,7 @@
 /** Les sorties du modèle : ce que le produit affiche ou décide. */
 export const CIBLES = [
   "cible_accompagnant_necessaire",
+  "cible_ald_non_retenue_absence_incapacite_deficience",
   "cible_article_80_mode",
   "cible_article_80_situation_specifique",
   "cible_cas_final",
