@@ -260,8 +260,10 @@ front/                   front (bundlé par Vite)
       cerfa/             les CERFA pré-remplis, générés dans le navigateur —
                          un sous-dossier par formulaire, gabarit compris
         pmt/             prescription médicale de transport (n° 11574*07)
-                         depuis-simulateur.ts  la traduction situation → saisies
-                         lieux-du-trajet.ts    départ et arrivée, adresses comprises
+                         remplissage-pmt.ts  un champ du PDF, une ligne : comment
+                                             il se remplit, ou qui le remplira
+                         reponses.ts         ce que le remplissage lit du modèle
+                         remplir-cerfa.ts    l'écriture dans le PDF, et ses pièges
   analytics/             evenements.ts le vocabulaire mesuré, seul import du reste
                          matomo.ts     le transport (tag `_paq`, config, émission)
 ```

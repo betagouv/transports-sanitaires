@@ -11,11 +11,6 @@ import {
   genererCerfa,
   nomFichier,
 } from "../../front/outils-produit/beta/cerfa/pmt/cerfa";
-import {
-  MODE_TRANSPORT,
-  SITUATION,
-  TRAJET,
-} from "../../front/outils-produit/beta/cerfa/pmt/champs-cerfa.ts";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { moteur } from "../../front/simulateur/moteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
@@ -77,12 +72,12 @@ describe("genererCerfa", () => {
         : undefined;
     };
 
-    expect(état(MODE_TRANSPORT.positionAllongéeDemiAssise.nom)).toBe("/On");
-    expect(état(MODE_TRANSPORT.brancardagePortage.nom)).toBe("/On");
-    expect(état(SITUATION.entréeSortieHospitalisation.nom)).toBe("/NON"); // état d'export
-    expect(état(TRAJET.allerRetour.nom)).toBe("/On");
+    expect(état("position allongée ou demiassise")).toBe("/On");
+    expect(état("brancardage ou dun portage")).toBe("/On");
+    expect(état("entré sortie hosp")).toBe("/NON"); // état d'export
+    expect(état("transp aller-retour")).toBe("/On");
     // Justification non retenue par le moteur : jamais cochée.
-    expect(état(MODE_TRANSPORT.oxygène.nom)).toBeUndefined();
+    expect(état("dadministration doxygène")).toBeUndefined();
   });
 
   it("laisse vierges les blocs d'identité, que le simulateur ne connaît pas", async () => {

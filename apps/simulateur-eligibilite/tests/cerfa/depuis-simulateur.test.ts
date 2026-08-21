@@ -4,12 +4,6 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  MODE_TRANSPORT,
-  PRESCRIPTION,
-  SITUATION,
-  TRAJET,
-} from "../../front/outils-produit/beta/cerfa/pmt/champs-cerfa.ts";
-import {
   CerfaNonApplicable,
   saisiesDepuisSituation,
 } from "../../front/outils-produit/beta/cerfa/pmt/depuis-simulateur.ts";
@@ -40,13 +34,13 @@ describe("saisiesDepuisSituation", () => {
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     expect(lu).toMatchObject({
-      [SITUATION.entréeSortieHospitalisation.nom]: "/NON", // état d'export, pas « non »
-      [MODE_TRANSPORT.positionAllongéeDemiAssise.nom]: "/On",
-      [MODE_TRANSPORT.brancardagePortage.nom]: "/On",
+      "entré sortie hosp": "/NON", // état d'export, pas « non »
+      "position allongée ou demiassise": "/On",
+      "brancardage ou dun portage": "/On",
     });
     // Justifications non retenues par le moteur : jamais cochées.
-    expect(lu).not.toHaveProperty(MODE_TRANSPORT.oxygène.nom);
-    expect(lu).not.toHaveProperty(MODE_TRANSPORT.asepsieRigoureuse.nom);
+    expect(lu).not.toHaveProperty("dadministration doxygène");
+    expect(lu).not.toHaveProperty("aseptie rigoureuse");
     // Le caractère exonérant de l'ALD n'est pas modélisé : la case reste vierge.
     expect(lu).not.toHaveProperty("ALD exo");
   });
@@ -63,8 +57,9 @@ describe("saisiesDepuisSituation", () => {
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     expect(lu).toMatchObject({
-      [MODE_TRANSPORT.assisProfessionnalisé.nom]: "/On",
-      [MODE_TRANSPORT.fauteuilRoulantTPMR.nom]: "/On",
+      "transport assis professionnalisé VSL taxi conventionné": "/On",
+      "un transport pour patient à mobilité réduite dans son fauteuil roulant est adapté cochez la case":
+        "/On",
     });
   });
 
@@ -76,7 +71,10 @@ describe("saisiesDepuisSituation", () => {
       situation({ p1_autonomie: PROCHE_ACCOMPAGNANT, ...HOSPITALISATION }),
     );
     expect(await relire(await remplirCerfa(GABARIT, accompagné))).toMatchObject(
-      { [MODE_TRANSPORT.accompagnantNécessaire.nom]: "/On" },
+      {
+        "dans ce cas si létat du patient nécessite une personne accompagnante cochez la case":
+          "/On",
+      },
     );
   });
 
@@ -100,17 +98,17 @@ describe("saisiesDepuisSituation", () => {
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     expect(lu).toMatchObject({
-      [TRAJET.allerRetour.nom]: "/On",
-      [TRAJET.départDomicile.nom]: "/On",
-      [TRAJET.nombreTransportsItératifs]: "3",
-      [PRESCRIPTION.urgenceSamu.nom]: "/On",
-      [SITUATION.accidentTiersNon.nom]: "/NON",
+      "transp aller-retour": "/On",
+      domicile: "/On",
+      "nbr transp": "3",
+      "Urg SAMU centre 15": "/On",
+      non: "/NON",
     });
     // L'arrivée est une structure de soins : on ne coche pas « domicile », et la
     // v9.1 permet d'écrire le lieu détaillé — nom, adresse, code postal, commune
     // aplatis sur l'unique ligne du formulaire.
-    expect(lu).not.toHaveProperty(TRAJET.arrivéeDomicile.nom);
-    expect(lu[TRAJET.arrivéeStructureSoins]).toBe(
+    expect(lu).not.toHaveProperty("domicile_2");
+    expect(lu["arrivée struct soins"]).toBe(
       "CH de Vannes, 2 rue de l’Arrivée, 75002, Paris",
     );
   });
@@ -135,7 +133,7 @@ describe("saisiesDepuisSituation", () => {
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
-    expect(lu[TRAJET.arrivéeStructureSoins]).toBe(
+    expect(lu["arrivée struct soins"]).toBe(
       "Clinique Saint-Roch, 12 avenue des Thermes, Bâtiment B, 3e étage, " +
         "1201, Genève, Suisse",
     );
@@ -168,7 +166,7 @@ describe("saisiesDepuisSituation", () => {
         saisiesDepuisSituation(moteurDeTest(), série),
       ),
     );
-    expect(lu).not.toHaveProperty(TRAJET.nombreTransportsItératifs);
+    expect(lu).not.toHaveProperty("nbr transp");
   });
 
   it("produit un CERFA fourni depuis la seed « secretariat-prescription »", async () => {
@@ -182,20 +180,21 @@ describe("saisiesDepuisSituation", () => {
 
     expect(lu).toMatchObject({
       // Deux contextes administratifs cumulés.
-      [SITUATION.entréeSortieHospitalisation.nom]: "/NON", // état d'export
-      [SITUATION.accidentTravailMaladiePro.nom]: "/On",
+      "entré sortie hosp": "/NON", // état d'export
+      "transport lié à un accident du travail ou une maladie professionnelle":
+        "/On",
       // Les cinq justifications d'ambulance.
-      [MODE_TRANSPORT.positionAllongéeDemiAssise.nom]: "/On",
-      [MODE_TRANSPORT.brancardagePortage.nom]: "/On",
-      [MODE_TRANSPORT.surveillancePersonneQualifiée.nom]: "/On",
-      [MODE_TRANSPORT.oxygène.nom]: "/On",
-      [MODE_TRANSPORT.asepsieRigoureuse.nom]: "/On",
+      "position allongée ou demiassise": "/On",
+      "brancardage ou dun portage": "/On",
+      "surveillance par une personne qualifiée": "/On",
+      "dadministration doxygène": "/On",
+      "aseptie rigoureuse": "/On",
       // Trajet, urgence, accident, volumétrie.
-      [TRAJET.allerRetour.nom]: "/On",
-      [TRAJET.départDomicile.nom]: "/On",
-      [TRAJET.nombreTransportsItératifs]: "3",
-      [PRESCRIPTION.urgenceSamu.nom]: "/On",
-      [SITUATION.accidentTiersOui.nom]: "/OUI",
+      "transp aller-retour": "/On",
+      domicile: "/On",
+      "nbr transp": "3",
+      "Urg SAMU centre 15": "/On",
+      oui: "/OUI",
     });
     expect(saisies).toHaveLength(13);
   });

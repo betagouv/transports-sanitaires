@@ -20,6 +20,13 @@ Fin de parcours : `front/outils-produit/beta/cerfa/` remplit les CERFA officiels
 des données de santé nominatives, aucun document rempli ne doit atteindre le
 backend. Un sous-dossier par formulaire, gabarit compris : `pmt/` pour la
 prescription médicale de transport (n° 11574*07, réf. S3138g).
+
+**Chaque champ du PDF est une clé de `remplissage-pmt.ts`**, et sa valeur une
+fonction des réponses de la simulation. Les 53 champs y sont, y compris ceux
+qu'on ne déduit pas — le tableau dit alors qui les remplira, et pourquoi. Un test
+le confronte au gabarit : aucun champ ne peut être oublié ni inventé. C'est
+volontairement coûteux (le moteur est relu champ par champ) et volontairement
+lisible : une case du formulaire se comprend en lisant sa ligne.
 Il est sous `beta/` parce que son bouton de téléchargement est derrière l'accès
 *outils produit* tant que le pré-remplissage n'est pas éprouvé, pas à cause de
 sa nature.

@@ -1,4 +1,7 @@
-// Remplissage du CERFA n° 11574*07 à partir d'un jeu de valeurs.
+// Remplissage du CERFA n° 11574*07 à partir d'un jeu de saisies.
+//
+// La couche d'écriture, et elle seule : *quoi* écrire se décide dans
+// `remplissage-pmt.ts`. Ici on ne connaît que le gabarit et ses pièges.
 //
 // `pdf-lib` fonctionne à l'identique dans Node et dans le navigateur : ce module
 // n'importe rien de `node:*` et reste donc exécutable côté front — ce qui permet
@@ -12,12 +15,22 @@ import {
   PDFName,
   PDFTextField,
 } from "pdf-lib";
-import { type ChampCase, MULTILIGNES_ROGNÉS } from "./champs-cerfa.ts";
 
-/** Une valeur à écrire : soit un texte dans un champ nommé, soit une case à cocher. */
-export type Saisie =
-  | { readonly champ: string; readonly texte: string }
-  | { readonly case: ChampCase };
+/**
+ * État d'export à écrire pour cocher un champ (le « off » est toujours `/Off`).
+ *
+ * `On` est le cas courant. `OUI` et `NON` servent aux trois champs du gabarit qui
+ * sont des **boutons radio déguisés en case à cocher** — `ALD exo`, `oui1` et
+ * `oui2` : un même champ y porte quatre widgets, deux par volet, dont l'un a pour
+ * état d'export `/OUI` et l'autre `/NON`.
+ */
+export type ÉtatCoché = "On" | "OUI" | "NON";
+
+/** Une valeur à écrire : un texte dans un champ nommé, ou une case à cocher. */
+export type Saisie = { readonly champ: string } & (
+  | { readonly texte: string }
+  | { readonly coché: ÉtatCoché }
+);
 
 export type OptionsRemplissage = {
   /**
@@ -27,6 +40,13 @@ export type OptionsRemplissage = {
    */
   readonly verrouiller?: boolean;
 };
+
+/**
+ * Champs déclarés multilignes dans le PDF mais dont le cadre visible ne montre
+ * qu'une ligne : y écrire un `\n` rogne silencieusement le reste à l'impression.
+ * Les valeurs destinées à ces champs sont aplaties sur une seule ligne.
+ */
+const MULTILIGNES_ROGNÉS: readonly string[] = ["adresse"];
 
 /**
  * Écrit `saisies` dans le CERFA `gabarit` et rend le PDF résultant.
@@ -45,7 +65,7 @@ export async function remplirCerfa(
   const formulaire = document.getForm();
 
   for (const saisie of saisies) {
-    if ("case" in saisie) cocher(formulaire, saisie.case);
+    if ("coché" in saisie) cocher(formulaire, saisie.champ, saisie.coché);
     else écrire(formulaire, saisie.champ, saisie.texte);
   }
 
@@ -53,12 +73,9 @@ export async function remplirCerfa(
   // qu'un lecteur ne régénère pas les apparences — ce que tous ne font pas.
   formulaire.updateFieldAppearances();
 
-  if (options.verrouiller) {
-    for (const saisie of saisies) {
-      const nom = "case" in saisie ? saisie.case.nom : saisie.champ;
-      formulaire.getField(nom).enableReadOnly();
-    }
-  }
+  if (options.verrouiller)
+    for (const { champ } of saisies)
+      formulaire.getField(champ).enableReadOnly();
 
   return document.save();
 }
@@ -89,12 +106,11 @@ function écrire(formulaire: Formulaire, nom: string, texte: string): void {
  * Coche en imposant l'état d'export attendu.
  *
  * `PDFCheckBox.check()` de pdf-lib retient le premier état « on » qu'il trouve dans
- * les apparences du champ. Pour `ALD exo`, `oui1` et `oui2` — des radios modélisés
- * en case à cocher, dont les 4 widgets se partagent les états `/OUI` et `/NON` —
- * cela coche la mauvaise moitié une fois sur deux. On écrit donc la valeur du champ
- * et, pour chaque widget, l'état d'apparence qu'il sait rendre (`/Off` sinon).
+ * les apparences du champ. Pour les radios déguisés (cf. `ÉtatCoché`), cela coche
+ * la mauvaise moitié une fois sur deux. On écrit donc la valeur du champ et, pour
+ * chaque widget, l'état d'apparence qu'il sait rendre (`/Off` sinon).
  */
-function cocher(formulaire: Formulaire, { nom, coché }: ChampCase): void {
+function cocher(formulaire: Formulaire, nom: string, coché: ÉtatCoché): void {
   const champ = formulaire.getField(nom);
   if (!(champ instanceof PDFCheckBox)) {
     throw new Error(`Le champ « ${nom} » n'est pas une case à cocher.`);

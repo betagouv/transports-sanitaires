@@ -49,8 +49,8 @@ console.log(`champs déduits : ${saisies.length}`);
 for (const saisie of saisies) {
   console.log(
     "  " +
-      ("case" in saisie
-        ? `[x] ${saisie.case.nom}`
+      ("coché" in saisie
+        ? `[x] ${saisie.champ}`
         : `    ${saisie.champ} = ${saisie.texte}`),
   );
 }
