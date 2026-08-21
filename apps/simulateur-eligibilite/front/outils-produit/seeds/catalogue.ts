@@ -670,9 +670,37 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-engagement-maternite-entree",
+    libelle: "Secrétariat — Engagement maternité, seul motif ouvrant droit",
+    description:
+      "Aucun contexte n'ouvre droit et aucun critère médical ne vaut motif : " +
+      "le modèle pose alors A2.4, la qualification précoce du dispositif " +
+      "Engagement maternité. Répondre « Oui » ouvre le droit sous accord " +
+      "préalable, et rend A3.4 inapplicable — l'option n'y est pas reproposée. " +
+      "Le mode médical, lui, ne bouge pas.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      p2_engagement_maternite_entree: "oui",
+    },
+    attendu: {
+      cible_resultat_medical: "décision établie",
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+    },
+  },
+  {
     id: "secretariat-maternite-eloignee",
     libelle: "Secrétariat — maternité éloignée (Engagement maternité)",
-    description: "Troisième situation spéciale de A3.4.",
+    description:
+      "Troisième situation spéciale de A3.4 — l'autre porte du dispositif " +
+      "Engagement maternité, celle qu'on emprunte quand un autre motif a déjà " +
+      "ouvert le droit et que A2.4 n'a donc pas été posée.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
