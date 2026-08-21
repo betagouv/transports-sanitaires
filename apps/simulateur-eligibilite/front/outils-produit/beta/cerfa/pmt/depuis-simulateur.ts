@@ -7,7 +7,7 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
-import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
+import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
 import type { ChampCase } from "./champs-cerfa.ts";
 import {
   MODE_TRANSPORT,

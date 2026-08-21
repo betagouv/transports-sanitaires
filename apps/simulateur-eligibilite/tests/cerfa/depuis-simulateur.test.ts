@@ -8,12 +8,12 @@ import {
   PRESCRIPTION,
   SITUATION,
   TRAJET,
-} from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+} from "../../front/outils-produit/beta/cerfa/pmt/champs-cerfa.ts";
 import {
   CerfaNonApplicable,
   saisiesDepuisSituation,
-} from "../../front/outils-produit/beta/cerfa/depuis-simulateur.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+} from "../../front/outils-produit/beta/cerfa/pmt/depuis-simulateur.ts";
+import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/pmt/remplir-cerfa.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";

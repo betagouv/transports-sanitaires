@@ -9,8 +9,8 @@ import {
   MODE_TRANSPORT,
   PRESCRIPTION,
   SITUATION,
-} from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+} from "../../front/outils-produit/beta/cerfa/pmt/champs-cerfa.ts";
+import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/pmt/remplir-cerfa.ts";
 import { GABARIT, relire } from "./gabarit.ts";
 
 describe("gabarit CERFA n° 11574*07", () => {

@@ -257,7 +257,9 @@ front/                   front (bundlé par Vite)
                          GalerieSeeds.tsx  les écrans d'atterrissage
                          TableauDesSeeds.tsx  comment une seed se lit en tableau
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
-      cerfa/             prescription CERFA pré-remplie, générée dans le navigateur
+      cerfa/             les CERFA pré-remplis, générés dans le navigateur —
+                         un sous-dossier par formulaire, gabarit compris
+        pmt/             prescription médicale de transport (n° 11574*07)
                          depuis-simulateur.ts  la traduction situation → saisies
                          lieux-du-trajet.ts    départ et arrivée, adresses comprises
   analytics/             evenements.ts le vocabulaire mesuré, seul import du reste

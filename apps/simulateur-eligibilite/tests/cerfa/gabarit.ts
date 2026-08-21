@@ -11,7 +11,7 @@ import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 export const GABARIT = readFileSync(
   join(
     dirname(fileURLToPath(import.meta.url)),
-    "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf",
+    "../../front/outils-produit/beta/cerfa/pmt/gabarit/cerfa-11574-07.pdf",
   ),
 );
 

@@ -15,9 +15,11 @@ Précédé d'un **écran-porte d'identification du prescripteur obligatoire**
 Node/Express** (`server/` : le front et `/api/*`), déployé sur **Scalingo** — ce
 n'est pas un site statique.
 
-Fin de parcours : `front/outils-produit/beta/cerfa/` remplit le CERFA officiel
-(AcroForm, `pdf-lib`) **dans le navigateur uniquement** — le formulaire porte des
-données de santé nominatives, aucun document rempli ne doit atteindre le backend.
+Fin de parcours : `front/outils-produit/beta/cerfa/` remplit les CERFA officiels
+(AcroForm, `pdf-lib`) **dans le navigateur uniquement** — ces formulaires portent
+des données de santé nominatives, aucun document rempli ne doit atteindre le
+backend. Un sous-dossier par formulaire, gabarit compris : `pmt/` pour la
+prescription médicale de transport (n° 11574*07, réf. S3138g).
 Il est sous `beta/` parce que son bouton de téléchargement est derrière l'accès
 *outils produit* tant que le pré-remplissage n'est pas éprouvé, pas à cause de
 sa nature.

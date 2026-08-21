@@ -6,16 +6,16 @@ import userEvent from "@testing-library/user-event";
 import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
 import { describe, expect, it } from "vitest";
-import { BoutonCerfa } from "../../front/outils-produit/beta/cerfa/BoutonCerfa";
+import { BoutonCerfa } from "../../front/outils-produit/beta/cerfa/pmt/BoutonCerfa";
 import {
   genererCerfa,
   nomFichier,
-} from "../../front/outils-produit/beta/cerfa/cerfa";
+} from "../../front/outils-produit/beta/cerfa/pmt/cerfa";
 import {
   MODE_TRANSPORT,
   SITUATION,
   TRAJET,
-} from "../../front/outils-produit/beta/cerfa/champs-cerfa.ts";
+} from "../../front/outils-produit/beta/cerfa/pmt/champs-cerfa.ts";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { moteur } from "../../front/simulateur/moteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
@@ -25,7 +25,7 @@ import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 const GABARIT = readFileSync(
   join(
     dirname(fileURLToPath(import.meta.url)),
-    "../../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf",
+    "../../front/outils-produit/beta/cerfa/pmt/gabarit/cerfa-11574-07.pdf",
   ),
 );
 const chargerGabarit = async () => GABARIT.buffer.slice(0) as ArrayBuffer;

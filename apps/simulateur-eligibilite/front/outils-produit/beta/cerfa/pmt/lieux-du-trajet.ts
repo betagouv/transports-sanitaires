@@ -6,7 +6,7 @@
 // désormais entièrement déductible — c'est le seul endroit du module où une
 // valeur écrite sur le formulaire vient d'un texte tapé par l'utilisateur.
 
-import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
+import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
 import { TRAJET } from "./champs-cerfa.ts";
 import type { Saisie } from "./remplir-cerfa.ts";
 

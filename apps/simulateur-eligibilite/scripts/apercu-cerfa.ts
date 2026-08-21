@@ -19,8 +19,8 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
-import { saisiesDepuisSituation } from "../front/outils-produit/beta/cerfa/depuis-simulateur.ts";
-import { remplirCerfa } from "../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+import { saisiesDepuisSituation } from "../front/outils-produit/beta/cerfa/pmt/depuis-simulateur.ts";
+import { remplirCerfa } from "../front/outils-produit/beta/cerfa/pmt/remplir-cerfa.ts";
 import { seedParId } from "../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../front/outils-produit/seeds/seed.ts";
 
@@ -59,7 +59,10 @@ const sortie =
   process.argv.slice(2).find((a) => a.endsWith(".pdf")) ??
   join(ici, "../apercu-cerfa.pdf");
 const gabarit = readFileSync(
-  join(ici, "../front/outils-produit/beta/cerfa/gabarit/cerfa-11574-07.pdf"),
+  join(
+    ici,
+    "../front/outils-produit/beta/cerfa/pmt/gabarit/cerfa-11574-07.pdf",
+  ),
 );
 writeFileSync(sortie, await remplirCerfa(gabarit, saisies));
 console.log(`\nPDF écrit : ${sortie}`);
