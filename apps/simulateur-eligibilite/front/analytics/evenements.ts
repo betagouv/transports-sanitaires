@@ -24,11 +24,15 @@ export const trackResultat = (statut: string, outil?: string): void =>
   emettre(prefixe(outil, `resultat:${statut}`));
 
 /**
- * Téléchargement du CERFA pré-rempli : mesure l'usage réel du document produit en
- * fin de parcours. Émis par le secrétariat uniquement (seul outil qui l'expose).
+ * Téléchargement d'un CERFA pré-rempli : mesure l'usage réel du document produit
+ * en fin de parcours. Émis par le secrétariat uniquement (seul outil qui l'expose).
+ *
+ * `formulaire` sépare les deux documents — une prescription médicale de transport
+ * et une demande d'accord préalable ne racontent pas le même parcours, et les
+ * confondre en un seul compteur ferait perdre la seule chose qu'on cherche à voir.
  */
-export const trackCerfaTelecharge = (): void =>
-  emettre(prefixe("secretariat", "cerfa_telecharge"));
+export const trackCerfaTelecharge = (formulaire: string): void =>
+  emettre(prefixe("secretariat", `cerfa_telecharge:${formulaire}`));
 
 // ---- implémentation ----
 

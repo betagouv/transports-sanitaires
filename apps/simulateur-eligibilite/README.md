@@ -28,7 +28,7 @@ flowchart LR
 
     Grist[("Grist")]
     Matomo[("Matomo")]
-    Patient(["Prescription complétée,<br/>signée, remise au patient"])
+    Patient(["Document complété,<br/>signé, remis au patient"])
 
     Ident -->|"consulte"| Ref
     Ident -->|"pseudonymise l'identité"| Pseudo
@@ -37,7 +37,7 @@ flowchart LR
     Presc -->|"passation (situation P1)"| Secr
     Presc -->|"événements"| Analytics
     Secr -->|"événements"| Analytics
-    Secr -->|"situation, si prescription"| Cerfa
+    Secr -->|"situation, si le cas final ouvre un CERFA"| Cerfa
     Cerfa -->|"PDF téléchargé"| Patient
     Ref -->|"lit"| Grist
     Analytics -->|"envoie"| Matomo
@@ -49,7 +49,9 @@ flowchart LR
 Le **CERFA** n'a aucune flèche vers le backend, et c'est structurel : le prescripteur
 y complète des données de santé nominatives, qui ne doivent jamais quitter le
 navigateur (traits tiretés ci-dessus). Son téléchargement est par ailleurs réservé au service produit, et le gabarit comme
-`pdf-lib` ne sont chargés qu'au clic.
+`pdf-lib` ne sont chargés qu'au clic. Deux formulaires en sortent, selon le cas
+final : la prescription médicale de transport (n° 11574\*07) et la demande
+d'accord préalable (n° 11575\*08).
 
 ## Commandes
 
@@ -258,6 +260,9 @@ front/                   front (bundlé par Vite)
                          TableauDesSeeds.tsx  comment une seed se lit en tableau
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
       cerfa/             les CERFA pré-remplis, générés dans le navigateur
+                         documents.ts        quel formulaire ouvre quel cas final
+                         document.ts         ce qu'est un document, et sa génération
+                         BoutonCerfa.tsx     l'action de fin de parcours
                          remplissage.ts      ce qu'est un tableau de remplissage
                          reponses.ts         ce que le remplissage lit du modèle
                          lieux-du-trajet.ts  les adresses, aplaties sur une ligne

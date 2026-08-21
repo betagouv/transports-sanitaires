@@ -1,19 +1,17 @@
-// Action de fin de parcours : télécharger le CERFA de prescription pré-rempli.
+// Action de fin de parcours : télécharger le CERFA pré-rempli.
 //
-// N'est proposé que lorsque le cas final est bien une prescription médicale de
-// transport (cf. `ResultatFinal`) — un accord préalable relève du formulaire
-// S3139, une prise en charge par l'établissement ne donne lieu à aucun CERFA.
+// Lequel, c'est le cas final qui le dit (cf. `documents.ts`). Les cas finaux qui
+// n'ouvrent aucun CERFA — une convocation, un formulaire interne d'établissement,
+// aucun document du tout — ne rendent rien : la Page Résultat 2 propose la place,
+// c'est ici qu'on sait s'il y a de quoi la remplir.
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
 import { useState } from "react";
-import { trackCerfaTelecharge } from "../../../../analytics/evenements";
-import {
-  genererCerfa,
-  nomFichier,
-  type OptionsGénération,
-  telecharger,
-} from "./cerfa";
+import { trackCerfaTelecharge } from "../../../analytics/evenements";
+import type { DocumentCerfa, OptionsGénération } from "./document";
+import { genererCerfa, nomFichier, telecharger } from "./document";
+import { documentPour } from "./documents";
 
 type Props = {
   moteur: Engine<string>;
@@ -23,19 +21,44 @@ type Props = {
 };
 
 export function BoutonCerfa({ moteur, situation, chargerGabarit }: Props) {
+  const casFinal = String(
+    moteur.setSituation(situation).evaluate("cible_cas_final").nodeValue ?? "",
+  );
+  const document = documentPour(casFinal);
+  if (!document) return null;
+  return (
+    <Telechargement
+      document={document}
+      moteur={moteur}
+      situation={situation}
+      chargerGabarit={chargerGabarit}
+    />
+  );
+}
+
+// ---- implémentation ----
+
+function Telechargement({
+  document,
+  moteur,
+  situation,
+  chargerGabarit,
+}: Props & { document: DocumentCerfa }) {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
   async function telechargerCerfa() {
     setEnCours(true);
     setErreur(null);
-    setErreur(await genererEtTelecharger(moteur, situation, chargerGabarit));
+    setErreur(
+      await genererEtTelecharger(document, moteur, situation, chargerGabarit),
+    );
     setEnCours(false);
   }
 
   return (
     <section className="fr-mt-4w">
-      <CeQueLeCerfaContient />
+      <CeQueLeCerfaContient document={document} />
       {erreur && <AlerteErreur message={erreur} />}
       <button
         type="button"
@@ -43,15 +66,11 @@ export function BoutonCerfa({ moteur, situation, chargerGabarit }: Props) {
         onClick={telechargerCerfa}
         disabled={enCours}
       >
-        {enCours
-          ? "Génération en cours…"
-          : "Télécharger la prescription pré-remplie"}
+        {enCours ? "Génération en cours…" : document.libelléDuBouton}
       </button>
     </section>
   );
 }
-
-// ---- implémentation ----
 
 function AlerteErreur({ message }: { message: string }) {
   return (
@@ -68,16 +87,17 @@ function AlerteErreur({ message }: { message: string }) {
 // parcours reste exploitable sans le document : un échec se signale, il ne
 // masque pas le résultat déjà affiché.
 async function genererEtTelecharger(
+  document: DocumentCerfa,
   moteur: Props["moteur"],
   situation: Props["situation"],
   chargerGabarit: Props["chargerGabarit"],
 ): Promise<string | null> {
   try {
     telecharger(
-      await genererCerfa(moteur, situation, { chargerGabarit }),
-      nomFichier(),
+      await genererCerfa(document, moteur, situation, { chargerGabarit }),
+      nomFichier(document),
     );
-    trackCerfaTelecharge();
+    trackCerfaTelecharge(document.fichier);
     return null;
   } catch (cause) {
     console.error("[cerfa] Génération impossible.", cause);
@@ -87,20 +107,18 @@ async function genererEtTelecharger(
 
 // Ce que la simulation a rempli, et ce qui reste au prescripteur : l'annoncer
 // avant le clic évite d'ouvrir le PDF pour le découvrir.
-function CeQueLeCerfaContient() {
+function CeQueLeCerfaContient({ document }: { document: DocumentCerfa }) {
   return (
     <>
-      <h3 className="fr-h5">Prescription médicale de transport</h3>
+      <h3 className="fr-h5">{document.titre}</h3>
       <p>
-        Le CERFA n° 11574*07 pré-rempli à partir de cette simulation : la
-        situation ouvrant droit, le mode de transport et sa justification, le
-        trajet et le contexte d'urgence y sont déjà cochés, sur les deux volets.
+        Le CERFA {document.numero} pré-rempli à partir de cette simulation :{" "}
+        {document.ceQuiEstRempli}.
       </p>
       <p className="fr-text--sm fr-mb-2w">
         <span className="fr-icon-edit-line fr-mr-1w" aria-hidden="true" />
-        Restent à compléter et à signer : l'identité du patient et de l'assuré,
-        celle du prescripteur, les adresses de départ et d'arrivée, ainsi que
-        les éléments d'ordre médical. Tous les champs restent modifiables.
+        Restent à compléter et à signer : {document.ceQuiResteASaisir}. Tous les
+        champs restent modifiables.
       </p>
     </>
   );

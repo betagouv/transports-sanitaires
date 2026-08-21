@@ -21,8 +21,8 @@ import { Identification } from "../identification/Identification";
 import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
 import { referentielHttp } from "../identification/referentiel-http";
 import { rangerIdentite } from "../identification/session";
-import { BoutonCerfa } from "../outils-produit/beta/cerfa/pmt/BoutonCerfa";
-import type { OptionsGénération } from "../outils-produit/beta/cerfa/pmt/cerfa";
+import { BoutonCerfa } from "../outils-produit/beta/cerfa/BoutonCerfa";
+import type { OptionsGénération } from "../outils-produit/beta/cerfa/document";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Labo } from "../outils-produit/labo/Labo";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
@@ -201,7 +201,8 @@ function panneauOutilsProduit(navigation: Navigation) {
 }
 
 // Le pré-remplissage du CERFA reste réservé au service n° 4, le temps d'être
-// éprouvé. La Page Résultat 2 décide, elle, si le cas final ouvre un document.
+// éprouvé. La Page Résultat 2 décide, elle, si le modèle nomme un document à
+// remettre ; `BoutonCerfa` sait lequel des deux formulaires en est un, ou aucun.
 function documentTelechargeable(
   outilsProduit: boolean,
   chargerGabarit: OptionsGénération["chargerGabarit"] | undefined,

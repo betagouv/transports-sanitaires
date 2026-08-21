@@ -1,29 +1,26 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PDFCheckBox, PDFDocument, PDFName } from "pdf-lib";
 import type { Situation } from "publicodes";
 import { describe, expect, it } from "vitest";
-import { BoutonCerfa } from "../../front/outils-produit/beta/cerfa/pmt/BoutonCerfa";
+import { BoutonCerfa } from "../../front/outils-produit/beta/cerfa/BoutonCerfa";
+import { DAP } from "../../front/outils-produit/beta/cerfa/dap/document";
+import type { DocumentCerfa } from "../../front/outils-produit/beta/cerfa/document";
 import {
   genererCerfa,
   nomFichier,
-} from "../../front/outils-produit/beta/cerfa/pmt/cerfa";
+} from "../../front/outils-produit/beta/cerfa/document";
+import { PMT } from "../../front/outils-produit/beta/cerfa/pmt/document";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { moteur } from "../../front/simulateur/moteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
+import { GABARIT, GABARIT_DAP } from "./gabarit";
 
-// Le vrai gabarit, lu sur disque : en test il n'y a pas de serveur pour le
-// `fetch` de l'asset. C'est le même fichier que celui servi en production.
-const GABARIT = readFileSync(
-  join(
-    dirname(fileURLToPath(import.meta.url)),
-    "../../front/outils-produit/beta/cerfa/pmt/gabarit/cerfa-11574-07.pdf",
-  ),
-);
-const chargerGabarit = async () => GABARIT.buffer.slice(0) as ArrayBuffer;
+// Les vrais gabarits, lus sur disque : en test il n'y a pas de serveur pour le
+// `fetch` de l'asset. Ce sont les mêmes fichiers que ceux servis en production, et
+// c'est le document demandé qui dit lequel servir.
+const chargerGabarit = async (document: DocumentCerfa) =>
+  (document === DAP ? GABARIT_DAP : GABARIT).buffer.slice(0) as ArrayBuffer;
 
 // Ce que `App` branche pour un service ayant accès aux outils produit — le
 // simulateur, lui, ne connaît que la fonction. Le fait que seul le service n° 4
@@ -55,11 +52,23 @@ const ACCORD_PREALABLE: Situation<string> = {
   p2_distance_aller_superieure_150km: "oui",
 };
 
+/** Un cas final qui nomme un document, mais dont nous ne produisons aucun CERFA. */
+const CONVOCATION: Situation<string> = {
+  ...BASE_NEUTRE,
+  p2_convocation_ou_avis: "oui",
+  p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
+};
+
 const BOUTON = { name: /Télécharger la prescription pré-remplie/i } as const;
+const BOUTON_DAP = {
+  name: /Télécharger la demande d’accord préalable pré-remplie/i,
+} as const;
 
 describe("genererCerfa", () => {
   it("produit un PDF portant les déductions du moteur", async () => {
-    const blob = await genererCerfa(moteur, PRESCRIPTION, { chargerGabarit });
+    const blob = await genererCerfa(PMT, moteur, PRESCRIPTION, {
+      chargerGabarit,
+    });
     expect(blob.type).toBe("application/pdf");
 
     const formulaire = (
@@ -81,7 +90,9 @@ describe("genererCerfa", () => {
   });
 
   it("laisse vierges les blocs d'identité, que le simulateur ne connaît pas", async () => {
-    const blob = await genererCerfa(moteur, PRESCRIPTION, { chargerGabarit });
+    const blob = await genererCerfa(PMT, moteur, PRESCRIPTION, {
+      chargerGabarit,
+    });
     const formulaire = (
       await PDFDocument.load(await blob.arrayBuffer())
     ).getForm();
@@ -96,9 +107,29 @@ describe("genererCerfa", () => {
     }
   });
 
-  it("nomme le fichier avec la date du jour", () => {
-    expect(nomFichier(new Date(2026, 7, 17))).toBe(
+  it("produit l’autre formulaire pour un accord préalable", async () => {
+    // Le même chemin de génération, un autre descripteur : c'est tout ce qui
+    // distingue les deux documents.
+    const blob = await genererCerfa(DAP, moteur, ACCORD_PREALABLE, {
+      chargerGabarit,
+    });
+    const formulaire = (
+      await PDFDocument.load(await blob.arrayBuffer())
+    ).getForm();
+
+    // Le champ des motifs, en « plus de 150 km » — un champ qui n'existe pas sur
+    // la prescription : le PDF produit est bien la S3139h.
+    expect(
+      formulaire.getField("km").acroField.dict.get(PDFName.of("V"))?.toString(),
+    ).toBe("/Oui");
+  });
+
+  it("nomme le fichier d’après le formulaire et la date du jour", () => {
+    expect(nomFichier(PMT, new Date(2026, 7, 17))).toBe(
       "prescription-medicale-transport-2026-08-17.pdf",
+    );
+    expect(nomFichier(DAP, new Date(2026, 7, 17))).toBe(
+      "demande-accord-prealable-2026-08-17.pdf",
     );
   });
 });
@@ -115,7 +146,8 @@ describe("fin de parcours — téléchargement du CERFA", () => {
     expect(screen.getByRole("button", BOUTON)).toBeInTheDocument();
   });
 
-  it("annonce ce qui reste à compléter à la main", () => {
+  it("annonce ce qui reste à compléter à la main, formulaire par formulaire", () => {
+    const reste = /Restent à compléter et à signer/i;
     render(
       <Secretariat
         onNouvelleSimulation={() => {}}
@@ -123,12 +155,11 @@ describe("fin de parcours — téléchargement du CERFA", () => {
         documentTelechargeable={documentTelechargeable}
       />,
     );
-    expect(
-      screen.getByText(/l'identité du patient et de l'assuré/i),
-    ).toBeInTheDocument();
-  });
+    expect(screen.getByText(reste)).toHaveTextContent(
+      /l’identité du patient et de l’assuré/i,
+    );
 
-  it("ne le propose pas quand le cas relève d'un autre formulaire", () => {
+    cleanup();
     render(
       <Secretariat
         onNouvelleSimulation={() => {}}
@@ -136,8 +167,41 @@ describe("fin de parcours — téléchargement du CERFA", () => {
         documentTelechargeable={documentTelechargeable}
       />,
     );
-    // Accord préalable → formulaire S3139, pas ce CERFA.
+    // Propre à la demande : deux rubriques y sont réservées à la caisse.
+    expect(screen.getByText(reste)).toHaveTextContent(
+      /les avis médical et administratif sont, eux, réservés à votre caisse/i,
+    );
+  });
+
+  it("propose l'autre formulaire quand le cas final est un accord préalable", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={ACCORD_PREALABLE}
+        documentTelechargeable={documentTelechargeable}
+      />,
+    );
+    // Accord préalable → S3139, et non la prescription : c'est le cas final qui
+    // désigne le formulaire, le simulateur n'en connaît aucun.
+    expect(screen.getByRole("button", BOUTON_DAP)).toBeInTheDocument();
     expect(screen.queryByRole("button", BOUTON)).toBeNull();
+  });
+
+  it("ne propose aucun CERFA quand le cas final n'en ouvre pas", () => {
+    // Le modèle nomme un document dans quatre cas ; deux seulement sont des CERFA
+    // que nous produisons. Une convocation vaut prescription à elle seule.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={CONVOCATION}
+        documentTelechargeable={documentTelechargeable}
+      />,
+    );
+    expect(screen.queryByRole("button", BOUTON)).toBeNull();
+    expect(screen.queryByRole("button", BOUTON_DAP)).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: /Document à imprimer/i }),
+    ).toBeInTheDocument();
   });
 
   it("ne propose rien quand aucun document ne lui est fourni", () => {

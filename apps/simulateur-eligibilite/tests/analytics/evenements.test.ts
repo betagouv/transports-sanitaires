@@ -48,10 +48,22 @@ describe("vocabulaire des événements", () => {
     ]);
   });
 
-  it("le CERFA est toujours attribué au secrétariat", () => {
-    trackCerfaTelecharge();
+  it("le CERFA est attribué au secrétariat, et nomme le formulaire produit", () => {
+    // Deux formulaires sortent du parcours : les compter ensemble ferait perdre
+    // la seule chose qu'on cherche à voir.
+    trackCerfaTelecharge("prescription-medicale-transport");
+    trackCerfaTelecharge("demande-accord-prealable");
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "secretariat:cerfa_telecharge"],
+      [
+        "trackEvent",
+        "simulateur",
+        "secretariat:cerfa_telecharge:prescription-medicale-transport",
+      ],
+      [
+        "trackEvent",
+        "simulateur",
+        "secretariat:cerfa_telecharge:demande-accord-prealable",
+      ],
     ]);
   });
 

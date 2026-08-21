@@ -54,8 +54,12 @@ describe("accès au CERFA via la galerie de seeds", () => {
     const { user } = setup();
     await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
-    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
-    await user.click(await screen.findByRole("button", OUVRIR_SEED));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
+    // et le délai élargi — l'import dépasse la seconde par défaut quand la suite
+    // tourne en parallèle, et le test échouait alors sans rien de cassé.
+    await user.click(
+      await screen.findByRole("button", OUVRIR_SEED, { timeout: 10_000 }),
+    );
 
     // Page Résultat 2, sur un cas « prescription médicale de transport ».
     expect(
@@ -76,8 +80,12 @@ describe("accès au CERFA via la galerie de seeds", () => {
     const { user } = setup();
     await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
-    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
-    await user.click(await screen.findByRole("button", OUVRIR_SEED));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
+    // et le délai élargi — l'import dépasse la seconde par défaut quand la suite
+    // tourne en parallèle, et le test échouait alors sans rien de cassé.
+    await user.click(
+      await screen.findByRole("button", OUVRIR_SEED, { timeout: 10_000 }),
+    );
 
     // Timeouts élargis sur toute la fin de ce test : la Page Résultat 2 est un
     // gros DOM (la recherche par nom accessible y coûte cher) et la génération
@@ -98,8 +106,12 @@ describe("accès au CERFA via la galerie de seeds", () => {
     const { user } = setup();
     await sIdentifierProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
-    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
-    await user.click(await screen.findByRole("button", OUVRIR_SEED));
+    // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
+    // et le délai élargi — l'import dépasse la seconde par défaut quand la suite
+    // tourne en parallèle, et le test échouait alors sans rien de cassé.
+    await user.click(
+      await screen.findByRole("button", OUVRIR_SEED, { timeout: 10_000 }),
+    );
 
     // L'accès dev appartient au début du parcours : il n'encombre pas le résultat.
     expect(screen.queryByRole("button", GALERIE)).toBeNull();

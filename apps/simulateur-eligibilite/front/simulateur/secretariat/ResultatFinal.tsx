@@ -24,10 +24,11 @@ type Props = {
    */
   onPrecedent?: () => void;
   /**
-   * Rendu du document téléchargeable proposé quand le cas final est une
-   * prescription médicale de transport. Fourni par l'appelant : le simulateur
-   * sait *quand* un document a lieu d'être, pas comment il se fabrique ni à qui
-   * il est ouvert. Défaut fermé : un appelant qui l'oublie ne propose rien.
+   * Rendu du document téléchargeable, proposé dès que le modèle nomme un document
+   * à remettre au patient. Fourni par l'appelant : le simulateur sait *quand* un
+   * document a lieu d'être, pas lequel se fabrique ni à qui il est ouvert — deux
+   * des quatre documents que le modèle nomme n'ont pas de CERFA à produire.
+   * Défaut fermé : un appelant qui l'oublie ne propose rien.
    */
   documentTelechargeable?: (situation: Situation<string>) => ReactNode;
 };
@@ -94,10 +95,13 @@ function SuiteDuParcours({
 }
 
 // Ce que le patient emporte : le verdict, ce qu'il doit en faire, ce que le corps
-// médical doit reporter — et, s'il y a lieu, le CERFA pré-rempli. Un accord
-// préalable relève du formulaire S3139, une prise en charge par l'établissement ne
-// donne lieu à aucun CERFA : seule la prescription médicale de transport ouvre un
-// document. À qui il est ouvert, en revanche, ne se décide pas ici (cf.
+// médical doit reporter — et, s'il y a lieu, le CERFA pré-rempli.
+//
+// Le modèle nomme un document dans quatre cas ; c'est cette sortie-là qu'on lit,
+// plutôt que d'énumérer ici des cas finaux. Deux d'entre eux seulement sont des
+// CERFA que nous produisons — une convocation d'audience vaut prescription à elle
+// seule, un transport à la charge de l'établissement relève d'un formulaire
+// interne. Lequel, et à qui il est ouvert, ne se décide pas ici (cf.
 // `documentTelechargeable`).
 function DocumentARemettre({
   situation,
@@ -128,11 +132,13 @@ function DocumentARemettre({
         doc={doc}
         article80={article80}
       />
-      {casFinal === "prescription médicale de transport" &&
-        documentTelechargeable?.(situation)}
+      {doc !== AUCUN_DOCUMENT && documentTelechargeable?.(situation)}
     </>
   );
 }
+
+/** La valeur que prend `cible_document_a_remettre_au_patient` quand il n'y en a pas. */
+const AUCUN_DOCUMENT = "aucun document";
 
 // Les sorties du moteur dont les trois blocs ont besoin, évaluées une seule fois.
 function cibles(e: typeof moteur) {
