@@ -27,13 +27,14 @@ import { describe, expect, it } from "vitest";
 import {
   CIBLES,
   QUESTIONS,
+  REGLES_LUES,
 } from "../front/simulateur/contrat-regles-publicodes.ts";
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const regles = yaml.load(
   readFileSync(join(racine, "regles/regles.publicodes"), "utf-8"),
-) as Record<string, { "une possibilité"?: string[] } | null>;
+) as Record<string, { "une possibilité"?: string[]; question?: string } | null>;
 
 /** Les valeurs d'une règle `une possibilité`, débarrassées de leurs quotes. */
 function possibilites(cle: string): string[] {
@@ -67,6 +68,7 @@ describe("contrat de règles", () => {
   it.each([
     ["cible", CIBLES],
     ["question", QUESTIONS],
+    ["règle lue", REGLES_LUES],
   ])("chaque %s du contrat existe dans les règles", (_genre, noms) => {
     expect(noms.filter((nom) => !(nom in regles))).toEqual([]);
   });
@@ -74,13 +76,22 @@ describe("contrat de règles", () => {
   it("ne déclare aucun nom en double", () => {
     // Un doublon passerait inaperçu — le type dérivé est une union, elle absorbe
     // la répétition — mais signale une liste éditée à deux mains.
-    const noms = [...CIBLES, ...QUESTIONS];
+    const noms = [...CIBLES, ...QUESTIONS, ...REGLES_LUES];
     expect(noms.length).toBe(new Set(noms).size);
   });
 
   it("range les cibles et les questions du bon côté", () => {
     expect(CIBLES.filter((c) => !c.startsWith("cible_"))).toEqual([]);
     expect(QUESTIONS.filter((q) => q.startsWith("cible_"))).toEqual([]);
+    expect(REGLES_LUES.filter((r) => r.startsWith("cible_"))).toEqual([]);
+  });
+
+  it("ne déclare en règle lue que des règles sans question", () => {
+    // Une règle que le modèle pose à l'utilisateur est une question : la ranger
+    // ici la rendrait non renseignable, et le parcours se bloquerait dessus.
+    expect(
+      REGLES_LUES.filter((r) => regles[r]?.question !== undefined),
+    ).toEqual([]);
   });
 });
 

@@ -135,11 +135,24 @@ export const QUESTIONS = [
   "p2_transport_urgence",
 ] as const;
 
+/**
+ * Règles intermédiaires que le code **lit sans jamais les écrire**. Ni questions
+ * — on ne les répond pas —, ni sorties du produit — on ne les affiche pas : ce
+ * sont des garde-fous que le modèle calcule et dont l'interface se sert pour
+ * savoir ce qu'elle a le droit de faire. Les tenir à part des `QUESTIONS`
+ * empêche qu'une situation prétende les renseigner.
+ */
+export const REGLES_LUES = [
+  "p2_adresse_arrivee_obligatoire_complete",
+  "p2_adresse_depart_obligatoire_complete",
+] as const;
+
 export type Cible = (typeof CIBLES)[number];
 type Question = (typeof QUESTIONS)[number];
+type RegleLue = (typeof REGLES_LUES)[number];
 
 /** Toute clé du modèle que le code a le droit de nommer. */
-export type CleDeRegle = Cible | Question;
+export type CleDeRegle = Cible | Question | RegleLue;
 
 /** Une situation publicodes dont les clés sont vérifiées à la compilation. */
 export type SituationTypee = Partial<Record<Question, string>>;

@@ -60,6 +60,8 @@ describe("toute réponse affichée commence par une majuscule", () => {
   }, 20_000);
 });
 
+// Même parcours administratif que ci-dessus, arrêté à A4.1 : il tient au budget
+// par défaut sur une machine au repos, plus depuis qu'A2.4 y ajoute une page.
 it("A4.1 — la valeur envoyée au moteur reste celle du modèle", async () => {
   const user = userEvent.setup({ delay: null });
   emettrePassation(PARTIE_1_AMBULANCE);
@@ -80,7 +82,7 @@ it("A4.1 — la valeur envoyée au moteur reste celle du modèle", async () => {
   expect(
     await screen.findByRole("group", { name: /lieu de départ du trajet/i }),
   ).toBeInTheDocument();
-});
+}, 20_000);
 
 // ---- implémentation ----
 

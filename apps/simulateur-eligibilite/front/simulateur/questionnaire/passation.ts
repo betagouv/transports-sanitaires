@@ -20,6 +20,7 @@ import {
 import { formBuilder } from "./constructeur-de-formulaire";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
+import { regleDeComplétude } from "./pagination";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
@@ -34,10 +35,6 @@ export type Options = {
   outil: string;
   // Règles cibles : leur graphe de dépendances détermine les questions posées.
   cibles: readonly string[];
-  // Questions posées mais non bloquantes : la page se quitte sans y répondre.
-  // Une question ciblée l'est d'ordinaire parce qu'il *faut* sa réponse ; ces
-  // règles-là sont ciblées pour être offertes, pas pour être exigées.
-  facultatives?: readonly string[];
   // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions
   // correspondantes ne sont pas reposées.
   situationInitiale?: Situation<string>;
@@ -87,7 +84,7 @@ export function usePassation(options: Options): Passation {
   const [formState, setFormState] = useState<FormState<string>>(() =>
     etatDeDepart(options),
   );
-  const etat = lireEtat(formState, options.facultatives ?? []);
+  const etat = lireEtat(formState);
   const suivi = useSuiviDeParcours(
     options.outil,
     etat.current,
@@ -117,17 +114,11 @@ type Contexte = {
   suivi: SuiviDeParcours;
 };
 
-function lireEtat(
-  formState: FormState<string>,
-  facultatives: readonly string[],
-): Etat {
+function lireEtat(formState: FormState<string>): Etat {
   const { current, pageCount, hasNextPage, hasPreviousPage } =
     formBuilder.pagination(formState);
   const page = formBuilder.currentPage(formState);
-  const questionsEnAttente = resteUneQuestion(
-    page.elements.filter((champ) => !facultatives.includes(champ.id)),
-    formState.situation,
-  );
+  const questionsEnAttente = resteARepondre(page.elements, formState.situation);
   return {
     champs: page.elements,
     formState,
@@ -201,6 +192,23 @@ function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
       gestes.repondrePlusieurs(reponses);
     },
   };
+}
+
+// Ce qui manque encore pour quitter la page. Deux régimes, et le modèle décide
+// duquel relève la page : quand il porte une règle de complétude — les deux pages
+// d'adresse —, elle tranche à elle seule, y compris sur ce qui est facultatif ;
+// partout ailleurs, la page se quitte dès que chacune de ses questions a répondu.
+//
+// Cette distinction était naguère une liste de saisies facultatives tenue dans
+// `Secretariat.tsx` : l'application décidait de son côté que le complément
+// d'adresse et le pays n'étaient pas exigés. Le modèle le dit désormais lui-même.
+function resteARepondre(
+  champs: readonly Champ[],
+  situation: Situation<string>,
+): boolean {
+  const complet = regleDeComplétude(champs.map((champ) => champ.id));
+  if (complet === undefined) return resteUneQuestion(champs, situation);
+  return moteur.setSituation(situation).evaluate(complet).nodeValue !== true;
 }
 
 // Une question affichée (applicable et visible) est « posée » : elle doit être

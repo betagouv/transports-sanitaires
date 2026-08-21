@@ -14,7 +14,6 @@ import {
   CIBLES_ADMINISTRATIVES,
   CIBLES_MEDICALES,
 } from "../cibles-du-parcours";
-import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
@@ -162,18 +161,6 @@ function partie2Rejouee(
   return retourPossible(partie2) ? partie2 : undefined;
 }
 
-// Le complément d'adresse et le pays sont offerts, pas exigés : le modèle ne les
-// compte pas dans `p2_adresses_obligatoires_completes`. Les cibler les fait poser
-// (cf. ci-dessus) ; sans cette liste, les poser reviendrait à les rendre
-// obligatoires, et la page ne se quitterait plus sans un pays pour un trajet
-// franco-français.
-const SAISIES_FACULTATIVES = [
-  "p2_depart_complement_adresse",
-  "p2_depart_pays",
-  "p2_arrivee_complement_adresse",
-  "p2_arrivee_pays",
-] as const satisfies readonly CleDeRegle[];
-
 // M1.1 ouvre la Partie 2 : c'est là qu'il faut dire ce que cette partie peut, et
 // surtout ne peut pas, changer — le mode de transport est arrêté en Partie 1.
 const RAPPEL_PORTEE_ADMINISTRATIVE = {
@@ -201,7 +188,6 @@ function Qualification({
         outil="secretariat"
         etatInitial={etatInitial}
         cibles={CIBLES_ADMINISTRATIVES}
-        facultatives={SAISIES_FACULTATIVES}
         situationInitiale={situationP1}
         libelleFin="Voir le document à remettre au patient"
         bandeau={RAPPEL_PORTEE_ADMINISTRATIVE}
