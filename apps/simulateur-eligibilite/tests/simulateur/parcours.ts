@@ -40,14 +40,21 @@ export type Reponse = [RegExp, (string | RegExp)?];
 
 /** Répond aux questions ciblées, puis complète le reste de la page par défaut. */
 export async function repondrePage(user: User, reponses: Reponse[]) {
+  const memePage = pageEnCours();
   for (const [question, valeur] of reponses)
     await repondre(user, question, valeur);
-  for (const groupe of screen.queryAllByRole("group"))
+  for (const groupe of screen.queryAllByRole("group")) {
+    if (!memePage()) return;
     await completerGroupe(user, groupe);
-  for (const champ of screen.queryAllByRole("textbox"))
+  }
+  for (const champ of screen.queryAllByRole("textbox")) {
+    if (!memePage()) return;
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "x");
-  for (const champ of screen.queryAllByRole("spinbutton"))
+  }
+  for (const champ of screen.queryAllByRole("spinbutton")) {
+    if (!memePage()) return;
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "1");
+  }
 }
 
 /**
@@ -144,6 +151,22 @@ async function avancerDUnePage(
     if (etape() === etapeAvant) throw new Error("la page n'a pas avancé");
   });
   return etape() !== null;
+}
+
+/**
+ * De quoi savoir, entre deux gestes, si la page est toujours celle qu'on remplit.
+ *
+ * Compléter une page prend plusieurs `await`, et une page à choix unique part
+ * d'elle-même 200 ms après avoir reçu sa réponse : sur une machine chargée, elle
+ * peut donc s'en aller au milieu du remplissage. La suite des gestes atterrit
+ * alors sur la page **suivante**, la remplit, et le clic sur « Suivant » lui fait
+ * sauter un écran — le test échoue plus loin, sur une page qu'il n'attendait pas,
+ * et rien ne dit d'où vient le décalage. C'est ce qu'a montré la recette des
+ * adresses, arrêtée sur le lieu d'arrivée alors qu'elle attendait le départ.
+ */
+function pageEnCours(): () => boolean {
+  const depart = etape();
+  return () => etape() === depart;
 }
 
 // Une réponse ciblée. Sans `valeur`, `question` nomme directement l'option — le
