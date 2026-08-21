@@ -2,10 +2,15 @@
 // modèle, et pas seulement les deux qu'on croise en ouvrant le simulateur.
 //
 // Une mosaïque n'est pas une question publicodes : c'est N règles booléennes
-// indépendantes plus une option exclusive, recollées par l'interface (cf.
-// `front/simulateur/questionnaire/mosaique.ts`). Le moteur ne garantit donc rien
-// de leur exclusivité — elle est écrite dans `ChampsDePage`, et c'est ici qu'elle
-// est vérifiée, groupe par groupe, telle que l'utilisateur la manipule.
+// indépendantes, le plus souvent accompagnées d'une option exclusive, recollées
+// par l'interface (cf. `front/simulateur/questionnaire/mosaique.ts`). Le moteur
+// ne garantit donc rien de leur exclusivité — elle est écrite dans
+// `ChampsDePage`, et c'est ici qu'elle est vérifiée, groupe par groupe, telle
+// que l'utilisateur la manipule.
+//
+// Q1.1 fait bande à part : le modèle y exige au moins un critère, elle n'a donc
+// aucune sortie de secours à offrir. Ce qu'elle partage avec les autres est
+// vérifié pour toutes ; l'exclusivité ne l'est que pour celles qui en ont une.
 
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -33,7 +38,8 @@ type Cas = {
   // L'intitulé exact du livrable — celui qui nomme le groupe dans la page.
   intitule: string;
   // L'intitulé exact de l'option exclusive, tel que le livrable le fixe.
-  exclusive: RegExp;
+  // Absent pour Q1.1, seule mosaïque à n'offrir aucune sortie de secours.
+  exclusive?: RegExp;
   // Ce qu'il faut répondre en chemin pour que la branche s'ouvre ; le reste du
   // parcours est réglé par défaut.
   reponses: Reponse[];
@@ -46,7 +52,6 @@ const MOSAIQUES: Cas[] = [
     depuis: "prescripteur",
     intitule:
       "Quelles aides ou conditions particulières sont nécessaires pendant le transport ?",
-    exclusive: /aucune de ces situations ne s’applique au patient/i,
     reponses: [[Q1, PROFESSIONNEL]],
   },
   {
@@ -90,6 +95,12 @@ const MOSAIQUES: Cas[] = [
   },
 ];
 
+/** Les quatre mosaïques qui offrent une sortie de secours — toutes sauf Q1.1. */
+type CasAvecSortie = Cas & { exclusive: RegExp };
+const AVEC_SORTIE = MOSAIQUES.filter(
+  (cas): cas is CasAvecSortie => cas.exclusive !== undefined,
+);
+
 describe.each(MOSAIQUES)("$spec — coche et décoche", (cas) => {
   it("est un vrai choix multiple dans le modèle", () => {
     // Ce que l'interface rend en cases à cocher, le modèle doit le déclarer en
@@ -99,14 +110,7 @@ describe.each(MOSAIQUES)("$spec — coche et décoche", (cas) => {
     expect(regle?.mosaique).toMatchObject({ type: "selection" });
   });
 
-  it("porte l'option exclusive du livrable, en dernière position", async () => {
-    await ouvrir(cas);
-    // Sa position n'est pas cosmétique : `parcours.ts` répond aux mosaïques par
-    // leur dernière case, et l'utilisateur lit la sortie de secours en dernier.
-    expect(cases(cas).at(-1)).toHaveAccessibleName(cas.exclusive);
-  });
-
-  it("garde plusieurs options cochées, jusqu'à ce que « aucun » les chasse", async () => {
+  it("garde plusieurs options cochées à la fois", async () => {
     const user = await ouvrir(cas);
     const [premiere, seconde] = options(cas);
     if (!premiere || !seconde) throw new Error("mosaïque à moins de 2 options");
@@ -117,26 +121,22 @@ describe.each(MOSAIQUES)("$spec — coche et décoche", (cas) => {
     await user.click(seconde);
     expect(premiere).toBeChecked();
     expect(seconde).toBeChecked();
-    expect(exclusive(cas)).not.toBeChecked();
-
-    // Exclusivité : « aucun » décoche tout le reste.
-    await user.click(exclusive(cas));
-    expect(exclusive(cas)).toBeChecked();
-    for (const option of options(cas)) expect(option).not.toBeChecked();
   });
 
-  it("décoche « aucun » dès qu'une option est cochée, et rebloque l'avancement quand plus rien ne l'est", async () => {
+  it("rebloque l'avancement quand plus rien n'est coché", async () => {
     const user = await ouvrir(cas);
     // Le reste de la page répondu : seul l'état de la mosaïque décide désormais
     // du bouton de validation.
     await repondrePage(user, cas.reponses);
     expect(validation()).toBeEnabled();
 
+    // Une option cochée seule vaut réponse — que la page ait été complétée par
+    // la sortie de secours, qu'il faut alors chasser, ou par cette option même,
+    // ce que fait Q1.1 faute d'en avoir une.
     const premiere = options(cas)[0];
     if (!premiere) throw new Error("mosaïque sans option");
-    await user.click(premiere);
+    if (!(premiere as HTMLInputElement).checked) await user.click(premiere);
     expect(premiere).toBeChecked();
-    expect(exclusive(cas)).not.toBeChecked();
     expect(validation()).toBeEnabled();
 
     // La mosaïque fige toutes ses options dans la situation à chaque clic : une
@@ -147,6 +147,53 @@ describe.each(MOSAIQUES)("$spec — coche et décoche", (cas) => {
     expect(premiere).not.toBeChecked();
     expect(validation()).toBeDisabled();
   });
+});
+
+describe.each(AVEC_SORTIE)("$spec — la sortie de secours", (cas) => {
+  it("est l'option exclusive du livrable, en dernière position", async () => {
+    await ouvrir(cas);
+    // Sa position n'est pas cosmétique : l'utilisateur lit la sortie de secours
+    // en dernier, après les cas qu'elle dit tous écarter.
+    expect(cases(cas).at(-1)).toHaveAccessibleName(cas.exclusive);
+  });
+
+  it("chasse les options cochées", async () => {
+    const user = await ouvrir(cas);
+    const [premiere, seconde] = options(cas);
+    if (!premiere || !seconde) throw new Error("mosaïque à moins de 2 options");
+    await user.click(premiere);
+    await user.click(seconde);
+    expect(exclusive(cas)).not.toBeChecked();
+
+    await user.click(exclusive(cas));
+    expect(exclusive(cas)).toBeChecked();
+    for (const option of options(cas)) expect(option).not.toBeChecked();
+  });
+
+  it("se décoche dès qu'une option est cochée", async () => {
+    const user = await ouvrir(cas);
+    await user.click(exclusive(cas));
+    const premiere = options(cas)[0];
+    if (!premiere) throw new Error("mosaïque sans option");
+    await user.click(premiere);
+    expect(premiere).toBeChecked();
+    expect(exclusive(cas)).not.toBeChecked();
+  });
+});
+
+it("Q1.1 est la seule mosaïque sans sortie de secours", async () => {
+  // Le modèle exige au moins un critère dès que Q1.1 est posée : l'écran ne
+  // doit donc offrir aucune case permettant de la traverser sans en cocher un,
+  // et c'est la seule mosaïque dans ce cas.
+  const q1_1 = MOSAIQUES.find((cas) => cas.spec === "Q1.1");
+  if (!q1_1) throw new Error("Q1.1 absente du tableau des mosaïques");
+  expect(MOSAIQUES.filter((cas) => cas.exclusive === undefined)).toEqual([
+    q1_1,
+  ]);
+
+  await ouvrir(q1_1);
+  for (const option of cases(q1_1))
+    expect(option).not.toHaveAccessibleName(/^aucun/i);
 });
 
 it("couvre toutes les mosaïques du modèle", () => {
@@ -193,8 +240,9 @@ const enonce = (cas: Cas) =>
 
 const groupe = (cas: Cas) => screen.getByRole("group", { name: enonce(cas) });
 const cases = (cas: Cas) => within(groupe(cas)).getAllByRole("checkbox");
-const options = (cas: Cas) => cases(cas).slice(0, -1);
-const exclusive = (cas: Cas) =>
+const options = (cas: Cas) =>
+  cas.exclusive ? cases(cas).slice(0, -1) : cases(cas);
+const exclusive = (cas: CasAvecSortie) =>
   within(groupe(cas)).getByRole("checkbox", { name: cas.exclusive });
 
 /** Le bouton qui fait sortir de la page — « Suivant », ou celui de fin. */

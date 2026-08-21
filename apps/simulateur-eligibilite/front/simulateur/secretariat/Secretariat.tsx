@@ -135,15 +135,31 @@ function amorceDuParcours(situationFinale: Situation<string> | null) {
     cibles: CIBLES_MEDICALES,
     reponses: situationFinale,
   });
+  return {
+    situationP1: partie1.situation,
+    parcours: partie2Rejouee(partie1.situation, situationFinale),
+  };
+}
+
+// La Partie 2 d'une seed, rejouée — ou rien quand le modèle dit qu'elle n'est
+// pas requise. La question se pose parce que les cibles administratives incluent
+// les douze sorties d'adresse : elles restent indéterminées tant que la
+// qualification administrative n'a pas été posée, donc les cibler ferait poser
+// A2.1 et sa suite même à un cas que la Partie 1 a déjà tranché.
+function partie2Rejouee(
+  situationP1: Situation<string>,
+  situationFinale: Situation<string>,
+): FormState<string> | undefined {
+  if (
+    texte(moteur.setSituation(situationP1), "cible_partie_2_requise") !== "oui"
+  )
+    return undefined;
   const partie2 = rejouerLesReponses({
     cibles: CIBLES_ADMINISTRATIVES,
     reponses: situationFinale,
-    situationInitiale: partie1.situation,
+    situationInitiale: situationP1,
   });
-  return {
-    situationP1: partie1.situation,
-    parcours: retourPossible(partie2) ? partie2 : undefined,
-  };
+  return retourPossible(partie2) ? partie2 : undefined;
 }
 
 // Le complément d'adresse et le pays sont offerts, pas exigés : le modèle ne les

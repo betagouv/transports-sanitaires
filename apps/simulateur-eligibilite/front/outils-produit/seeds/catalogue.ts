@@ -108,14 +108,14 @@ export const SEEDS: readonly Seed[] = [
     id: "prescripteur-non-justifie",
     libelle: "Prescripteur — mode retenu mais aucun droit ouvert",
     description:
-      "Un professionnel est nécessaire, mais aucune aide ni condition " +
-      "particulière n'est retenue et aucun contexte n'ouvre droit : la Partie 1 " +
-      "conclut à un VSL, la Partie 2 referme la prise en charge. En v9.1 la " +
-      "Partie 1 conclut toujours à un mode — c'est la Partie 2 qui juge du droit.",
+      "Un professionnel est nécessaire pendant le trajet, et aucun contexte " +
+      "n'ouvre droit : la Partie 1 conclut à un VSL, la Partie 2 referme la " +
+      "prise en charge. La Partie 1 conclut toujours à un mode — c'est la " +
+      "Partie 2 qui juge du droit.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
-      p1_critere_aucune_situation: "oui",
+      p1_critere_aide_professionnel: "oui",
     },
     attendu: {
       cible_resultat_medical: "décision établie",

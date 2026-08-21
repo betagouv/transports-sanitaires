@@ -177,6 +177,12 @@ cible_ald_reconnue_liee_aux_soins:
   titre: Soins ou examens liés à une ALD (Affection de Longue Durée) reconnue
   valeur: p1_m0_ald
 
+cible_ald_non_retenue_absence_incapacite_deficience:
+  titre: ALD (Affection de Longue Durée) non retenue en l’absence d’incapacité ou de déficience
+  toutes ces conditions:
+  - p1_m0_ald
+  - p1_ald_incapacite_ou_deficience = non
+
 cible_seance_dialyse_radiotherapie_chimiotherapie:
   titre: Séance de dialyse, de radiothérapie ou de chimiothérapie
   valeur: p1_m0_seance
@@ -213,6 +219,38 @@ cible_prise_en_charge_prestation:
       alors: '''oui'''
     - si: p2_prestation_prise_en_charge_assurance_maladie = non
       alors: '''non'''
+
+cible_dap_motif_longue_distance:
+  titre: DAP (Demande d’Accord Préalable) requise pour une longue distance
+  valeur: p2_distance_aller_superieure_150km
+
+cible_dap_motif_serie:
+  titre: DAP (Demande d’Accord Préalable) requise pour des transports en série hors ALD validée
+  valeur: p2_transport_serie_declenche_dap
+
+cible_dap_motif_avion_bateau:
+  titre: DAP (Demande d’Accord Préalable) requise pour un transport en avion ou bateau
+  une de ces conditions:
+  - p2_exception_avion_bateau
+  - p2_special_avion_bateau
+
+cible_dap_motif_camsp_cmpp:
+  titre: DAP (Demande d’Accord Préalable) requise pour des soins en CAMSP ou CMPP
+  valeur: p2_special_camsp_cmpp
+
+cible_dap_motif_engagement_maternite:
+  titre: DAP (Demande d’Accord Préalable) requise dans le cadre du dispositif Engagement maternité
+  une de ces conditions:
+  - p2_engagement_maternite_entree
+  - p2_special_engagement_maternite
+
+cible_dap_motif_samsah:
+  titre: DAP (Demande d’Accord Préalable) requise pour des soins en SAMSAH
+  valeur: p2_special_samsah
+
+cible_dap_motif_accompagnement_tiers:
+  titre: DAP (Demande d’Accord Préalable) requise pour l’accompagnement d’une personne nécessitant l’assistance d’un tiers
+  valeur: p2_accompagnement_tiers
 
 cible_lieu_depart_type:
   titre: Type du lieu de départ
@@ -332,7 +370,7 @@ p1_critere_fauteuil_sans_transfert:
   spec_id: Q1.1
 
 p1_critere_position_allongee_demi_assise:
-  question: Doit être transporté en position allongée ou semi-allongée, car son état ne permet pas la position assise.
+  question: Doit être transporté en position allongée ou semi-assise sur un brancard, car son état ne lui permet pas de rester assis normalement pendant le transport.
   applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
 
@@ -342,7 +380,7 @@ p1_critere_brancardage_portage:
   spec_id: Q1.1
 
 p1_critere_surveillance_constante:
-  question: Nécessite une surveillance constante par une personne qualifiée et la présence de matériel de secours en raison d’un risque de dégradation de son état.
+  question: Nécessite une surveillance constante par une personne qualifiée et la présence de matériel de secours pendant le transport, en raison d’un risque médical identifié de dégradation de son état.
   applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
 
@@ -353,11 +391,6 @@ p1_critere_oxygene:
 
 p1_critere_isolement_asepsie:
   question: Nécessite un transport dans des conditions d’isolement, d’asepsie ou de désinfection strictes en raison d’un risque infectieux.
-  applicable si: p1_autonomie_professionnel_requis
-  spec_id: Q1.1
-
-p1_critere_aucune_situation:
-  question: Aucune de ces situations ne s’applique au patient.
   applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
 
@@ -379,7 +412,6 @@ p1_criteres_transport:
     - p1_critere_surveillance_constante
     - p1_critere_oxygene
     - p1_critere_isolement_asepsie
-    option aucun: p1_critere_aucune_situation
   applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
 
@@ -397,7 +429,6 @@ p1_criteres_transport_repondus:
   - p1_critere_surveillance_constante
   - p1_critere_oxygene
   - p1_critere_isolement_asepsie
-  - p1_critere_aucune_situation
 
 p1_critere_ambulance:
   titre: Au moins un critère justifie une ambulance
@@ -421,15 +452,23 @@ p1_mode_transport_medical:
       alors: '''ambulance'''
     - si: p1_critere_fauteuil_sans_transfert
       alors: '''VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'''
-    - si: p1_autonomie_professionnel_requis
+    - si:
+        toutes ces conditions:
+        - p1_autonomie_professionnel_requis
+        - p1_criteres_transport_repondus
       alors: '''VSL (Véhicule Sanitaire Léger) ou taxi conventionné'''
-    - si: p1_autonomie_repondue
+    - si:
+        toutes ces conditions:
+        - p1_autonomie_repondue
+        - p1_autonomie_professionnel_requis = non
       alors: '''véhicule personnel ou transport en commun'''
 
 p1_transport_partage_etape_applicable:
   titre: Question sur le transport partagé applicable
   toutes ces conditions:
   - p1_criteres_et_autonomie_complets
+  - p1_cas_particuliers_repondus
+  - p1_cas_final_direct = 'aucun'
   - une de ces conditions:
     - p1_mode_transport_medical = 'VSL (Véhicule Sanitaire Léger) ou taxi conventionné'
     - p1_mode_transport_medical = 'VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)'
@@ -457,7 +496,7 @@ p1_criteres_et_autonomie_complets:
     - sinon: non
 
 p1_m0_smur:
-  question: Le patient doit être transporté par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).
+  question: Le transport est organisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation) dans le cadre d’une urgence médicale.
   applicable si: p1_criteres_et_autonomie_complets
   spec_id: M0
 
@@ -467,12 +506,12 @@ p1_m0_bariatrique:
   spec_id: M0
 
 p1_m0_permission_sans_motif_medical:
-  question: Le déplacement correspond à une permission de sortie demandée par le patient, sans motif médical.
+  question: Le déplacement correspond à une permission temporaire de sortie d’hospitalisation, demandée par le patient pour convenance personnelle et sans justification médicale.
   applicable si: p1_criteres_et_autonomie_complets
   spec_id: M0
 
 p1_m0_ald:
-  question: Soins ou examens en lien avec une ALD (Affection de Longue Durée) reconnue pour ce patient par l’Assurance Maladie, exonérante ou non exonérante.
+  question: Le patient bénéficie d’une ALD (Affection de Longue Durée) reconnue par l’Assurance Maladie, exonérante ou non exonérante, et les soins ou examens à l’origine du déplacement sont en lien avec cette ALD (Affection de Longue Durée).
   applicable si: p1_criteres_et_autonomie_complets
   spec_id: M0
 
@@ -489,7 +528,7 @@ p1_m0_aucun:
 p1_cas_particuliers_medicaux:
   titre: Cas particuliers médicaux
   question: Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.
-  description: Sélectionnez tous les cas concernés.
+  description: Sélectionnez tous les cas concernés. Si la séance est liée à une ALD (Affection de Longue Durée) reconnue pour le patient, sélectionnez les deux réponses correspondantes.
   mosaique:
     type: selection
     options:
@@ -525,7 +564,10 @@ p1_ald_incapacite_ou_deficience:
   titre: Incapacité ou déficience associée à une ALD (Affection de Longue Durée)
   valeur:
     variations:
-    - si: p1_autonomie_professionnel_requis
+    - si:
+        toutes ces conditions:
+        - p1_autonomie_professionnel_requis
+        - p1_criteres_transport_repondus
       alors: oui
     - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
       alors: oui
@@ -535,9 +577,7 @@ p1_ald_validee:
   titre: Situation ALD (Affection de Longue Durée) médicalement qualifiée
   toutes ces conditions:
   - p1_m0_ald
-  - une de ces conditions:
-    - p1_ald_incapacite_ou_deficience
-    - p1_m0_seance
+  - p1_ald_incapacite_ou_deficience
 
 p1_cas_final_direct:
   titre: Cas final déterminé dès la Partie 1
@@ -777,7 +817,12 @@ p2_parcours_standard_applicable:
   titre: Parcours standard de l’Assurance Maladie applicable
   une de ces conditions:
   - p2_patient_hospitalise = non
-  - p2_contexte_retour_penitentiaire
+  - toutes ces conditions:
+    - p2_contexte_retour_penitentiaire
+    - p2_patient_hospitalise_repondu
+    - une de ces conditions:
+      - p2_patient_hospitalise = non
+      - p2_exceptions_repondues
   - toutes ces conditions:
     - p2_patient_hospitalise
     - p2_exceptions_repondues
@@ -785,8 +830,8 @@ p2_parcours_standard_applicable:
     - p2_detenu_hospitalise = non
 
 p2_convocation_ou_avis:
-  titre: Convocation ou avis d’audience
-  question: Le transport est-il lié à une convocation ou à un avis d’audience valant prescription médicale de transport ?
+  titre: Convocation réglementaire ou avis d’audience
+  question: Le déplacement est-il lié à une convocation réglementaire ou à un avis d’audience valant prescription médicale de transport ?
   applicable si: p2_parcours_standard_applicable
   spec_id: A2.1
 
@@ -868,8 +913,8 @@ p2_prestation_prise_en_charge_validee:
   - p2_prestation_question_non_requise
   - p2_prestation_prise_en_charge_assurance_maladie
 
-p2_motif_ouvrant_droit:
-  titre: Motif ouvrant droit à une prise en charge du transport
+p2_motif_ouvrant_droit_hors_engagement_maternite:
+  titre: Motif ouvrant droit hors dispositif Engagement maternité
   une de ces conditions:
   - p2_contexte_hospitalisation
   - p2_contexte_at_mp
@@ -879,11 +924,45 @@ p2_motif_ouvrant_droit:
   - p1_critere_ambulance
   - p2_exception_restant_assurance_maladie
 
+p2_engagement_maternite_entree_applicable:
+  titre: Qualification précoce du dispositif Engagement maternité applicable
+  toutes ces conditions:
+  - p2_parcours_apres_convocation
+  - p2_prestation_prise_en_charge_validee
+  - p2_motif_ouvrant_droit_hors_engagement_maternite = non
+
+p2_engagement_maternite_entree:
+  titre: Dispositif Engagement maternité
+  question: Le déplacement relève-t-il du dispositif Engagement maternité pour une patiente domiciliée à plus de 45 minutes de la maternité adaptée recommandée par l’équipe soignante ?
+  applicable si: p2_engagement_maternite_entree_applicable
+  spec_id: A2.4
+
+p2_engagement_maternite_entree_repondue:
+  titre: Réponse sur le dispositif Engagement maternité renseignée
+  une de ces conditions:
+  - p2_engagement_maternite_entree
+  - p2_engagement_maternite_entree = non
+
+p2_engagement_maternite_qualification_complete:
+  titre: Qualification du dispositif Engagement maternité complète
+  valeur:
+    variations:
+    - si: p2_engagement_maternite_entree_applicable
+      alors: p2_engagement_maternite_entree_repondue
+    - sinon: oui
+
+p2_motif_ouvrant_droit:
+  titre: Motif ouvrant droit à une prise en charge du transport
+  une de ces conditions:
+  - p2_motif_ouvrant_droit_hors_engagement_maternite
+  - p2_engagement_maternite_entree
+
 p2_non_eligible_motif_absent:
   titre: Aucun motif ouvrant droit
   toutes ces conditions:
   - p2_parcours_apres_convocation
   - p2_prestation_prise_en_charge_validee
+  - p2_engagement_maternite_qualification_complete
   - p2_motif_ouvrant_droit = non
 
 p2_non_eligible_assurance_maladie:
@@ -903,6 +982,7 @@ p2_transport_urgence:
     toutes ces conditions:
     - p2_parcours_apres_convocation
     - p2_prestation_prise_en_charge_validee
+    - p2_engagement_maternite_qualification_complete
     - p2_motif_ouvrant_droit
     - p2_exception_aide_medicale_urgente = non
   spec_id: A4.5
@@ -920,6 +1000,7 @@ p2_accord_prealable_applicable:
   toutes ces conditions:
   - p2_parcours_apres_convocation
   - p2_prestation_prise_en_charge_validee
+  - p2_engagement_maternite_qualification_complete
   - p2_motif_ouvrant_droit
   - p2_transport_urgence_repondu
 
@@ -962,6 +1043,8 @@ p2_chaque_trajet_aller_superieur_50km:
     - p2_accord_prealable_applicable
     - p2_distance_aller_superieure_150km = non
     - p2_nombre_transports_prevus >= 4
+    - p2_situations_accord_prealable_repondues
+    - p2_situation_speciale_declenche_dap = non
   spec_id: A3.3
 
 p2_distance_serie_repondue:
@@ -988,11 +1071,10 @@ p2_situations_accord_prealable_applicables:
   - p2_accord_prealable_applicable
   - p2_nombre_transports_prevus_valide
   - p2_distance_aller_superieure_150km = non
-  - p2_transport_serie_declenche_dap = non
   - p2_exception_avion_bateau = non
   - une de ces conditions:
-    - p2_nombre_transports_prevus < 4
-    - p2_distance_serie_repondue
+    - p2_engagement_maternite_entree_applicable = non
+    - p2_engagement_maternite_entree = non
 
 p2_special_avion_bateau:
   question: Transport par avion ou par bateau de ligne régulière.
@@ -1006,7 +1088,12 @@ p2_special_camsp_cmpp:
 
 p2_special_engagement_maternite:
   question: Transport vers une maternité éloignée dans le cadre du dispositif Engagement maternité.
-  applicable si: p2_situations_accord_prealable_applicables
+  applicable si:
+    toutes ces conditions:
+    - p2_situations_accord_prealable_applicables
+    - une de ces conditions:
+      - p2_engagement_maternite_entree_applicable = non
+      - p2_engagement_maternite_entree = non
   spec_id: A3.4
 
 p2_special_samsah:
@@ -1047,6 +1134,7 @@ p2_situations_accord_prealable_repondues:
 p2_situation_speciale_declenche_dap:
   titre: Situation particulière déclenchant une DAP (Demande d’Accord Préalable)
   une de ces conditions:
+  - p2_engagement_maternite_entree
   - p2_exception_avion_bateau
   - p2_special_avion_bateau
   - p2_special_camsp_cmpp
@@ -1060,6 +1148,10 @@ p2_accompagnement_tiers:
     toutes ces conditions:
     - p2_situations_accord_prealable_repondues
     - p2_situation_speciale_declenche_dap = non
+    - p2_transport_serie_declenche_dap = non
+    - une de ces conditions:
+      - p2_nombre_transports_prevus < 4
+      - p2_distance_serie_repondue
   spec_id: A3.8
 
 p2_accompagnement_tiers_repondu:
@@ -1079,6 +1171,9 @@ p2_accord_prealable_requis:
 p2_accord_prealable_questionnaire_complete:
   titre: Questionnaire relatif à l’accord préalable complété
   une de ces conditions:
+  - toutes ces conditions:
+    - p2_engagement_maternite_entree
+    - p2_nombre_transports_prevus_valide
   - toutes ces conditions:
     - p2_distance_aller_superieure_150km
     - p2_nombre_transports_prevus_valide
@@ -1325,6 +1420,14 @@ p2_depart_nom_complete:
       alors: p2_depart_nom_lieu_renseigne
     - sinon: oui
 
+p2_adresse_depart_obligatoire_complete:
+  titre: Informations obligatoires du lieu de départ complétées
+  toutes ces conditions:
+  - p2_depart_nom_complete
+  - p2_depart_adresse_renseignee
+  - p2_depart_code_postal_renseigne
+  - p2_depart_commune_renseignee
+
 p2_arrivee_nom_complete:
   titre: Nom du lieu d’arrivée complété lorsqu’il est requis
   valeur:
@@ -1333,17 +1436,19 @@ p2_arrivee_nom_complete:
       alors: p2_arrivee_nom_lieu_renseigne
     - sinon: oui
 
-p2_adresses_obligatoires_completes:
-  titre: Adresses obligatoires complétées
+p2_adresse_arrivee_obligatoire_complete:
+  titre: Informations obligatoires du lieu d’arrivée complétées
   toutes ces conditions:
-  - p2_depart_nom_complete
-  - p2_depart_adresse_renseignee
-  - p2_depart_code_postal_renseigne
-  - p2_depart_commune_renseignee
   - p2_arrivee_nom_complete
   - p2_arrivee_adresse_renseignee
   - p2_arrivee_code_postal_renseigne
   - p2_arrivee_commune_renseignee
+
+p2_adresses_obligatoires_completes:
+  titre: Adresses obligatoires complétées
+  toutes ces conditions:
+  - p2_adresse_depart_obligatoire_complete
+  - p2_adresse_arrivee_obligatoire_complete
 
 p2_accident_cause_par_tiers:
   titre: Accident causé par un tiers

@@ -54,7 +54,8 @@ const QUESTIONS: Cas[] = [
     depuis: "prescripteur",
     question:
       "Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.",
-    information: "Sélectionnez tous les cas concernés.",
+    information:
+      "Sélectionnez tous les cas concernés. Si la séance est liée à une ALD (Affection de Longue Durée) reconnue pour le patient, sélectionnez les deux réponses correspondantes.",
     reponses: [],
   },
   {

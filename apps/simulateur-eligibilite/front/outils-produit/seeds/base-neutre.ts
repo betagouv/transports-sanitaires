@@ -28,7 +28,6 @@ export const BASE_NEUTRE: SituationTypee = {
   p1_critere_surveillance_constante: "non",
   p1_critere_oxygene: "non",
   p1_critere_isolement_asepsie: "non",
-  p1_critere_aucune_situation: "non",
   p1_transport_partage_incompatible: "non",
 
   // M0 : l'option exclusive porte la réponse, les cinq cas restent à « non ».
@@ -63,6 +62,7 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_convocation_ou_avis: "non",
   p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
   p2_prestation_prise_en_charge_assurance_maladie: "oui",
+  p2_engagement_maternite_entree: "non",
 
   p2_distance_aller_superieure_150km: "non",
   p2_nombre_transports_prevus: "1",

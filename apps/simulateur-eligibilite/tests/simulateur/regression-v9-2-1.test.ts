@@ -51,11 +51,14 @@ const matrice: Cas[] = [
     },
   },
   {
+    // La séance ne valide plus l'ALD : `p1_ald_validee` exige une incapacité ou
+    // une déficience, et rien d'autre. Elle ouvre droit de son côté, en motif
+    // indépendant — d'où une PMT alors que l'ALD n'est pas retenue.
     id: "ALD-003",
     given: { p1_autonomie: AUTONOME, ...ALD, p1_m0_seance: "oui" },
     expect: {
       p1_ald_incapacite_ou_deficience: false,
-      p1_ald_validee: true,
+      p1_ald_validee: false,
       cible_cas_final: PMT,
     },
   },
@@ -74,7 +77,7 @@ const matrice: Cas[] = [
   },
   {
     id: "MOTIF-001",
-    given: { p1_autonomie: PRO, p1_critere_aucune_situation: "oui" },
+    given: { p1_autonomie: PRO, p1_critere_aide_professionnel: "oui" },
     expect: {
       cible_transport_sanitaire_prescrit: VSL,
       p2_motif_ouvrant_droit: false,
@@ -133,24 +136,27 @@ const matrice: Cas[] = [
     expect: { p2_transport_en_serie: false, cible_cas_final: PMT },
   },
   {
-    // La v9.2.1 durcit ce scénario : une réponse à A3.4 laissée dans la
-    // situation ne doit plus faire passer pour complète une série dont A3.3
-    // reste sans réponse. C'est `p2_situations_accord_prealable_applicables`
-    // qui rend les cinq questions A3.4 non applicables tant qu'A3.3 manque.
+    // La v9.4.0 renverse l'ordre : A3.4 précède désormais A3.3. C'est donc la
+    // réponse à A3.3 qu'une situation ne doit plus faire compter tant qu'A3.4
+    // reste sans réponse — `p2_chaque_trajet_aller_superieur_50km` exige
+    // `p2_situations_accord_prealable_repondues` pour être applicable.
     id: "A3.3-002",
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
       ...HOSPITALISATION,
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: null,
-      p2_special_avion_bateau: "oui",
-      p2_special_aucune: "non",
+      p2_special_avion_bateau: null,
+      p2_special_camsp_cmpp: null,
+      p2_special_engagement_maternite: null,
+      p2_special_samsah: null,
+      p2_special_aucune: null,
+      p2_chaque_trajet_aller_superieur_50km: "oui",
     },
     expect: {
       // Répondue « oui » dans la situation : sans la neutralisation elle
       // vaudrait `true`. Non applicable, elle ne vaut plus rien.
-      p2_special_avion_bateau: undefined,
+      p2_chaque_trajet_aller_superieur_50km: undefined,
       cible_resultat_2_affichable: false,
     },
   },

@@ -2,12 +2,13 @@
 // page, aller jusqu'au bout. Partagé par les tests du prescripteur et du
 // secrétariat, qui traversent le même questionnaire.
 //
-// Le modèle v9.1 mêle quatre formes de question sur une même page : des choix
-// uniques (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple (Q1.1,
-// M0, A0.2, A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par
-// défaut » n'a donc pas un seul sens : c'est « Non » pour un oui/non, l'option
-// exclusive pour une mosaïque, la première possibilité pour un choix unique, et
-// un texte quelconque pour une saisie libre.
+// Le modèle mêle quatre formes de question sur une même page : des choix uniques
+// (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple (Q1.1, M0, A0.2,
+// A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par défaut » n'a
+// donc pas un seul sens : c'est « Non » pour un oui/non, l'option exclusive pour
+// une mosaïque — ou sa première case quand elle n'en a pas —, la première
+// possibilité pour un choix unique, et un texte quelconque pour une saisie
+// libre.
 
 import { screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -171,7 +172,7 @@ async function cliquerOption(user: User, dans: Portee, nom: string | RegExp) {
 async function completerGroupe(user: User, groupe: HTMLElement) {
   const dedans = within(groupe);
   const cases = dedans.queryAllByRole("checkbox");
-  if (cases.length > 0) return completerMosaique(user, cases);
+  if (cases.length > 0) return completerMosaique(user, dedans, cases);
   if (dedans.queryByRole("radio", { checked: true })) return;
   const radios = dedans.queryAllByRole("radio");
   const non = dedans.queryByRole("radio", { name: /^non$/i });
@@ -179,12 +180,18 @@ async function completerGroupe(user: User, groupe: HTMLElement) {
   else if (radios[0]) await user.click(radios[0]);
 }
 
-// Une mosaïque est répondue par son option exclusive — « Aucun… » / « Aucune… »,
-// toujours la dernière case du groupe — sauf si une case est déjà cochée.
-async function completerMosaique(user: User, cases: HTMLElement[]) {
+// Une mosaïque est répondue par son option exclusive — « Aucun… » / « Aucune… » —
+// sauf si une case est déjà cochée. Q1.1 n'en a plus : le modèle y exige au
+// moins un critère, et la réponse la plus neutre devient sa première case, celle
+// qui ne fait pas escalader le mode au-delà du VSL.
+async function completerMosaique(
+  user: User,
+  dans: Portee,
+  cases: HTMLElement[],
+) {
   if (cases.some((c) => (c as HTMLInputElement).checked)) return;
-  const exclusive = cases[cases.length - 1];
-  if (exclusive) await user.click(exclusive);
+  const neutre = dans.queryByRole("checkbox", { name: /^aucun/i }) ?? cases[0];
+  if (neutre) await user.click(neutre);
 }
 
 // L'étape affichée par l'étapeur, ou `null` s'il n'y en a plus — le parcours est

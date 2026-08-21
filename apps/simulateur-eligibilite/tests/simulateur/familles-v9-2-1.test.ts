@@ -47,10 +47,18 @@ describe("modèle v9.2.1 — P1-EXHAUSTIVE", () => {
     expect(moteur.evaluate("p1_mode_transport_medical").nodeValue).toBe(TPMR);
   });
 
-  it("un besoin professionnel sans aucun critère produit un VSL", () => {
+  // Q1.1 n'a plus d'option « Aucune » : sans critère coché, la question reste
+  // sans réponse et le mode n'est pas conclu. C'est le modèle qui l'impose —
+  // la branche VSL exige désormais `p1_criteres_transport_repondus`.
+  it("un besoin professionnel sans aucun critère ne conclut à aucun mode", () => {
+    const moteur = evalue({ p1_autonomie: PRO });
+    expect(moteur.evaluate("p1_mode_transport_medical").nodeValue).toBeNull();
+  });
+
+  it("un besoin professionnel dont le seul critère est l'aide produit un VSL", () => {
     const moteur = evalue({
       p1_autonomie: PRO,
-      p1_critere_aucune_situation: "oui",
+      p1_critere_aide_professionnel: "oui",
     });
     expect(
       moteur.evaluate("cible_transport_sanitaire_prescrit").nodeValue,

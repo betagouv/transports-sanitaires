@@ -10,15 +10,17 @@ import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 
 beforeEach(() => sessionStorage.clear());
 
-// Le parcours médical v9.1 tient en trois pages : Q1 (autonomie et besoins),
+// Le parcours médical tient en quatre pages au plus : Q1 (autonomie et besoins),
 // puis Q1.1 (aides et conditions particulières) **seulement** si Q1 établit un
-// besoin professionnel, puis M0 (cas particuliers médicaux) accompagnée de M4
-// (transport partagé) quand le mode retenu s'y prête.
+// besoin professionnel, puis M0 (cas particuliers médicaux), et enfin M4
+// (transport partagé) quand le mode retenu s'y prête. M0 précède M4 : elle seule
+// peut trancher le parcours dès la Partie 1.
 const AUTONOME = /peut se déplacer seul/i;
 const PROCHE = /proche accompagnant/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
 const AIDES = /aides ou conditions particulières/i;
 const CAS_PARTICULIERS = /cas particuliers/i;
+/** Q1.1 n'a plus d'option exclusive : ce motif sert à constater son absence. */
 const AUCUNE_AIDE = /aucune de ces situations/i;
 const AUCUN_CAS = /aucun de ces cas médicaux/i;
 
@@ -91,7 +93,7 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
   });
 
-  it("Q1.1 : une seule question à cases à cocher, avec exclusivité « Aucune »", async () => {
+  it("Q1.1 : une seule question à cases à cocher, sans sortie de secours", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
 
@@ -100,7 +102,6 @@ describe("prescripteur — parcours médical", () => {
     const fauteuil = within(aides).getByRole("checkbox", {
       name: /doit rester dans son fauteuil roulant/i,
     });
-    const aucune = within(aides).getByRole("checkbox", { name: AUCUNE_AIDE });
 
     // Choix multiple : deux aides cochées simultanément (les autres options ne
     // doivent pas se désactiver une fois l'agrégat OU satisfait).
@@ -109,11 +110,12 @@ describe("prescripteur — parcours médical", () => {
     expect(oxygene).toBeChecked();
     expect(fauteuil).toBeChecked();
 
-    // Exclusivité : cocher « Aucune » décoche toutes les aides.
-    await user.click(aucune);
-    expect(aucune).toBeChecked();
-    expect(oxygene).not.toBeChecked();
-    expect(fauteuil).not.toBeChecked();
+    // Q1.1 est la seule mosaïque sans option exclusive : le modèle exige au
+    // moins un critère dès qu'elle est posée, et l'écran ne doit donc offrir
+    // aucune façon de la traverser sans en cocher un.
+    expect(
+      within(aides).queryByRole("checkbox", { name: AUCUNE_AIDE }),
+    ).toBeNull();
   });
 
   it("Q1.1 : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
@@ -166,6 +168,20 @@ describe("prescripteur — parcours médical", () => {
       within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
         name: /règles d’hygiène ou la désinfection/i,
       }),
+    );
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+
+    // M0 avant M4 : le modèle subordonne le transport partagé aux cas
+    // particuliers médicaux, qui décident seuls d'un cas tranché dès la
+    // Partie 1. La question du partage ne peut donc pas être posée avant.
+    expect(
+      screen.queryByRole("group", { name: /transport partagé/i }),
+    ).toBeNull();
+    await user.click(
+      within(screen.getByRole("group", { name: CAS_PARTICULIERS })).getByRole(
+        "checkbox",
+        { name: AUCUN_CAS },
+      ),
     );
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 

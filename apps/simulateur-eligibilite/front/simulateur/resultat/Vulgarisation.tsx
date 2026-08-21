@@ -82,12 +82,6 @@ export const CRITERES: EntreeVulgarisee[] = [
     description:
       "Votre état impose des conditions renforcées pour éviter un risque infectieux ou protéger votre santé.",
   },
-  {
-    id: "p1_critere_aucune_situation",
-    libelle: "Aucune aide ou condition particulière",
-    description:
-      "Les informations renseignées ne montrent pas de besoin médical imposant une ambulance, un VSL, un taxi conventionné ou un véhicule adapté au fauteuil roulant.",
-  },
 ];
 
 // Cas particuliers médicaux — mosaïque `p1_cas_particuliers_medicaux` (M0). Ils
