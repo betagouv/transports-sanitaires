@@ -250,7 +250,7 @@ const CAS_DIRECTS: Record<string, { titre: string; verdict: string }> = {
   "bariatrique seul": {
     titre: "Aucun transport prescriptible sur le seul fondement bariatrique",
     verdict:
-      "La contrainte bariatrique ne constitue pas, à elle seule, un motif médical ouvrant droit à une prescription prise en charge par l’Assurance Maladie.",
+      "La contrainte bariatrique ne constitue pas, à elle seule, un motif médical ouvrant droit à une prescription prise en charge par l’Assurance Maladie. Contactez l’établissement ou la coordination territoriale compétente afin d’organiser un véhicule disposant de l’équipement adapté.",
   },
   "permission de sortie sans motif médical": {
     titre: "Permission de sortie sans motif médical",

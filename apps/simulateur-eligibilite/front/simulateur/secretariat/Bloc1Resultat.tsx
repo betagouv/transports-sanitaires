@@ -177,12 +177,24 @@ function smur(): Verdict {
   };
 }
 
+// Le seul cas final qui, faute de prise en charge, oriente vers quelqu'un : la
+// contrainte bariatrique n'ouvre aucun droit mais laisse un besoin de véhicule
+// entier. Le modèle nomme l'interlocuteur ; sans cette phrase, le patient
+// repartirait avec un refus et rien d'autre.
 function bariatriqueSeul(): Verdict {
   return {
     titre:
       "Aucun mode de transport n’est éligible à une prise en charge par l’Assurance Maladie au titre du seul motif « bariatrique ».",
     corps: (
-      <p>Aucun transport sanitaire ne peut être prescrit par votre médecin.</p>
+      <>
+        <p>
+          Aucun transport sanitaire ne peut être prescrit par votre médecin.
+        </p>
+        <p>
+          Contactez l’établissement ou la coordination territoriale compétente
+          afin d’organiser un véhicule disposant de l’équipement adapté.
+        </p>
+      </>
     ),
   };
 }

@@ -105,6 +105,19 @@ export async function allerAuChampTexte(user: User, reponses: Reponse[] = []) {
   );
 }
 
+/**
+ * Traverse le parcours jusqu'à la première page qui porte une saisie chiffrée —
+ * A3.2, le nombre de transports prévus, seule question du modèle à en demander une.
+ */
+export async function allerAuChampNombre(user: User, reponses: Reponse[] = []) {
+  await allerJusqua(
+    user,
+    () => screen.queryAllByRole("spinbutton").length > 0,
+    reponses,
+    "aucune saisie chiffrée dans le parcours",
+  );
+}
+
 // ---- implémentation ----
 
 // Avance page par page tant que la page cherchée n'est pas là, sans jamais

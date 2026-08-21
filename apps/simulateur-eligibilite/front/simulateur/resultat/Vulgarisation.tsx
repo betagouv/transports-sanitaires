@@ -54,9 +54,9 @@ export const CRITERES: EntreeVulgarisee[] = [
   },
   {
     id: "p1_critere_position_allongee_demi_assise",
-    libelle: "Position allongée ou semi-allongée",
+    libelle: "Position allongée ou semi-assise sur un brancard",
     description:
-      "Votre état ne permet pas un transport assis classique pendant le trajet.",
+      "Votre état ne vous permet pas de rester assis normalement pendant le transport.",
   },
   {
     id: "p1_critere_brancardage_portage",

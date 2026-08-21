@@ -11,6 +11,7 @@ import type {
   EvaluatedStringInput,
   FormPageElementProp,
 } from "@publicodes/forms";
+import { bornesDeSaisie } from "./bornes-de-saisie";
 import { libelleDeReponse } from "./libelle-de-reponse";
 
 type Props = {
@@ -105,7 +106,10 @@ function ChoixDeroulant({ champ, onChange }: ChampProps<EvaluatedSelect>) {
   );
 }
 
+// Les bornes viennent du modèle, jamais d'ici : A3.2 exige un entier d'au moins
+// 1, et l'écrire en dur ferait accepter à l'écran un 0 que le modèle rejette.
 function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
+  const { min, pas } = bornesDeSaisie(champ.id);
   return (
     <Input
       label={champ.label}
@@ -124,7 +128,8 @@ function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
         id: champ.id,
         name: champ.id,
         type: "number",
-        min: 0,
+        min,
+        step: pas,
         value: champ.value ?? champ.defaultValue ?? "",
         onChange: (e) => onChange(Number(e.target.value)),
         autoFocus: champ.autofocus,
