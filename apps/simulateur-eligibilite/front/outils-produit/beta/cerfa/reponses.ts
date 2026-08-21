@@ -13,7 +13,7 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
-import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
+import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
 
 export type Reponses = {
   /** La valeur brute d'une règle, telle que le moteur l'évalue. */

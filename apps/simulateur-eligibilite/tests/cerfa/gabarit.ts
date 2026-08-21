@@ -1,19 +1,28 @@
-// Ce que les deux fichiers de test du CERFA partagent : le gabarit lui-même, la
-// relecture d'un PDF rempli, et les réponses qu'ils répètent pour amener une
-// situation jusqu'à une prescription médicale de transport.
+// Ce que les fichiers de test du CERFA partagent : les deux gabarits, la relecture
+// d'un PDF rempli, et les réponses qu'ils répètent pour amener une situation
+// jusqu'à un document.
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PDFCheckBox, PDFDocument, PDFName, PDFTextField } from "pdf-lib";
+import {
+  PDFCheckBox,
+  PDFDict,
+  PDFDocument,
+  PDFName,
+  PDFTextField,
+} from "pdf-lib";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 
-export const GABARIT = readFileSync(
-  join(
-    dirname(fileURLToPath(import.meta.url)),
-    "../../front/outils-produit/beta/cerfa/pmt/gabarit/cerfa-11574-07.pdf",
-  ),
-);
+const ici = dirname(fileURLToPath(import.meta.url));
+const gabarit = (chemin: string) =>
+  readFileSync(join(ici, "../../front/outils-produit/beta/cerfa", chemin));
+
+/** La prescription médicale de transport, n° 11574*07 (réf. S3138g). */
+export const GABARIT = gabarit("pmt/gabarit/cerfa-11574-07.pdf");
+
+/** La demande d'accord préalable, n° 11575*08 (réf. S3139h). */
+export const GABARIT_DAP = gabarit("dap/gabarit/cerfa-11575-08.pdf");
 
 /** Relit un PDF rempli et rend `{ nom du champ → valeur }`, champs vides exclus. */
 export async function relire(pdf: Uint8Array): Promise<Record<string, string>> {
@@ -45,3 +54,21 @@ export const HOSPITALISATION = {
   p2_contexte_hospitalisation: "oui",
   p2_contexte_aucun: "non",
 };
+
+/** Les états d'apparence qu'un champ sait rendre, `/Off` exclu, dans l'ordre. */
+export async function étatsDe(
+  gabarit: Uint8Array,
+  nom: string,
+): Promise<string[]> {
+  const champ = (await PDFDocument.load(gabarit)).getForm().getField(nom);
+  const états = champ.acroField.getWidgets().flatMap((widget) => {
+    const apparences = widget.getAppearances()?.normal;
+    return apparences instanceof PDFDict
+      ? apparences
+          .keys()
+          .map((clé) => String(clé).slice(1))
+          .filter((clé) => clé !== "Off")
+      : [];
+  });
+  return [...new Set(états)];
+}

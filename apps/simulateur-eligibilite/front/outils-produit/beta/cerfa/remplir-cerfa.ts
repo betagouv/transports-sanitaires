@@ -19,12 +19,27 @@ import {
 /**
  * État d'export à écrire pour cocher un champ (le « off » est toujours `/Off`).
  *
- * `On` est le cas courant. `OUI` et `NON` servent aux trois champs du gabarit qui
- * sont des **boutons radio déguisés en case à cocher** — `ALD exo`, `oui1` et
- * `oui2` : un même champ y porte quatre widgets, deux par volet, dont l'un a pour
- * état d'export `/OUI` et l'autre `/NON`.
+ * `On` est le cas courant : une case, un champ. Les autres servent aux champs qui
+ * portent **plusieurs cases visibles sous un même nom** — des boutons radio
+ * déguisés en case à cocher, dont chaque widget sait rendre un état et un seul.
+ * La PMT en a trois (`ALD exo`, `oui1`, `oui2`), la DAP quatre.
+ *
+ * La casse compte, et les deux gabarits ne s'accordent pas : la PMT écrit `/OUI`
+ * et `/NON`, la DAP `/Oui` et `/non`. Rien ne se devine ici — les états sont
+ * relevés par introspection, et `tests/cerfa/remplissage.test.ts` vérifie que
+ * chaque état employé par un tableau est bien connu du champ visé.
  */
-export type ÉtatCoché = "On" | "OUI" | "NON";
+export type ÉtatCoché =
+  | "On"
+  | "OUI"
+  | "NON"
+  | "Oui"
+  | "non"
+  | "ald"
+  | "atmp"
+  | "camsp"
+  | "engag"
+  | "ref";
 
 /** Une valeur à écrire : un texte dans un champ nommé, ou une case à cocher. */
 export type Saisie = { readonly champ: string } & (
@@ -100,7 +115,36 @@ function écrire(formulaire: Formulaire, nom: string, texte: string): void {
     );
   }
   champ.setText(valeur);
+  réduireSiÇaDéborde(champ, valeur);
 }
+
+/**
+ * Les deux gabarits écrivent en Courier 10 (`/Cour 10 Tf`), taille fixe. Une
+ * valeur composée — une adresse aplatie sur l'unique ligne que le formulaire lui
+ * donne — y dépasse le cadre : le PDF la porte entière, l'impression la rogne, et
+ * rien ne le dit.
+ *
+ * On passe alors en taille automatique : `pdf-lib` recompose l'apparence à une
+ * taille qui tient — dans sa police par défaut, Courier n'étant pas des siennes.
+ * Seulement alors : en taille automatique partout, une valeur courte grossirait
+ * jusqu'à la hauteur du cadre, et le document changerait d'allure sans qu'on y
+ * gagne rien.
+ *
+ * Courier est à chasse fixe — chaque caractère occupe 0,6 cadratin —, donc la
+ * largeur se calcule sans rien mesurer. `tests/cerfa/remplissage.test.ts` vérifie
+ * que les deux gabarits emploient bien cette police et cette taille.
+ */
+function réduireSiÇaDéborde(champ: PDFTextField, valeur: string): void {
+  const cadre = champ.acroField.getWidgets()[0]?.getRectangle();
+  if (!cadre) return;
+  const largeur = valeur.length * TAILLE_DU_GABARIT * AVANCE_COURIER;
+  if (largeur > cadre.width - 2 * MARGE_INTERNE) champ.setFontSize(0);
+}
+
+const TAILLE_DU_GABARIT = 10;
+const AVANCE_COURIER = 0.6;
+// La marge que pdf-lib laisse de chaque côté en composant l'apparence.
+const MARGE_INTERNE = 2;
 
 /**
  * Coche en imposant l'état d'export attendu.
@@ -116,11 +160,23 @@ function cocher(formulaire: Formulaire, nom: string, coché: ÉtatCoché): void 
     throw new Error(`Le champ « ${nom} » n'est pas une case à cocher.`);
   }
   const état = PDFName.of(coché);
-  champ.acroField.dict.set(PDFName.of("V"), état);
-
-  for (const widget of champ.acroField.getWidgets()) {
+  const widgets = champ.acroField.getWidgets();
+  const connaissent = widgets.filter((widget) => {
     const apparences = widget.getAppearances()?.normal;
-    const sait = apparences instanceof PDFDict && apparences.has(état);
+    return apparences instanceof PDFDict && apparences.has(état);
+  });
+  if (connaissent.length === 0) {
+    // Aucun widget ne sait rendre cet état : la case resterait vierge sans que
+    // rien ne le dise, sur un document opposable. `/Oui` et `/OUI` ne sont pas le
+    // même état, et les deux gabarits n'écrivent pas la même casse.
+    throw new Error(
+      `« ${nom} » ne connaît pas l'état « /${coché} » : la case resterait vide.`,
+    );
+  }
+
+  champ.acroField.dict.set(PDFName.of("V"), état);
+  for (const widget of widgets) {
+    const sait = connaissent.includes(widget);
     widget.dict.set(PDFName.of("AS"), sait ? état : PDFName.of("Off"));
   }
 }

@@ -257,13 +257,16 @@ front/                   front (bundlé par Vite)
                          GalerieSeeds.tsx  les écrans d'atterrissage
                          TableauDesSeeds.tsx  comment une seed se lit en tableau
     beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
-      cerfa/             les CERFA pré-remplis, générés dans le navigateur —
-                         un sous-dossier par formulaire, gabarit compris
-        pmt/             prescription médicale de transport (n° 11574*07)
-                         remplissage-pmt.ts  un champ du PDF, une ligne : comment
-                                             il se remplit, ou qui le remplira
+      cerfa/             les CERFA pré-remplis, générés dans le navigateur
+                         remplissage.ts      ce qu'est un tableau de remplissage
                          reponses.ts         ce que le remplissage lit du modèle
+                         lieux-du-trajet.ts  les adresses, aplaties sur une ligne
                          remplir-cerfa.ts    l'écriture dans le PDF, et ses pièges
+        pmt/             prescription médicale de transport (n° 11574*07)
+        dap/             demande d'accord préalable (n° 11575*08)
+                         un sous-dossier par formulaire, gabarit compris, chacun
+                         avec son tableau : un champ du PDF, une ligne — comment
+                         il se remplit, ou qui le remplira
   analytics/             evenements.ts le vocabulaire mesuré, seul import du reste
                          matomo.ts     le transport (tag `_paq`, config, émission)
 ```

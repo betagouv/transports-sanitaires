@@ -51,7 +51,7 @@ export async function genererCerfa(
 ): Promise<Blob> {
   const [{ saisiesDepuisSituation }, { remplirCerfa }] = await Promise.all([
     import("./depuis-simulateur.ts"),
-    import("./remplir-cerfa.ts"),
+    import("../remplir-cerfa.ts"),
   ]);
 
   const saisies = saisiesDepuisSituation(moteur, situation);

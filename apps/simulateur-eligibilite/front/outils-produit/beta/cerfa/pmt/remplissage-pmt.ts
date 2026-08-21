@@ -26,8 +26,14 @@
 //     « oui, entrée ou sortie d'hospitalisation ». L'état d'export n'est pas la
 //     sémantique : ne jamais l'inférer du nom.
 
-import { adresseArrivée, adresseDépart } from "./lieux-du-trajet.ts";
-import type { ÉtatCoché } from "./remplir-cerfa.ts";
+import { adresseArrivée, adresseDépart } from "../lieux-du-trajet.ts";
+import {
+  auPrescripteur,
+  auTransporteur,
+  coche,
+  type Tableau,
+  écrit,
+} from "../remplissage.ts";
 import {
   ALLER_RETOUR,
   ARRIVEE,
@@ -35,31 +41,9 @@ import {
   MODE,
   type Reponses,
   URGENCE,
-} from "./reponses.ts";
+} from "../reponses.ts";
 
-/** Qui remplira un champ que le simulateur ne déduit pas. */
-type Qui = "le prescripteur" | "le transporteur";
-
-/**
- * Ce qu'un champ reçoit, la situation lue :
- *
- *  - `{ texte }` / `{ coché }` — le simulateur a déduit quoi y écrire ;
- *  - `undefined` — il sait le déduire, mais cette situation ne l'appelle pas ;
- *  - `{ laisséÀ }` — il ne sait pas, et dit qui s'en chargera.
- *
- * Les deux derniers cas laissent le champ vierge de la même façon. Les distinguer
- * n'est pas pour le PDF : c'est pour qui lit le tableau.
- */
-export type Valeur =
-  | { readonly texte: string }
-  | { readonly coché: ÉtatCoché }
-  | { readonly laisséÀ: Qui; readonly raison: string }
-  | undefined;
-
-/** Comment un champ se remplit : une fonction des réponses, et rien d'autre. */
-export type Remplissage = (réponses: Reponses) => Valeur;
-
-export const REMPLISSAGE_PMT: Readonly<Record<string, Remplissage>> = {
+export const REMPLISSAGE_PMT: Tableau = {
   // ---- En-tête des deux volets : bénéficiaire, assuré, organisme ----------
   //
   // Le simulateur est anonyme par construction : il ne connaît aucune de ces
@@ -229,30 +213,6 @@ export const REMPLISSAGE_PMT: Readonly<Record<string, Remplissage>> = {
 };
 
 // ---- implémentation ----
-
-/** Une case cochée quand la situation le justifie, dans l'état d'export voulu. */
-function coche(
-  quand: (réponses: Reponses) => boolean,
-  coché: ÉtatCoché = "On",
-): Remplissage {
-  return (réponses) => (quand(réponses) ? { coché } : undefined);
-}
-
-/** Un texte écrit dans le champ. La chaîne vide le laisse vierge. */
-function écrit(quoi: (réponses: Reponses) => string): Remplissage {
-  return (réponses) => {
-    const texte = quoi(réponses);
-    return texte === "" ? undefined : { texte };
-  };
-}
-
-function auPrescripteur(raison: string): Remplissage {
-  return () => ({ laisséÀ: "le prescripteur", raison });
-}
-
-function auTransporteur(raison: string): Remplissage {
-  return () => ({ laisséÀ: "le transporteur", raison });
-}
 
 /**
  * La notice réserve « nombre de transports itératifs » aux transports répétés **ne

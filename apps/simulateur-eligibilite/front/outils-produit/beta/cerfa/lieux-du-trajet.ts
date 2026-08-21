@@ -6,7 +6,7 @@
 // *quel* champ la reçoit — structure de soins ou autre lieu — se décide dans
 // `remplissage-pmt.ts`, à côté du nom du champ.
 
-import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
+import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
 import type { Reponses } from "./reponses.ts";
 
 /** L'adresse du lieu de départ, sur une ligne. Vide si rien n'est renseigné. */
