@@ -119,13 +119,38 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Situation nécessitant une DAP",
       icone: "fr-icon-health-book-line",
+      // Les sept causes d'une DAP sont calculées par le modèle depuis la v9.4.0 :
+      // chaque case ne s'affiche que si la sienne est vraie, là où le praticien
+      // devait auparavant retrouver lui-même celles qui s'appliquaient.
       cases: [
-        "Trajet aller supérieur à 150 km.",
-        "Transports en série.",
-        "Transport vers un CAMSP ou un CMPP.",
-        "Engagement maternité.",
-        "Transport par avion ou bateau de ligne régulière.",
-        "Personne accompagnante si nécessaire.",
+        {
+          texte: "Trajet aller supérieur à 150 km.",
+          visible: (e) => vrai(e, "cible_dap_motif_longue_distance"),
+        },
+        {
+          texte: "Transports en série.",
+          visible: (e) => vrai(e, "cible_dap_motif_serie"),
+        },
+        {
+          texte: "Transport vers un CAMSP ou un CMPP.",
+          visible: (e) => vrai(e, "cible_dap_motif_camsp_cmpp"),
+        },
+        {
+          texte: "Transport vers un SAMSAH.",
+          visible: (e) => vrai(e, "cible_dap_motif_samsah"),
+        },
+        {
+          texte: "Engagement maternité.",
+          visible: (e) => vrai(e, "cible_dap_motif_engagement_maternite"),
+        },
+        {
+          texte: "Transport par avion ou bateau de ligne régulière.",
+          visible: (e) => vrai(e, "cible_dap_motif_avion_bateau"),
+        },
+        {
+          texte: "Personne accompagnante si nécessaire.",
+          visible: (e) => vrai(e, "cible_dap_motif_accompagnement_tiers"),
+        },
       ],
     },
     {

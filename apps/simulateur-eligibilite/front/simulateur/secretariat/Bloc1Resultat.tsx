@@ -9,14 +9,21 @@ type Props = {
   casFinal: string;
   transport: string;
   transportPrescrit: boolean;
+  /** Les motifs de l'accord préalable, tels que le modèle les a établis. */
+  motifs: string[];
 };
 
 export function Bloc1Resultat({
   casFinal,
   transport,
   transportPrescrit,
+  motifs,
 }: Props) {
-  const { titre, corps } = verdict(casFinal, { transport, transportPrescrit });
+  const { titre, corps } = verdict(casFinal, {
+    transport,
+    transportPrescrit,
+    motifs,
+  });
 
   return (
     <div
@@ -31,7 +38,11 @@ export function Bloc1Resultat({
 
 // ---- implémentation ----
 
-type Contexte = { transport: string; transportPrescrit: boolean };
+type Contexte = {
+  transport: string;
+  transportPrescrit: boolean;
+  motifs: string[];
+};
 type Verdict = { titre: string; corps: ReactNode };
 
 // Cas final inconnu : on affiche son nom brut plutôt que rien — c'est un défaut
@@ -55,7 +66,7 @@ function prescriptionMedicale({ transport }: Contexte): Verdict {
   };
 }
 
-function accordPrealable({ transport }: Contexte): Verdict {
+function accordPrealable({ transport, motifs }: Contexte): Verdict {
   return {
     titre:
       "Vous êtes éligible sous réserve d’un accord préalable de l’Assurance Maladie",
@@ -66,10 +77,34 @@ function accordPrealable({ transport }: Contexte): Verdict {
           Document à remettre au patient :{" "}
           <strong>Demande d’Accord Préalable</strong>.
         </p>
+        <MotifsDeLAccord motifs={motifs} />
       </>
     ),
   };
 }
+
+// Ce qui a déclenché l'accord préalable — une cause, ou plusieurs. Le prescripteur
+// doit reprendre ces motifs sur le formulaire ; le patient, savoir sur quoi porte
+// la décision qu'il attend.
+function MotifsDeLAccord({ motifs }: { motifs: string[] }) {
+  if (motifs.length === 0) return null;
+  // La liste emprunte son nom accessible à l'intitulé qui la précède : le lecteur
+  // d'écran annonce alors « Motif ou motifs de l'accord préalable, liste de N ».
+  return (
+    <>
+      <p className="fr-mb-1v" id={INTITULE_DES_MOTIFS}>
+        <strong>Motif ou motifs de l’accord préalable :</strong>
+      </p>
+      <ul aria-labelledby={INTITULE_DES_MOTIFS}>
+        {motifs.map((motif) => (
+          <li key={motif}>{motif}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+const INTITULE_DES_MOTIFS = "motifs-de-l-accord-prealable";
 
 function convocation({ transport }: Contexte): Verdict {
   return {

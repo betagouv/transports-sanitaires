@@ -12,6 +12,7 @@ import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
 import { Bloc2Etapes } from "./Bloc2Etapes";
 import { Bloc3CasRetenu } from "./Bloc3CasRetenu";
+import { motifsDeLaDap } from "./motifs-de-la-dap";
 
 type Props = {
   situation: Situation<string>;
@@ -103,13 +104,15 @@ function DocumentARemettre({
   documentTelechargeable,
 }: Pick<Props, "situation" | "documentTelechargeable">) {
   const e = moteur.setSituation(situation);
-  const { casFinal, doc, transport, transportPrescrit, article80 } = cibles(e);
+  const { casFinal, doc, transport, transportPrescrit, article80, motifs } =
+    cibles(e);
   return (
     <>
       <Bloc1Resultat
         casFinal={casFinal}
         transport={transport}
         transportPrescrit={transportPrescrit}
+        motifs={motifs}
       />
       <Bloc2Etapes
         e={e}
@@ -139,6 +142,7 @@ function cibles(e: typeof moteur) {
     doc: texte(e, "cible_document_a_remettre_au_patient"),
     transport,
     transportPrescrit: transport !== "" && transport !== "aucun",
+    motifs: motifsDeLaDap(e),
     article80: {
       mode: texte(e, "cible_article_80_mode"),
       situationSpecifique: vrai(e, "cible_article_80_situation_specifique"),

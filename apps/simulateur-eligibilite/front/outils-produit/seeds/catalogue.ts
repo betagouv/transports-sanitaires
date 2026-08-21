@@ -688,6 +688,33 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-dap-motifs-cumules",
+    libelle: "Secrétariat — accord préalable à deux motifs",
+    description:
+      "A3.4 est un choix multiple : deux situations spéciales peuvent être " +
+      "cochées ensemble, et l'accord préalable a alors deux causes. Le modèle " +
+      "les calcule séparément (une cible par motif) ; la Page Résultat 2 doit " +
+      "les restituer toutes les deux, pas seulement la première.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CONTEXTE_HOSPITALISATION,
+      p2_special_avion_bateau: "oui",
+      p2_special_camsp_cmpp: "oui",
+      p2_special_aucune: "non",
+    },
+    attendu: {
+      cible_resultat_medical: "décision établie",
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+    },
+  },
+  {
     id: "secretariat-accompagnement-tiers",
     libelle: "Secrétariat — accompagnement par un tiers",
     description:
