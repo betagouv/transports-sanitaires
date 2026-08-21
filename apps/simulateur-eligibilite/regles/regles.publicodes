@@ -815,23 +815,28 @@ p2_detenu_hors_parcours_standard:
 
 p2_parcours_standard_applicable:
   titre: Parcours standard de l’Assurance Maladie applicable
-  une de ces conditions:
-  - p2_patient_hospitalise = non
-  - toutes ces conditions:
-    - p2_contexte_retour_penitentiaire
-    - p2_patient_hospitalise_repondu
-    - une de ces conditions:
+  toutes ces conditions:
+  - cible_partie_2_requise = 'oui'
+  - une de ces conditions:
+    - toutes ces conditions:
+      - p2_patient_hospitalise_repondu
       - p2_patient_hospitalise = non
+    - toutes ces conditions:
+      - p2_contexte_retour_penitentiaire
+      - p2_patient_hospitalise_repondu
+      - une de ces conditions:
+        - p2_patient_hospitalise = non
+        - p2_exceptions_repondues
+    - toutes ces conditions:
+      - p2_patient_hospitalise
       - p2_exceptions_repondues
-  - toutes ces conditions:
-    - p2_patient_hospitalise
-    - p2_exceptions_repondues
-    - p2_exception_restant_assurance_maladie
-    - p2_detenu_hospitalise = non
+      - p2_exception_restant_assurance_maladie
+      - p2_detenu_hospitalise = non
 
 p2_convocation_ou_avis:
   titre: Convocation réglementaire ou avis d’audience
   question: Le déplacement est-il lié à une convocation réglementaire ou à un avis d’audience valant prescription médicale de transport ?
+  description: Une convocation à une consultation médicale habituelle n’est pas concernée. Si vous répondez « Oui », vous devrez préciser le type de convocation ou d’avis.
   applicable si: p2_parcours_standard_applicable
   spec_id: A2.1
 
@@ -953,9 +958,11 @@ p2_engagement_maternite_qualification_complete:
 
 p2_motif_ouvrant_droit:
   titre: Motif ouvrant droit à une prise en charge du transport
-  une de ces conditions:
-  - p2_motif_ouvrant_droit_hors_engagement_maternite
-  - p2_engagement_maternite_entree
+  toutes ces conditions:
+  - cible_partie_2_requise = 'oui'
+  - une de ces conditions:
+    - p2_motif_ouvrant_droit_hors_engagement_maternite
+    - p2_engagement_maternite_entree
 
 p2_non_eligible_motif_absent:
   titre: Aucun motif ouvrant droit
@@ -1268,7 +1275,7 @@ p2_depart_nom_lieu:
   type: texte
   applicable si:
     toutes ces conditions:
-    - p2_trajet_depart_repondu
+    - p2_trajet_arrivee_repondu
     - p2_trajet_depart != 'Domicile'
   spec_id: D1
 
@@ -1314,6 +1321,7 @@ p2_arrivee_nom_lieu:
   applicable si:
     toutes ces conditions:
     - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
     - p2_trajet_arrivee != 'Un domicile différent du lieu de départ.'
   spec_id: D7
 
@@ -1321,35 +1329,50 @@ p2_arrivee_adresse:
   titre: Adresse du lieu d’arrivée
   question: Quelle est l’adresse du lieu d’arrivée ?
   type: texte
-  applicable si: p2_trajet_arrivee_repondu
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
   spec_id: D8
 
 p2_arrivee_complement_adresse:
   titre: Complément d’adresse du lieu d’arrivée
   question: Quel est le complément d’adresse du lieu d’arrivée ?
   type: texte
-  applicable si: p2_trajet_arrivee_repondu
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
   spec_id: D9
 
 p2_arrivee_code_postal:
   titre: Code postal du lieu d’arrivée
   question: Quel est le code postal du lieu d’arrivée ?
   type: texte
-  applicable si: p2_trajet_arrivee_repondu
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
   spec_id: D10
 
 p2_arrivee_commune:
   titre: Commune du lieu d’arrivée
   question: Quelle est la commune du lieu d’arrivée ?
   type: texte
-  applicable si: p2_trajet_arrivee_repondu
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
   spec_id: D11
 
 p2_arrivee_pays:
   titre: Pays du lieu d’arrivée
   question: Quel est le pays du lieu d’arrivée si celui-ci se situe hors de France ?
   type: texte
-  applicable si: p2_trajet_arrivee_repondu
+  applicable si:
+    toutes ces conditions:
+    - p2_trajet_arrivee_repondu
+    - p2_adresse_depart_obligatoire_complete
   spec_id: D12
 
 p2_depart_nom_requis:

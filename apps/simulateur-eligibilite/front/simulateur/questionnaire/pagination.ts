@@ -57,35 +57,47 @@ export function pagesDuParcours(champs: string[]): FormPages<string> {
 export function regleDeComplétude(
   champs: readonly string[],
 ): CleDeRegle | undefined {
-  return LIEUX.find((lieu) =>
-    champs.some((champ) => lieu.saisies.includes(champ as CleDeRegle)),
-  )?.complet;
+  return lieuxDe(champs)[0]?.complet;
 }
 
 // ---- implémentation ----
 
-// Les saisies d'adresse quittent leurs pages pour en former une par lieu, placées
-// **en dernier**. Le reste du parcours garde la pagination de la bibliothèque.
+// Les douze saisies d'adresse quittent leurs pages pour en former deux, une par
+// lieu, **à la place de la première d'entre elles**. Le reste du parcours garde
+// la pagination de la bibliothèque, et l'ordre reste celui du modèle : le
+// regroupement est la seule chose que ce module décide.
 //
-// Le rang compte : la bibliothèque ne fige une page qu'une fois atteinte, et
-// recalcule les suivantes à chaque réponse. Une adresse rendue applicable plus
-// tôt que ses voisines (le nom du lieu, dès que le départ n'est pas le domicile)
-// attendrait donc en queue qu'elles la rejoignent — au lieu de partir devant,
-// seule sur un écran.
+// Il en décidait une seconde. Jusqu'à la v9.4.0, les deux pages étaient renvoyées
+// **en queue** : D1 — le nom du lieu de départ — devenait applicable une question
+// plus tôt que ses cinq voisines, et serait partie devant, seule sur un écran.
+// La v9.4.1 harmonise D1 avec D2-D6 et fait attendre D7-D12 la complétude de la
+// page de départ ; les six saisies d'un lieu arrivent donc ensemble, et il n'y a
+// plus d'ordre à corriger. La séquence contractuelle A4.2, A4.3, départ, arrivée,
+// A4.6 est vérifiée par `tests/simulateur/adresses-du-trajet.test.tsx`.
 function adressesParLieu(pages: FormPages<string>): FormPages<string> {
-  const lieux = LIEUX.map((lieu) =>
-    lieu.saisies.filter((cle) =>
-      pages.some((page) => page.elements.includes(cle)),
-    ),
-  ).filter((lieu) => lieu.length > 0);
-  if (lieux.length === 0) return pages;
+  const présentes = new Set(pages.flatMap((page) => page.elements));
+  const posés = new Set<string>();
+  const groupées: FormPages<string> = [];
+  for (const page of pages) {
+    const autres = page.elements.filter((champ) => !lieuDe(champ));
+    if (autres.length > 0) groupées.push({ ...page, elements: autres });
+    for (const lieu of lieuxDe(page.elements)) {
+      if (posés.has(lieu.complet)) continue;
+      posés.add(lieu.complet);
+      groupées.push({ elements: lieu.saisies.filter((c) => présentes.has(c)) });
+    }
+  }
+  return groupées;
+}
 
-  const saisies: string[] = lieux.flat();
-  const autres = pages
-    .map((page) => ({
-      ...page,
-      elements: page.elements.filter((champ) => !saisies.includes(champ)),
-    }))
-    .filter((page) => page.elements.length > 0);
-  return [...autres, ...lieux.map((elements) => ({ elements }))];
+type Lieu = (typeof LIEUX)[number];
+
+function lieuDe(champ: string): Lieu | undefined {
+  return LIEUX.find((lieu) => lieu.saisies.includes(champ as CleDeRegle));
+}
+
+function lieuxDe(champs: readonly string[]): Lieu[] {
+  return LIEUX.filter((lieu) =>
+    champs.some((champ) => lieu.saisies.includes(champ as CleDeRegle)),
+  );
 }

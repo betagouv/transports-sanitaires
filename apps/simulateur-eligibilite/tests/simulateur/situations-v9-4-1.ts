@@ -1,4 +1,4 @@
-// Le vocabulaire des scénarios v9.4.0 : les réponses qu'on cite constamment, et la
+// Le vocabulaire des scénarios v9.4.1 : les réponses qu'on cite constamment, et la
 // façon d'amorcer un moteur dessus. Partagé par les deux fichiers qui rejouent la
 // matrice du livrable — la liste nommée et les familles engendrées.
 
@@ -37,6 +37,21 @@ export const NON_ELIGIBLE =
  * surcharge ne saurait exprimer.
  */
 export type Reponses = Record<string, string | null>;
+
+/**
+ * L'applicabilité d'une règle, telle que le modèle la déclare. `null` quand elle
+ * dépend d'une question sans réponse : le moteur ne tranche alors ni dans un
+ * sens ni dans l'autre, et une question qu'il ne dit pas applicable n'est pas
+ * posée pour autant.
+ */
+export function estApplicable(
+  moteur: ReturnType<typeof evalue>,
+  regle: string,
+): boolean | null {
+  return moteur.evaluate({ "est applicable": regle }).nodeValue as
+    | boolean
+    | null;
+}
 
 /** Moteur amorcé sur la base neutre, surchargée par `reponses`. */
 export function evalue(reponses: Reponses) {

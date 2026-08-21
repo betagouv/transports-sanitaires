@@ -19,7 +19,12 @@
 // ce que font les seeds et le pré-remplissage du CERFA.
 
 import { describe, expect, it } from "vitest";
-import { evalue, HOSPITALISATION, PRO } from "./situations-v9-4-0";
+import {
+  estApplicable,
+  evalue,
+  HOSPITALISATION,
+  PRO,
+} from "./situations-v9-4-1";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,
@@ -105,5 +110,63 @@ describe("saisies d'adresse — ce qu'une adresse obligatoire garantit", () => {
       p2_depart_nom_lieu: "'CH de Vannes'",
     });
     expect(renseigne.evaluate("p2_depart_nom_complete").nodeValue).toBe(true);
+  });
+});
+
+const DEPART = [
+  "p2_depart_nom_lieu",
+  "p2_depart_adresse",
+  "p2_depart_complement_adresse",
+  "p2_depart_code_postal",
+  "p2_depart_commune",
+  "p2_depart_pays",
+];
+
+const ARRIVEE = [
+  "p2_arrivee_nom_lieu",
+  "p2_arrivee_adresse",
+  "p2_arrivee_complement_adresse",
+  "p2_arrivee_code_postal",
+  "p2_arrivee_commune",
+  "p2_arrivee_pays",
+];
+
+// ADDRESS-005 du livrable v9.4.1 : quand chaque saisie a le droit d'être posée.
+//
+// La v9.4.0 ouvrait D1 — le nom du lieu de départ — sur `p2_trajet_depart_repondu`
+// quand ses cinq voisines attendaient `p2_trajet_arrivee_repondu` : le nom du
+// lieu était applicable une question trop tôt, et D7 à D12 dès A4.3, sans
+// attendre la page de départ. Rien ne l'a jamais montré à l'écran — la
+// bibliothèque de formulaires ne dévoile qu'un pas à la fois —, d'où ce test au
+// ras du modèle : c'est le seul endroit d'où la correction se voit.
+describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () => {
+  const AVANT_A4_3 = {
+    ...PARCOURS_ADMINISTRATIF,
+    p2_trajet_depart: "'Structure de soins'",
+    p2_trajet_arrivee: null,
+  };
+
+  it.each(DEPART)("%s attend la réponse à A4.3", (regle) => {
+    expect(estApplicable(evalue(AVANT_A4_3), regle)).not.toBe(true);
+  });
+
+  it.each(DEPART)("%s s'ouvre une fois A4.3 répondue", (regle) => {
+    const apres = evalue({
+      ...AVANT_A4_3,
+      p2_trajet_arrivee:
+        "'Une structure de soins différente du lieu de départ.'",
+      ...Object.fromEntries(DEPART.map((champ) => [champ, null])),
+    });
+    expect(estApplicable(apres, regle)).toBe(true);
+  });
+
+  it.each(ARRIVEE)("%s attend la complétude de la page de départ", (regle) => {
+    const departIncomplet = evalue({
+      ...PARCOURS_ADMINISTRATIF,
+      p2_depart_commune: null,
+    });
+    expect(estApplicable(departIncomplet, regle)).not.toBe(true);
+    // La base neutre remplit les deux adresses : le départ complet les ouvre.
+    expect(estApplicable(evalue(PARCOURS_ADMINISTRATIF), regle)).toBe(true);
   });
 });

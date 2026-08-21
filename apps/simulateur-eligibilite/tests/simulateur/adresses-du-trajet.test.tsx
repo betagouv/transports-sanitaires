@@ -18,7 +18,11 @@ import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import type { Reponse } from "./parcours";
-import { allerAuChampTexte, PARTIE_1_AMBULANCE } from "./parcours";
+import {
+  allerAuChampTexte,
+  PARTIE_1_AMBULANCE,
+  terminerParcours,
+} from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -78,6 +82,34 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
     expect(intitulés()).toEqual(SAISIES_ARRIVEE);
   }, 30_000);
 
+  it("suit la séquence du contrat : A4.2, A4.3, départ, arrivée, A4.6", async () => {
+    // ADDRESS-SEQUENCE-001 et 002 du livrable v9.4.1 : l'ordre du trajet, vu de
+    // l'écran. C'est ce test qui le tient depuis que la pagination a cessé de
+    // renvoyer les deux pages d'adresse en queue de parcours — le désordre
+    // qu'elle prévenait est corrigé dans le modèle (cf.
+    // `adresses-obligatoires.test.ts`, ADDRESS-005).
+    emettrePassation(PARTIE_1_AMBULANCE);
+    const user = userEvent.setup({ delay: null });
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    const rencontrées: Array<{ titre: string; saisies: number }> = [];
+    await terminerParcours(user, ENTRE_STRUCTURES, () =>
+      rencontrées.push({
+        titre: titreDeLaPage(),
+        saisies: screen.queryAllByRole("textbox").length,
+      }),
+    );
+
+    const début = rencontrées.findIndex((page) => SEQUENCE[0].test(page.titre));
+    expect(début, "A4.2 jamais posée").toBeGreaterThanOrEqual(0);
+    const suite = rencontrées.slice(début, début + SEQUENCE.length);
+    // A4.2 et A4.3 ne portent aucune saisie — aucune adresse ne part devant —,
+    // et chaque lieu arrive d'un bloc, ses six saisies ensemble.
+    expect(suite.map((page) => page.saisies)).toEqual([0, 0, 6, 6, 0]);
+    for (const [rang, attendu] of SEQUENCE.entries())
+      expect(suite[rang]?.titre ?? "", `page ${rang + 1}`).toMatch(attendu);
+  }, 30_000);
+
   it("s'atteint d'un clic depuis la galerie de seeds", () => {
     // `secretariat-saisie-adresses` existe pour cet écran : elle répond à tout
     // sauf aux adresses, et la galerie la passe au secrétariat comme le ferait un
@@ -121,6 +153,35 @@ async function ouvrirLesAdresses(reponses: Reponse[]) {
   render(<Secretariat onNouvelleSimulation={() => {}} />);
   await allerAuChampTexte(user, reponses);
   return user;
+}
+
+/**
+ * L'ordre que le contrat impose au trajet : le lieu de départ, le lieu
+ * d'arrivée, les six saisies du départ, celles de l'arrivée, puis A4.6. Chaque
+ * motif nomme la première question de sa page.
+ */
+const SEQUENCE = [
+  /lieu de départ du trajet concerné/,
+  /lieu d’arrivée du trajet concerné/,
+  /nom de la structure ou du lieu de départ/,
+  /nom de la structure ou du lieu d’arrivée/,
+  /accident causé par un tiers/,
+] as const;
+
+/**
+ * De quoi nommer la page courante : sa première saisie, ou son premier groupe de
+ * questions. Le `<details>` du panneau de débogage porte lui aussi le rôle
+ * `group` — il est écarté, sans quoi il nommerait toute page sans question.
+ */
+function titreDeLaPage(): string {
+  const saisie = screen.queryAllByRole("textbox")[0] as
+    | HTMLInputElement
+    | undefined;
+  if (saisie) return saisie.labels?.[0]?.textContent ?? "";
+  const groupe = screen
+    .queryAllByRole("group")
+    .find((element) => element.closest("details") === null);
+  return groupe?.textContent ?? "";
 }
 
 /** Les intitulés des champs texte de la page courante, dans l'ordre du DOM. */

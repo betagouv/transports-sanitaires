@@ -230,11 +230,17 @@ async function completerMosaique(
   if (neutre) await user.click(neutre);
 }
 
-// L'étape affichée par l'étapeur, ou `null` s'il n'y en a plus — le parcours est
-// alors conclu et une page de résultat a pris sa place.
+// Le **rang** de l'étape affichée par l'étapeur, ou `null` s'il n'y en a plus —
+// le parcours est alors conclu et une page de résultat a pris sa place.
+//
+// Le rang seul, jamais l'intitulé entier : le total bouge sous la page courante,
+// chaque réponse rendant applicables des questions que l'étapeur ne connaissait
+// pas encore. « Étape 2 sur 2 » devient « Étape 2 sur 3 » sans qu'on ait changé
+// d'écran — et prendre cela pour un passage à la page suivante ferait compter
+// deux fois la même, ou abandonner un remplissage en cours de route.
 function etape(): string | null {
-  return (
-    screen.queryByRole("heading", { name: /^étape \d+ sur \d+$/i })
-      ?.textContent ?? null
-  );
+  const titre = screen.queryByRole("heading", {
+    name: /^étape \d+ sur \d+$/i,
+  })?.textContent;
+  return /^étape (\d+)/i.exec(titre ?? "")?.[1] ?? null;
 }

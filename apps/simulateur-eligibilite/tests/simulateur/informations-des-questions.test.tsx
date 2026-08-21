@@ -88,6 +88,18 @@ const QUESTIONS: Cas[] = [
     reponses: [[/toujours hospitalisé/i, /^oui$/i]],
   },
   {
+    spec: "A2.1",
+    regle: "p2_convocation_ou_avis",
+    depuis: "secretariat",
+    question:
+      "Le déplacement est-il lié à une convocation réglementaire ou à un avis d’audience valant prescription médicale de transport ?",
+    information:
+      "Une convocation à une consultation médicale habituelle n’est pas concernée. Si vous répondez « Oui », vous devrez préciser le type de convocation ou d’avis.",
+    // A0.1 répondue « Non » ouvre le parcours standard, et c'est la réponse par
+    // défaut d'un oui/non : rien à cibler en chemin.
+    reponses: [],
+  },
+  {
     spec: "A3.4",
     regle: "p2_situations_accord_prealable",
     depuis: "secretariat",

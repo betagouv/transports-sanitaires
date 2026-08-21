@@ -84,14 +84,14 @@ Depuis la racine : `mise run dev-simulateur` lance front + backend en parallèle
 ## Le modèle de règles
 
 `regles/regles.publicodes` est **livré de l'extérieur et intégré par recopie** —
-aujourd'hui la **v9.4.0** (186 règles, 39 cibles). Le fichier livré ne porte pas sa version :
+aujourd'hui la **v9.4.1** (186 règles, 39 cibles). Le fichier livré ne porte pas sa version :
 `regles/VERSION` la porte à côté de lui, et c'est elle que le pied de page
 affiche. **Une recopie met les deux à jour**, sans quoi l'application annonce une
 version qu'elle n'exécute pas. Le paquet du fournisseur apporte aussi un
 contrat d'interface (`*.ui.yaml`, schéma 2.1.0) et une matrice de tests, tous deux
 réencodés ici plutôt que chargés : le contrat d'interface se lit dans les
-composants, la matrice dans `tests/simulateur/regression-v9-4-0.test.ts` et
-`familles-v9-4-0.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
+composants, la matrice dans `tests/simulateur/regression-v9-4-1.test.ts` et
+`familles-v9-4-1.test.ts`, qui gardent les identifiants du livrable (`ALD-002`,
 `SERIE-001`, `ARTICLE80-003`…) pour qu'un désaccord remonte au fournisseur sous
 son nom.
 
@@ -157,13 +157,14 @@ et [`questionnaire/pagination.ts`](front/simulateur/questionnaire/pagination.ts)
 |---|---|
 | `p2_adresses_obligatoires_completes` est une conjonction, et publicodes n'évalue pas ce qui suit sa première condition non satisfaite : **une seule adresse manquait à la fois** | le secrétariat cible les douze sorties `cible_document_*`, qui ne sont que des `valeur:` — les douze questions manquent alors ensemble |
 | le complément et le pays ne sont dans le graphe d'aucune cible : ils n'étaient **jamais posés**, alors que le CERFA les lit | les mêmes douze cibles |
-| `groupByNamespace` (pagination par défaut) regroupe sur le premier segment d'un nom **pointé**, or le modèle est plat : une question, une page | un `pageBuilder` qui réunit les saisies d'un même lieu, et place ces pages **en dernier** — sinon le nom du lieu de départ, applicable un cran plus tôt, partirait devant |
+| `groupByNamespace` (pagination par défaut) regroupe sur le premier segment d'un nom **pointé**, or le modèle est plat : une question, une page | un `pageBuilder` qui réunit les saisies d'un même lieu, à la place de la première d'entre elles — le regroupement est la seule chose qu'il décide, l'ordre reste celui du modèle |
 | une question posée doit être répondue pour quitter la page — poser le pays reviendrait à l'exiger | `facultatives`, la liste que le secrétariat passe au parcours : posées, non bloquantes |
 
 [`tests/simulateur/adresses-du-trajet.test.tsx`](tests/simulateur/adresses-du-trajet.test.tsx)
 tient l'ensemble, du point de vue de l'utilisateur : six champs par lieu, dans
 l'ordre du formulaire papier, le départ puis l'arrivée — cinq seulement pour un
-trajet qui part du domicile, le nom du lieu n'y étant pas applicable.
+trajet qui part du domicile, le nom du lieu n'y étant pas applicable —, et la
+séquence que le contrat impose au trajet : A4.2, A4.3, départ, arrivée, A4.6.
 
 Pour voir l'écran sans traverser la Partie 2, la galerie porte la seed
 `secretariat-saisie-adresses` : elle répond à tout **sauf** aux adresses, et ouvre
@@ -174,7 +175,7 @@ range à part et vérifie qu'elle s'arrête bel et bien en chemin.
 
 ## Savoir ce qui tourne
 
-Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.4.0`.
+Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.4.1`.
 C'est un outil de support — quand un prescripteur signale un résultat surprenant,
 ces deux valeurs disent quel code et quel modèle il avait sous les yeux.
 

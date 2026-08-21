@@ -140,19 +140,19 @@ function amorceDuParcours(situationFinale: Situation<string> | null) {
   };
 }
 
-// La Partie 2 d'une seed, rejouée — ou rien quand le modèle dit qu'elle n'est
-// pas requise. La question se pose parce que les cibles administratives incluent
-// les douze sorties d'adresse : elles restent indéterminées tant que la
-// qualification administrative n'a pas été posée, donc les cibler ferait poser
-// A2.1 et sa suite même à un cas que la Partie 1 a déjà tranché.
+// La Partie 2 d'une seed, rejouée — ou rien quand elle n'a rien à poser.
+//
+// Elle n'a rien à poser dans deux cas : la seed y a déjà répondu, ou la Partie 1
+// a tranché et le modèle ferme la Partie 2. Le second demandait naguère une
+// garde ici, sur `cible_partie_2_requise` : les cibles administratives incluent
+// les douze sorties d'adresse, qui restaient indéterminées sur un cas déjà
+// conclu, et les viser faisait reposer A2.1 et sa suite. La v9.4.1 ferme le
+// parcours standard dès que la Partie 2 n'est pas requise — les douze sorties
+// valent alors « non applicable », et le rejeu ne trouve aucune page à poser.
 function partie2Rejouee(
   situationP1: Situation<string>,
   situationFinale: Situation<string>,
 ): FormState<string> | undefined {
-  if (
-    texte(moteur.setSituation(situationP1), "cible_partie_2_requise") !== "oui"
-  )
-    return undefined;
   const partie2 = rejouerLesReponses({
     cibles: CIBLES_ADMINISTRATIVES,
     reponses: situationFinale,
