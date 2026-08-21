@@ -123,8 +123,21 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
 
 ## Git
 
-- **Toujours travailler sur `main`.** Commiter directement, pas de branche de
+- **Travailler sur `main` par défaut.** Commiter directement, pas de branche de
   fonctionnalité, pas de PR.
+
+  L'exception est le changement **structurant qu'un feature flag ne peut pas
+  masquer** : celui qui touche l'ossature — le modèle de règles, l'enchaînement
+  des écrans, le format d'un livrable — au point qu'aucun drapeau ne rendrait le
+  produit livrable à mi-chemin. Il vit alors sur une branche jusqu'à ce qu'il
+  tienne debout, puis rejoint `main` d'un bloc. C'est le régime dans lequel a été
+  menée la mise à disposition de la PMT au format PDF.
+
+  Le doute se tranche dans l'autre sens : si un drapeau *pourrait* masquer le
+  travail en cours, il n'y a pas de branche à ouvrir. Une branche coûte une
+  divergence à réconcilier, et ce coût ne se justifie que là où le drapeau est
+  impossible, pas là où il est seulement moins commode.
+
 - **Conventional Commits**, scope entre parenthèses (`simulateur`,
   `data-analyzer`, `identification`) quand le changement est circonscrit à une
   app.
