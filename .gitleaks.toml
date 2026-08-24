@@ -29,6 +29,23 @@ regex = '''(?i)token[_-]?auth["'\s]*[:=]["'\s]*([0-9a-f]{32})'''
 secretGroup = 1
 tags = ["matomo", "analytics"]
 
-[allowlist]
+# `[[allowlists]]` et non `[allowlist]` : la forme au singulier est dépréciée, et
+# gitleaks refuse de charger une configuration qui mêle les deux.
+
+[[allowlists]]
 description = "Gabarits et documentation : ces fichiers ne portent que des exemples vides."
 paths = ['''\.env\.example$''', '''(^|/)README\.md$''', '''(^|/)AGENTS\.md$''']
+
+# Le contrat publicodes est une liste de noms de règles, un par ligne. La règle
+# par défaut `generic-api-key` prend les plus longs pour des clés : à trente-six
+# caractères, `p2_exception_radiotherapie_moins_48h` a l'entropie d'un secret.
+# Aucun ne peut vivre là — le fichier ne contient que des chaînes que
+# `tests/regles-front.test.ts` confronte au modèle, et TypeScript à ses appelants.
+#
+# L'exception est **cantonnée à cette règle** par `targetRules` : les trois règles
+# du projet continuent de s'appliquer à ce fichier comme aux autres. Vérifié en y
+# posant une fausse clé Grist, toujours détectée.
+[[allowlists]]
+description = "Noms de règles du contrat publicodes, pris pour des clés par generic-api-key"
+targetRules = ["generic-api-key"]
+paths = ['''apps/simulateur-eligibilite/front/simulateur/contrat-regles-publicodes\.ts$''']
