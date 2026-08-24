@@ -64,7 +64,7 @@ trancher seul.
 
 ### ✨ Nouveautés
 
-- [f6cc786](https://github.com/betagouv/transports-sanitaires/commit/f6cc786) : passe le modèle en v9.4.1 et corrige trois anomalies qu'on avait remontées à l'éditeur : …
+- [8c1788e](https://github.com/betagouv/transports-sanitaires/commit/8c1788e) : passe le modèle en v9.4.1 et corrige trois anomalies qu'on avait remontées à l'éditeur : …
 ```
 
 - Le `@` du tag s'encode en `%40` dans le lien du titre — c'est la forme sous
