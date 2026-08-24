@@ -7,9 +7,11 @@ export default defineConfig({
   base: "./",
   plugins: [react()],
   // Ce que le pied de page affiche pour qu'un utilisateur puisse dire *quelle*
-  // application il regarde : le commit déployé et la version du modèle de règles.
-  // Figés à la construction — le navigateur n'a aucun moyen de les découvrir.
+  // application il regarde : la version livrée, le commit déployé et la version
+  // du modèle de règles. Figés à la construction — le navigateur n'a aucun moyen
+  // de les découvrir.
   define: {
+    "import.meta.env.VITE_VERSION_APP": JSON.stringify(versionDeLApp()),
     "import.meta.env.VITE_SHA_COMMIT": JSON.stringify(shaDuCommit()),
     "import.meta.env.VITE_VERSION_REGLES": JSON.stringify(versionDesRegles()),
   },
@@ -34,6 +36,17 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
   },
 });
+
+// La version livrée est celle que `package.json` déclare : c'est elle que porte
+// le tag `simulateur-eligibilite@<version>`, donc la release vers laquelle le
+// pied de page renvoie. Aucun repli — une version fausse vaudrait moins qu'un
+// build qui s'arrête, et `package.json` est là par construction.
+function versionDeLApp(): string {
+  const { version } = JSON.parse(readFileSync("package.json", "utf8")) as {
+    version: string;
+  };
+  return version;
+}
 
 // Scalingo pose `SOURCE_VERSION` à la construction, et c'est la seule source
 // fiable en production : le dépôt n'y est pas forcément présent. En local et en

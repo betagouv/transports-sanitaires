@@ -175,20 +175,24 @@ range à part et vérifie qu'elle s'arrête bel et bien en chemin.
 
 ## Savoir ce qui tourne
 
-Un pied de page discret accompagne le simulateur : `Version 1a2b3c4 · règles v9.4.1`.
-C'est un outil de support — quand un prescripteur signale un résultat surprenant,
-ces deux valeurs disent quel code et quel modèle il avait sous les yeux.
+Un pied de page discret accompagne le simulateur :
+`Version 0.1.0 · commit 1a2b3c4 · règles v9.4.1`. C'est un outil de support —
+quand un prescripteur signale un résultat surprenant, ces trois valeurs disent
+quelle livraison, quel code et quel modèle il avait sous les yeux.
 
 | Valeur | D'où elle vient |
 | --- | --- |
+| La version de l'app | `package.json`, lue à la construction. Elle renvoie à la release GitHub du tag `simulateur-eligibilite@<version>`, qui dit ce que la livraison a changé (cf. [CHANGELOG.md](CHANGELOG.md)) |
 | Le sha du commit | `SOURCE_VERSION`, posée par Scalingo à la construction ; à défaut `git rev-parse`, en local et en CI ; à défaut `inconnu` — jamais une valeur inventée |
 | La version des règles | `regles/VERSION`, lue à la construction |
 
-Les deux sont figées par Vite (`define`, cf. `vite.config.ts`) : le navigateur n'a
-aucun moyen de les découvrir. `tests/app/BandeauVersion.test.tsx` vérifie que ce
-qui est affiché est bien ce que `regles/VERSION` déclare — une recopie qui
-oublierait de la mettre à jour afficherait sinon un mensonge à tous les
-utilisateurs.
+Les trois sont figées par Vite (`define`, cf. `vite.config.ts`) : le navigateur
+n'a aucun moyen de les découvrir. `tests/app/BandeauVersion.test.tsx` vérifie que
+ce qui est affiché est bien ce que `regles/VERSION` et `package.json` déclarent —
+une recopie ou une montée de version qui oublierait l'un des deux afficherait
+sinon un mensonge à tous les utilisateurs. Le lien s'ouvre dans une nouvelle
+fenêtre : l'application est embarquée en iframe dans le CMS, et naviguer dans le
+cadre y ferait perdre le simulateur.
 
 ## Configuration
 
