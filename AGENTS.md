@@ -4,14 +4,21 @@
 
 ## Communication
 
-**Toujours** — être concis. Poser les questions produit, architecture, code.
+Être concis. Poser les questions produit, architecture et code plutôt que de
+deviner.
 
-**Jamais** — flatter. Dire que c'est fait sans l'avoir vérifié.
+Écrire simplement, en phrases normales. Pas de formules travaillées, pas de
+tirets cadratins en cascade, pas de sentence en fin de paragraphe. Ça vaut pour
+la conversation comme pour ce qu'on écrit dans le dépôt : messages de commit,
+README, documentation, journal des versions. Le fond peut être argumenté et
+détaillé, la forme reste simple.
+
+Ne jamais flatter. Ne jamais dire que c'est fait sans l'avoir vérifié.
 
 ## Le dépôt
 
-Monorepo léger, **sans outillage de workspace** (ni workspaces npm/pnpm, ni turbo).
-Chaque app sous `apps/` est **indépendante** : son `package.json`, son
+Monorepo léger, **sans outillage de workspace** : ni workspaces npm/pnpm, ni
+turbo. Chaque app sous `apps/` est **indépendante** — son `package.json`, son
 `package-lock.json`, son job CI, son `npm run verifier`. Le toolchain vient de
 `mise` (Node 24).
 
@@ -26,56 +33,57 @@ aucune app.
 
 ## Vérifier
 
-`npm run verifier`, dans l'app — **la commande à passer avant de dire que c'est
-fait**. C'est aussi, mot pour mot, ce que lance la CI : un `verifier` vert ici
-l'est là-bas. Une porte à ajouter se met dans ce script, jamais dans le YAML.
+`npm run verifier`, dans l'app. **C'est la commande à passer avant de dire que
+c'est fait.** C'est aussi, mot pour mot, ce que lance la CI : un `verifier` vert
+ici l'est là-bas. Une porte à ajouter se met dans ce script, jamais dans le YAML.
 
 `mise run verifier` à la racine le passe sur les trois apps.
 
 ## Français
 
 **Français partout** : interface, noms de règles, tests, documentation, messages
-de commit — **et identifiants**. L'anglais est réservé à ce qu'une API tierce
+de commit, **et identifiants**. L'anglais est réservé à ce qu'une API tierce
 nomme déjà ainsi : `handleX` / `useX` / `Props` (React), `track*` (le verbe de
 Matomo), `label` et `nativeInputProps` (DSFR), `formState` / `pageCount`
-(`@publicodes/forms`), `fields` / `rowId` (Grist), `Engine` (publicodes). Tout
-le reste est du vocabulaire métier et se lit en français : `moteur`, `regles`,
+(`@publicodes/forms`), `fields` / `rowId` (Grist), `Engine` (publicodes). Tout le
+reste est du vocabulaire métier et se lit en français : `moteur`, `regles`,
 `passation`, `casesRetenues`, `identiteEnSession`.
 
-*Gardé par* `tests/lisibilite.test.ts › les identifiants sont en français`, dont
-la liste `TOLERES` est ce qui autorise une exception : l'ajouter est une
-décision, pas un moyen de faire passer le test.
+*Gardé par* `tests/lisibilite.test.ts › les identifiants sont en français`. Sa
+liste `TOLERES` est ce qui autorise une exception : l'y ajouter est une décision,
+pas un moyen de faire passer le test.
 
-**Une dérogation assumée** : `apps/glossaire-notion` est intégralement en
-anglais. Elle n'a pas de vocabulaire métier propre — c'est un lecteur de base
-Notion — et la franciser coûterait plus que ça ne clarifierait.
+**Une dérogation assumée** : `apps/glossaire-notion` est entièrement en anglais.
+Elle n'a pas de vocabulaire métier propre, c'est un lecteur de base Notion, et la
+franciser coûterait plus que ça ne clarifierait.
 
 ## Écrire du code
 
 - **Un fichier se lit de haut en bas comme son contrat, puis son
-  implémentation.** Dans l'ordre : un en-tête de quelques lignes disant *ce que
+  implémentation.** Dans l'ordre : un en-tête de quelques lignes qui dit *ce que
   ce fichier permet de faire* (le pourquoi, l'histoire et les contraintes
-  descendent à côté du code qu'ils expliquent, pas dans un préambule) ; les
-  types publics ; les exports, dans l'ordre où un appelant les rencontre ; puis
-  `// ---- implémentation ----` et tout ce qui est privé. Deux conséquences qui
-  ne sont pas cosmétiques : les fonctions privées sont des `function` hoistées,
-  jamais des `const` fléchés (une flèche sous son premier appel est une erreur
-  TDZ), et les constantes privées descendent en bas dès qu'elles ne sont lues
-  que dans des fonctions. Aucun travail au chargement du module, hors un point
-  d'entrée explicite en tête.
+  descendent à côté du code qu'ils expliquent, pas dans un préambule) ; les types
+  publics ; les exports, dans l'ordre où un appelant les rencontre ; puis
+  `// ---- implémentation ----` et tout ce qui est privé.
+
+  Deux conséquences qui ne sont pas cosmétiques. Les fonctions privées sont des
+  `function` hoistées et non des `const` fléchés : une flèche déclarée sous son
+  premier appel lève une erreur TDZ à l'exécution. Et les constantes privées
+  descendent en bas dès qu'elles ne sont lues que dans des fonctions. Aucun
+  travail au chargement du module, sauf un point d'entrée explicite en tête.
 
   *Gardé par* `tests/lisibilite.test.ts › un fichier se lit comme son contrat`.
 
 - **Couper aux jointures du sens, jamais pour tenir dans le budget.** La limite
-  de 30 lignes *détecte* une fonction qui fait plusieurs choses ; elle ne dit
-  pas *où* couper. Le test : **ferais-tu la même extraction si la limite
-  n'existait pas ?** Sinon, tu coupes au mauvais endroit. Quatre conséquences :
+  de 30 lignes *détecte* une fonction qui fait plusieurs choses ; elle ne dit pas
+  *où* couper. Le test : **ferais-tu la même extraction si la limite n'existait
+  pas ?** Sinon, tu coupes au mauvais endroit. Quatre conséquences :
 
   - **Séparer les branches, pas la répétition.** Un branchement sur des cas
     métier est la jointure : chaque branche devient une fonction nommée d'après
     le cas qu'elle répond, et le parent se réduit à un aiguillage d'une ligne.
     Extraire le fragment que les branches partagent est la coupe la moins chère
-    et la mauvaise — elle laisse le parent faire exactement ce qu'il faisait,
+    et la mauvaise : elle laisse le parent faire exactement ce qu'il faisait,
     moins quelques lignes.
   - **Un nom doit ajouter ce que le site d'appel ne dit pas déjà.**
     `<PiedDePage />` en bas d'une page n'apprend rien ; `<AucunTransportPrescrit />`
@@ -83,18 +91,18 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
     (`Introduction`, `EnTetes`) marque un fragment, pas une intention.
   - **Répéter un contenu littéral vaut mieux que fabriquer un fragment sans
     nom.** Deux `<li>` identiques dans deux branches ne coûtent rien. Un
-    composant d'une ligne sans intention coûte un saut à chaque lecteur, pour
-    rien. On ne factorise que ce qui a un nom propre — et qui prend alors des
-    paramètres et sert des appelants sans rapport.
+    composant d'une ligne sans intention coûte un saut à chaque lecteur. On ne
+    factorise que ce qui a un nom propre, et qui prend alors des paramètres et
+    sert des appelants sans rapport.
   - **Une fonction choisit, les autres font.** Jamais une qui choisit *et* fait.
 
   Même chose quand la limite de 300 lignes mord : séparer un fichier par sujet,
   jamais en déplaçant le débordement ailleurs.
 
-  *Gardé par* `tests/architecture.test.ts › taille du code` — en lignes réelles.
-  Biome porte les mêmes limites pour le retour dans l'éditeur, mais il compte
-  des lignes *logiques* : un bloc de texte JSX y pèse une ligne. C'est le test
-  qui fait foi.
+  *Gardé par* `tests/architecture.test.ts › taille du code`, en lignes réelles.
+  Biome porte les mêmes limites pour le retour dans l'éditeur, mais il compte des
+  lignes *logiques* : un bloc de texte JSX y pèse une ligne. C'est le test qui
+  fait foi.
 
 - **Un fichier porte le nom d'une capacité, pas d'une catégorie.** Si le nom a
   besoin d'`utils`, `helpers`, `commun` ou `acces` pour fonctionner, le fichier
@@ -111,12 +119,12 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
   documentation et non du code appelé le déclare par un `@public` motivé.
 
 - **Le style ne se discute pas.** Biome tient le format, l'ordre des imports et
-  le lint, avec le même socle (`biome.base.jsonc`) pour les trois apps. Ne
-  jamais formater à la main, et ne jamais écrire une suppression pour un linter
-  que le projet ne lance pas — un `eslint-disable` a dormi des mois dans
-  `Parcours.tsx` sans rien supprimer. Supprimer s'écrit
-  `// biome-ignore <règle>: <raison>` sur la ligne **immédiatement** avant la
-  ligne fautive, la raison écrite en toutes lettres.
+  le lint, avec le même socle (`biome.base.jsonc`) pour les trois apps. Ne jamais
+  formater à la main, et ne jamais écrire une suppression pour un linter que le
+  projet ne lance pas : un `eslint-disable` a dormi des mois dans `Parcours.tsx`
+  sans rien supprimer. Une suppression s'écrit `// biome-ignore <règle>:
+  <raison>` sur la ligne **immédiatement** avant la ligne fautive, la raison en
+  toutes lettres.
 
   Un hook `PostToolUse` passe Biome sur chaque `.ts` / `.tsx` écrit, dans
   n'importe quelle app : le format n'est jamais à toi de défendre.
@@ -133,10 +141,10 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
   tienne debout, puis rejoint `main` d'un bloc. C'est le régime dans lequel a été
   menée la mise à disposition de la PMT au format PDF.
 
-  Le doute se tranche dans l'autre sens : si un drapeau *pourrait* masquer le
-  travail en cours, il n'y a pas de branche à ouvrir. Une branche coûte une
-  divergence à réconcilier, et ce coût ne se justifie que là où le drapeau est
-  impossible, pas là où il est seulement moins commode.
+  Le doute se tranche vers `main` : si un drapeau *pourrait* masquer le travail
+  en cours, il n'y a pas de branche à ouvrir. Une branche coûte une divergence à
+  réconcilier, et ce coût ne se justifie que là où le drapeau est impossible, pas
+  là où il est seulement moins commode.
 
 - **Conventional Commits**, scope entre parenthèses (`simulateur`,
   `data-analyzer`, `identification`) quand le changement est circonscrit à une
@@ -144,12 +152,14 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
 - **Sujet en français, verbe conjugué à la 3ᵉ personne de l'indicatif présent** :
   « coupe aux jointures du sens », « plafonne les fonctions à 30 lignes »,
   « rend les invariants d'architecture exécutables ». Ni impératif, ni infinitif.
+  Même règle pour les lignes du journal des versions, qui décrivent un commit.
 - **Corps argumenté** : ce qui change, et surtout *pourquoi*. Nommer les
   renommages un par un. Terminer par l'état de vérification (« 184 tests verts,
-  bundle et aperçu CERFA inchangés »).
+  bundle et aperçu CERFA inchangés »). Argumenté ne veut pas dire littéraire :
+  des phrases normales.
 - Trailer `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`.
-- **Avant de commiter sur `data-analyzer`** : relire le diff *et le message*
-  pour vérifier qu'aucun nom de fournisseur ni donnée n'y figure (cf.
+- **Avant de commiter sur `data-analyzer`** : relire le diff *et le message* pour
+  vérifier qu'aucun nom de fournisseur ni donnée n'y figure (cf.
   `apps/data-analyzer/AGENTS.md`).
 
 ## Où écrire quoi
@@ -159,6 +169,7 @@ Notion — et la franciser coûterait plus que ça ne clarifierait.
 | Une décision d'architecture | `docs/architecture/` — format ADR maison, au niveau composant C4, sans détail de fichier |
 | Le cadrage d'un chantier | `docs/specs/` |
 | Le mode d'emploi d'une app | son `README.md` |
+| Ce qu'une version apporte | le `CHANGELOG.md` de l'app — un TL;DR, puis une ligne par commit groupée par type |
 | Une règle pour l'IA | `AGENTS.md`, celui de la racine ou celui de l'app |
 | Une garde | **un test**, pas une phrase |
 
@@ -173,7 +184,8 @@ qui sont le contenu rédactionnel de référence des deux pages de résultat.
 **le test > le code > le README de l'app > `docs/architecture/` > `docs/specs/`**
 
 Les specs se périment : `etl-part-plateformes.md` annonce 5 marts, le README de
-`data-analyzer` en documente 6. Corrige la source la moins à jour, ne t'y fie pas.
+`data-analyzer` en documente 6. Corrige la source la moins à jour, ne t'y fie
+pas.
 
 ## Marches à suivre
 
