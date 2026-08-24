@@ -1,21 +1,24 @@
 # Spec — Encoder les questions « choix multiple » au format `mosaique`
 
-> Règle de traduction **spec métier → Publicodes**, quand une question est à choix
-> multiple. Format déjà consommé par le front (`front/simulateur/mosaique.ts`) et
-> appliqué à `p1_motif` (`regles/regles.publicodes`).
+> Règle de traduction d'une spec métier vers Publicodes, quand une question est à
+> choix multiple. Le format est déjà consommé par le front
+> (`front/simulateur/mosaique.ts`) et appliqué à `p1_motif`
+> (`regles/regles.publicodes`).
 
 ## Pourquoi
 
-Publicodes ne modélise pas le choix multiple (une règle = une valeur). On garde
-donc **N booléens** (une règle par réponse) et on ajoute **une règle parente
-inerte** portant la métadonnée `mosaique` : le moteur l'ignore, l'UI l'utilise pour
-afficher **une question à N cases à cocher**.
+Publicodes ne modélise pas le choix multiple : une règle porte une valeur. On garde
+donc N booléens, une règle par réponse, et on ajoute une règle parente inerte qui
+porte la métadonnée `mosaique`. Le moteur l'ignore ; l'UI s'en sert pour afficher
+une question à N cases à cocher.
 
 ## Quand
 
-- **Choix multiple** (réponses cochables ensemble) → `mosaique`.
-- **Choix unique** → `une possibilité` natif (hors sujet).
-- **Oui/Non** → un booléen (hors sujet).
+- Une question à **choix multiple**, dont les réponses se cochent ensemble, prend le
+  format `mosaique`.
+- Une question à **choix unique** prend le `une possibilité` natif, qui est hors
+  sujet ici.
+- Une question **oui/non** prend un booléen, hors sujet également.
 
 ## Format produit
 
@@ -37,23 +40,25 @@ Pour une question `Q` de réponses `R1…Rn` :
     option aucun: <prefixe>_<slug_aucun>   # facultatif
 ```
 
-Clés lues par le front : `question` (parente, obligatoire), `mosaique.options`,
-`mosaique.option aucun`. `type: selection` : à inclure par convention.
+Le front lit trois clés : `question` sur la parente, qui est obligatoire,
+`mosaique.options` et `mosaique.option aucun`. On inclut `type: selection` par
+convention.
 
 ## Contraintes
 
-- Noms **plats** (aucun ` . ` ; slug minuscule, `_`).
-- Parente **inerte** : ni `valeur`/`formule`/`une possibilité`/`applicable si`, ni
-  référencée ailleurs. **La logique aval référence les booléens, pas la parente.**
-- Chaque nom de `options`/`option aucun` doit être un booléen émis. Parente placée
-  juste après ses booléens.
-- Type ambigu ou « aucun » à sémantique métier (voir plus bas) → **signaler**, ne
-  pas trancher.
+- Les noms sont plats : aucun ` . `, un slug en minuscules avec des `_`.
+- La parente est inerte. Elle n'a ni `valeur`, ni `formule`, ni `une possibilité`,
+  ni `applicable si`, et rien ne la référence. **La logique aval référence les
+  booléens, pas la parente.**
+- Chaque nom cité dans `options` ou `option aucun` doit être un booléen émis. La
+  parente se place juste après ses booléens.
+- Si le type de question est ambigu, ou si le « aucun » porte une sémantique métier
+  (voir plus bas), le signaler plutôt que de trancher.
 
 ## Exemple
 
-Entrée (spec métier) : *M1.1 — « Quelle situation justifie le transport ? », choix
-multiple, 6 réponses dont « Aucun de ces motifs » (exclusif).*
+Entrée, côté spec métier : *M1.1 — « Quelle situation justifie le transport ? »,
+choix multiple, 6 réponses dont « Aucun de ces motifs », exclusive.*
 
 ```yaml
 p1_motif_hospitalisation:
@@ -82,12 +87,14 @@ p1_motif:
     option aucun: p1_motif_aucun
 ```
 
-La logique (« si ALD → M2 », « si un motif hors ALD → ouvrant droit ») s'encode
-ensuite en référençant les booléens (`p1_motif_ald`, `une de ces conditions`…).
+La logique s'encode ensuite en référençant les booléens : « si ALD, alors M2 », « si
+un motif hors ALD, alors ouvrant droit », écrites avec `p1_motif_ald`,
+`une de ces conditions` et les autres.
 
 ## Option « aucun » à sémantique métier
 
-Cocher « aucun » **active sa propre règle** (`option aucun`) en plus de décocher les
-autres options. Un « aucun » porteur de logique aval — ex.
-`p1_critere_aucune_situation_encadree`, qui déduit le transport « véhicule personnel
-ou transport en commun » — est donc correctement pris en compte.
+Cocher « aucun » active sa propre règle, celle nommée par `option aucun`, en plus de
+décocher les autres options. Un « aucun » qui porte de la logique aval est donc
+correctement pris en compte. C'est le cas de
+`p1_critere_aucune_situation_encadree`, qui déduit le transport en véhicule
+personnel ou en transport en commun.
