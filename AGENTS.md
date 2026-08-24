@@ -192,7 +192,7 @@ pas.
 
 ## Marches à suivre
 
-Trois gestes récurrents ont leur mode d'emploi dans `.claude/skills/`, chargé à
+Quatre gestes récurrents ont leur mode d'emploi dans `.claude/skills/`, chargé à
 la demande plutôt que recopié ici :
 
 | Skill | Quand |
@@ -200,6 +200,7 @@ la demande plutôt que recopié ici :
 | `regle-publicodes` | Toucher au modèle d'éligibilité — les quatre endroits qu'une règle traverse, et l'encodage des choix multiples en mosaïque |
 | `situation-de-reference` | Couvrir un cas métier : il va dans le catalogue de seeds, pas dans un fichier de test |
 | `doc-architecture` | Écrire ou réviser un document de `docs/architecture/` — format ADR maison, décisions révoquées conservées et barrées |
+| `livrer-une-version` | Livrer une app — numéro, journal des versions, tag `<app>@<version>` et release GitHub, qui vont ensemble |
 
 ## La règle qui tient les autres
 

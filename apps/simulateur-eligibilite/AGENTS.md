@@ -72,6 +72,8 @@ ligne par commit, groupée par type. Le pied de page du simulateur affiche cette
 version, le commit déployé et la version du modèle de règles — voir le
 [README](README.md) § « Savoir ce qui tourne ».
 
+La marche à suivre est dans le skill `livrer-une-version`.
+
 ## Les invariants
 
 Ils sont **exécutables**, dans [`tests/architecture.test.ts`](tests/architecture.test.ts) :
