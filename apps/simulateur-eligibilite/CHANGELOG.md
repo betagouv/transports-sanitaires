@@ -7,6 +7,21 @@ commit lui-même.
 Le simulateur affiche en bas de page la version qu'il exécute, le commit déployé
 et la version du modèle de règles.
 
+## [0.1.2](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.1.2) — 24 août 2026
+
+Correctif d'outillage. Le simulateur ne change pas : le commit livré ne touche
+pas l'app, mais la configuration de la CI qui la garde.
+
+### TL;DR
+
+- La détection de secrets bloquait toute livraison sur un faux positif : elle
+  prenait un nom de règle du contrat publicodes pour une clé d'API.
+- Aucun secret n'a fuité, et rien ne change pour un prescripteur.
+
+### 🐛 Corrections
+
+- [658f586](https://github.com/betagouv/transports-sanitaires/commit/658f586) : cesse de prendre les noms de règles du contrat publicodes pour des secrets. `p2_exception_radiotherapie_moins_48h` déclenchait la règle générique de gitleaks, qui voyait une clé d'API dans ses trente-six caractères, et la CI restait rouge. L'exception est cantonnée à cette règle et à ce seul fichier : la clé Grist, le secret de pseudonymisation et le jeton Matomo y restent surveillés.
+
 ## [0.1.1](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.1.1) — 24 août 2026
 
 Version de documentation. Le simulateur ne change pas : les deux commits livrés
