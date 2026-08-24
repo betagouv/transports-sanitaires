@@ -7,6 +7,23 @@ commit lui-même.
 Le simulateur affiche en bas de page la version qu'il exécute, le commit déployé
 et la version du modèle de règles.
 
+## [0.1.1](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.1.1) — 24 août 2026
+
+Version de documentation. Le simulateur ne change pas : les deux commits livrés
+ne touchent que l'`AGENTS.md` de l'app, qui n'est embarqué nulle part. Rien dans
+`front/`, `server/`, `shared/` ni `regles/`.
+
+### TL;DR
+
+- Aucun changement de comportement, aucune règle touchée. Le pied de page
+  annonce 0.1.1 parce que c'est une autre livraison, pas un autre produit.
+- L'AGENTS.md de l'app dit désormais comment une version se livre.
+
+### 📝 Documentation
+
+- [264870c](https://github.com/betagouv/transports-sanitaires/commit/264870c) : réécrit l'AGENTS.md de l'app dans la langue du dépôt et lui ajoute la section « Versions » qui manquait — où vit le numéro, comment se nomme le tag, où s'écrit ce journal.
+- [bc72d81](https://github.com/betagouv/transports-sanitaires/commit/bc72d81) : renvoie de cette section vers la marche à suivre de livraison, qui décrit les cinq gestes d'une version et pourquoi ils ne se séparent pas.
+
 ## [0.1.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.1.0) — 24 août 2026
 
 Première version étiquetée. Elle rassemble les 35 commits mergés depuis
