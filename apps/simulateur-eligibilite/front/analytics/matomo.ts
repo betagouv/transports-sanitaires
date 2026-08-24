@@ -1,6 +1,6 @@
-// Le transport des événements vers Matomo : amorçage du tag, injection du script,
-// mise en forme d'un `trackEvent`. Le vocabulaire mesuré, lui, est dans
-// `evenements.ts` — ce fichier ne sait pas ce que le produit compte.
+// Le transport des événements vers Matomo : amorçage du tag, injection du script
+// et mise en forme d'un `trackEvent`. Le vocabulaire mesuré, lui, est dans
+// `evenements.ts`. Ce fichier ne sait pas ce que le produit compte.
 
 import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
 import { identiteEnSession } from "../identification/session";
@@ -20,10 +20,11 @@ export type AnalyticsConfig = {
 };
 
 /**
- * Résout la configuration depuis l'environnement. Activé seulement en build de
- * prod (ou via `VITE_MATOMO_ENABLED=true` pour tester en local) **et** si le
- * consentement est accordé (ADR-3 — phase expérimentale : accordé par défaut,
- * sans bandeau ; point de décision isolé pour brancher un vrai bandeau).
+ * Résout la configuration depuis l'environnement. Le traceur n'est activé qu'en
+ * build de prod, ou avec `VITE_MATOMO_ENABLED=true` pour tester en local, et
+ * seulement si le consentement est accordé. En phase expérimentale, l'ADR-3 le
+ * donne par défaut et sans bandeau ; c'est ici le point de décision isolé où
+ * brancher un vrai bandeau.
  */
 export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
   const consentement = true; // ADR-3 — à remplacer par la gestion du consentement
@@ -36,15 +37,16 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
 }
 
 /**
- * Configure le traceur : si activé, empile les commandes d'amorçage dans `_paq`
- * (avant le chargement de matomo.js, qui traitera la file). Appelé au boot, avant
- * l'identification : l'identité prescripteur n'est **pas** connue ici — elle est lue
- * en session au moment d'émettre chaque événement (voir `emettre`). N'injecte
- * **pas** le script tiers — c'est le rôle de `chargerMatomo`, appelé séparément
- * (garde les tests sans effet de bord réseau).
+ * Configure le traceur. S'il est activé, on empile les commandes d'amorçage dans
+ * `_paq`, avant le chargement de matomo.js qui traitera la file. La fonction est
+ * appelée au boot, avant l'identification : l'identité prescripteur n'est pas
+ * connue ici, elle est lue en session au moment d'émettre chaque événement, voir
+ * `emettre`. Elle n'injecte pas le script tiers, c'est le rôle de `chargerMatomo`,
+ * appelé séparément, ce qui garde les tests sans effet de bord réseau.
  *
- * **Cookieless** (`disableCookies`) : l'app tourne dans l'iframe du CMS (contexte
- * tiers → cookies bloqués), et la mesure d'audience se veut sans bandeau.
+ * Le traceur est cookieless (`disableCookies`), parce que l'app tourne dans
+ * l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
+ * mesure d'audience se veut sans bandeau.
  */
 export function initAnalytics(config: AnalyticsConfig): void {
   etat = { enabled: config.enabled };
@@ -58,7 +60,7 @@ export function initAnalytics(config: AnalyticsConfig): void {
   paq.push(["trackPageView"]);
 }
 
-/** Injecte le script matomo.js (idempotent). */
+/** Injecte le script matomo.js. Idempotent. */
 export function chargerMatomo(url: string): void {
   if (document.getElementById("matomo-js")) return;
   const script = document.createElement("script");
@@ -70,7 +72,7 @@ export function chargerMatomo(url: string): void {
 
 /**
  * Émet un événement quand le traceur est activé, en portant l'identité
- * pseudonymisée courante lue en session (cf. `initAnalytics` pour le cycle de vie).
+ * pseudonymisée courante, lue en session. Voir `initAnalytics` pour le cycle de vie.
  */
 export function emettre(action: string, valeur?: number): void {
   if (!etat.enabled) return;
@@ -78,12 +80,14 @@ export function emettre(action: string, valeur?: number): void {
 }
 
 /**
- * Construit un événement Matomo `trackEvent` : catégorie constante, action, puis
- * `prescripteurRef` en **Nom** (s'il existe) et une valeur numérique optionnelle.
+ * Construit un événement Matomo `trackEvent` : une catégorie constante, l'action,
+ * puis le `prescripteurRef` en Nom s'il existe, et une valeur numérique
+ * optionnelle.
  *
- * L'instance mutualisée beta.gouv n'offre pas de custom dimension (R-8) : le
- * `prescripteurRef` pseudonymisé (identification.md — ADR-4) est donc porté en
- * propriété d'événement, faute de mieux. Exporté pour les tests.
+ * L'instance mutualisée beta.gouv n'offre pas de custom dimension, c'est le risque
+ * R-8. Le `prescripteurRef` pseudonymisé, décrit par l'ADR-4 d'identification.md,
+ * est donc porté en propriété d'événement, faute de mieux. La fonction est exportée
+ * pour les tests.
  */
 export function construireEvenement(
   identite: IdentitePseudonymisee | null,
@@ -111,15 +115,15 @@ type Env = {
 
 let etat: { enabled: boolean } = { enabled: false };
 
-// Unique point de création de la file : le tag la remplace par un objet actif
-// quand matomo.js se charge, tout ce qui est empilé avant est rejoué.
+// Unique point de création de la file. Le tag la remplace par un objet actif quand
+// matomo.js se charge, et tout ce qui a été empilé avant est rejoué.
 function filePaq(): unknown[][] {
   window._paq ??= [];
   return window._paq;
 }
 
 const CATEGORY = "simulateur";
-// Instance mutualisée beta.gouv, site 275. Intégration par le tag de suivi
-// (`_paq` + matomo.js), **pas** par le Tag Manager.
+// Instance mutualisée beta.gouv, site 275. L'intégration passe par le tag de
+// suivi, `_paq` et matomo.js, et non par le Tag Manager.
 const DEFAULT_URL = "https://stats.beta.gouv.fr/";
 const DEFAULT_SITE_ID = "275";

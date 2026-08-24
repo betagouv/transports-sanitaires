@@ -1,14 +1,13 @@
 // Conduite d'un parcours de questions dans les tests d'interface : répondre à une
-// page, aller jusqu'au bout. Partagé par les tests du prescripteur et du
-// secrétariat, qui traversent le même questionnaire.
+// page, aller jusqu'au bout. Ce fichier est partagé par les tests du prescripteur
+// et du secrétariat, qui traversent le même questionnaire.
 //
 // Le modèle mêle quatre formes de question sur une même page : des choix uniques
 // (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple (Q1.1, M0, A0.2,
-// A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par défaut » n'a
-// donc pas un seul sens : c'est « Non » pour un oui/non, l'option exclusive pour
-// une mosaïque — ou sa première case quand elle n'en a pas —, la première
-// possibilité pour un choix unique, et un texte quelconque pour une saisie
-// libre.
+// A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par défaut » n'a donc
+// pas un seul sens. C'est « Non » pour un oui/non, l'option exclusive pour une
+// mosaïque, ou sa première case quand elle n'en a pas, la première possibilité pour
+// un choix unique, et un texte quelconque pour une saisie libre.
 
 import { screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -17,9 +16,9 @@ import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 type User = ReturnType<typeof userEvent.setup>;
 
 /**
- * Une Partie 1 seule — et rien d'autre : passée au secrétariat, elle laisse la
- * Partie 2 entière à poser. Reprendre la base neutre complète répondrait aussi
- * aux questions administratives, et il n'y aurait plus de parcours à conduire.
+ * Une Partie 1 seule, et rien d'autre : passée au secrétariat, elle laisse la
+ * Partie 2 entière à poser. Reprendre la base neutre complète répondrait aussi aux
+ * questions administratives, et il n'y aurait plus de parcours à conduire.
  */
 export const PARTIE_1_AMBULANCE: Record<string, string> = {
   ...Object.fromEntries(
@@ -31,10 +30,10 @@ export const PARTIE_1_AMBULANCE: Record<string, string> = {
 };
 
 /**
- * Ce qu'un test veut voir coché. Deux formes, selon la question :
- *   - `[question, valeur]` — un choix unique ou un oui/non : le groupe est nommé
- *     par `question`, l'option par `valeur` ;
- *   - `[option]` — une case de mosaïque, que son libellé identifie à lui seul.
+ * Ce qu'un test veut voir coché. Il y a deux formes, selon la question :
+ *   - `[question, valeur]` pour un choix unique ou un oui/non, le groupe étant
+ *     nommé par `question` et l'option par `valeur` ;
+ *   - `[option]` pour une case de mosaïque, que son libellé identifie à lui seul.
  */
 export type Reponse = [RegExp, (string | RegExp)?];
 
@@ -58,9 +57,9 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
 }
 
 /**
- * Remplit le parcours page par page jusqu'à sa conclusion. `surLaPage` est
- * appelé sur chaque page **avant** qu'on y réponde — de quoi inspecter ce que
- * le parcours affiche, page après page, sans le conduire soi-même.
+ * Remplit le parcours page par page jusqu'à sa conclusion. `surLaPage` est appelé
+ * sur chaque page avant qu'on y réponde, de quoi inspecter ce que le parcours
+ * affiche, page après page, sans le conduire soi-même.
  */
 export async function terminerParcours(
   user: User,
@@ -93,8 +92,8 @@ export async function allerAuGroupe(
 }
 
 /**
- * Traverse le parcours jusqu'à la première page qui porte une saisie libre —
- * les douze adresses du trajet, seul endroit du questionnaire où l'on tape.
+ * Traverse le parcours jusqu'à la première page qui porte une saisie libre, c'est-
+ * à-dire les douze adresses du trajet, seul endroit du questionnaire où l'on tape.
  */
 export async function allerAuChampTexte(user: User, reponses: Reponse[] = []) {
   await allerJusqua(
@@ -106,7 +105,7 @@ export async function allerAuChampTexte(user: User, reponses: Reponse[] = []) {
 }
 
 /**
- * Traverse le parcours jusqu'à la première page qui porte une saisie chiffrée —
+ * Traverse le parcours jusqu'à la première page qui porte une saisie chiffrée,
  * A3.2, le nombre de transports prévus, seule question du modèle à en demander une.
  */
 export async function allerAuChampNombre(user: User, reponses: Reponse[] = []) {
@@ -136,10 +135,10 @@ async function allerJusqua(
 }
 
 /**
- * Répond à la page courante et en sort. Trois façons d'en sortir, selon la
- * page : cliquer « Suivant », cliquer le bouton de fin, ou — sur une page à
- * choix unique — attendre qu'elle avance d'elle-même. Rend `false` quand le
- * parcours est conclu, `true` quand une page de plus a pris la main.
+ * Répond à la page courante et en sort. Il y a trois façons d'en sortir, selon la
+ * page : cliquer « Suivant », cliquer le bouton de fin, ou attendre qu'elle avance
+ * d'elle-même sur une page à choix unique. La fonction rend `false` quand le
+ * parcours est conclu, et `true` quand une page de plus a pris la main.
  */
 async function avancerDUnePage(
   user: User,
@@ -158,8 +157,8 @@ async function avancerDUnePage(
     await user.click(fin);
     return false;
   }
-  // Avancement automatique : aucun bouton, la page part seule au bout de
-  // 200 ms — vers la suivante, ou vers le résultat si c'était la dernière.
+  // Avancement automatique : il n'y a aucun bouton, et la page part seule au bout
+  // de 200 ms, vers la suivante ou vers le résultat si c'était la dernière.
   await waitFor(() => {
     if (etape() === etapeAvant) throw new Error("la page n'a pas avancé");
   });
@@ -170,21 +169,21 @@ async function avancerDUnePage(
  * De quoi savoir, entre deux gestes, si la page est toujours celle qu'on remplit.
  *
  * Compléter une page prend plusieurs `await`, et une page à choix unique part
- * d'elle-même 200 ms après avoir reçu sa réponse : sur une machine chargée, elle
- * peut donc s'en aller au milieu du remplissage. La suite des gestes atterrit
- * alors sur la page **suivante**, la remplit, et le clic sur « Suivant » lui fait
- * sauter un écran — le test échoue plus loin, sur une page qu'il n'attendait pas,
- * et rien ne dit d'où vient le décalage. C'est ce qu'a montré la recette des
- * adresses, arrêtée sur le lieu d'arrivée alors qu'elle attendait le départ.
+ * d'elle-même 200 ms après avoir reçu sa réponse. Sur une machine chargée, elle
+ * peut donc s'en aller au milieu du remplissage. La suite des gestes atterrit alors
+ * sur la page suivante, la remplit, et le clic sur « Suivant » lui fait sauter un
+ * écran. Le test échoue plus loin, sur une page qu'il n'attendait pas, et rien ne
+ * dit d'où vient le décalage. C'est ce qu'a montré la recette des adresses,
+ * arrêtée sur le lieu d'arrivée alors qu'elle attendait le départ.
  */
 function pageEnCours(): () => boolean {
   const depart = etape();
   return () => etape() === depart;
 }
 
-// Une réponse ciblée. Sans `valeur`, `question` nomme directement l'option — le
-// cas d'une mosaïque, dont les cases portent l'énoncé complet. Avec `valeur`, la
-// recherche est restreinte au groupe que `question` nomme.
+// Une réponse ciblée. Sans `valeur`, `question` nomme directement l'option, ce qui
+// est le cas d'une mosaïque, dont les cases portent l'énoncé complet. Avec
+// `valeur`, la recherche est restreinte au groupe que `question` nomme.
 async function repondre(
   user: User,
   question: RegExp,
@@ -216,10 +215,10 @@ async function completerGroupe(user: User, groupe: HTMLElement) {
   else if (radios[0]) await user.click(radios[0]);
 }
 
-// Une mosaïque est répondue par son option exclusive — « Aucun… » / « Aucune… » —
-// sauf si une case est déjà cochée. Q1.1 n'en a plus : le modèle y exige au
-// moins un critère, et la réponse la plus neutre devient sa première case, celle
-// qui ne fait pas escalader le mode au-delà du VSL.
+// Une mosaïque est répondue par son option exclusive, « Aucun… » ou « Aucune… »,
+// sauf si une case est déjà cochée. Q1.1 n'en a plus : le modèle y exige au moins un
+// critère, et la réponse la plus neutre devient sa première case, celle qui ne fait
+// pas escalader le mode au-delà du VSL.
 async function completerMosaique(
   user: User,
   dans: Portee,
@@ -230,14 +229,14 @@ async function completerMosaique(
   if (neutre) await user.click(neutre);
 }
 
-// Le **rang** de l'étape affichée par l'étapeur, ou `null` s'il n'y en a plus —
-// le parcours est alors conclu et une page de résultat a pris sa place.
+// Le rang de l'étape affichée par l'étapeur, ou `null` s'il n'y en a plus. Le
+// parcours est alors conclu, et une page de résultat a pris sa place.
 //
-// Le rang seul, jamais l'intitulé entier : le total bouge sous la page courante,
-// chaque réponse rendant applicables des questions que l'étapeur ne connaissait
-// pas encore. « Étape 2 sur 2 » devient « Étape 2 sur 3 » sans qu'on ait changé
-// d'écran — et prendre cela pour un passage à la page suivante ferait compter
-// deux fois la même, ou abandonner un remplissage en cours de route.
+// On lit le rang seul, jamais l'intitulé entier, parce que le total bouge sous la
+// page courante : chaque réponse rend applicables des questions que l'étapeur ne
+// connaissait pas encore. « Étape 2 sur 2 » devient « Étape 2 sur 3 » sans qu'on ait
+// changé d'écran, et prendre cela pour un passage à la page suivante ferait compter
+// deux fois la même page, ou abandonner un remplissage en cours de route.
 function etape(): string | null {
   const titre = screen.queryByRole("heading", {
     name: /^étape \d+ sur \d+$/i,
