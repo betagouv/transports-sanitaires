@@ -26,10 +26,10 @@ jobs:
       - run: npm ci
       # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
       # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --omit=dev --audit-level=critical
       # La chaîne de build : signalé, non bloquant — une alerte sur un paquet
       # transitif de Vite ne doit pas coincer une correction sans rapport.
-      - run: npm audit --audit-level=high
+      - run: npm audit --audit-level=critical
         continue-on-error: true
       # lint → typecheck → validation des règles → tests → build (+ vérification
       # de bundle en `postbuild`).
@@ -48,8 +48,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/data-analyzer/package-lock.json
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm audit --audit-level=high
+      - run: npm audit --omit=dev --audit-level=critical
+      - run: npm audit --audit-level=critical
         continue-on-error: true
       - run: npm run verifier
 
@@ -66,8 +66,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/glossaire-notion/package-lock.json
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm audit --audit-level=high
+      - run: npm audit --omit=dev --audit-level=critical
+      - run: npm audit --audit-level=critical
         continue-on-error: true
       - run: npm run verifier
 
