@@ -1,5 +1,9 @@
 [tools]
 node = "24.16.0"
+# La CLI GitHub, pour créer la release d'une livraison (cf. le skill
+# `livrer-une-version`). Épinglée comme Node : le toolchain ne dépend pas de ce
+# que la machine a d'installé.
+gh = "2.98.0"
 
 [tasks.clean-install]
 description = "Installe proprement (npm ci) les dépendances du simulateur"

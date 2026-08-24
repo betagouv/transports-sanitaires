@@ -20,7 +20,7 @@ Ne jamais flatter. Ne jamais dire que c'est fait sans l'avoir vérifié.
 Monorepo léger, **sans outillage de workspace** : ni workspaces npm/pnpm, ni
 turbo. Chaque app sous `apps/` est **indépendante** — son `package.json`, son
 `package-lock.json`, son job CI, son `npm run verifier`. Le toolchain vient de
-`mise` (Node 24).
+`mise` : Node 24, et `gh` pour publier la release d'une livraison.
 
 **Avant de toucher à `apps/X`, lis `apps/X/AGENTS.md`.** Ce fichier-ci ne décrit
 aucune app.

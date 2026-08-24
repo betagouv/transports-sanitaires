@@ -124,17 +124,30 @@ C'est ce que voit `git show <tag>`, sans réseau.
 
 ## 6. La release GitHub
 
-`gh` n'est pas installé sur cette machine. La release se crée donc à la main :
-GitHub → Releases → *Draft a new release* → choisir le tag existant, titre
-`<app> <version>`, corps = l'entrée du journal. Ne pas laisser GitHub engendrer
-les notes : elles listent les sujets de commit, pas ce que la version apporte.
+`gh` vient du toolchain, comme Node : il est épinglé dans `mise.toml` et
+s'installe par `mise install`. L'authentification, elle, est personnelle et se
+fait une fois — `gh auth login`, portée `repo` suffisante. `gh auth status` dit
+où on en est.
 
-Avec `gh` disponible :
+Le corps de la release est **l'entrée du journal**, pas autre chose. Comme elle
+est la première du fichier, elle s'extrait sans la recopier :
 
 ```
-gh release create "simulateur-eligibilite@0.2.0" \
-  --title "simulateur-eligibilite 0.2.0" --notes-file <extrait du CHANGELOG>
+cd apps/simulateur-eligibilite
+awk '/^## \[/{n++} n==1' CHANGELOG.md | tail -n +2 |
+  gh release create "simulateur-eligibilite@0.2.0" \
+    --title "simulateur-eligibilite 0.2.0" \
+    --verify-tag --notes-file -
 ```
+
+- `--verify-tag` refuse de créer la release si le tag n'est pas **sur le
+  distant** : c'est la garde contre un `git push` du tag oublié à l'étape 5.
+- `tail -n +2` retire la ligne de titre, que GitHub affiche déjà.
+- **Ne jamais passer `--generate-notes`.** GitHub y liste les sujets de commit :
+  on aurait deux textes concurrents pour la même version, et le moins bon des
+  deux en évidence.
+
+Relire ce qui est publié — `gh release view "simulateur-eligibilite@0.2.0" --web`.
 
 ## 7. Après
 
