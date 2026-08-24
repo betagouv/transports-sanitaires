@@ -5,13 +5,13 @@ description: Écrire ou mettre à jour un document d'architecture dans docs/arch
 
 # Écrire un document d'architecture
 
-Les documents d'architecture vivent dans `docs/architecture/` — aujourd'hui
-`identification.md` et `analytics.md`. **Un document par sujet**, pas un fichier
-par décision : les ADR sont groupés dedans, numérotés.
+Les documents d'architecture vivent dans `docs/architecture/`, aujourd'hui
+`identification.md` et `analytics.md`. Il y a **un document par sujet**, et non un
+fichier par décision : les ADR sont groupés dedans et numérotés.
 
-Ils restent au **niveau composant C4** : ce qui parle, à quoi, et pourquoi. Aucun
-détail de fichier ni de fonction — ça, c'est le code et le README de l'app qui le
-portent, et ça se périme en une semaine.
+Ils restent au niveau composant C4 : ce qui parle, à quoi, et pourquoi. On n'y met
+aucun détail de fichier ni de fonction. Ça, c'est le code et le README de l'app qui
+le portent, et ça se périme en une semaine.
 
 ## Le squelette
 
@@ -30,12 +30,12 @@ portent, et ça se périme en une semaine.
 ## 6. Risques & validations en attente   (tableau R-1, R-2, …)
 ```
 
-Chaque ADR porte, dans son corps : le contexte, la décision, les conséquences.
+Chaque ADR porte, dans son corps, le contexte, la décision et les conséquences.
 
 ## La particularité à respecter — on ne réécrit pas l'histoire
 
-**Une décision révoquée reste dans le document, barrée**, avec ce qui l'a
-remplacée dans le titre :
+**Une décision révoquée reste dans le document, barrée**, avec ce qui l'a remplacée
+dans le titre :
 
 ```markdown
 ### ADR-1 — Identification intégrée en écran-porte (~~app dédiée~~)
@@ -49,23 +49,25 @@ Et un encart daté en tête du document dit ce qui a été renversé :
 > n° 3 de l'ADR-5 sont renversés : …
 ```
 
-Même mécanique pour les risques (`~~R-9~~ … Résolu (2026-07-08)`) et pour les
-composants disparus dans les tableaux (colonne « statut » :
-`modifié` / `déplacé` / `supprimé`).
+La même mécanique vaut pour les risques (`~~R-9~~ … Résolu (2026-07-08)`) et pour
+les composants disparus dans les tableaux, avec une colonne « statut » qui prend
+`modifié`, `déplacé` ou `supprimé`.
 
-La raison : quelqu'un — humain ou agent — retombera sur l'ancienne décision dans
-un commit, un commentaire ou sa mémoire. Il doit trouver ici pourquoi elle ne
-vaut plus, pas un document qui fait comme si elle n'avait jamais existé.
+La raison est simple : quelqu'un, humain ou agent, retombera sur l'ancienne décision
+dans un commit, un commentaire ou sa mémoire. Il doit trouver ici pourquoi elle ne
+vaut plus, et non un document qui fait comme si elle n'avait jamais existé.
 
 ## En écrivant
 
-- **Français**, comme tout le dépôt.
-- **Mermaid** pour les diagrammes, **tableaux** pour les événements, variables
-  d'environnement, risques, composants.
-- **Toujours mettre à jour la date** de l'en-tête. Un document non daté ne se
-  laisse pas arbitrer.
-- Renvois relatifs entre documents (`./identification.md`).
-- Terminer par une section **Vérification** en commandes exécutables quand le
+- **Français**, comme tout le dépôt, et en phrases normales : la règle d'écriture
+  simple d'`AGENTS.md` vaut ici aussi. Le fond peut rester argumenté et détaillé.
+- **Mermaid** pour les diagrammes, et des **tableaux** pour les événements, les
+  variables d'environnement, les risques et les composants.
+- **Toujours mettre à jour la date** de l'en-tête quand une décision bouge. Un
+  document non daté ne se laisse pas arbitrer. Une simple relecture de forme ne la
+  touche pas : la date dit quand les décisions ont changé.
+- Des renvois relatifs entre documents, comme `./identification.md`.
+- Terminer par une section **Vérification** en commandes exécutables, quand le
   document décrit quelque chose qu'on peut éprouver.
 
 ## Ce qui ne va pas là
@@ -77,6 +79,6 @@ vaut plus, pas un document qui fait comme si elle n'avait jamais existé.
 | Une règle pour l'IA | `AGENTS.md`, racine ou app |
 | Une garde | **un test** |
 
-Et rappelle-toi l'ordre d'autorité du dépôt : **le test > le code > le README de
+Rappelle-toi enfin l'ordre d'autorité du dépôt : **le test > le code > le README de
 l'app > `docs/architecture/` > `docs/specs/`**. Un document d'architecture qui
-contredit le code a tort — corrige-le, ne t'y fie pas.
+contredit le code a tort. Corrige-le, ne t'y fie pas.

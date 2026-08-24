@@ -5,35 +5,35 @@ description: Ajouter, modifier ou supprimer une règle du modèle d'éligibilit�
 
 # Toucher au modèle publicodes
 
-Le modèle vit dans un fichier unique :
-`apps/simulateur-eligibilite/regles/regles.publicodes`. Il n'est **jamais** seul :
-une règle nouvelle traverse quatre endroits, et sauter l'un d'eux laisse le
-produit dans un état incohérent que rien ne signale tout de suite.
+Le modèle vit dans un fichier unique,
+`apps/simulateur-eligibilite/regles/regles.publicodes`, mais il n'est jamais seul.
+Une règle nouvelle traverse quatre endroits, et sauter l'un d'eux laisse le produit
+dans un état incohérent que rien ne signale tout de suite.
 
 ## L'ordre
 
 ### 1. Le modèle — `regles/regles.publicodes`
 
-- Les clés se séparent par ` . ` ; les valeurs d'`une possibilité` s'écrivent
-  entre quotes (`"'valeur'"`) ; les booléens sont `oui` / `non`.
-- Le fichier ne porte **que de l'éligibilité**. Ni identification, ni analytics —
-  `tests/architecture.test.ts` échoue sinon, et il a raison : le modèle doit
-  rester une transcription de la réglementation, rejouable hors de l'application.
+- Les clés se séparent par ` . `. Les valeurs d'`une possibilité` s'écrivent entre
+  quotes, sous la forme `"'valeur'"`. Les booléens s'écrivent `oui` et `non`.
+- Le fichier ne porte que de l'éligibilité, ni identification ni analytics.
+  `tests/architecture.test.ts` échoue sinon, et il a raison : le modèle doit rester
+  une transcription de la réglementation, rejouable hors de l'application.
 - Nomme en français, comme le reste du modèle.
 
 ### 2. Le contrat — `front/simulateur/contrat-regles-publicodes.ts`
 
-Rien dans le code ne peut nommer une clé qui n'est pas dans ce fichier. Ajoute la
-clé à `CIBLES` (une sortie que le produit affiche) ou à `QUESTIONS` (une entrée
-que le questionnaire pose). C'est **cet ajout qui autorise l'usage** : `Cible` et
-`CleDeRegle` font rejeter le reste par TypeScript, dans un littéral de situation,
-un tableau `cibles` ou un appel à `texte()` / `vrai()`.
+Rien dans le code ne peut nommer une clé absente de ce fichier. Ajoute la clé à
+`CIBLES` si c'est une sortie que le produit affiche, ou à `QUESTIONS` si c'est une
+entrée que le questionnaire pose. C'est cet ajout qui autorise l'usage : `Cible` et
+`CleDeRegle` font rejeter le reste par TypeScript, que ce soit dans un littéral de
+situation, dans un tableau `cibles` ou dans un appel à `texte()` ou `vrai()`.
 
-Ne lis jamais une règle par un `engine.evaluate("…")` nu : passe par `texte()` ou
+Ne lis jamais une règle par un `engine.evaluate("…")` nu. Passe par `texte()` ou
 `vrai()`.
 
-`tests/regles-front.test.ts` confronte le contrat au modèle : une clé déclarée
-qui n'existe pas dans les règles (ou l'inverse) y échoue.
+`tests/regles-front.test.ts` confronte le contrat au modèle : une clé déclarée qui
+n'existe pas dans les règles, ou l'inverse, y échoue.
 
 ### 3. Une situation de référence — `front/outils-produit/seeds/catalogue.ts`
 
@@ -53,15 +53,15 @@ références manquantes ou cycliques à la compilation.
 
 ## Questions à choix multiple : la mosaïque
 
-Publicodes n'a pas de type « choix multiple ». On l'encode par **N règles
-booléennes** plus une **règle parente inerte** portant la métadonnée `mosaique`,
-que `front/simulateur/questionnaire/mosaique.ts` lit pour rendre un `fieldset` de
-cases à cocher.
+Publicodes n'a pas de type « choix multiple ». On l'encode par N règles booléennes
+et une règle parente inerte, qui porte la métadonnée `mosaique`. C'est cette
+métadonnée que lit `front/simulateur/questionnaire/mosaique.ts` pour rendre un
+`fieldset` de cases à cocher.
 
 Le format exact — les champs de la métadonnée, la gestion de l'option « aucun » à
 sémantique métier, les contraintes — est dans
 [`docs/specs/formalisation-mosaique-choix-multiple.md`](../../../docs/specs/formalisation-mosaique-choix-multiple.md).
-Lis-le avant d'encoder une question de ce type ; ne réinvente pas la forme.
+Lis-le avant d'encoder une question de ce type, et ne réinvente pas la forme.
 
 ## Ce qui trahit une erreur
 
