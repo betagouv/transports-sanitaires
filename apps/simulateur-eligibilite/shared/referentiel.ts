@@ -9,27 +9,28 @@ export type Service = { id: string; libelle: string };
 export type Prescripteur = { id: string; libelle: string };
 
 /**
- * L'accès est masqué derrière cette interface (docs/architecture/identification.md
- * — §5) afin de pouvoir substituer la source — le client HTTP same-origin
- * `front/identification/referentiel-http.ts` vers le backend Grist ; demain
- * FINESS/RPPS — sans toucher les composants consommateurs.
+ * L'accès est masqué derrière cette interface, décrite au §5 de
+ * docs/architecture/identification.md, pour pouvoir substituer la source sans
+ * toucher les composants consommateurs. C'est aujourd'hui le client HTTP
+ * same-origin `front/identification/referentiel-http.ts` vers le backend Grist, et
+ * demain peut-être FINESS et RPPS.
  */
 export interface Referentiel {
   listerEtablissements(): Promise<Etablissement[]>;
   listerServices(etabId: string): Promise<Service[]>;
   listerPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
   /**
-   * Enrichit le référentiel avec les **saisies libres** d'une sélection (service
-   * « autre », prescripteur « hors liste »). Optionnel : seule la source Grist
-   * l'implémente (le client HTTP front n'écrit jamais). Voir
+   * Enrichit le référentiel avec les saisies libres d'une sélection, celles du
+   * service « autre » et du prescripteur « hors liste ». C'est optionnel : seule la
+   * source Grist l'implémente, le client HTTP du front n'écrivant jamais. Voir
    * docs/specs/enrichissement-referentiel-saisies-libres.md.
    */
   enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
 }
 
 /**
- * Données **factices** (aucune PII réelle), servant de **défaut** en dev et dans
- * les tests — front comme backend sans clé Grist.
+ * Données factices, sans aucune PII réelle. Elles servent de défaut en dev et dans
+ * les tests, côté front comme côté backend, quand il n'y a pas de clé Grist.
  */
 export const snapshotReferentiel: Referentiel = {
   async listerEtablissements() {

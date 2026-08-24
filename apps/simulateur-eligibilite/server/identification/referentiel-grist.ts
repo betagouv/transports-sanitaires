@@ -1,20 +1,20 @@
 // Implémentation `Referentiel` au-dessus d'un doc Grist.
 //
-// Voir docs/architecture/identification.md — ADR-5 & §5. Ce module vit côté
-// serveur uniquement : il détient la clé Grist (jamais exposée au navigateur) et
-// ne renvoie que des données filtrées (les noms de prescripteurs seulement pour
-// le service demandé, jamais l'annuaire complet). L'accès HTTP lui-même est
-// dans `lignes-grist.ts`.
+// Voir l'ADR-5 et le §5 de docs/architecture/identification.md. Ce module vit côté
+// serveur uniquement : il détient la clé Grist, jamais exposée au navigateur, et ne
+// renvoie que des données filtrées. Les noms de prescripteurs ne sortent que pour
+// le service demandé, jamais l'annuaire complet. L'accès HTTP lui-même est dans
+// `lignes-grist.ts`.
 //
 // Modèle Grist (identifiants de tables/colonnes réels, assainis par Grist) :
 //   Etablissements   : Id2 (Int, « Id » métier), Nom (Text)
 //   Services_Unites  : Id2, Nom, Etablissement (Ref:Etablissements)
 //   Prescripteurs    : Id2, Nom, Prenom, Service_Unite (Ref:Services_Unites)
 //
-// Les identifiants opaques de l'identité saisie (`etabId`/`serviceId`/`prescripteurId`)
-// sont la colonne **Id2** (choix produit). Les colonnes de référence stockent le
-// **rowId interne Grist** de la ligne cible, pas son Id2 : on résout donc Id2 →
-// rowId avant de filtrer les enfants.
+// Les identifiants opaques de l'identité saisie, `etabId`, `serviceId` et
+// `prescripteurId`, sont la colonne Id2, par choix produit. Les colonnes de
+// référence stockent le rowId interne Grist de la ligne cible, et non son Id2. On
+// résout donc l'Id2 en rowId avant de filtrer les enfants.
 
 import {
   type IdentiteSaisie,
@@ -98,15 +98,16 @@ async function prescripteurs(
     .filter((p) => p.id && p.libelle);
 }
 
-// Écrit les saisies **libres** dans le référentiel (colonne `Origine=formulaire`).
-// Idempotent (dédup sur Nom/Prénom normalisés) ; ne fait rien pour une sélection
-// issue des listes. Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
+// Écrit les saisies libres dans le référentiel, avec la colonne
+// `Origine=formulaire`. C'est idempotent, la déduplication se faisant sur le nom et
+// le prénom normalisés, et sans effet pour une sélection issue des listes. Voir
+// docs/specs/enrichissement-referentiel-saisies-libres.md.
 async function enrichir(doc: DocGrist, saisie: IdentiteSaisie): Promise<void> {
   if (saisie.serviceEstAutre && saisie.serviceLibre?.trim()) {
     return rattacherAuServiceReel(doc, saisie, saisie.serviceLibre);
   }
-  // Prescripteur hors liste (service réel, « Autre » sans service saisi compris) :
-  // prescripteur sous le service sélectionné.
+  // Prescripteur hors liste, sous un service réel, y compris « Autre » sans
+  // service saisi : on le crée sous le service sélectionné.
   if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
     if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
     const serviceRowId = await rowIdDeId2(
@@ -117,13 +118,13 @@ async function enrichir(doc: DocGrist, saisie: IdentiteSaisie): Promise<void> {
     if (serviceRowId == null) return;
     await assurerPrescripteur(doc, serviceRowId, saisie.nom, saisie.prenom);
   }
-  // Sinon : sélection issue des listes → rien à écrire.
+  // Sinon, la sélection vient des listes et il n'y a rien à écrire.
 }
 
-// Service « Autre » avec un vrai service saisi : on crée/réutilise ce service
-// sous l'établissement, puis on y **rattache** le prescripteur (au lieu de
-// « Autre »), pour qu'à la connexion suivante il apparaisse sous son service
-// réel — et ne soit plus rattaché à « Autre ». Voir la spec.
+// Service « Autre » avec un vrai service saisi : on crée ou on réutilise ce
+// service sous l'établissement, puis on y rattache le prescripteur au lieu de
+// « Autre ». À la connexion suivante, il apparaît alors sous son service réel. Voir
+// la spec.
 async function rattacherAuServiceReel(
   doc: DocGrist,
   saisie: IdentiteSaisie,
@@ -139,8 +140,8 @@ async function rattacherAuServiceReel(
     await assurerPrescripteur(doc, serviceRowId, saisie.nom, saisie.prenom);
     return;
   }
-  // Prescripteur déjà listé sous « Autre » : on le **déplace** vers son vrai
-  // service (met à jour sa référence de service).
+  // Prescripteur déjà listé sous « Autre » : on le déplace vers son vrai service,
+  // en mettant à jour sa référence de service.
   if (!saisie.prescripteurId) return;
   const prescRowId = await rowIdDeId2(
     doc,

@@ -1,5 +1,6 @@
 // Transforme l'identité saisie en refs à sens unique, pour l'API
-// `POST /api/identite-pseudonymisee`. Voir docs/architecture/identification.md — ADR-4.
+// `POST /api/identite-pseudonymisee`. Voir l'ADR-4 de
+// docs/architecture/identification.md.
 
 import { createHmac } from "node:crypto";
 import {
@@ -13,15 +14,16 @@ import {
 } from "../../shared/identite-saisie.ts";
 
 /**
- * Pseudonymise l'identité saisie selon la branche d'identification. Prescripteur,
- * établissement et service partent en **pseudonymes à sens unique** — jamais
- * l'identifiant brut, jamais le nom ; le secret reste côté serveur, c'est lui qui
- * rend le jeton non réversible et non forgeable. Le front garde ces refs en
- * mémoire de session et les forwarde à Matomo (cf. analytics.md).
+ * Pseudonymise l'identité saisie selon la branche d'identification. Le
+ * prescripteur, l'établissement et le service partent en pseudonymes à sens unique,
+ * jamais en identifiant brut ni en nom. Le secret reste côté serveur, et c'est lui
+ * qui rend le jeton non réversible et non forgeable. Le front garde ces refs en
+ * mémoire de session et les forwarde à Matomo, voir analytics.md.
  *
- * Les valeurs sont préfixées par leur nature (`etab:`, `service:`, …) pour éviter
- * toute collision entre un id de référentiel et un texte libre. Certaines refs
- * sont absentes selon la branche (identité pseudonymisée à refs optionnelles).
+ * Les valeurs sont préfixées par leur nature, `etab:`, `service:` et les autres,
+ * pour éviter toute collision entre un id de référentiel et un texte libre.
+ * Certaines refs sont absentes selon la branche, l'identité pseudonymisée ayant des
+ * refs optionnelles.
  */
 export function pseudonymiser(
   secret: string,
@@ -44,8 +46,8 @@ export function pseudonymiser(
   return identite;
 }
 
-// Le prescripteur est référencé par son identifiant de référentiel, ou — s'il
-// s'est déclaré hors liste — par son nom et prénom.
+// Le prescripteur est référencé par son identifiant de référentiel, ou par son nom
+// et son prénom s'il s'est déclaré hors liste.
 function refPrescripteur(
   secret: string,
   saisie: IdentiteSaisie,
@@ -60,13 +62,14 @@ function refPrescripteur(
 }
 
 /**
- * Empreinte stable, non réversible sans le secret (128 bits, base64url). Exportée
- * pour que les tests recalculent une ref attendue sans rejouer la branche entière.
+ * Empreinte stable, non réversible sans le secret, sur 128 bits en base64url. Elle
+ * est exportée pour que les tests recalculent une ref attendue sans rejouer la
+ * branche entière.
  *
- * Mode debug (`enClair`, piloté par `PSEUDONYMISATION_EN_CLAIR` — phase de test
- * **uniquement**) : renvoie la valeur préfixée en clair au lieu du HMAC, pour lire
- * directement les refs dans Matomo. ⚠️ Révèle des données brutes (dont nom/prénom
- * normalisés) : à ne **jamais** activer en production.
+ * Le mode debug `enClair`, piloté par `PSEUDONYMISATION_EN_CLAIR` et réservé à la
+ * phase de test, renvoie la valeur préfixée en clair au lieu du HMAC, pour lire
+ * directement les refs dans Matomo. ⚠️ Il révèle des données brutes, dont le nom et
+ * le prénom normalisés : à ne jamais activer en production.
  */
 export function empreinte(
   secret: string,
@@ -83,8 +86,9 @@ export function empreinte(
 
 // ---- implémentation ----
 
-// Ref d'identité à partir d'un nom/prénom libres. HMAC du texte normalisé —
-// jamais le nom en clair (invariant PII, ADR-4 / R-6), sauf mode debug `enClair`.
+// Ref d'identité à partir d'un nom et d'un prénom libres. C'est le HMAC du texte
+// normalisé, jamais le nom en clair, ce qu'imposent l'invariant PII de l'ADR-4 et
+// le risque R-6. Le mode debug `enClair` est la seule exception.
 function refIdentite(
   secret: string,
   nom: string,

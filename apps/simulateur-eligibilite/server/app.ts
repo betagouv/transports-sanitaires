@@ -1,10 +1,11 @@
-// App Express du simulateur : **composition**. Monte la feature identification
-// (référentiel + identité pseudonymisée) sous `/api`, puis sert le front (build
-// Vite) en same-origin. Voir docs/architecture/identification.md — ADR-5.
+// App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
+// identification, référentiel et identité pseudonymisée, sous `/api`, puis sert le
+// front construit par Vite en same-origin. Voir l'ADR-5 de
+// docs/architecture/identification.md.
 //
-// `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock
-// (les tests injectent le snapshot ; en production `server.ts` injecte le choix
-// de `choisirReferentiel`).
+// `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock.
+// Les tests injectent le snapshot ; en production, `server.ts` injecte le choix de
+// `choisirReferentiel`.
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";
@@ -34,7 +35,8 @@ export function creerApp(
     "/api",
     identificationRoutes(referentiel, secret, pseudonymesEnClair),
   );
-  // Toute autre route sous /api → 404 JSON (évite de servir index.html).
+  // Toute autre route sous /api rend un 404 JSON, pour éviter de servir
+  // index.html.
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "route inconnue" });
   });
@@ -52,10 +54,10 @@ export function creerApp(
 
 // ---- implémentation ----
 
-// L'app est destinée à être **embarquée en iframe** dans le CMS : la page
-// canonique pour les moteurs est celle du CMS, pas l'URL brute de l'app.
-// En-tête sur **toutes** les réponses + robots.txt — double protection,
-// indépendante du build front.
+// L'app est destinée à être embarquée en iframe dans le CMS : la page canonique
+// pour les moteurs est celle du CMS, pas l'URL brute de l'app. L'en-tête est posé
+// sur toutes les réponses, et doublé d'un robots.txt. Cette double protection ne
+// dépend pas du build front.
 function interdireIndexation(app: Express) {
   app.use((_req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");

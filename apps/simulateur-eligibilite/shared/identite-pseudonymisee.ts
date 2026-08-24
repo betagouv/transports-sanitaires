@@ -1,17 +1,18 @@
-// Contrat **partagé front ⇄ back** de l'identité pseudonymisée du prescripteur.
-// Source **unique** de sa forme et de sa version : le backend la produit, le front
-// la valide et la consomme. Voir docs/architecture/identification.md — ADR-4.
+// Contrat partagé entre le front et le back pour l'identité pseudonymisée du
+// prescripteur. C'est la source unique de sa forme et de sa version : le backend la
+// produit, le front la valide et la consomme. Voir l'ADR-4 de
+// docs/architecture/identification.md.
 
 export const VERSION = 2 as const;
 
-// Les `*Ref` sont des **pseudonymes HMAC** calculés côté serveur — **non
-// réversibles** sans le secret, jamais l'identifiant brut, le nom ou le RPPS. Le
-// front ne fait que les forwarder à Matomo (cf. analytics.md).
+// Les `*Ref` sont des pseudonymes HMAC calculés côté serveur. Ils ne sont pas
+// réversibles sans le secret, et ne portent jamais l'identifiant brut, le nom ni le
+// RPPS. Le front ne fait que les forwarder à Matomo, voir analytics.md.
 //
-// Elles sont **optionnelles** : selon la branche d'identification, certaines
-// n'existent pas (ex. « autre service » n'a pas de prescripteur ; « non rattaché »
-// n'a pas de service). L'analytics n'utilise que `prescripteurRef` (absent →
-// événement sans Nom, cf. `front/analytics/matomo.ts`).
+// Elles sont optionnelles, parce que selon la branche d'identification certaines
+// n'existent pas : « autre service » n'a pas de prescripteur, « non rattaché » n'a
+// pas de service. L'analytics n'utilise que `prescripteurRef`, et son absence donne
+// un événement sans Nom, voir `front/analytics/matomo.ts`.
 export type IdentitePseudonymisee = {
   etabRef?: string;
   serviceRef?: string;
@@ -19,7 +20,7 @@ export type IdentitePseudonymisee = {
   v: typeof VERSION;
 };
 
-/** Valide la forme d'une identité pseudonymisée reçue de l'API (`POST /api/identite-pseudonymisee`). */
+/** Valide la forme d'une identité pseudonymisée reçue de `POST /api/identite-pseudonymisee`. */
 export function estIdentitePseudonymisee(
   valeur: unknown,
 ): valeur is IdentitePseudonymisee {
