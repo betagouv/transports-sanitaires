@@ -43,10 +43,10 @@ depuis `staging` et `feat/prefill-cerfa-pmt` ».
 
 ## 2. Le numéro
 
-Semver. `feat` dans le périmètre → mineure ; que des `fix` → patch. Rester en
-`0.x` tant que la surface publique n'est pas figée : c'est ce qui a valu 0.1.0
-plutôt que 1.0.0 à un simulateur pourtant en production, le pré-remplissage des
-CERFA restant derrière la garde « outils produit ».
+Semver. Un `feat` dans le périmètre appelle une mineure, des `fix` seuls un patch.
+Rester en `0.x` tant que la surface publique n'est pas figée : c'est ce qui a valu
+0.1.0 plutôt que 1.0.0 à un simulateur pourtant en production, le pré-remplissage
+des CERFA restant derrière la garde « outils produit ».
 
 Le numéro est une **décision produit** : le proposer avec sa raison, ne pas le
 trancher seul.
