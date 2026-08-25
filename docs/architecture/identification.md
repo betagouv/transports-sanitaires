@@ -146,7 +146,10 @@ et un seul déployable.
 **Conséquences.** Le simulateur quitte GitHub Pages pour Scalingo et n'est plus
 entièrement statique, puisqu'il a un backend. C'est le prix de l'identification
 obligatoire. Le workflow GitHub Pages est supprimé. La clé Grist et
-`PSEUDONYMISATION_SECRET` vivent en variables d'environnement Scalingo. Le front et ses
+`PSEUDONYMISATION_SECRET` vivent en variables d'environnement Scalingo, et le serveur
+refuse de démarrer sans elles en production : leur repli — référentiel factice, secret
+public — n'est bon que pour un poste de développement, et le servir en production
+donnerait un simulateur silencieusement faux (`server/configuration.ts`). Le front et ses
 tests sont préservés : l'interface `Referentiel` (§5) a un client HTTP same-origin
 (`http-referentiel.ts`) et garde le snapshot factice en défaut, pour le dev et les tests.
 Grist reste l'outil d'admin. Voir §5 pour le modèle et §6 pour l'accès.

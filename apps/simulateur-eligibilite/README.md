@@ -200,13 +200,33 @@ jamais exposées au front.
 
 | Variable | Portée | Requis | Défaut / si absente | Usage |
 | --- | --- | --- | --- | --- |
-| `GRIST_API_KEY` | serveur | prod | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services/prescripteurs). Jamais exposée au front. |
+| `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services/prescripteurs). Jamais exposée au front. |
 | `GRIST_DOC_URL` | serveur | non | doc Grist du projet | Base API du doc Grist (`server/referentiel.ts`). |
-| `PSEUDONYMISATION_SECRET` | serveur | prod | secret de dev **non sécurisé** | Secret HMAC pseudonymisant le contexte prescripteur envoyé à Matomo. **Dédié** (≠ `GRIST_API_KEY`). Générer : `openssl rand -hex 32`. |
+| `PSEUDONYMISATION_SECRET` | serveur | **prod** | secret de dev **non sécurisé** | Secret HMAC pseudonymisant le contexte prescripteur envoyé à Matomo. **Dédié** (≠ `GRIST_API_KEY`). Générer : `openssl rand -hex 32`. |
 | `PSEUDONYMISATION_EN_CLAIR` | serveur | non | HMAC (pseudonymisé) | Debug : renvoie les refs prescripteur **en clair** (préfixées) au lieu du HMAC, pour les lire dans Matomo. ⚠️ Révèle nom/prénom bruts — **jamais en production**. |
 | `VITE_MATOMO_ENABLED` | front | non | `false` (traceur no-op) | Active le tracking Matomo. Actif d'office en build de prod ; à mettre à `true` pour tester en local. |
 | `VITE_MATOMO_URL` | front | non | instance mutualisée beta.gouv | URL de l'instance Matomo. |
 | `VITE_MATOMO_SITE_ID` | front | non | `275` | Identifiant du site Matomo. |
+
+Les deux variables marquées **prod** n'ont pas de valeur par défaut : leur repli est un
+référentiel inventé et un secret que tout le monde peut lire, ce qui n'a de sens que sur
+un poste de développement. En production — `NODE_ENV=production`, ce que pose Scalingo —
+`server/configuration.ts` refuse donc de rendre une configuration incomplète : le serveur
+s'arrête au démarrage, avant d'ouvrir son port, sur la liste de ce qui cloche.
+
+```
+[simulateur] Démarrage impossible — configuration invalide :
+  - GRIST_API_KEY : sans valeur par défaut, elle doit être posée en production
+  - PSEUDONYMISATION_SECRET : sans valeur par défaut, elle doit être posée en production
+```
+
+La règle est portée par un schéma **zod** : un socle de variables à défaut, et une variante
+de production où ces deux-là sont exigées. Le schéma valide aussi la forme de ce qui est
+posé — `PORT=quatre-mille` ou une `GRIST_DOC_URL` qui n'est pas une URL arrêtent le
+démarrage de la même manière, plutôt que d'échouer plus tard et ailleurs. Une variable
+posée mais vide (`GRIST_API_KEY=` dans un `.env` recopié) compte pour absente. Les autres
+variables ont un défaut documenté ci-dessus : elles ne bloquent jamais le démarrage.
+*Gardé par* [`tests/serveur/configuration.test.ts`](tests/serveur/configuration.test.ts).
 
 ## Structure (feature-first)
 
@@ -221,6 +241,7 @@ shared/                  contrat front ⇄ back (source unique)
   identite-saisie.ts     type IdentiteSaisie + saisieComplete
 server/                  backend (barrière de sécurité : secrets ici, jamais bundlés)
   server.ts app.ts       bootstrap + composition (monte les routers, sert le front)
+  configuration.ts       l'environnement, lu une fois — et refusé s'il manque en prod
   identification/        LA feature backend
     routes.ts            /api/etablissements|services|prescripteurs + /api/identite-pseudonymisee
     referentiel-grist.ts  referentiel-source.ts  pseudonymisation.ts
