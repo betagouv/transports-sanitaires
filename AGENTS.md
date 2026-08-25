@@ -157,10 +157,12 @@ franciser coûterait plus que ça ne clarifierait.
   renommages un par un. Terminer par l'état de vérification (« 184 tests verts,
   bundle et aperçu CERFA inchangés »). Argumenté ne veut pas dire littéraire :
   des phrases normales.
-- Trailer `Co-Authored-By: Claude <noreply@anthropic.com>`. **Ne pas nommer le
-  modèle** dans le message, trailer compris : ni « Opus 5 », ni « Sonnet », ni un
-  numéro de version. Ces noms changent bien plus vite que le dépôt, et ils
-  n'apprennent rien à qui relit l'historique.
+- **Aucune métadonnée d'IA dans le message**, nulle part, trailers compris : ni
+  `Co-Authored-By`, ni `Claude-Session`, ni lien de session, ni mention d'un
+  outil ou d'un modèle qui aurait tenu le clavier — ni « Claude », ni « Opus 5 »,
+  ni « Sonnet », ni un numéro de version. Un message de commit dit ce qui change
+  et pourquoi ; par qui n'apprend rien à qui relit l'historique, et ces noms-là
+  changent bien plus vite que le dépôt.
 - **Avant de commiter sur `data-analyzer`** : relire le diff *et le message* pour
   vérifier qu'aucun nom de fournisseur ni donnée n'y figure (cf.
   `apps/data-analyzer/AGENTS.md`).
