@@ -1,6 +1,6 @@
 // Aperçu de bout en bout : une situation du simulateur → un CERFA rempli.
 //
-//   npm run apercu-cerfa -- [seed-id] [sortie.pdf]
+//   pnpm apercu-cerfa [seed-id] [sortie.pdf]
 //
 // Le PDF produit montre ce que le simulateur sait déduire (cases ❶ et ❷, trajet,
 // urgence) et, par contraste, tout ce qui reste vierge — patient, adresses,

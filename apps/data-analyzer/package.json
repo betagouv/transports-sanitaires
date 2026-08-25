@@ -16,8 +16,8 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "typecheck": "tsc -b",
-    "verifier": "npm run lint && npm run typecheck && npm run knip && npm test",
-    "knip": "knip"
+    "verifier": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test",
+    "knip": "knip --directory ../.. --workspace apps/data-analyzer"
   },
   "engines": {
     "node": "24.x"
@@ -26,10 +26,10 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.9",
-    "@types/node": "^24.13.3",
-    "knip": "^6.32.2",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

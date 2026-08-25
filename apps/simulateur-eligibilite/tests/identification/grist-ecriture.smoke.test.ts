@@ -7,7 +7,7 @@
 // horodaté reconnaissable) et doivent être purgées à la main côté admin.
 //
 //   GRIST_ECRITURE_TEST=1 GRIST_API_KEY=$(grep -E '^GRIST_API_KEY=' .env | cut -d= -f2-) \
-//     npm test -- grist-ecriture
+//     pnpm test grist-ecriture
 //
 // Vérifie l'idempotence : deux enrichissements identiques ne doivent créer qu'une
 // seule ligne (dédup sur Nom/Prénom normalisés).

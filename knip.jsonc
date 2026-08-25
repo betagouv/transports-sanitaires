@@ -1,0 +1,52 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // knip vit à la racine depuis le passage en workspace pnpm : les versions
+  // partagées sont écrites en `catalog:` dans les apps, et seul le
+  // `pnpm-workspace.yaml` de la racine sait à quoi elles renvoient. Lancé depuis
+  // une app, knip ne voit pas ce fichier et déclare quinze références
+  // irrésolues.
+  //
+  // Chaque app garde malgré tout knip dans **son** `verifier` : elle appelle
+  // `knip --directory ../.. --workspace apps/<elle>`, qui analyse depuis la
+  // racine mais ne rapporte qu'elle. Le `verifier` d'une app reste la porte
+  // complète de cette app.
+  "workspaces": {
+    // La racine ne porte que des scripts d'aiguillage, aucune source.
+    ".": {
+      "entry": [],
+      "project": []
+    },
+
+    // Les points d'entrée réels du projet. Tout ce qui n'est atteignable depuis
+    // aucun d'eux ne sert à personne : c'est le pendant mécanique de « n'exporte
+    // que ce qu'un autre fichier importe ».
+    //
+    // `index.html`, `server/server.ts` et `vite.config.ts` sont déduits par knip
+    // (page servie, `main` du package, config du bundler) : les répéter serait du
+    // bruit. Restent les entrées qu'il ne peut pas deviner.
+    "apps/simulateur-eligibilite": {
+      "entry": ["scripts/*.ts", "tests/**/*.test.{ts,tsx}"],
+      "project": [
+        "front/**/*.{ts,tsx}",
+        "server/**/*.ts",
+        "shared/**/*.ts",
+        "scripts/*.ts"
+      ]
+    },
+
+    // Chaque étape du pipeline est lançable seule (`pnpm extract`, `staging`,
+    // …) : ce sont autant de points d'entrée. knip les déduit des scripts du
+    // package, restent les tests.
+    "apps/data-analyzer": {
+      "entry": ["tests/**/*.test.ts"],
+      "project": ["src/**/*.ts"]
+    },
+
+    // La popup est le seul point d'entrée du navigateur ; knip le déduit
+    // d'`index.html`. Restent les tests.
+    "apps/glossaire-notion": {
+      "entry": ["tests/**/*.test.{ts,tsx}"],
+      "project": ["src/**/*.{ts,tsx}"]
+    }
+  }
+}

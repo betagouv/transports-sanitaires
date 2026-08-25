@@ -44,8 +44,8 @@ Une règle qu'aucune seed ne traverse n'est pas testée. Voir le skill
 
 ```
 cd apps/simulateur-eligibilite
-npm run valider-regles   # syntaxe YAML, puis compilation publicodes
-npm run verifier         # tout le reste
+pnpm valider-regles   # syntaxe YAML, puis compilation publicodes
+pnpm verifier         # tout le reste
 ```
 
 `valider-regles` rapporte la ligne et la colonne d'une erreur YAML, et les

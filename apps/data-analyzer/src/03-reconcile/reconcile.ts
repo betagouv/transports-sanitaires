@@ -165,7 +165,7 @@ export class Reconcile {
         map.set(r.finess_juridique, r.ght_code);
     else
       console.log(
-        "reconcile ght                : différé (build/extract/ght.csv absent — lancer `npm run extract`)",
+        "reconcile ght                : différé (build/extract/ght.csv absent — lancer `pnpm extract`)",
       );
     const manuel = join(Paths.REF, "finess-ght-manuel.csv");
     if (existsSync(manuel))

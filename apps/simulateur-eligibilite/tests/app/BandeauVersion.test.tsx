@@ -34,7 +34,7 @@ describe("bandeau de version", () => {
   });
 
   it("affiche la version telle que `package.json` la déclare", () => {
-    // Même garde, pour la version de l'app : un `npm version` qui n'irait pas
+    // Même garde, pour la version de l'app : un `pnpm version` qui n'irait pas
     // jusqu'à l'écran laisserait le support raisonner sur la précédente.
     render(<BandeauVersion />);
     expect(screen.getByRole("link")).toHaveTextContent(versionDeLApp);

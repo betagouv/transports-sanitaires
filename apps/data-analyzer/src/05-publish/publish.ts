@@ -8,8 +8,8 @@
 //   GRIST_DOC_URL — base API du doc cible, ex. https://…/api/docs/<docId>
 //   GRIST_API_KEY — clé API Grist
 //
-//   npm run publish-grist              # tous les marts publiables
-//   npm run publish-grist -- ght_2024  # un seul (par son nom court)
+//   pnpm publish-grist            # tous les marts publiables
+//   pnpm publish-grist ght_2024   # un seul (par son nom court)
 
 import { join } from "node:path";
 import { Csv } from "../csv.ts";

@@ -5,10 +5,10 @@ description: Livrer une version d'une app — numéro, entrée de CHANGELOG, mon
 
 # Livrer une version
 
-**Une livraison ne concerne qu'une app.** Le monorepo n'a pas d'outillage de
-workspace ni de tag global : chaque app porte sa version dans son `package.json`
-et suit son propre cycle. Une livraison ne touche donc que les fichiers de
-`apps/<app>/`.
+**Une livraison ne concerne qu'une app.** Le workspace pnpm mutualise
+l'installation des dépendances, pas les versions : il n'y a pas de tag global,
+chaque app porte la sienne dans son `package.json` et suit son propre cycle. Une
+livraison ne touche donc que les fichiers de `apps/<app>/`.
 
 Un seul précédent à ce jour, `simulateur-eligibilite@0.1.0`. Les exemples
 ci-dessous en viennent.
@@ -17,7 +17,7 @@ ci-dessous en viennent.
 
 | Quoi | Où |
 |---|---|
-| Le numéro | `apps/<app>/package.json` (et son `package-lock.json`) |
+| Le numéro | `apps/<app>/package.json` |
 | Ce qu'elle apporte | `apps/<app>/CHANGELOG.md`, la plus récente en haut |
 | Le commit | `chore(<app>): livre la version X.Y.Z` |
 | Le tag | annoté, `<app>@X.Y.Z` |
@@ -96,12 +96,17 @@ trancher seul.
 
 ```
 cd apps/<app>
-npm version X.Y.Z --no-git-tag-version   # met à jour package.json et le lock
-npm run verifier
+pnpm version X.Y.Z --no-git-tag-version   # met à jour le package.json de l'app
+pnpm verifier
 ```
 
 `--no-git-tag-version` est indispensable : le commit et le tag s'écrivent à la
 main, avec un message.
+
+Le `pnpm-lock.yaml` de la racine n'est **pas** touché : il enregistre les
+dépendances de chaque app, jamais leur numéro de version. Un lock qui bouge à
+cette étape est le signe qu'autre chose a changé — regarde quoi avant de
+commiter.
 
 Pour le simulateur, `tests/app/BandeauVersion.test.tsx` compare ce que le pied de
 page affiche à ce que `package.json` et `regles/VERSION` déclarent. Une montée

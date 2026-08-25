@@ -4,20 +4,30 @@ node = "24.16.0"
 # `livrer-une-version`). Épinglée comme Node : le toolchain ne dépend pas de ce
 # que la machine a d'installé.
 gh = "2.98.0"
+# pnpm, le gestionnaire de paquets du dépôt. Épinglé comme Node et `gh` : le
+# toolchain ne dépend pas de ce que la machine a d'installé. La même version est
+# redite dans `packageManager` à la racine, que Corepack et la CI lisent.
+pnpm = "11.23.0"
+
+[tasks.install]
+description = "Installe les dépendances des trois apps (une seule fois, à la racine)"
+dir = "{{config_root}}"
+run = "pnpm install"
 
 [tasks.clean-install]
-description = "Installe proprement (npm ci) les dépendances du simulateur"
-run = "npm --prefix {{config_root}}/apps/simulateur-eligibilite ci"
+description = "Réinstalle à l'identique du lock, sans jamais le modifier"
+dir = "{{config_root}}"
+run = "pnpm install --frozen-lockfile"
 
 [tasks.dev-simulateur-front]
 description = "Front de dev du simulateur (http://localhost:5173, proxy /api → :3000)"
 dir = "{{config_root}}/apps/simulateur-eligibilite"
-run = "npm run dev:front"
+run = "pnpm dev:front"
 
 [tasks.dev-simulateur-server]
 description = "Backend de dev du simulateur (http://localhost:3000, API référentiel + contexte)"
 dir = "{{config_root}}/apps/simulateur-eligibilite"
-run = "npm run dev:server"
+run = "pnpm dev:server"
 
 [tasks.dev-simulateur]
 description = "Simulateur : front + backend en parallèle"
@@ -29,10 +39,9 @@ depends = ["dev-simulateur"]
 
 [tasks.verifier]
 description = "La porte unique : lint, typecheck et tests des trois apps"
-run = """
-set -e
-for app in simulateur-eligibilite data-analyzer glossaire-notion; do
-  echo "── $app"
-  (cd {{config_root}}/apps/$app && npm run verifier)
-done
-"""
+dir = "{{config_root}}"
+# Le `verifier` de la racine enchaîne celui des trois apps, une app à la fois
+# pour que la sortie reste lisible. La boucle shell qui vivait ici faisait le
+# même travail en dupliquant la liste des apps ; `pnpm --recursive` la lit du
+# `pnpm-workspace.yaml`.
+run = "pnpm verifier"

@@ -124,7 +124,7 @@ describe("les extensions d'import suivent le runtime", () => {
     expect(
       sans,
       "Ce fichier est atteignable depuis Node (`server/`, `shared/`, " +
-        "`scripts/`, ou la chaîne que `npm run apercu-cerfa` tire dans " +
+        "`scripts/`, ou la chaîne que `pnpm apercu-cerfa` tire dans " +
         "`front/`). Node ne résout pas les extensions : écris `.ts` / `.tsx`, " +
         "sinon l'import casse à l'exécution — sans que Vite ni `tsc` le voient.",
     ).toEqual([]);

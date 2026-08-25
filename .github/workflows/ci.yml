@@ -5,71 +5,76 @@ on:
     branches: [main]
   pull_request:
 
-# Chaque app est indépendante : son `working-directory`, son lock, son cache.
-# Et chaque job appelle **`npm run verifier`**, la même commande que localement —
-# c'est ce qui garantit qu'un `verifier` vert ici l'est aussi là-bas. Toute porte
-# ajoutée se met dans le script, jamais dans ce fichier.
+# Le dépôt est un **workspace pnpm** : une seule installation à la racine, un
+# seul `pnpm-lock.yaml`, un magasin mutualisé. Chaque app garde en revanche son
+# job et son **`pnpm verifier`**, la même commande que localement — c'est ce qui
+# garantit qu'un `verifier` vert ici l'est aussi là-bas. Toute porte ajoutée se
+# met dans le script, jamais dans ce fichier.
+#
+# `--filter <app>` cible une app. `pnpm install` reste global : le lock l'est, et
+# le cache pnpm rend la répétition entre jobs peu coûteuse.
 jobs:
   simulateur-eligibilite:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/simulateur-eligibilite
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        # La version de pnpm vient de `packageManager` à la racine, pas d'ici.
       - uses: actions/setup-node@v4
         with:
-          # La version supportée est déclarée par l'app (`engines.node`), pas ici.
-          node-version-file: apps/simulateur-eligibilite/package.json
-          cache: npm
-          cache-dependency-path: apps/simulateur-eligibilite/package-lock.json
-      - run: npm ci
-      # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
-      # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
-      - run: npm audit --omit=dev --audit-level=high
-      # La chaîne de build : signalé, non bloquant — une alerte sur un paquet
-      # transitif de Vite ne doit pas coincer une correction sans rapport.
-      - run: npm audit --audit-level=high
-        continue-on-error: true
-      # lint → typecheck → validation des règles → tests → build (+ vérification
-      # de bundle en `postbuild`).
-      - run: npm run verifier
+          # La version supportée est déclarée par la racine (`engines.node`), pas ici.
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # lint → typecheck → knip → validation des règles → tests → build
+      # (+ vérification de bundle en `postbuild`).
+      - run: pnpm --filter simulateur-eligibilite verifier
 
   data-analyzer:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/data-analyzer
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: apps/data-analyzer/package.json
-          cache: npm
-          cache-dependency-path: apps/data-analyzer/package-lock.json
-      - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm audit --audit-level=high
-        continue-on-error: true
-      - run: npm run verifier
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter data-analyzer verifier
 
   glossaire-notion:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/glossaire-notion
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: apps/glossaire-notion/package.json
-          cache: npm
-          cache-dependency-path: apps/glossaire-notion/package-lock.json
-      - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm audit --audit-level=high
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter glossaire-notion verifier
+
+  # L'audit ne se scope pas : `pnpm audit` lit le lock, et le lock est unique au
+  # dépôt depuis le passage en workspace. Le répéter dans les trois jobs
+  # auditerait trois fois la même chose en laissant croire le contraire — il a
+  # donc son job.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
+      # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
+      - run: pnpm audit --prod --audit-level high
+      # La chaîne de build : signalé, non bloquant — une alerte sur un paquet
+      # transitif de Vite ne doit pas coincer une correction sans rapport.
+      - run: pnpm audit --audit-level high
         continue-on-error: true
-      - run: npm run verifier
 
   # Scan de secrets sur **tout** l'historique, pas seulement le diff : un secret
   # commité puis retiré reste lisible dans les objets git. Le dépôt étant public,

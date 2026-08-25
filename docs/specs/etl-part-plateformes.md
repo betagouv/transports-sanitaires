@@ -55,7 +55,7 @@ Il est traité comme une source déclarée du pipeline, sous le rôle `referenti
 format `ght-fhir-datagouv`. Le dataset expose un bundle FHIR JSON par GHT, avec les
 identifiants finess `ej` et `eg`. Ces bundles sont versionnés dans `ref/ght/` : 135
 bundles, environ 24 Mo, en ODbL. L'ETL est donc autonome et n'a aucune étape réseau,
-`npm run fetch-ght` ne servant qu'à les rafraîchir. `extract` les transforme en
+`pnpm fetch-ght` ne servant qu'à les rafraîchir. `extract` les transforme en
 `build/extract/ght.csv`, au grain finess juridique vers GHT, régénérable. Une réserve : un
 GHT ne regroupe que les hôpitaux publics, donc seule une minorité des finess des sources,
 environ 9 %, s'y rattache. Voir les points ouverts.
@@ -232,7 +232,7 @@ README.
 
 ## Vérification
 
-1. `npm --prefix apps/data-analyzer run etl`, sans aucune étape réseau puisque les
+1. `pnpm --filter data-analyzer etl`, sans aucune étape réseau puisque les
    référentiels sont dans `ref/` : les 4 étapes s'enchaînent sans erreur et régénèrent
    `build/`, dont les 5 marts.
 2. Contrôles de cohérence : les totaux par source sont conservés entre extract et staging ;
@@ -242,4 +242,4 @@ README.
    incluses dans le national au grain GHT. Dans les autres `mart_*`, les années non
    couvertes donnent une `part` à NULL.
 4. Chaque étape est rejouable seule, à partir des artefacts de la précédente.
-5. Tests : `npm test`, qui couvre les adaptateurs, le calcul des marts et les CSV.
+5. Tests : `pnpm test`, qui couvre les adaptateurs, le calcul des marts et les CSV.

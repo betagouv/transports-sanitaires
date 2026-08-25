@@ -10,11 +10,14 @@
 // le second argument d'`expect`, pas un commentaire — un commentaire ne s'affiche
 // pas quand le test rougit.
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   fonctionsDe,
   franchissements,
   lignesDe,
+  racine,
   sources,
   texteDe,
 } from "./inspection-des-sources";
@@ -157,5 +160,24 @@ describe("taille du code", () => {
         "exception : le catalogue de seeds, qui est une liste de données et " +
         "vaut d'être lu d'un seul tenant.",
     ).toEqual([]);
+  });
+});
+
+describe("chaîne d'outillage", () => {
+  it("pnpm lance les scripts pre et post", () => {
+    const workspace = readFileSync(
+      join(racine, "..", "..", "pnpm-workspace.yaml"),
+      "utf-8",
+    );
+    expect(
+      /^enablePrePostScripts:\s*true\s*$/m.test(workspace),
+      "npm lance `prebuild` et `postbuild` autour de `build` ; pnpm ne le " +
+        "fait que si `enablePrePostScripts` est vrai dans le " +
+        "`pnpm-workspace.yaml` de la racine. Sans lui, `prebuild` " +
+        "(régénération des icônes DSFR) et `postbuild` " +
+        "(`scripts/verifier-bundle.ts`) disparaissent **sans rien dire** : le " +
+        "`verifier` reste vert en ayant sauté une porte, et le bundle part en " +
+        "production sans avoir été vérifié.",
+    ).toBe(true);
   });
 });

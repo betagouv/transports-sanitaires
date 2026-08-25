@@ -4,9 +4,10 @@
   // dérogations. Le format et les règles, eux, ne se discutent pas d'une app à
   // l'autre — les faire diverger rouvrirait la discussion que Biome a close.
   //
-  // Ce n'est pas de l'outillage de workspace : les apps restent indépendantes
-  // (leur propre `package.json`, leur propre `node_modules`). C'est un fichier
-  // de configuration partagé, rien de plus.
+  // Biome n'est pas installé une fois pour toutes à la racine : chaque app le
+  // tient dans ses propres dépendances, en `catalog:` — donc à la même version
+  // que les deux autres, sans que personne ait à y penser. Ce fichier ne
+  // partage que la configuration.
   "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
   "formatter": {
     "enabled": true,

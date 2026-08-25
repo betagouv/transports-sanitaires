@@ -68,7 +68,7 @@ function chunkEntree(): { nom: string; contenu: string } {
   const nom = readdirSync(dist()).find((f) => /^index-.*\.js$/.test(f));
   if (!nom) {
     throw new Error(
-      `Aucun chunk d'entrée dans ${dist()} — lancer \`npm run build\` d'abord.`,
+      `Aucun chunk d'entrée dans ${dist()} — lancer \`pnpm build\` d'abord.`,
     );
   }
   return { nom, contenu: readFileSync(join(dist(), nom), "utf-8") };

@@ -17,10 +17,29 @@ Ne jamais flatter. Ne jamais dire que c'est fait sans l'avoir vérifié.
 
 ## Le dépôt
 
-Monorepo léger, **sans outillage de workspace** : ni workspaces npm/pnpm, ni
-turbo. Chaque app sous `apps/` est **indépendante** — son `package.json`, son
-`package-lock.json`, son job CI, son `npm run verifier`. Le toolchain vient de
-`mise` : Node 24, et `gh` pour publier la release d'une livraison.
+Monorepo en **workspace pnpm**. Le `pnpm-workspace.yaml` de la racine déclare
+`apps/*` : une seule installation, un seul `pnpm-lock.yaml`, un magasin de
+paquets mutualisé. Le toolchain vient de `mise` : Node 24, pnpm, et `gh` pour
+publier la release d'une livraison. `pnpm install` à la racine suffit à monter
+les trois apps.
+
+Les apps restent **indépendantes de code** : aucune n'importe une autre, chacune
+a son `package.json`, son job CI et son `pnpm verifier`. Ce que le workspace
+mutualise, c'est l'installation, pas les frontières.
+
+Deux conséquences qui ne sont pas cosmétiques :
+
+- **Une version d'outil partagé s'écrit dans le `catalog:` du
+  `pnpm-workspace.yaml`, jamais dans une app.** Les apps y renvoient par
+  `"typescript": "catalog:"`. C'est ce qui rend impossible le cas où deux apps
+  tournent sur deux Biome, avec un `verifier` vert dans l'une et rouge dans
+  l'autre. Une dépendance propre à une app (`express`, `publicodes`, `xlsx`)
+  reste chez elle.
+- **pnpm ne résout pas les dépendances fantômes.** Un paquet utilisé sans être
+  déclaré marchait sous npm par hoisting ; ici il casse. C'est la bonne nouvelle
+  du changement, pas un accident : `glossaire-notion` compilait avec
+  `types: ["node"]` sans avoir jamais listé `@types/node`. La correction est
+  toujours de déclarer la dépendance.
 
 **Avant de toucher à `apps/X`, lis `apps/X/AGENTS.md`.** Ce fichier-ci ne décrit
 aucune app.
@@ -33,11 +52,17 @@ aucune app.
 
 ## Vérifier
 
-`npm run verifier`, dans l'app. **C'est la commande à passer avant de dire que
+`pnpm verifier`, dans l'app. **C'est la commande à passer avant de dire que
 c'est fait.** C'est aussi, mot pour mot, ce que lance la CI : un `verifier` vert
 ici l'est là-bas. Une porte à ajouter se met dans ce script, jamais dans le YAML.
 
-`mise run verifier` à la racine le passe sur les trois apps.
+`pnpm verifier` à la racine — ou `mise run verifier`, qui l'appelle — le passe
+sur les trois apps, une à la fois.
+
+Une exception au « tout est dans le `verifier` de l'app » : **l'audit des
+dépendances**. `pnpm audit` lit le lock, et le lock est unique au dépôt. Il a
+donc son job de CI à la racine plutôt que d'être répété trois fois en laissant
+croire qu'il est scopé.
 
 ## Français
 
@@ -115,7 +140,7 @@ franciser coûterait plus que ça ne clarifierait.
   appelé `deverrouillage.ts` a livré deux `export const` que personne ne lisait,
   posés au-dessus de la seule fonction qui comptait.
 
-  *Gardé par* `npm run knip`, dans `verifier`. Un export qui est de la
+  *Gardé par* `pnpm knip`, dans `verifier`. Un export qui est de la
   documentation et non du code appelé le déclare par un `@public` motivé.
 
 - **Le style ne se discute pas.** Biome tient le format, l'ordre des imports et

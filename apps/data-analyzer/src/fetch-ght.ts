@@ -4,7 +4,7 @@
 // dataset expose un bundle FHIR JSON par GHT, en plusieurs versions ; on ne garde que la
 // plus récente de chaque titre. L'adaptateur `ght-fhir-datagouv` lit ensuite ce dossier.
 //
-// Les bundles sont **versionnés** (ref/ght/) : `npm run etl` fonctionne hors-ligne sans
+// Les bundles sont **versionnés** (ref/ght/) : `pnpm etl` fonctionne hors-ligne sans
 // aucune étape préalable. Ce script ne sert qu'à **rafraîchir** le référentiel commité.
 
 import { mkdirSync, writeFileSync } from "node:fs";

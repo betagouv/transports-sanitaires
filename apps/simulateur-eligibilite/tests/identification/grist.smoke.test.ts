@@ -3,7 +3,7 @@
 // Smoke test d'intégration contre le **vrai** Grist (sans mock, conformément aux
 // conventions). Désactivé si `GRIST_API_KEY` est absente de l'environnement — il
 // ne tourne donc pas en CI, mais en local avec la clé exportée :
-//   GRIST_API_KEY=$(grep -E '^GRIST_API_KEY=' .env | cut -d= -f2-) npm test
+//   GRIST_API_KEY=$(grep -E '^GRIST_API_KEY=' .env | cut -d= -f2-) pnpm test
 //
 // Assertions volontairement structurelles (le référentiel est maintenu à la main
 // et évolue) : on vérifie la forme et l'enchaînement établissement → service →

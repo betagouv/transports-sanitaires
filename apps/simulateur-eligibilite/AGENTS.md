@@ -50,15 +50,15 @@ et [`analytics.md`](../../docs/architecture/analytics.md), et le
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `npm run verifier` | **À passer avant de dire que c'est fait.** lint → typecheck → knip → validation des règles → tests → build (+ vérification de bundle). Exactement ce que lance la CI. |
-| `npm run dev:front` | Serveur Vite, <http://localhost:5173> (proxy `/api` → `:3000`) |
-| `npm run dev:server` | Backend Express, <http://localhost:3000> |
-| `npm start` | Serveur de production (`node server/server.ts`) |
-| `npm run valider-regles` | Syntaxe YAML puis compilation publicodes |
-| `npm run apercu-cerfa` | Engendre un CERFA de contrôle. C'est aussi ce qui casse quand une extension d'import manque. |
-| `npm run lint:fix` | Applique tous les correctifs sûrs de Biome |
+| `pnpm verifier` | **À passer avant de dire que c'est fait.** lint → typecheck → knip → validation des règles → tests → build (+ vérification de bundle). Exactement ce que lance la CI. |
+| `pnpm dev:front` | Serveur Vite, <http://localhost:5173> (proxy `/api` → `:3000`) |
+| `pnpm dev:server` | Backend Express, <http://localhost:3000> |
+| `pnpm start` | Serveur de production (`node server/server.ts`) |
+| `pnpm valider-regles` | Syntaxe YAML puis compilation publicodes |
+| `pnpm apercu-cerfa` | Engendre un CERFA de contrôle. C'est aussi ce qui casse quand une extension d'import manque. |
+| `pnpm lint:fix` | Applique tous les correctifs sûrs de Biome |
 
-`npm run build` enchaîne `tsc -b` (les quatre projets : front, node, serveur,
+`pnpm build` enchaîne `tsc -b` (les quatre projets : front, node, serveur,
 tests), Vite, puis `verifier-bundle` : `pdf-lib` et le catalogue de seeds doivent
 rester hors du chunk d'entrée. Si tu remplaces un `import()` par un import
 statique, c'est ce qui te le dit.
@@ -132,7 +132,7 @@ injecté. Réutilise les helpers de `tests/` (`porte.ts`, `simulateur/moteur.ts`
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées
 *avec leurs cibles attendues*, écrites en publicodes nu pour rester lisibles par
 Node. Il est rejoué par la matrice de non-régression métier, parcourable dans la
-galerie de seeds, et utilisé par `npm run apercu-cerfa`.
+galerie de seeds, et utilisé par `pnpm apercu-cerfa`.
 
 ## Les outils produit
 

@@ -1,0 +1,42 @@
+# Les trois apps du dépôt. Une seule installation à la racine, un seul
+# `pnpm-lock.yaml`, un magasin de paquets mutualisé.
+packages:
+  - "apps/*"
+
+# npm lance `prebuild` / `postbuild` autour de `build` ; pnpm ne le fait pas sans
+# qu'on le lui demande. Ce n'est pas un détail de confort : `postbuild` du
+# simulateur lance `verifier-bundle.ts`, une porte du `verifier`, et `prebuild`
+# régénère les icônes DSFR avant que Vite ne construise. Sans ce réglage les deux
+# disparaissent **sans rien dire**, et le `verifier` reste vert en ayant sauté une
+# vérification.
+#
+# *Gardé par* `apps/simulateur-eligibilite/tests/architecture.test.ts`.
+enablePrePostScripts: true
+
+# Le catalogue : la version d'un outil partagé est écrite **ici et nulle part
+# ailleurs**, les apps l'appellent par `catalog:`. C'est ce qui rend impossible
+# le cas qui nous menaçait — deux apps sur deux Biome, ou deux TypeScript, avec
+# un `verifier` qui passe dans l'une et pas dans l'autre. Monter une version se
+# fait sur une ligne, pour les trois apps à la fois.
+#
+# Une dépendance propre à une app (`express`, `publicodes`, `notion-client`,
+# `xlsx`) n'a rien à faire ici : elle reste dans son `package.json`.
+catalog:
+  # Le socle commun aux trois apps.
+  "@biomejs/biome": 2.5.9
+  knip: ^6.32.2
+  typescript: ^6.0.3
+  vitest: ^4.1.9
+  "@types/node": ^24.13.3
+
+  # Le front : simulateur et glossaire.
+  react: ^19.2.7
+  react-dom: ^19.2.7
+  "@types/react": ^19.2.17
+  "@types/react-dom": ^19.2.3
+  "@vitejs/plugin-react": ^6.0.2
+  vite: ^8.0.16
+  happy-dom: ^20.10.4
+  "@testing-library/jest-dom": ^6.9.1
+  "@testing-library/react": ^16.3.2
+  "@testing-library/user-event": ^14.6.1

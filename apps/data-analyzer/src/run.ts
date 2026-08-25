@@ -1,5 +1,5 @@
 // Point d'entrée de l'ETL : enchaîne les 4 étapes. Chaque étape reste lançable seule
-// (npm run <étape>).
+// (pnpm <étape>).
 
 import { FORMATS } from "./01-extract/adapteurs/registry.ts";
 import { Extract } from "./01-extract/extract.ts";

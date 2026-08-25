@@ -15,7 +15,7 @@ C'est la source unique, et la même définition sert trois publics :
   aux attendus, ce qui fait de la seed un cas de non-régression ;
 - la galerie de seeds (`GalerieSeeds.tsx`) l'affiche et ouvre l'écran correspondant,
   ce qui la rend consultable ;
-- `npm run apercu-cerfa` en tire un CERFA de contrôle.
+- `pnpm apercu-cerfa` en tire un CERFA de contrôle.
 
 Écrire le même cas dans un `it()` le prive des deux derniers usages, et le rend
 invisible à qui parcourt le catalogue pour savoir ce qui est couvert.
@@ -77,8 +77,8 @@ comment le moteur y arrive.
 
 ```
 cd apps/simulateur-eligibilite
-npm test -- scenarios       # la matrice de non-régression
-npm run verifier            # tout
+pnpm test scenarios       # la matrice de non-régression
+pnpm verifier            # tout
 ```
 
 Deux échecs sont typiques :

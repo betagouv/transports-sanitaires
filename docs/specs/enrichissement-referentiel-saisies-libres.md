@@ -161,9 +161,9 @@ saisie complète.
 
 ## Vérification
 
-1. `npm --prefix apps/simulateur-eligibilite test` doit être vert, y compris les nouveaux
+1. `pnpm --filter simulateur-eligibilite test` doit être vert, y compris les nouveaux
    cas de route et le double en mémoire.
-2. `npm --prefix apps/simulateur-eligibilite run build` doit passer, `tsc -b` puis
+2. `pnpm --filter simulateur-eligibilite build` doit passer, `tsc -b` puis
    `vite build`.
 3. Contre le Grist réel, avec la clé dans `.env` : lancer `mise run dev-simulateur`, puis
    sur `http://localhost:5173` dérouler chaque branche libre — service Autre, hors liste,

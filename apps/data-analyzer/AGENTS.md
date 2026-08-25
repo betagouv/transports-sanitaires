@@ -47,14 +47,14 @@ sans build. Les dossiers portent leur ordre :
 | `src/04-marts/` | le même calcul à différents grains — un fichier par mart |
 | `src/05-publish/` | publication Grist (document cible **privé**) |
 
-`npm run etl` enchaîne tout ; chaque étape est aussi lançable seule
-(`npm run extract`, `staging`, `reconcile`, `marts`, `publish-grist`).
-`npm run fetch-ght` rafraîchit `ref/ght/`. Elle est hors chaîne parce que `ref/`
+`pnpm etl` enchaîne tout ; chaque étape est aussi lançable seule
+(`pnpm extract`, `staging`, `reconcile`, `marts`, `publish-grist`).
+`pnpm fetch-ght` rafraîchit `ref/ght/`. Elle est hors chaîne parce que `ref/`
 est versionné : l'ETL tourne donc sans réseau.
 
 ## Vérifier
 
-`npm run verifier` — lint (Biome), typecheck, knip, tests. Il n'y a pas de build.
+`pnpm verifier` — lint (Biome), typecheck, knip, tests. Il n'y a pas de build.
 
 ## Tests
 

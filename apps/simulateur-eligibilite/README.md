@@ -55,23 +55,23 @@ formulaires en sortent, selon le cas final : la prescription médicale de transp
 
 ## Commandes
 
-- `npm run verifier` — **la vérification complète** : lint, typecheck, knip, validation
+- `pnpm verifier` — **la vérification complète** : lint, typecheck, knip, validation
   des règles, tests, build et sa vérification de bundle. C'est la commande que lance la
   CI, telle quelle : ce qui passe ici passe là-bas.
-- `npm run dev:front` — front de dev, sur le port 5173, qui proxifie `/api` vers `:3000`
-- `npm run dev:server` — backend de dev, sur le port 3000, en `--watch`, qui charge
+- `pnpm dev:front` — front de dev, sur le port 5173, qui proxifie `/api` vers `:3000`
+- `pnpm dev:server` — backend de dev, sur le port 3000, en `--watch`, qui charge
   `.env` s'il est présent
-- `npm test` — vitest. Le smoke Grist est ignoré sans `GRIST_API_KEY`.
-- `npm run lint` — Biome : format, tri des imports et lint. `lint:fix` applique les
+- `pnpm test` — vitest. Le smoke Grist est ignoré sans `GRIST_API_KEY`.
+- `pnpm lint` — Biome : format, tri des imports et lint. `lint:fix` applique les
   corrections sûres. Le socle est commun aux trois apps, dans `biome.base.jsonc` à la
   racine.
-- `npm run knip` — les exports, fichiers et dépendances que plus personne n'atteint
-- `npm run typecheck` — `tsc -b` sur les quatre projets : front, node, serveur et tests
-- `npm run valider-regles` — compile `regles/*.publicodes` et signale les erreurs
-- `npm run build` — typecheck puis build Vite dans `dist/`, suivi de `verifier-bundle`.
+- `pnpm knip` — les exports, fichiers et dépendances que plus personne n'atteint
+- `pnpm typecheck` — `tsc -b` sur les quatre projets : front, node, serveur et tests
+- `pnpm valider-regles` — compile `regles/*.publicodes` et signale les erreurs
+- `pnpm build` — typecheck puis build Vite dans `dist/`, suivi de `verifier-bundle`.
   `pdf-lib` et le catalogue de seeds doivent rester hors du chunk d'entrée, sans quoi
   chaque prescripteur télécharge 1,2 Mo qu'il ne verra jamais.
-- `npm start` — serveur de production (`node server/server.ts`, Node 24)
+- `pnpm start` — serveur de production (`node server/server.ts`, Node 24)
 
 Les règles d'écriture et les invariants ne sont pas de la prose, ils sont exécutables.
 On les trouve dans `tests/architecture.test.ts`, pour les frontières et les limites de 30
@@ -170,6 +170,29 @@ questionnaire là-dessus. C'est la première seed d'une nature nouvelle,
 `atterrissage: "questionnaire"` : elle ne décide aucune cible, donc ce n'est pas un cas de
 non-régression mais un raccourci vers un écran. `scenarios.test.ts` la range à part et
 vérifie qu'elle s'arrête bel et bien en chemin.
+
+## Déployer
+
+Scalingo construit et sert cette app, **depuis la racine du dépôt** et non depuis
+`apps/simulateur-eligibilite/`. C'est ce qu'impose le workspace pnpm : le
+`pnpm-lock.yaml` et le `pnpm-workspace.yaml` vivent à la racine, et une
+construction lancée dans le sous-dossier n'y aurait accès à aucun des deux — elle
+installerait des versions non verrouillées.
+
+Trois fichiers de la racine portent ce déploiement :
+
+| Fichier | Ce qu'il donne à Scalingo |
+| --- | --- |
+| `package.json` | `packageManager` (la version de pnpm), `engines.node`, et deux scripts d'aiguillage : `build` et `start`, qui délèguent tous deux à cette app par `--filter` |
+| `Procfile` | `web: pnpm --filter simulateur-eligibilite run start` |
+| `pnpm-lock.yaml` | les versions exactes des trois apps |
+
+Le build installe donc aussi les dépendances de `data-analyzer` et de
+`glossaire-notion`. C'est le prix du lock unique, et il se compte en secondes.
+
+**Réglage à tenir côté Scalingo** : `PROJECT_DIR` doit être *vide*. Tant qu'il
+vaut `apps/simulateur-eligibilite`, le buildpack ne voit ni le lock ni le
+workspace.
 
 ## Savoir ce qui tourne
 

@@ -1,0 +1,13 @@
+{
+  "name": "transports-sanitaires",
+  "private": true,
+  "packageManager": "pnpm@11.23.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "verifier": "pnpm --recursive --workspace-concurrency=1 run verifier",
+    "build": "pnpm --filter simulateur-eligibilite run build",
+    "start": "pnpm --filter simulateur-eligibilite run start"
+  }
+}

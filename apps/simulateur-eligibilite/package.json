@@ -18,10 +18,10 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "typecheck": "tsc -b",
-    "verifier": "npm run lint && npm run typecheck && npm run knip && npm run valider-regles && npm test && npm run build",
+    "verifier": "pnpm lint && pnpm typecheck && pnpm knip && pnpm valider-regles && pnpm test && pnpm build",
     "postbuild": "node scripts/verifier-bundle.ts",
     "verifier-bundle": "node scripts/verifier-bundle.ts",
-    "knip": "knip"
+    "knip": "knip --directory ../.. --workspace apps/simulateur-eligibilite"
   },
   "engines": {
     "node": "24.x"
@@ -33,25 +33,25 @@
     "js-yaml": "4.3.1",
     "pdf-lib": "^1.17.1",
     "publicodes": "^1.10.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.9",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
+    "@biomejs/biome": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@types/express": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "happy-dom": "^20.10.4",
-    "knip": "^6.32.2",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.16",
-    "vitest": "^4.1.9"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "happy-dom": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -166,18 +166,18 @@ qu'une ligne de plus dans `ref/finess-ght-manuel.csv`.
 ## Lancer
 
 ```bash
-npm install
+pnpm install           # installe les trois apps du dépôt, où qu'on le lance
 cp mapping.example.json mapping.json   # puis renseigner vos fichiers (voir ci-dessous)
-npm run etl        # enchaîne les 4 étapes ; régénère build/
+pnpm etl               # enchaîne les 4 étapes ; régénère build/
 # ou étape par étape :
-npm run extract && npm run staging && npm run reconcile && npm run marts
-npm test           # tests unitaires (vitest)
-npm run publish-grist  # optionnel : publie les marts dans Grist (voir Publication)
+pnpm extract && pnpm staging && pnpm reconcile && pnpm marts
+pnpm test              # tests unitaires (vitest)
+pnpm publish-grist     # optionnel : publie les marts dans Grist (voir Publication)
 ```
 
 Node 24 exécute le TypeScript nativement, il n'y a aucun build. SheetJS lit les `.xlsx`. Il
 n'y a aucune étape réseau : tous les référentiels publics sont versionnés dans `ref/`.
-`npm run fetch-ght` ne sert qu'à rafraîchir le référentiel GHT commité dans `ref/ght/`, et
+`pnpm fetch-ght` ne sert qu'à rafraîchir le référentiel GHT commité dans `ref/ght/`, et
 n'est pas nécessaire au fonctionnement.
 
 ## Configuration des entrées — `mapping.json`
@@ -255,8 +255,8 @@ premier est de révéler le taux réel de recours aux plateformes par GHT, dans 
 `part` de `Mart_Ght` et la colonne `ratio` de `Mart_Ght_2024`.
 
 ```bash
-npm run publish-grist              # tous les marts publiables
-npm run publish-grist -- ght_2024  # un seul (par son nom court)
+pnpm publish-grist            # tous les marts publiables
+pnpm publish-grist ght_2024   # un seul (par son nom court)
 ```
 
 La configuration passe par l'environnement. Un `.env` est lu automatiquement s'il existe,
@@ -272,7 +272,7 @@ Chaque mart publiable déclare sa table et ses colonnes dans `MARTS`
 la publication garantit la table, en la créant avec ses colonnes si elle est absente et en
 complétant les colonnes manquantes, puis remplace tout son contenu, en le vidant et en
 réinsérant. La sémantique est celle d'un snapshot : idempotente, sans lignes périmées, et
-relançable après chaque `npm run marts`.
+relançable après chaque `pnpm marts`.
 
 | Mart | Table Grist |
 |---|---|
@@ -295,7 +295,7 @@ fournisseur.
 
 | Fichier | Rôle | Colonnes | Jointure `reconcile` | Contenu |
 |---|---|---|---|---|
-| `ght/*.json` | Référentiel **finess → GHT** open data (source `referentiel-ght`). | — (FHIR) | via l'adaptateur `ght-fhir-datagouv` → `build/extract/ght.csv` | 135 bundles FHIR data.gouv `etablissements-de-sante-par-ght` (ODbL), 1 par GHT, ~24 Mo. Rattache **888 finess juridiques à 135 GHT**. `npm run fetch-ght` les rafraîchit. |
+| `ght/*.json` | Référentiel **finess → GHT** open data (source `referentiel-ght`). | — (FHIR) | via l'adaptateur `ght-fhir-datagouv` → `build/extract/ght.csv` | 135 bundles FHIR data.gouv `etablissements-de-sante-par-ght` (ODbL), 1 par GHT, ~24 Mo. Rattache **888 finess juridiques à 135 GHT**. `pnpm fetch-ght` les rafraîchit. |
 | `plateforme-ght-mapping.csv` | Rattache les **libellés GHT libres** de la plateforme au niveau GHT (sans finess) à un GHT. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 23 entrées ; un fuzzy match pré-remplit, la table relue **fait foi**. |
 | `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | L'**AP-HP** (750712184 → `AP-HP`, GHT à part entière) ; et **4 établissements structurellement hors des 135 GHT** (CLCC, EFS, Martinique) rencontrés dans les sources plateforme, rattachés au **GHT de leur territoire** (cf. [point 7](#7-établissements-hors-ght-rattachés-par-territoire), qui documente aussi le CH de Cayenne, laissé **hors GHT**). |
 
