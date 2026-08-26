@@ -115,6 +115,9 @@ de contourner une règle : il dit ce qu'elle protège.
 
 ## Publicodes
 
+Le modèle est **livré de l'extérieur** et intégré par recopie. La marche à suivre
+d'une montée de version est dans le skill `integrer-une-version-du-modele`.
+
 **La syntaxe.**
 
 | Élément | Forme |
