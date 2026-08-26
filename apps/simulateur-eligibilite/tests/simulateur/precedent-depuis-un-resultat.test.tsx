@@ -21,7 +21,13 @@ import { PARTIE_1_AMBULANCE, terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-const SMUR = { ...BASE_NEUTRE, p1_m0_smur: "oui", p1_m0_aucun: "non" };
+const SMUR = {
+  ...BASE_NEUTRE,
+  // Depuis la v9.5.0, l'urgence vitale est la quatrième réponse de Q1 : elle
+  // tranche sans passer par M0, qu'elle rend inapplicable.
+  p1_autonomie:
+    "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'",
+};
 // Un cas qui, lui, traverse la Partie 2 : le transport est prescrit, donc le
 // questionnaire administratif a des questions à poser.
 const PMT_AMBULANCE = {
@@ -42,7 +48,7 @@ describe("retour depuis une page de résultat", () => {
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
     await terminerParcours(user, [
-      [/dans quel contexte/i, /entrée ou sortie d’hospitalisation/i],
+      [/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i],
     ]);
 
     await user.click(screen.getByRole("button", { name: /^précédent$/i }));
@@ -163,7 +169,7 @@ describe("retour depuis une page de résultat", () => {
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
     await terminerParcours(user, [
-      [/dans quel contexte/i, /entrée ou sortie d’hospitalisation/i],
+      [/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i],
     ]);
 
     await user.click(screen.getByRole("button", { name: /^précédent$/i }));

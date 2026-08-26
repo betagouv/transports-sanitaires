@@ -16,7 +16,7 @@ beforeEach(() => sessionStorage.clear());
 // (transport partagé) quand le mode retenu s'y prête. M0 précède M4 : elle seule
 // peut trancher le parcours dès la Partie 1.
 const AUTONOME = /peut se déplacer seul/i;
-const PROCHE = /proche accompagnant/i;
+const PROCHE = /accompagnement d’un proche/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
 const AIDES = /aides ou conditions particulières/i;
 const CAS_PARTICULIERS = /cas particuliers/i;
@@ -34,7 +34,10 @@ function afficher() {
   return userEvent.setup();
 }
 
-const questionQ1 = () => screen.getByRole("group", { name: /^le patient/i });
+const questionQ1 = () =>
+  screen.getByRole("group", {
+    name: /^concernant son déplacement, le patient/i,
+  });
 const voirResultat = () =>
   screen.getByRole("button", { name: /voir le résultat médical/i });
 
@@ -43,7 +46,9 @@ const voirResultat = () =>
 async function repondreQ1(user: ReturnType<typeof afficher>, option: RegExp) {
   await user.click(within(questionQ1()).getByRole("radio", { name: option }));
   await waitForElementToBeRemoved(() =>
-    screen.queryByRole("group", { name: /^le patient/i }),
+    screen.queryByRole("group", {
+      name: /^concernant son déplacement, le patient/i,
+    }),
   );
 }
 
@@ -85,7 +90,9 @@ describe("prescripteur — parcours médical", () => {
     // renverrait aussitôt d'où l'on vient. Le bouton « Suivant » reprend la main.
     expect(screen.getByRole("button", { name: /^suivant$/i })).toBeEnabled();
     expect(
-      screen.getByRole("group", { name: /^le patient/i }),
+      screen.getByRole("group", {
+        name: /^concernant son déplacement, le patient/i,
+      }),
     ).toBeInTheDocument();
 
     // Modifier la réponse relance l'avancement automatique.

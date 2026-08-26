@@ -1,8 +1,8 @@
-// Les trois familles engendrées de la matrice v9.4.1 : l'exploration exhaustive de
-// la Partie 1 (P1-EXHAUSTIVE), les sept types de convocation (CONVOCATION-001) et
-// les neuf exceptions restant à la charge de l'Assurance Maladie (EXCEPTION-001).
+// Les trois familles engendrées de la matrice v9.5.0 : l'exploration exhaustive de
+// la Partie 1 (P1-EXHAUSTIVE), les huit réponses d'A2.1 (CONVOCATION-001) et les
+// neuf exceptions restant à la charge de l'Assurance Maladie (EXCEPTION-001).
 // Le livrable les décrit par un générateur plutôt que par des cas nommés — d'où
-// leur séparation d'avec `regression-v9-4-1.test.ts`.
+// leur séparation d'avec `regression-v9-5-0.test.ts`.
 
 import { describe, expect, it } from "vitest";
 import {
@@ -11,11 +11,12 @@ import {
   HOSPITALISATION,
   PMT,
   PRO,
+  SMUR,
   TPMR,
   VSL,
-} from "./situations-v9-4-1";
+} from "./situations-v9-5-0";
 
-describe("modèle v9.4.1 — P1-EXHAUSTIVE", () => {
+describe("modèle v9.5.0 — P1-EXHAUSTIVE", () => {
   const CRITERES_AMBULANCE = [
     "p1_critere_position_allongee_demi_assise",
     "p1_critere_brancardage_portage",
@@ -65,26 +66,29 @@ describe("modèle v9.4.1 — P1-EXHAUSTIVE", () => {
     ).toBe(VSL);
   });
 
-  it.each([
-    ["p1_m0_smur", "SMUR"],
-    [
-      "p1_m0_permission_sans_motif_medical",
-      "permission sortie sans motif médical",
-    ],
-  ])("%s l'emporte sur les critères médicaux", (cas, attendu) => {
+  it("la permission de sortie sans motif médical l'emporte sur les critères médicaux", () => {
     const moteur = evalue({
       p1_autonomie: PRO,
       p1_critere_oxygene: "oui",
-      [cas]: "oui",
+      p1_m0_permission_sans_motif_medical: "oui",
       p1_m0_aucun: "non",
     });
-    expect(moteur.evaluate("p1_cas_final_direct").nodeValue).toBe(attendu);
+    expect(moteur.evaluate("p1_cas_final_direct").nodeValue).toBe(
+      "permission sortie sans motif médical",
+    );
+  });
+
+  // Le SMUR ne se dispute plus la priorité avec les critères : il est répondu en
+  // Q1, qui n'ouvre alors ni Q1.1 ni M0.
+  it("l'urgence vitale répondue en Q1 tranche à elle seule", () => {
+    const moteur = evalue({ p1_autonomie: SMUR });
+    expect(moteur.evaluate("p1_cas_final_direct").nodeValue).toBe("SMUR");
   });
 });
 
-describe("modèle v9.4.1 — générateurs du livrable", () => {
+describe("modèle v9.5.0 — générateurs du livrable", () => {
   const CONVOCATIONS = [
-    "Convocation du contrôle médical.",
+    "Convocation du contrôle médical de l’Assurance Maladie.",
     "Convocation d’un médecin-expert ou consultant désigné par une juridiction.",
     "Audience au cours de laquelle une consultation clinique a lieu.",
     "Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.",
@@ -106,7 +110,6 @@ describe("modèle v9.4.1 — générateurs du livrable", () => {
 
   it.each(CONVOCATIONS)("CONVOCATION-001 — %s vaut prescription", (type) => {
     const moteur = evalue({
-      p2_convocation_ou_avis: "oui",
       p2_convocation_ou_avis_type: `'${type}'`,
     });
     expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(

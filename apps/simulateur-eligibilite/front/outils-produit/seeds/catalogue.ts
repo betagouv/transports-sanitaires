@@ -33,13 +33,17 @@ export function seedParId(id: string): Seed {
 
 // ---- le catalogue ----
 
-// Les deux réponses de Q1 qui écartent la base neutre (patient autonome). C'est
+// Les trois réponses de Q1 qui écartent la base neutre (patient autonome). C'est
 // Q1 qui commande tout le reste de la Partie 1 : l'aide d'un professionnel ouvre
-// Q1.1, le proche accompagnant caractérise l'incapacité sans ouvrir Q1.1.
+// Q1.1, le proche accompagnant caractérise l'incapacité sans ouvrir Q1.1, et
+// l'urgence vitale tranche à elle seule — depuis la v9.5.0, le SMUR se qualifie ici
+// et non plus en M0.
 const AIDE_PROFESSIONNEL =
   "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
 const PROCHE_ACCOMPAGNANT =
-  "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
+  "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
+const URGENCE_VITALE_SMUR =
+  "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'";
 
 // Le contexte administratif (M1.1) est une mosaïque : cocher un contexte décoche
 // l'option exclusive de la base neutre.
@@ -132,10 +136,10 @@ export const SEEDS: readonly Seed[] = [
     id: "prescripteur-smur",
     libelle: "Prescripteur — intervention SMUR",
     description:
-      "Cas particulier médical SMUR : il tranche dès la Partie 1 et court-circuite " +
-      "la qualification administrative.",
+      "Urgence vitale qualifiée dès Q1 : elle tranche la Partie 1 et court-circuite " +
+      "la qualification administrative — ni Q1.1, ni M0, ni Partie 2.",
     outil: "prescripteur",
-    entrees: { p1_m0_smur: "oui", ...M0_AUCUN_DECOCHE },
+    entrees: { p1_autonomie: URGENCE_VITALE_SMUR },
     attendu: {
       cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
@@ -423,7 +427,8 @@ export const SEEDS: readonly Seed[] = [
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
       ...CONTEXTE_HOSPITALISATION,
-      p2_convocation_ou_avis: "oui",
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
     },
     attendu: {
       cible_resultat_medical: "décision établie",
@@ -517,7 +522,9 @@ export const SEEDS: readonly Seed[] = [
       "Le pendant de la seed précédente, et un arbitrage propre à la v9.1 : " +
       "l'aide d'un proche accompagnant caractérise l'incapacité — l'ALD est donc " +
       "validée et ouvre le droit — tout en laissant le véhicule personnel ou le " +
-      "transport en commun comme mode retenu.",
+      "transport en commun comme mode retenu. Depuis la v9.5.0, la même réponse " +
+      "vaut accompagnement par un tiers, motif de DAP : le document n'est plus " +
+      "une PMT.",
     outil: "prescripteur",
     entrees: {
       p1_autonomie: PROCHE_ACCOMPAGNANT,
@@ -529,10 +536,9 @@ export const SEEDS: readonly Seed[] = [
       cible_transport_sanitaire_prescrit:
         "véhicule personnel ou transport en commun",
       cible_partie_2_requise: "oui",
-      cible_cas_final: "prescription médicale de transport",
+      cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
     },
   },
   {
@@ -772,19 +778,18 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-accompagnement-tiers",
     libelle: "Secrétariat — accompagnement par un tiers",
     description:
-      "Dernier déclencheur d'accord préalable (A3.8) : il ferme le questionnaire A3, " +
-      "et c'est sa réponse — oui comme non — qui autorise la conclusion.",
+      "Déclencheur d'accord préalable que plus aucune question administrative ne " +
+      "porte : depuis la v9.5.0, l'accompagnement se déduit de la deuxième réponse " +
+      "de Q1, et le motif de DAP avec lui.",
     outil: "secretariat",
     entrees: {
-      p1_autonomie: AIDE_PROFESSIONNEL,
-      p1_critere_hygiene_desinfection: "oui",
+      p1_autonomie: PROCHE_ACCOMPAGNANT,
       ...CONTEXTE_HOSPITALISATION,
-      p2_accompagnement_tiers: "oui",
     },
     attendu: {
       cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
-        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+        "véhicule personnel ou transport en commun",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",

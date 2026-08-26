@@ -30,8 +30,7 @@ export const BASE_NEUTRE: SituationTypee = {
   p1_critere_isolement_asepsie: "non",
   p1_transport_partage_incompatible: "non",
 
-  // M0 : l'option exclusive porte la réponse, les cinq cas restent à « non ».
-  p1_m0_smur: "non",
+  // M0 : l'option exclusive porte la réponse, les quatre cas restent à « non ».
   p1_m0_bariatrique: "non",
   p1_m0_permission_sans_motif_medical: "non",
   p1_m0_ald: "non",
@@ -59,8 +58,7 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_detenu_inter_etablissements: "non",
   p2_detenu_uhsa_uhsi: "non",
 
-  p2_convocation_ou_avis: "non",
-  p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
+  p2_convocation_ou_avis_type: "'Aucun de ces cas.'",
   p2_prestation_prise_en_charge_assurance_maladie: "oui",
   p2_engagement_maternite_entree: "non",
 
@@ -72,7 +70,6 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_special_engagement_maternite: "non",
   p2_special_samsah: "non",
   p2_special_aucune: "oui",
-  p2_accompagnement_tiers: "non",
   p2_transport_urgence: "'Non'",
 
   p2_trajet_aller_retour: "'aller simple'",

@@ -22,7 +22,7 @@ import {
 
 beforeEach(() => sessionStorage.clear());
 
-const Q1 = /^le patient/i;
+const Q1 = /^concernant son déplacement, le patient/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
 const A4_1 = /Quel est le sens du déplacement concerné par cette évaluation \?/;
 

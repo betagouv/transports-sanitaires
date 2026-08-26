@@ -1,5 +1,5 @@
-// Portage de la matrice de non-régression du livrable v9.4.1
-// (tmp/9.4.1/…/transports-sanitaires.tests.v9-4-1.yaml → dynamic_scenarios).
+// Portage de la matrice de non-régression du livrable v9.5.0
+// (tmp/9.5/…/transports-sanitaires.tests.v9-5-0.yaml → dynamic_scenarios).
 //
 // Le livrable énonce ses scénarios en prose, là où la v8.10 les
 // donnait en `given`/`expect` exploitables. Ils sont donc réencodés ici, un cas
@@ -24,9 +24,9 @@ import {
   PROCHE,
   type Reponses,
   VSL,
-} from "./situations-v9-4-1";
+} from "./situations-v9-5-0";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-4-1`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-0`.
 type Cas = {
   id: string;
   given: Reponses;
@@ -40,6 +40,10 @@ const matrice: Cas[] = [
     expect: { p1_ald_validee: false, cible_cas_final: NON_ELIGIBLE },
   },
   {
+    // Le livrable n'attend ici que le motif ALD validé et le maintien du
+    // véhicule personnel. Le cas final, lui, a changé en v9.5.0 : la réponse
+    // « proche » de Q1 vaut désormais accompagnement par un tiers, motif de DAP
+    // à elle seule. Le document devient donc une DAP, sans que le mode bouge.
     id: "ALD-002",
     given: { p1_autonomie: PROCHE, ...ALD },
     expect: {
@@ -47,7 +51,7 @@ const matrice: Cas[] = [
       p1_ald_validee: true,
       cible_transport_sanitaire_prescrit:
         "véhicule personnel ou transport en commun",
-      cible_cas_final: PMT,
+      cible_cas_final: DAP,
     },
   },
   {
@@ -271,7 +275,7 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.4.1 — matrice de non-régression du livrable", () => {
+describe("modèle v9.5.0 — matrice de non-régression du livrable", () => {
   for (const cas of matrice) {
     it(cas.id, () => {
       const moteur = evalue(cas.given);

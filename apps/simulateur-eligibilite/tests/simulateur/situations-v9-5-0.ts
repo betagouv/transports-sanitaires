@@ -1,4 +1,4 @@
-// Le vocabulaire des scénarios v9.4.1 : les réponses qu'on cite constamment, et la
+// Le vocabulaire des scénarios v9.5.0 : les réponses qu'on cite constamment, et la
 // façon d'amorcer un moteur dessus. Partagé par les deux fichiers qui rejouent la
 // matrice du livrable — la liste nommée et les familles engendrées.
 
@@ -6,13 +6,15 @@ import type { Situation } from "publicodes";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { moteurDeTest } from "./moteur";
 
-/** Les trois réponses de Q1, mot pour mot. */
+/** Les quatre réponses de Q1, mot pour mot. La quatrième est née avec la v9.5.0. */
 export const AUTONOME =
   "'Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'";
 export const PROCHE =
-  "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
+  "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
 export const PRO =
   "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
+export const SMUR =
+  "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'";
 
 /** Les deux mosaïques dont on décoche sans cesse l'option exclusive. */
 export const HOSPITALISATION = {

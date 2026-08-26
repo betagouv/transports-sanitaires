@@ -61,19 +61,24 @@ describe("saisiesDepuisSituation", () => {
     });
   });
 
-  it("coche l'accompagnant pour un transport en véhicule personnel", async () => {
-    // La case suit `cible_accompagnant_necessaire`, réintroduite en v9.2.1 :
-    // avant elle, l'application dérivait la valeur de Q1 pour son compte.
-    const accompagné = saisiesDepuisSituation(
-      moteurDeTest(),
-      situation({ p1_autonomie: PROCHE_ACCOMPAGNANT, ...HOSPITALISATION }),
-    );
-    expect(await relire(await remplirCerfa(GABARIT, accompagné))).toMatchObject(
-      {
-        "dans ce cas si létat du patient nécessite une personne accompagnante cochez la case":
-          "/On",
-      },
-    );
+  // La case « personne accompagnante » de la PMT suit `cible_accompagnant_necessaire`,
+  // réintroduite en v9.2.1. Elle n'est plus atteignable : la v9.5.0 déduit
+  // `p2_accompagnement_tiers` de la même réponse de Q1, et ce motif impose à lui
+  // seul une DAP. Un accompagnant conclut donc toujours à une DAP — dont le
+  // formulaire, lui, n'a pas de case pour lui.
+  //
+  // Le tableau de remplissage garde la ligne : le champ existe au gabarit, et rien
+  // ne dit que le modèle en restera là. C'est cette impasse que le test constate,
+  // et c'est elle que nous avons remontée à l'éditeur ; le jour où une PMT pourra
+  // de nouveau porter un accompagnant, ce test échouera et l'assertion d'origine
+  // sera à rétablir.
+  it("ne peut plus porter d'accompagnant : la réponse « proche » conclut à une DAP", () => {
+    expect(() =>
+      saisiesDepuisSituation(
+        moteurDeTest(),
+        situation({ p1_autonomie: PROCHE_ACCOMPAGNANT, ...HOSPITALISATION }),
+      ),
+    ).toThrow(CerfaNonApplicable);
   });
 
   it("reporte le trajet, l'urgence et l'accident issus de la Partie 2", async () => {

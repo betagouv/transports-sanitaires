@@ -10,7 +10,13 @@ beforeEach(() => sessionStorage.clear());
 
 // Les situations partent de la base neutre du catalogue de seeds : une réponse
 // oubliée y laisserait des cibles indécises, et le résultat final vide.
-const SMUR = { ...BASE_NEUTRE, p1_m0_smur: "oui", p1_m0_aucun: "non" };
+const SMUR = {
+  ...BASE_NEUTRE,
+  // Depuis la v9.5.0, l'urgence vitale est la quatrième réponse de Q1 : elle
+  // tranche sans passer par M0, qu'elle rend inapplicable.
+  p1_autonomie:
+    "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'",
+};
 const BARIATRIQUE = {
   ...BASE_NEUTRE,
   p1_m0_bariatrique: "oui",
@@ -29,7 +35,7 @@ describe("secrétariat — parcours administratif", () => {
     expect(screen.getByText(rappel)).toBeInTheDocument();
 
     await repondrePage(user, [
-      [contexte, /entrée ou sortie d’hospitalisation/i],
+      [contexte, /entrée ou sortie d’une hospitalisation/i],
     ]);
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
     expect(screen.queryByRole("group", { name: contexte })).toBeNull();
@@ -155,7 +161,7 @@ describe("secrétariat — parcours administratif", () => {
         situationFinale={{
           ...BASE_NEUTRE,
           p1_autonomie:
-            "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
+            "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
           p2_contexte_hospitalisation: "oui",
           p2_contexte_aucun: "non",
         }}
@@ -199,7 +205,7 @@ describe("secrétariat — parcours administratif", () => {
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
     await terminerParcours(user, [
-      [/dans quel contexte/i, /entrée ou sortie d’hospitalisation/i],
+      [/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i],
     ]);
 
     expect(

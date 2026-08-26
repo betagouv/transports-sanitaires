@@ -49,7 +49,7 @@ export const situation = (entrées: Record<string, string>) => ({
 export const AIDE_PROFESSIONNEL =
   "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
 export const PROCHE_ACCOMPAGNANT =
-  "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
+  "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
 export const HOSPITALISATION = {
   p2_contexte_hospitalisation: "oui",
   p2_contexte_aucun: "non",

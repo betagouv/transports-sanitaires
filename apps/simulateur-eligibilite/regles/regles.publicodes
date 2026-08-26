@@ -252,6 +252,11 @@ cible_dap_motif_accompagnement_tiers:
   titre: DAP (Demande d’Accord Préalable) requise pour l’accompagnement d’une personne nécessitant l’assistance d’un tiers
   valeur: p2_accompagnement_tiers
 
+cible_nombre_transports_prevus:
+  titre: Nombre précis de transports prévus sur deux mois
+  description: Valeur saisie une seule fois dans A3.2, utilisée par Publicode pour qualifier les transports en série et par l’application pour préremplir le document.
+  valeur: p2_nombre_transports_prevus
+
 cible_lieu_depart_type:
   titre: Type du lieu de départ
   valeur: p2_trajet_depart
@@ -312,28 +317,34 @@ cible_document_arrivee_pays:
 
 p1_autonomie:
   titre: Autonomie et besoins généraux
-  question: 'Le patient :'
+  question: 'Concernant son déplacement, le patient :'
   une possibilité:
   - '''Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'''
-  - '''Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'''
+  - '''Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'''
   - '''Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'''
+  - '''Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'''
   spec_id: Q1
 
 p1_autonomie_repondue:
   titre: Réponse à la question sur l’autonomie renseignée
   une de ces conditions:
   - p1_autonomie = 'Peut se déplacer seul, sans aide technique ou humaine et sans besoin particulier sur l’entièreté du trajet.'
-  - p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+  - p1_autonomie = 'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
   - p1_autonomie = 'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'
+  - p1_autonomie = 'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'
 
 p1_accompagnant_necessaire:
   titre: Accompagnant nécessaire
   valeur:
     variations:
-    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+    - si: p1_autonomie = 'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
       alors: oui
     - si: p1_autonomie_repondue
       alors: non
+
+p1_autonomie_smur:
+  titre: Urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)
+  valeur: p1_autonomie = 'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'
 
 p1_autonomie_professionnel_requis:
   titre: Intervention d’un professionnel requise
@@ -375,7 +386,7 @@ p1_critere_position_allongee_demi_assise:
   spec_id: Q1.1
 
 p1_critere_brancardage_portage:
-  question: Nécessite un brancardage ou un portage, y compris pour se déplacer sur une courte distance.
+  question: Nécessite un brancardage ou un portage, c’est-à-dire que le patient doit être soulevé et transporté par des professionnels, y compris sur une courte distance.
   applicable si: p1_autonomie_professionnel_requis
   spec_id: Q1.1
 
@@ -495,56 +506,67 @@ p1_criteres_et_autonomie_complets:
       alors: oui
     - sinon: non
 
-p1_m0_smur:
-  question: Le transport est organisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation) dans le cadre d’une urgence médicale.
-  applicable si: p1_criteres_et_autonomie_complets
-  spec_id: M0
-
 p1_m0_bariatrique:
   question: La morphologie ou le poids du patient (plus de 150 kg) nécessite un véhicule disposant d’un équipement bariatrique adapté.
-  applicable si: p1_criteres_et_autonomie_complets
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_m0_permission_sans_motif_medical:
   question: Le déplacement correspond à une permission temporaire de sortie d’hospitalisation, demandée par le patient pour convenance personnelle et sans justification médicale.
-  applicable si: p1_criteres_et_autonomie_complets
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_m0_ald:
-  question: Le patient bénéficie d’une ALD (Affection de Longue Durée) reconnue par l’Assurance Maladie, exonérante ou non exonérante, et les soins ou examens à l’origine du déplacement sont en lien avec cette ALD (Affection de Longue Durée).
-  applicable si: p1_criteres_et_autonomie_complets
+  question: Les soins ou examens à l’origine du déplacement concernent le traitement, le suivi ou les conséquences d’une ALD (Affection de Longue Durée) reconnue pour ce patient par l’Assurance Maladie.
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_m0_seance:
   question: Séance de dialyse, y compris d’hémodialyse, de radiothérapie ou de chimiothérapie.
-  applicable si: p1_criteres_et_autonomie_complets
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_m0_aucun:
   question: Aucun de ces cas médicaux.
-  applicable si: p1_criteres_et_autonomie_complets
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_cas_particuliers_medicaux:
   titre: Cas particuliers médicaux
   question: Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.
-  description: Sélectionnez tous les cas concernés. Si la séance est liée à une ALD (Affection de Longue Durée) reconnue pour le patient, sélectionnez les deux réponses correspondantes.
+  description: 'Sélectionnez tous les cas concernés. Le seul fait que le patient bénéficie d’une ALD (Affection de Longue Durée) ne suffit pas : les soins ou examens à l’origine du déplacement doivent concerner son traitement, son suivi ou ses conséquences. Si une séance est liée à cette ALD (Affection de Longue Durée), sélectionnez les deux réponses correspondantes.'
   mosaique:
     type: selection
     options:
-    - p1_m0_smur
     - p1_m0_bariatrique
     - p1_m0_permission_sans_motif_medical
     - p1_m0_ald
     - p1_m0_seance
     option aucun: p1_m0_aucun
-  applicable si: p1_criteres_et_autonomie_complets
+  applicable si:
+    toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_autonomie_smur = non
   spec_id: M0
 
 p1_cas_particuliers_repondus:
   titre: Réponse aux cas particuliers médicaux renseignée
   une de ces conditions:
-  - p1_m0_smur
   - p1_m0_bariatrique
   - p1_m0_permission_sans_motif_medical
   - p1_m0_ald
@@ -569,7 +591,7 @@ p1_ald_incapacite_ou_deficience:
         - p1_autonomie_professionnel_requis
         - p1_criteres_transport_repondus
       alors: oui
-    - si: p1_autonomie = 'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
+    - si: p1_autonomie = 'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'
       alors: oui
     - sinon: non
 
@@ -588,7 +610,7 @@ p1_cas_final_direct:
   - '''permission sortie sans motif médical'''
   valeur:
     variations:
-    - si: p1_m0_smur
+    - si: p1_autonomie_smur
       alors: '''SMUR'''
     - si: p1_m0_permission_sans_motif_medical
       alors: '''permission sortie sans motif médical'''
@@ -598,17 +620,19 @@ p1_cas_final_direct:
 
 p1_decision_medicale_complete:
   titre: Partie médicale complète
-  toutes ces conditions:
-  - p1_criteres_et_autonomie_complets
-  - p1_cas_particuliers_repondus
-  - une de ces conditions:
-    - p1_transport_partage_etape_applicable = non
-    - p1_transport_partage_repondu
+  une de ces conditions:
+  - p1_autonomie_smur
+  - toutes ces conditions:
+    - p1_criteres_et_autonomie_complets
+    - p1_cas_particuliers_repondus
+    - une de ces conditions:
+      - p1_transport_partage_etape_applicable = non
+      - p1_transport_partage_repondu
 
 # PARTIE 2 - Qualification administrative
 
 p2_contexte_hospitalisation:
-  question: Entrée ou sortie d’hospitalisation complète, partielle ou ambulatoire.
+  question: Entrée ou sortie d’une hospitalisation, avec ou sans nuitée.
   applicable si: cible_partie_2_requise = 'oui'
   spec_id: M1.1
 
@@ -630,7 +654,7 @@ p2_contexte_aucun:
 p2_contexte_administratif:
   titre: Contexte administratif
   question: Dans quel contexte le déplacement est-il réalisé ?
-  description: Plusieurs choix sont possibles. Sélectionnez toutes les réponses correspondant à la situation du patient.
+  description: Plusieurs choix sont possibles. Sélectionnez toutes les réponses correspondant à la situation du patient. Une consultation externe ou un rendez-vous de soins, même réalisé dans un établissement de santé, ne constitue pas une hospitalisation.
   mosaique:
     type: selection
     options:
@@ -833,37 +857,44 @@ p2_parcours_standard_applicable:
       - p2_exception_restant_assurance_maladie
       - p2_detenu_hospitalise = non
 
-p2_convocation_ou_avis:
-  titre: Convocation réglementaire ou avis d’audience
-  question: Le déplacement est-il lié à une convocation réglementaire ou à un avis d’audience valant prescription médicale de transport ?
-  description: Une convocation à une consultation médicale habituelle n’est pas concernée. Si vous répondez « Oui », vous devrez préciser le type de convocation ou d’avis.
-  applicable si: p2_parcours_standard_applicable
-  spec_id: A2.1
-
 p2_convocation_ou_avis_type:
-  titre: Type de convocation ou d’avis
-  question: Quel type de convocation ou d’avis est concerné ?
+  titre: Cas réglementaire valant prescription médicale de transport
+  question: Le déplacement est-il lié à l’un des cas réglementaires suivants ?
+  description: Dans ces situations, la convocation ou l’avis tient lieu de prescription médicale de transport. Une convocation à une consultation médicale ou à un rendez-vous de soins habituel dans un établissement de santé n’est pas concernée.
   une possibilité:
-  - '''Convocation du contrôle médical.'''
+  - '''Convocation du contrôle médical de l’Assurance Maladie.'''
   - '''Convocation d’un médecin-expert ou consultant désigné par une juridiction.'''
   - '''Audience au cours de laquelle une consultation clinique a lieu.'''
   - '''Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.'''
   - '''Convocation de la commission prévue par l’article R. 142-8 du Code de la sécurité sociale.'''
   - '''Convocation du médecin désigné par cette commission.'''
   - '''Déplacement chez un fournisseur d’appareillage agréé.'''
-  applicable si: p2_convocation_ou_avis
-  spec_id: A2.2
+  - '''Aucun de ces cas.'''
+  applicable si: p2_parcours_standard_applicable
+  spec_id: A2.1
 
-p2_convocation_ou_avis_type_repondu:
-  titre: Type de convocation ou d’avis renseigné
+p2_convocation_ou_avis:
+  titre: Convocation ou avis valant prescription
   une de ces conditions:
-  - p2_convocation_ou_avis_type = 'Convocation du contrôle médical.'
+  - p2_convocation_ou_avis_type = 'Convocation du contrôle médical de l’Assurance Maladie.'
   - p2_convocation_ou_avis_type = 'Convocation d’un médecin-expert ou consultant désigné par une juridiction.'
   - p2_convocation_ou_avis_type = 'Audience au cours de laquelle une consultation clinique a lieu.'
   - p2_convocation_ou_avis_type = 'Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.'
   - p2_convocation_ou_avis_type = 'Convocation de la commission prévue par l’article R. 142-8 du Code de la sécurité sociale.'
   - p2_convocation_ou_avis_type = 'Convocation du médecin désigné par cette commission.'
   - p2_convocation_ou_avis_type = 'Déplacement chez un fournisseur d’appareillage agréé.'
+
+p2_convocation_ou_avis_type_repondu:
+  titre: Type de convocation ou d’avis renseigné
+  une de ces conditions:
+  - p2_convocation_ou_avis_type = 'Convocation du contrôle médical de l’Assurance Maladie.'
+  - p2_convocation_ou_avis_type = 'Convocation d’un médecin-expert ou consultant désigné par une juridiction.'
+  - p2_convocation_ou_avis_type = 'Audience au cours de laquelle une consultation clinique a lieu.'
+  - p2_convocation_ou_avis_type = 'Consultation d’un expert désigné selon l’article R. 141-1 du Code de la sécurité sociale.'
+  - p2_convocation_ou_avis_type = 'Convocation de la commission prévue par l’article R. 142-8 du Code de la sécurité sociale.'
+  - p2_convocation_ou_avis_type = 'Convocation du médecin désigné par cette commission.'
+  - p2_convocation_ou_avis_type = 'Déplacement chez un fournisseur d’appareillage agréé.'
+  - p2_convocation_ou_avis_type = 'Aucun de ces cas.'
 
 p2_convocation_ou_avis_valant_prescription:
   titre: Convocation ou avis valant prescription
@@ -875,7 +906,7 @@ p2_parcours_apres_convocation:
   titre: Parcours poursuivi après la question sur les convocations
   toutes ces conditions:
   - p2_parcours_standard_applicable
-  - p2_convocation_ou_avis = non
+  - p2_convocation_ou_avis_type = 'Aucun de ces cas.'
 
 p2_prestation_question_non_requise:
   titre: Question sur la prestation non requise
@@ -896,7 +927,8 @@ p2_prestation_prise_en_charge_applicable:
 
 p2_prestation_prise_en_charge_assurance_maladie:
   titre: Prise en charge de la prestation à l’origine du déplacement
-  question: La consultation, le soin, l’examen ou la prestation à l’origine du déplacement est-il pris en charge par l’Assurance Maladie ?
+  question: La consultation, le soin, l’examen ou la prestation à l’origine du déplacement est-il pris en charge par l’Assurance Maladie dans le cadre concerné ?
+  description: Seuls les consultations, soins, examens ou prestations tarifés et pris en charge par l’Assurance Maladie peuvent ouvrir droit à la prise en charge du transport. Le fait que le déplacement soit lié à une ALD (Affection de Longue Durée) ou réalisé dans un établissement de santé ne suffit pas.
   applicable si: p2_prestation_prise_en_charge_applicable
   spec_id: A2.3
 
@@ -980,10 +1012,11 @@ p2_non_eligible_assurance_maladie:
 
 p2_transport_urgence:
   titre: Contexte d’urgence hors transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)
-  question: En dehors d’un transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation), la prescription est-elle établie dans un contexte d’urgence ?
+  question: En dehors d’un transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation), le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur ?
+  description: Un délai administratif insuffisant pour obtenir l’accord préalable ne constitue pas une urgence médicale.
   une possibilité:
   - '''Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'''
-  - '''Autre situation d’urgence attestée par le prescripteur'''
+  - '''Autre urgence médicale attestée par le médecin prescripteur'''
   - '''Non'''
   applicable si:
     toutes ces conditions:
@@ -999,7 +1032,7 @@ p2_transport_urgence_repondu:
   une de ces conditions:
   - p2_exception_aide_medicale_urgente
   - p2_transport_urgence = 'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'
-  - p2_transport_urgence = 'Autre situation d’urgence attestée par le prescripteur'
+  - p2_transport_urgence = 'Autre urgence médicale attestée par le médecin prescripteur'
   - p2_transport_urgence = 'Non'
 
 p2_accord_prealable_applicable:
@@ -1026,6 +1059,7 @@ p2_distance_aller_repondue:
 p2_nombre_transports_prevus:
   titre: Nombre de transports prévus sur deux mois
   question: Combien de transports sont prévus au cours des 2 prochains mois pour ce même traitement ?
+  description: Comptez séparément chaque aller et chaque retour. Par exemple, deux allers-retours correspondent à quatre transports.
   type: nombre
   saisie:
     minimum: 1
@@ -1150,22 +1184,19 @@ p2_situation_speciale_declenche_dap:
 
 p2_accompagnement_tiers:
   titre: Accompagnement nécessitant l’assistance d’un tiers
-  question: Le transport concerne-t-il l’accompagnement d’une personne nécessitant l’assistance d’un tiers ?
-  applicable si:
-    toutes ces conditions:
-    - p2_situations_accord_prealable_repondues
-    - p2_situation_speciale_declenche_dap = non
-    - p2_transport_serie_declenche_dap = non
-    - une de ces conditions:
-      - p2_nombre_transports_prevus < 4
-      - p2_distance_serie_repondue
-  spec_id: A3.8
+  description: Valeur calculée automatiquement à partir de Q1 ; aucune question administrative supplémentaire n’est affichée.
+  valeur: p1_accompagnant_necessaire
 
 p2_accompagnement_tiers_repondu:
   titre: Accompagnement par un tiers renseigné
-  une de ces conditions:
-  - p2_accompagnement_tiers
-  - p2_accompagnement_tiers = non
+  toutes ces conditions:
+  - p1_autonomie_repondue
+  - p2_situations_accord_prealable_repondues
+  - p2_situation_speciale_declenche_dap = non
+  - p2_transport_serie_declenche_dap = non
+  - une de ces conditions:
+    - p2_nombre_transports_prevus < 4
+    - p2_distance_serie_repondue
 
 p2_accord_prealable_requis:
   titre: Accord préalable requis

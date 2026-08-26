@@ -84,7 +84,7 @@ export const ALLER_RETOUR = {
 /** Les deux possibilités d'urgence de `p2_transport_urgence` (A4.5). */
 export const URGENCE = {
   samu: "Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15",
-  autre: "Autre situation d’urgence attestée par le prescripteur",
+  autre: "Autre urgence médicale attestée par le médecin prescripteur",
 } as const;
 
 /**

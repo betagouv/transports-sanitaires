@@ -85,16 +85,10 @@ export const CRITERES: EntreeVulgarisee[] = [
 ];
 
 // Cas particuliers médicaux — mosaïque `p1_cas_particuliers_medicaux` (M0). Ils
-// ne changent pas le mode retenu, sauf le SMUR, la contrainte bariatrique seule
-// et la permission de sortie, qui tranchent le parcours dès la Partie 1.
+// ne changent pas le mode retenu, sauf la contrainte bariatrique seule et la
+// permission de sortie, qui tranchent le parcours dès la Partie 1. Le SMUR
+// tranchait de même ; depuis la v9.5.0, il se qualifie en Q1 et n'est plus ici.
 export const CAS_PARTICULIERS: EntreeVulgarisee[] = [
-  {
-    id: "p1_m0_smur",
-    libelle:
-      "Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
-    description:
-      "Votre état nécessite l’intervention d’une équipe médicale d’urgence pendant le transport.",
-  },
   {
     id: "p1_m0_bariatrique",
     libelle: "Équipement bariatrique adapté requis",

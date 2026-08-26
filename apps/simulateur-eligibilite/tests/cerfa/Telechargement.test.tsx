@@ -55,8 +55,8 @@ const ACCORD_PREALABLE: Situation<string> = {
 /** Un cas final qui nomme un document, mais dont nous ne produisons aucun CERFA. */
 const CONVOCATION: Situation<string> = {
   ...BASE_NEUTRE,
-  p2_convocation_ou_avis: "oui",
-  p2_convocation_ou_avis_type: "'Convocation du contrôle médical.'",
+  p2_convocation_ou_avis_type:
+    "'Convocation du contrôle médical de l’Assurance Maladie.'",
 };
 
 const BOUTON = { name: /Télécharger la prescription pré-remplie/i } as const;

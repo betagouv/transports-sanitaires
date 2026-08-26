@@ -27,7 +27,7 @@ import { allerAuGroupe, PARTIE_1_AMBULANCE, repondrePage } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-const Q1 = /^le patient/i;
+const Q1 = /^concernant son déplacement, le patient/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
 
 type Cas = {

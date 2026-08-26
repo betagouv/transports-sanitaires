@@ -24,7 +24,7 @@ beforeEach(() => sessionStorage.clear());
 
 // Un contexte d'hospitalisation : la Partie 2 a de quoi poser plusieurs pages,
 // et le parcours aboutit à un vrai document.
-const HOSPITALISATION = /entrée ou sortie d’hospitalisation/i;
+const HOSPITALISATION = /entrée ou sortie d’une hospitalisation/i;
 
 describe("la première page de la Partie 2 ne rend pas la main au résultat médical", () => {
   it("à l’ouverture du questionnaire administratif", () => {
@@ -96,7 +96,10 @@ async function remonterLeQuestionnaire(
 // Les deux questions qui ouvrent la Partie 1. Les voir reparaître au cours d'une
 // remontée signifierait que le secrétariat a hérité des pages du prescripteur.
 function questionsMedicalesPosees(): string[] {
-  return [/^le patient/i, /quelles aides ou conditions particulières/i]
+  return [
+    /^concernant son déplacement, le patient/i,
+    /quelles aides ou conditions particulières/i,
+  ]
     .map((motif) => screen.queryByRole("group", { name: motif })?.textContent)
     .filter((pose) => pose !== undefined);
 }

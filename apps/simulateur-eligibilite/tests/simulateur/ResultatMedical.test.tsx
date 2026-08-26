@@ -56,10 +56,11 @@ describe("prescripteur — résultat médical", () => {
     // Q1 : besoin d'un professionnel → Q1.1 est posée. Choix unique : la page
     // avance d'elle-même, sans bouton.
     await user.click(
-      within(screen.getByRole("group", { name: /^le patient/i })).getByRole(
-        "radio",
-        { name: /prise en charge spécifique/i },
-      ),
+      within(
+        screen.getByRole("group", {
+          name: /^concernant son déplacement, le patient/i,
+        }),
+      ).getByRole("radio", { name: /prise en charge spécifique/i }),
     );
     const aides = await screen.findByRole("group", { name: AIDES });
 
@@ -127,7 +128,10 @@ describe("prescripteur — résultat médical", () => {
     const user = afficher();
 
     await terminerParcours(user, [
-      [/^le patient/i, /prise en charge spécifique/i],
+      [
+        /^concernant son déplacement, le patient/i,
+        /prise en charge spécifique/i,
+      ],
       [/administration d’oxygène/i],
     ]);
 

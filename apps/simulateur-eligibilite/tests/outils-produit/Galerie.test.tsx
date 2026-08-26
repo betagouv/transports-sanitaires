@@ -180,7 +180,11 @@ describe("galerie branchée sur l'App", () => {
     expect(
       screen.getByText(/le mode de transport retenu est/i),
     ).toHaveTextContent("ambulance");
-    expect(screen.queryByRole("group", { name: /^le patient/i })).toBeNull();
+    expect(
+      screen.queryByRole("group", {
+        name: /^concernant son déplacement, le patient/i,
+      }),
+    ).toBeNull();
   });
 
   it("ouvre une seed de Partie 2 sur la page de résultat final", async () => {
@@ -230,7 +234,9 @@ describe("galerie branchée sur l'App", () => {
 
     await user.click(screen.getByRole("button", { name: "Retour" }));
     expect(
-      await screen.findByRole("group", { name: /^le patient/i }),
+      await screen.findByRole("group", {
+        name: /^concernant son déplacement, le patient/i,
+      }),
     ).toBeInTheDocument();
   });
 });

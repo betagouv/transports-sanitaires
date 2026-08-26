@@ -6,8 +6,9 @@
 // (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple (Q1.1, M0, A0.2,
 // A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par défaut » n'a donc
 // pas un seul sens. C'est « Non » pour un oui/non, l'option exclusive pour une
-// mosaïque, ou sa première case quand elle n'en a pas, la première possibilité pour
-// un choix unique, et un texte quelconque pour une saisie libre.
+// mosaïque, ou sa première case quand elle n'en a pas, la sortie « Aucun… » pour un
+// choix unique qui en offre une et sa première possibilité sinon, et un texte
+// quelconque pour une saisie libre.
 
 import { screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -210,8 +211,14 @@ async function completerGroupe(user: User, groupe: HTMLElement) {
   if (cases.length > 0) return completerMosaique(user, dedans, cases);
   if (dedans.queryByRole("radio", { checked: true })) return;
   const radios = dedans.queryAllByRole("radio");
-  const non = dedans.queryByRole("radio", { name: /^non$/i });
-  if (non) await user.click(non);
+  // « Aucun… » vaut pour un choix unique ce que l'option exclusive vaut pour une
+  // mosaïque : la réponse qui n'engage rien et laisse le parcours continuer. A2.1,
+  // née en v9.5.0 de la fusion de deux écrans, en fait sa huitième réponse — sans
+  // quoi la première, une convocation, conclurait le parcours sur-le-champ.
+  const neutre =
+    dedans.queryByRole("radio", { name: /^non$/i }) ??
+    dedans.queryByRole("radio", { name: /^aucun/i });
+  if (neutre) await user.click(neutre);
   else if (radios[0]) await user.click(radios[0]);
 }
 

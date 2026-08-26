@@ -23,9 +23,9 @@ import { terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-const Q1 = /^le patient/i;
+const Q1 = /^concernant son déplacement, le patient/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
-const PROCHE = /proche accompagnant/i;
+const PROCHE = /accompagnement d’un proche/i;
 const OXYGENE = /administration d’oxygène/i;
 
 describe("Q1 corrigée après Q1.1", () => {
@@ -51,7 +51,7 @@ describe("Q1 corrigée après Q1.1", () => {
     // Le pendant du parcours ci-dessus, au niveau de la situation : c'est bien le
     // modèle qui neutralise, et non un nettoyage de l'application.
     const proche =
-      "'Peut se déplacer avec un proche accompagnant, qui peut l’aider à se déplacer ou à transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
+      "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
     const sorties = (situation: Record<string, string>) => {
       const e = moteur.setSituation(situation);
       return {

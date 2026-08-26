@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import yaml from "js-yaml";
 import { describe, expect, it } from "vitest";
@@ -20,15 +20,29 @@ import { emettrePassation } from "../../front/simulateur/passation";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import type { Reponse } from "./parcours";
-import { allerAuGroupe, PARTIE_1_AMBULANCE } from "./parcours";
+import {
+  allerAuChampNombre,
+  allerAuGroupe,
+  PARTIE_1_AMBULANCE,
+} from "./parcours";
 
-const Q1 = /^le patient/i;
+const Q1 = /^concernant son déplacement, le patient/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
+
+// Sans cette réponse, A2.3 se règle par défaut sur « Non » et le parcours conclut
+// à une prestation non prise en charge : il n'atteint ni A4.5 ni A3.2.
+const PRESTATION_PRISE_EN_CHARGE: Reponse = [
+  /à l’origine du déplacement/i,
+  /^oui$/i,
+];
 
 type Cas = {
   spec: string;
   regle: string;
   depuis: "prescripteur" | "secretariat";
+  // La forme du champ : un groupe de réponses — le cas courant — ou une saisie,
+  // qui n'a pas de `fieldset` et porte sa phrase indicative dans son étiquette.
+  forme?: "groupe" | "saisie";
   // L'énoncé de la question, tel que le modèle le fixe.
   question: string;
   // La phrase indicative attendue sous cet énoncé.
@@ -55,7 +69,7 @@ const QUESTIONS: Cas[] = [
     question:
       "Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.",
     information:
-      "Sélectionnez tous les cas concernés. Si la séance est liée à une ALD (Affection de Longue Durée) reconnue pour le patient, sélectionnez les deux réponses correspondantes.",
+      "Sélectionnez tous les cas concernés. Le seul fait que le patient bénéficie d’une ALD (Affection de Longue Durée) ne suffit pas : les soins ou examens à l’origine du déplacement doivent concerner son traitement, son suivi ou ses conséquences. Si une séance est liée à cette ALD (Affection de Longue Durée), sélectionnez les deux réponses correspondantes.",
     reponses: [],
   },
   {
@@ -64,7 +78,7 @@ const QUESTIONS: Cas[] = [
     depuis: "secretariat",
     question: "Dans quel contexte le déplacement est-il réalisé ?",
     information:
-      "Plusieurs choix sont possibles. Sélectionnez toutes les réponses correspondant à la situation du patient.",
+      "Plusieurs choix sont possibles. Sélectionnez toutes les réponses correspondant à la situation du patient. Une consultation externe ou un rendez-vous de soins, même réalisé dans un établissement de santé, ne constitue pas une hospitalisation.",
     reponses: [],
   },
   {
@@ -89,15 +103,48 @@ const QUESTIONS: Cas[] = [
   },
   {
     spec: "A2.1",
-    regle: "p2_convocation_ou_avis",
+    regle: "p2_convocation_ou_avis_type",
     depuis: "secretariat",
     question:
-      "Le déplacement est-il lié à une convocation réglementaire ou à un avis d’audience valant prescription médicale de transport ?",
+      "Le déplacement est-il lié à l’un des cas réglementaires suivants ?",
     information:
-      "Une convocation à une consultation médicale habituelle n’est pas concernée. Si vous répondez « Oui », vous devrez préciser le type de convocation ou d’avis.",
+      "Dans ces situations, la convocation ou l’avis tient lieu de prescription médicale de transport. Une convocation à une consultation médicale ou à un rendez-vous de soins habituel dans un établissement de santé n’est pas concernée.",
     // A0.1 répondue « Non » ouvre le parcours standard, et c'est la réponse par
     // défaut d'un oui/non : rien à cibler en chemin.
     reponses: [],
+  },
+  {
+    spec: "A2.3",
+    regle: "p2_prestation_prise_en_charge_assurance_maladie",
+    depuis: "secretariat",
+    question:
+      "La consultation, le soin, l’examen ou la prestation à l’origine du déplacement est-il pris en charge par l’Assurance Maladie dans le cadre concerné ?",
+    information:
+      "Seuls les consultations, soins, examens ou prestations tarifés et pris en charge par l’Assurance Maladie peuvent ouvrir droit à la prise en charge du transport. Le fait que le déplacement soit lié à une ALD (Affection de Longue Durée) ou réalisé dans un établissement de santé ne suffit pas.",
+    reponses: [],
+  },
+  {
+    spec: "A4.5",
+    regle: "p2_transport_urgence",
+    depuis: "secretariat",
+    question:
+      "En dehors d’un transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation), le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur ?",
+    information:
+      "Un délai administratif insuffisant pour obtenir l’accord préalable ne constitue pas une urgence médicale.",
+    reponses: [PRESTATION_PRISE_EN_CHARGE],
+  },
+  {
+    spec: "A3.2",
+    regle: "p2_nombre_transports_prevus",
+    depuis: "secretariat",
+    // Seule saisie chiffrée du questionnaire : elle n'a pas de `fieldset`, et sa
+    // phrase indicative se lit dans l'étiquette du champ.
+    forme: "saisie",
+    question:
+      "Combien de transports sont prévus au cours des 2 prochains mois pour ce même traitement ?",
+    information:
+      "Comptez séparément chaque aller et chaque retour. Par exemple, deux allers-retours correspondent à quatre transports.",
+    reponses: [PRESTATION_PRISE_EN_CHARGE],
   },
   {
     spec: "A3.4",
@@ -132,12 +179,17 @@ describe.each(QUESTIONS)("$spec — la phrase indicative", (cas) => {
   // entre fichiers de test.
   it("s’affiche immédiatement sous la question", async () => {
     await ouvrir(cas);
-    const groupe = screen.getByRole("group", { name: motif(cas.question) });
-    const indication = within(groupe).getByText(cas.information);
+    const indication = screen.getByText(cas.information);
     expect(indication).toHaveClass("fr-hint-text");
-    // Dans la légende, donc entre l'énoncé et les réponses — pas relégué
-    // ailleurs dans le formulaire.
-    expect(groupe.querySelector("legend")).toContainElement(indication);
+    // Entre l'énoncé et la réponse, jamais relégué ailleurs dans le formulaire :
+    // dans la légende du groupe, ou dans l'étiquette de la saisie.
+    if (cas.forme === "saisie") {
+      const champ = screen.getByLabelText(motif(cas.question));
+      expect(indication.closest("label")).toHaveAttribute("for", champ.id);
+    } else {
+      const groupe = screen.getByRole("group", { name: motif(cas.question) });
+      expect(groupe.querySelector("legend")).toContainElement(indication);
+    }
   }, 20_000);
 });
 
@@ -179,6 +231,7 @@ async function ouvrir(cas: Cas) {
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
   }
-  await allerAuGroupe(user, motif(cas.question), cas.reponses);
+  if (cas.forme === "saisie") await allerAuChampNombre(user, cas.reponses);
+  else await allerAuGroupe(user, motif(cas.question), cas.reponses);
   return user;
 }

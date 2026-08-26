@@ -148,7 +148,13 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
           visible: (e) => vrai(e, "cible_dap_motif_avion_bateau"),
         },
         {
-          texte: "Personne accompagnante si nécessaire.",
+          // Le nom que le contrat d'interface donne à ce motif — le même que
+          // `motifs-de-la-dap.ts`. Le distinguer de la case « Personne
+          // accompagnante » du mode de transport n'est plus un luxe depuis la
+          // v9.5.0 : les deux cibles se déduisent désormais de la même réponse
+          // de Q1, et le même texte s'écrivait deux fois sur la même page.
+          texte:
+            "Accompagnement d’une personne nécessitant l’assistance d’un tiers.",
           visible: (e) => vrai(e, "cible_dap_motif_accompagnement_tiers"),
         },
       ],
