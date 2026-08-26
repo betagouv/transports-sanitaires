@@ -85,17 +85,20 @@ Depuis la racine, `mise run dev-simulateur` lance le front et le backend en para
 ## Le modèle de règles
 
 `regles/regles.publicodes` est livré de l'extérieur et intégré par recopie. C'est
-aujourd'hui la v9.4.1, qui compte 186 règles et 39 cibles. Le fichier livré ne porte pas
+aujourd'hui la v9.5.0, qui compte 187 règles et 40 cibles. Le fichier livré ne porte pas
 sa version : c'est `regles/VERSION` qui la porte à côté de lui, et c'est elle que le pied
 de page affiche. Une recopie met les deux à jour, sans quoi l'application annonce une
 version qu'elle n'exécute pas.
 
 Le paquet du fournisseur apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 2.1.0)
 et une matrice de tests. Tous deux sont réencodés ici plutôt que chargés : le contrat
-d'interface se lit dans les composants, et la matrice dans
-`tests/simulateur/regression-v9-4-1.test.ts` et `familles-v9-4-1.test.ts`. Ces tests
-gardent les identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-003` et les
-autres) pour qu'un désaccord remonte au fournisseur sous son nom.
+d'interface se lit dans les composants, et la matrice dans quatre fichiers de
+`tests/simulateur/`, séparés par sujet : `regression-v9-5-0.test.ts` pour le droit ouvert
+et le mode médical, `article-80-v9-5-0.test.ts` pour la charge de l'établissement,
+`accord-prealable-v9-5-0.test.ts` pour la série et le trajet, `familles-v9-5-0.test.ts`
+pour ce que le livrable décrit par un générateur. Ces tests gardent les identifiants du
+livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-003` et les autres) pour qu'un désaccord
+remonte au fournisseur sous son nom.
 
 Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
 
@@ -197,7 +200,7 @@ workspace.
 ## Savoir ce qui tourne
 
 Un pied de page discret accompagne le simulateur :
-`Version 0.1.0 · commit 1a2b3c4 · règles v9.4.1`. C'est un outil de support. Quand un
+`Version 0.1.0 · commit 1a2b3c4 · règles v9.5.0`. C'est un outil de support. Quand un
 prescripteur signale un résultat surprenant, ces trois valeurs disent quelle livraison,
 quel code et quel modèle il avait sous les yeux.
 
