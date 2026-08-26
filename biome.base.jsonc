@@ -2,10 +2,10 @@
   // Le socle commun aux trois apps. Chaque `apps/*/biome.jsonc` l'étend et n'y
   // ajoute que ce qui lui est propre : son périmètre de fichiers et ses
   // dérogations. Le format et les règles, eux, ne se discutent pas d'une app à
-  // l'autre — les faire diverger rouvrirait la discussion que Biome a close.
+  // l'autre. Les faire diverger rouvrirait la discussion que Biome a close.
   //
   // Biome n'est pas installé une fois pour toutes à la racine : chaque app le
-  // tient dans ses propres dépendances, en `catalog:` — donc à la même version
+  // tient dans ses propres dépendances, en `catalog:`, donc à la même version
   // que les deux autres, sans que personne ait à y penser. Ce fichier ne
   // partage que la configuration.
   "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
@@ -64,7 +64,7 @@
       "complexity": {
         // Biome compte des lignes *logiques* : un bloc de texte JSX ou une
         // chaîne multiligne y pèse une ligne. C'est le test d'architecture du
-        // simulateur qui fait foi, en lignes réelles — Biome sert le retour
+        // simulateur qui fait foi, en lignes réelles. Biome sert le retour
         // immédiat dans l'éditeur.
         "noExcessiveLinesPerFunction": {
           "level": "error",

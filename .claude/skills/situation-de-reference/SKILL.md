@@ -1,6 +1,6 @@
 ---
 name: situation-de-reference
-description: Ajouter une situation de référence (« seed ») au simulateur d'éligibilité — un cas métier nommé avec ses attendus. À charger dès qu'il s'agit de couvrir un cas du modèle, d'écrire un test métier, ou de reproduire un scénario signalé par le porteur.
+description: Ajouter une situation de référence (« seed ») au simulateur d'éligibilité : un cas métier nommé avec ses attendus. À charger dès qu'il s'agit de couvrir un cas du modèle, d'écrire un test métier, ou de reproduire un scénario signalé par le porteur.
 ---
 
 # Ajouter une situation de référence
@@ -27,7 +27,7 @@ invisible à qui parcourt le catalogue pour savoir ce qui est couvert.
   // kebab-case, stable : les tests, les scripts et la doc le citent.
   id: "prescripteur-ambulance",
   // Ce qu'on voit en ouvrant la seed dans la galerie.
-  libelle: "Prescripteur — ambulance justifiée",
+  libelle: "Prescripteur : ambulance justifiée",
   // Pourquoi elle existe : ce qu'elle permet de voir ou de verrouiller.
   description: "…",
   // L'écran d'atterrissage : "prescripteur" (Page Résultat 1) ou
@@ -35,7 +35,7 @@ invisible à qui parcourt le catalogue pour savoir ce qui est couvert.
   outil: "prescripteur",
   // Uniquement ce qui distingue cette seed. Tout le reste vient de BASE_NEUTRE.
   entrees: { p1_motif_hospitalisation: "oui", … },
-  // Ce qu'on attend en sortie. Partiel — on n'annonce que ce qui la caractérise,
+  // Ce qu'on attend en sortie. Partiel : on n'annonce que ce qui la caractérise,
   // sauf `cible_regime_financement`, que toutes déclarent.
   attendu: { cible_resultat_medical: "favorable", … },
 }

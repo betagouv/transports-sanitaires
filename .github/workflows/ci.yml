@@ -7,7 +7,7 @@ on:
 
 # Le dépôt est un **workspace pnpm** : une seule installation à la racine, un
 # seul `pnpm-lock.yaml`, un magasin mutualisé. Chaque app garde en revanche son
-# job et son **`pnpm verifier`**, la même commande que localement — c'est ce qui
+# job et son **`pnpm verifier`**, la même commande que localement. C'est ce qui
 # garantit qu'un `verifier` vert ici l'est aussi là-bas. Toute porte ajoutée se
 # met dans le script, jamais dans ce fichier.
 #
@@ -56,7 +56,7 @@ jobs:
 
   # L'audit ne se scope pas : `pnpm audit` lit le lock, et le lock est unique au
   # dépôt depuis le passage en workspace. Le répéter dans les trois jobs
-  # auditerait trois fois la même chose en laissant croire le contraire — il a
+  # auditerait trois fois la même chose en laissant croire le contraire. Il a
   # donc son job.
   audit:
     runs-on: ubuntu-latest
@@ -71,14 +71,28 @@ jobs:
       # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
       # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
       - run: pnpm audit --prod --audit-level high
-      # La chaîne de build : signalé, non bloquant — une alerte sur un paquet
+      # La chaîne de build : signalé, non bloquant. Une alerte sur un paquet
       # transitif de Vite ne doit pas coincer une correction sans rapport.
       - run: pnpm audit --audit-level high
         continue-on-error: true
 
+  # Le style de la documentation ne se scope pas non plus : `AGENTS.md`, les
+  # `README.md` et `docs/` débordent des apps. La garde rend exécutable la
+  # section « Communication » d'AGENTS.md : tirets cadratins, phrases de plus
+  # de 25 mots, paragraphes de plus de 4 phrases.
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+      # Node 24 exécute le TypeScript nativement : ni installation, ni build.
+      - run: node --test verifier-documentation.ts
+
   # Scan de secrets sur **tout** l'historique, pas seulement le diff : un secret
   # commité puis retiré reste lisible dans les objets git. Le dépôt étant public,
-  # GitHub scanne déjà les motifs des fournisseurs connus — gitleaks ajoute les
+  # GitHub scanne déjà les motifs des fournisseurs connus. gitleaks ajoute les
   # trois secrets propres au projet (clé Grist, secret de pseudonymisation, jeton
   # Matomo), que rien d'autre ne sait reconnaître (cf. .gitleaks.toml).
   secrets:

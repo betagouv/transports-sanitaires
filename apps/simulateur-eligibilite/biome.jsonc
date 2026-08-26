@@ -1,5 +1,9 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  // La racine porte désormais sa propre configuration, pour la garde de
+  // style de la documentation. Biome exige qu'une configuration imbriquée
+  // se déclare telle : sans ça, il voit deux racines et refuse de tourner.
+  "root": false,
   "extends": ["../../biome.base.jsonc"],
   "files": {
     "includes": [
@@ -19,7 +23,7 @@
     {
       // `describe` et `it` prennent un callback : la limite de lignes par
       // fonction y compterait un bloc de cas entier comme une fonction trop
-      // longue. Le découper n'aiderait personne — c'est un regroupement, pas
+      // longue. Le découper n'aiderait personne : c'est un regroupement, pas
       // un traitement. La limite par fichier, elle, reste active ici.
       "includes": ["tests/**"],
       "linter": {
@@ -50,7 +54,7 @@
       // Catalogue de données, pas de traitement : c'est la source unique des
       // situations de référence. Le scinder pour tenir sous 300 lignes ne
       // produirait qu'un découpage arithmétique, et ferait perdre la propriété
-      // qui compte — une seule liste à lire pour connaître tous les cas.
+      // qui compte : une seule liste à lire pour connaître tous les cas.
       "includes": ["front/outils-produit/seeds/catalogue.ts"],
       "linter": {
         "rules": {

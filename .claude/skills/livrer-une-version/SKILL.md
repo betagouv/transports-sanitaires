@@ -1,6 +1,6 @@
 ---
 name: livrer-une-version
-description: Livrer une version d'une app — numéro, entrée de CHANGELOG, montée du package.json, tag `<app>@<version>`, release GitHub. À charger dès qu'il s'agit de livrer, publier, étiqueter ou « sortir une version ».
+description: Livrer une version d'une app : numéro, entrée de CHANGELOG, montée du package.json, tag `<app>@<version>`, release GitHub. À charger dès qu'il s'agit de livrer, publier, étiqueter ou « sortir une version ».
 ---
 
 # Livrer une version
@@ -38,7 +38,7 @@ Ces commits doivent **déjà être sur `origin/main`** : le journal renvoie à c
 par son sha sur GitHub. Pousser avant d'écrire le journal, pas après.
 
 Première livraison d'une app, donc pas de tag précédent : remonter au point qui
-fait sens et le dire dans l'entrée — la 0.1.0 annonce « les 35 commits mergés
+fait sens et le dire dans l'entrée. La 0.1.0 annonce « les 35 commits mergés
 depuis `staging` et `feat/prefill-cerfa-pmt` ».
 
 ## 2. Le numéro
@@ -54,7 +54,7 @@ trancher seul.
 ## 3. L'entrée du journal
 
 ```markdown
-## [0.2.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.2.0) — 12 septembre 2026
+## [0.2.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.2.0), 12 septembre 2026
 
 <Une ou deux phrases : ce que la version rassemble, et depuis quel point.>
 
@@ -67,10 +67,10 @@ trancher seul.
 - [8c1788e](https://github.com/betagouv/transports-sanitaires/commit/8c1788e) : passe le modèle en v9.4.1 et corrige trois anomalies qu'on avait remontées à l'éditeur : …
 ```
 
-- Le `@` du tag s'encode en `%40` dans le lien du titre — c'est la forme sous
+- Le `@` du tag s'encode en `%40` dans le lien du titre. C'est la forme sous
   laquelle GitHub sert la page d'une release.
 - **Les sections, dans cet ordre, selon le type du commit.** Chacune porte son
-  emoji, toujours le même, collé au titre — c'est ce qui rend les groupes
+  emoji, toujours le même, collé au titre. C'est ce qui rend les groupes
   repérables d'un coup d'œil dans une page de release un peu longue :
 
   | Type de commit | Titre de section |
@@ -84,7 +84,7 @@ trancher seul.
   Une section vide ne s'écrit pas. Le TL;DR n'a pas d'emoji : il ne groupe pas
   des commits, il résume la version.
 - **Une ligne par commit**, sha court, puis un verbe conjugué à la 3ᵉ personne de
-  l'indicatif présent — la règle du sujet de commit vaut ici.
+  l'indicatif présent : la règle du sujet de commit vaut ici.
 - La ligne **n'est pas le sujet recopié**. Elle est écrite pour qui lit le
   produit, tirée du corps du commit, et dit ce qui change pour l'utilisateur
   quitte à être plus longue que le sujet.
@@ -105,12 +105,12 @@ main, avec un message.
 
 Le `pnpm-lock.yaml` de la racine n'est **pas** touché : il enregistre les
 dépendances de chaque app, jamais leur numéro de version. Un lock qui bouge à
-cette étape est le signe qu'autre chose a changé — regarde quoi avant de
+cette étape est le signe qu'autre chose a changé. Regarde quoi avant de
 commiter.
 
 Pour le simulateur, `tests/app/BandeauVersion.test.tsx` compare ce que le pied de
 page affiche à ce que `package.json` et `regles/VERSION` déclarent. Une montée
-oubliée d'un côté s'y voit — c'est la garde de cette étape.
+oubliée d'un côté s'y voit. C'est la garde de cette étape.
 
 ## 5. Le commit et le tag
 
@@ -121,7 +121,7 @@ git push origin main "simulateur-eligibilite@0.2.0"
 ```
 
 `chore` parce que le commit ne livre que le numéro et le journal. La 0.1.0 est en
-`feat` parce qu'elle apportait aussi le pied de page — ce n'est pas le régime
+`feat` parce qu'elle apportait aussi le pied de page. Ce n'est pas le régime
 ordinaire.
 
 Le **message du tag** reprend le titre `<app> <version>`, puis le TL;DR en prose.
@@ -131,7 +131,7 @@ C'est ce que voit `git show <tag>`, sans réseau.
 
 `gh` vient du toolchain, comme Node : il est épinglé dans `mise.toml` et
 s'installe par `mise install`. L'authentification, elle, est personnelle et se
-fait une fois — `gh auth login`, portée `repo` suffisante. `gh auth status` dit
+fait une fois : `gh auth login`, portée `repo` suffisante. `gh auth status` dit
 où on en est.
 
 Le corps de la release est **l'entrée du journal**, pas autre chose. Comme elle
@@ -152,7 +152,7 @@ awk '/^## \[/{n++} n==1' CHANGELOG.md | tail -n +2 |
   on aurait deux textes concurrents pour la même version, et le moins bon des
   deux en évidence.
 
-Relire ce qui est publié — `gh release view "simulateur-eligibilite@0.2.0" --web`.
+Relire ce qui est publié : `gh release view "simulateur-eligibilite@0.2.0" --web`.
 
 ## 7. Après
 
@@ -172,6 +172,6 @@ du journal et replacer les tags dans le même mouvement, avant de pousser.
 
 Seul le simulateur a aujourd'hui un journal et un tag. `glossaire-notion` porte
 une version dans son `package.json` sans rien de tout cela, et `data-analyzer`
-est en `0.0.0` — elle n'est pas livrée, elle tourne. La marche à suivre ci-dessus
+est en `0.0.0` : elle n'est pas livrée, elle tourne. La marche à suivre ci-dessus
 vaut dès qu'une app est livrée à quelqu'un : c'est la livraison qui appelle le
 journal, pas la présence d'un `package.json`.

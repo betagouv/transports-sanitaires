@@ -12,7 +12,7 @@ dans un état incohérent que rien ne signale tout de suite.
 
 ## L'ordre
 
-### 1. Le modèle — `regles/regles.publicodes`
+### 1. Le modèle : `regles/regles.publicodes`
 
 - Les clés se séparent par ` . `. Les valeurs d'`une possibilité` s'écrivent entre
   quotes, sous la forme `"'valeur'"`. Les booléens s'écrivent `oui` et `non`.
@@ -21,7 +21,7 @@ dans un état incohérent que rien ne signale tout de suite.
   une transcription de la réglementation, rejouable hors de l'application.
 - Nomme en français, comme le reste du modèle.
 
-### 2. Le contrat — `front/simulateur/contrat-regles-publicodes.ts`
+### 2. Le contrat : `front/simulateur/contrat-regles-publicodes.ts`
 
 Rien dans le code ne peut nommer une clé absente de ce fichier. Ajoute la clé à
 `CIBLES` si c'est une sortie que le produit affiche, ou à `QUESTIONS` si c'est une
@@ -35,7 +35,7 @@ Ne lis jamais une règle par un `engine.evaluate("…")` nu. Passe par `texte()`
 `tests/regles-front.test.ts` confronte le contrat au modèle : une clé déclarée qui
 n'existe pas dans les règles, ou l'inverse, y échoue.
 
-### 3. Une situation de référence — `front/outils-produit/seeds/catalogue.ts`
+### 3. Une situation de référence : `front/outils-produit/seeds/catalogue.ts`
 
 Une règle qu'aucune seed ne traverse n'est pas testée. Voir le skill
 `situation-de-reference`.
@@ -58,8 +58,7 @@ et une règle parente inerte, qui porte la métadonnée `mosaique`. C'est cette
 métadonnée que lit `front/simulateur/questionnaire/mosaique.ts` pour rendre un
 `fieldset` de cases à cocher.
 
-Le format exact — les champs de la métadonnée, la gestion de l'option « aucun » à
-sémantique métier, les contraintes — est dans
+Le format exact est dans
 [`docs/specs/formalisation-mosaique-choix-multiple.md`](../../../docs/specs/formalisation-mosaique-choix-multiple.md).
 Lis-le avant d'encoder une question de ce type, et ne réinvente pas la forme.
 
@@ -67,7 +66,7 @@ Lis-le avant d'encoder une question de ce type, et ne réinvente pas la forme.
 
 | Symptôme | Cause probable |
 |---|---|
-| Le moteur lève sur une clé inconnue | La situation emploie une clé absente du modèle — les clés doivent être exactes |
+| Le moteur lève sur une clé inconnue | La situation emploie une clé absente du modèle. Les clés doivent être exactes |
 | TypeScript refuse une chaîne de clé | La clé n'est pas dans le contrat : ajoute-la, ou c'est qu'elle n'existe pas |
-| Une question n'est jamais posée | Elle est applicable mais hors du graphe des cibles du parcours — cible la sortie qui en dépend |
+| Une question n'est jamais posée | Elle est applicable mais hors du graphe des cibles du parcours. Cible la sortie qui en dépend |
 | `tests/simulateur/scenarios.test.ts` signale des « cibles à variables manquantes » | `BASE_NEUTRE` ne répond pas à la nouvelle question : complète-la |

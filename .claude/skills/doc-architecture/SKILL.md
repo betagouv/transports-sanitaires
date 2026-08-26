@@ -1,6 +1,6 @@
 ---
 name: doc-architecture
-description: Écrire ou mettre à jour un document d'architecture dans docs/architecture/ — format ADR maison du dépôt. À charger dès qu'une décision structurante est prise, révisée ou révoquée, ou qu'on demande de « documenter l'archi ».
+description: Écrire ou mettre à jour un document d'architecture dans docs/architecture/, au format ADR maison du dépôt. À charger dès qu'une décision structurante est prise, révisée ou révoquée, ou qu'on demande de « documenter l'archi ».
 ---
 
 # Écrire un document d'architecture
@@ -16,14 +16,14 @@ le portent, et ça se périme en une semaine.
 ## Le squelette
 
 ```markdown
-# Architecture — <sujet>
+# Architecture : <sujet>
 
 > Statut : **décidé (phase expérimentale)** · Dernière mise à jour : AAAA-MM-JJ
 
 ## 1. Contexte & objectifs
 ## 2. Décisions (ADR)
-### ADR-1 — <titre de la décision>
-### ADR-2 — …
+### ADR-1 - <titre de la décision>
+### ADR-2 - …
 ## 3. Architecture cible          (diagramme Mermaid + tableau de composants)
 ## 4. <le cœur du sujet>
 ## 5. Découpage en incréments     (✅ sur ce qui est fait)
@@ -32,20 +32,20 @@ le portent, et ça se périme en une semaine.
 
 Chaque ADR porte, dans son corps, le contexte, la décision et les conséquences.
 
-## La particularité à respecter — on ne réécrit pas l'histoire
+## La particularité à respecter : on ne réécrit pas l'histoire
 
 **Une décision révoquée reste dans le document, barrée**, avec ce qui l'a remplacée
 dans le titre :
 
 ```markdown
-### ADR-1 — Identification intégrée en écran-porte (~~app dédiée~~)
-### ADR-4 — Identité pseudonymisée : refs, en mémoire (~~fragment d'URL~~)
+### ADR-1 - Identification intégrée en écran-porte (~~app dédiée~~)
+### ADR-4 - Identité pseudonymisée : refs, en mémoire (~~fragment d'URL~~)
 ```
 
 Et un encart daté en tête du document dit ce qui a été renversé :
 
 ```markdown
-> **Mise à jour 2026-07-08 — fusion des apps.** L'ADR-1, l'ADR-4 et l'invariant
+> **Mise à jour 2026-07-08, fusion des apps.** L'ADR-1, l'ADR-4 et l'invariant
 > n° 3 de l'ADR-5 sont renversés : …
 ```
 

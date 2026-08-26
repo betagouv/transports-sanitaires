@@ -1,0 +1,13 @@
+{
+  // La racine ne portait aucun code, donc aucune configuration Biome, seul le
+  // socle `biome.base.jsonc` que les trois apps étendent. Elle porte désormais
+  // `verifier-documentation.ts`, la garde de style de la documentation, qui
+  // déborde des apps comme `pnpm audit` déborde du lock d'une seule.
+  //
+  // Le périmètre s'arrête donc à ce fichier : les apps gardent le leur.
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "extends": ["./biome.base.jsonc"],
+  "files": {
+    "includes": ["verifier-documentation.ts", "biome.jsonc", "package.json"]
+  }
+}

@@ -1,5 +1,9 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  // La racine porte désormais sa propre configuration, pour la garde de
+  // style de la documentation. Biome exige qu'une configuration imbriquée
+  // se déclare telle : sans ça, il voit deux racines et refuse de tourner.
+  "root": false,
   "extends": ["../../biome.base.jsonc"],
   "files": {
     "includes": [
