@@ -12,6 +12,7 @@ import {
 import { CAS_PARTICULIERS, CRITERES, retenus } from "../resultat/Vulgarisation";
 import { type Article80, Article80Patient } from "./Article80";
 import { EtapesPatient } from "./EtapesPatient";
+import { InformationUrgencePmt } from "./urgence-attestee";
 
 // Prise en charge / reste à charge, formulation propre à chaque cas final.
 const RESTE_A_CHARGE: Record<string, string> = {
@@ -59,10 +60,15 @@ export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
           Prise en charge / reste à charge
         </SousTitre>
         <p>{RESTE_A_CHARGE[casFinal] ?? ""}</p>
+        <UrgenceAttestee e={e} casFinal={casFinal} />
         <SousTitre icone="fr-icon-todo-line">
           Ce que vous devez faire maintenant
         </SousTitre>
-        <EtapesPatient casFinal={casFinal} {...contexte} />
+        <EtapesPatient
+          casFinal={casFinal}
+          urgenceAttestee={vrai(e, "cible_urgence_attestee")}
+          {...contexte}
+        />
         <OrganisationEtDefraiement casFinal={casFinal} article80={article80} />
       </div>
     </div>
@@ -95,6 +101,16 @@ function AldNonRetenue({ e }: Pick<Props, "e">) {
       </p>
     </>
   );
+}
+
+// L'urgence attestée sur une PMT : rien à attendre, mais le patient doit savoir
+// que le motif a été retenu. Sur une DAP, l'urgence se dit dans la marche à
+// suivre elle-même — la variante urgente d'`EtapesPatient` —, pas ici : ce sont
+// les démarches qu'elle change.
+function UrgenceAttestee({ e, casFinal }: Pick<Props, "e" | "casFinal">) {
+  const pmt = casFinal === "prescription médicale de transport";
+  if (!pmt || !vrai(e, "cible_urgence_attestee")) return null;
+  return <InformationUrgencePmt />;
 }
 
 // L'article 80 encadre les transports à charge de l'établissement : qui les

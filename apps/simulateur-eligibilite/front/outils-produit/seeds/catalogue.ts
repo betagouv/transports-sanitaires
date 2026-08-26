@@ -52,6 +52,11 @@ const CONTEXTE_HOSPITALISATION = {
   p2_contexte_aucun: "non",
 } as const;
 
+// La réponse d'A4.5 qui atteste l'urgence médicale. Depuis la v9.5.1, c'est elle
+// qui dispense d'attendre la décision d'accord préalable.
+const URGENCE_SAMU =
+  "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'";
+
 // Cas particulier médical (M0) : même mécanique d'option exclusive.
 const M0_AUCUN_DECOCHE = { p1_m0_aucun: "non" } as const;
 
@@ -797,6 +802,58 @@ export const SEEDS: readonly Seed[] = [
       cible_regime_financement: "Assurance Maladie",
       cible_document_a_remettre_au_patient:
         "PMT (Prescription Médicale de Transport)",
+    },
+  },
+  {
+    id: "secretariat-urgence-pmt",
+    libelle: "Secrétariat — urgence attestée, sans motif d’accord préalable",
+    description:
+      "Un appel au SAMU (A4.5) sans aucune cause réglementaire de DAP. La " +
+      "v9.5.1 expose l'urgence : le document reste une PMT, et le résultat " +
+      "porte l'information d'urgence.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CONTEXTE_HOSPITALISATION,
+      p2_transport_urgence: URGENCE_SAMU,
+    },
+    attendu: {
+      cible_resultat_medical: "décision établie",
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient:
+        "PMT (Prescription Médicale de Transport)",
+    },
+  },
+  {
+    id: "secretariat-urgence-dap",
+    libelle:
+      "Secrétariat — urgence attestée sur une demande d’accord préalable",
+    description:
+      "Le même appel au SAMU, mais le trajet aller dépasse 150 km : le motif " +
+      "réglementaire tient, donc le document reste une DAP. Ce que l'urgence " +
+      "supprime, c'est l'attente — ni réponse du médecin-conseil, ni délai de " +
+      "15 jours. C'est la variante urgente de la Page Résultat 2.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CONTEXTE_HOSPITALISATION,
+      p2_distance_aller_superieure_150km: "oui",
+      p2_transport_urgence: URGENCE_SAMU,
+    },
+    attendu: {
+      cible_resultat_medical: "décision établie",
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
     },
   },
   {

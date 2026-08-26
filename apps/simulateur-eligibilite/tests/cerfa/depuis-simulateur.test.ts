@@ -116,6 +116,29 @@ describe("saisiesDepuisSituation", () => {
     );
   });
 
+  it("coche l'autre urgence pour une exception d'aide médicale urgente", async () => {
+    // A4.5 répond « Non », et pourtant l'urgence est attestée : le modèle range
+    // l'exception d'aide médicale urgente (A0.2) parmi les urgences depuis la
+    // v9.5.1, et c'est `cible_type_urgence` — non la réponse brute d'A4.5 — que
+    // le formulaire lit. La case reviendrait décochée si l'application
+    // reconstruisait l'urgence depuis les réponses.
+    const saisies = saisiesDepuisSituation(
+      moteurDeTest(),
+      situation({
+        p1_autonomie: AIDE_PROFESSIONNEL,
+        p1_critere_brancardage_portage: "oui",
+        ...HOSPITALISATION,
+        p2_patient_hospitalise: "oui",
+        p2_exception_aide_medicale_urgente: "oui",
+        p2_exception_aucune: "non",
+      }),
+    );
+    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+
+    expect(lu.autres).toBe("/On");
+    expect(lu).not.toHaveProperty("Urg SAMU centre 15");
+  });
+
   it("aplatit le complément d'adresse et le pays sur la ligne du lieu", async () => {
     // Ces deux saisies sont facultatives et longtemps restées inatteignables :
     // aucune cible ne les portait, donc le questionnaire ne les posait pas. Elles

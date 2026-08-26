@@ -81,10 +81,16 @@ export const ALLER_RETOUR = {
   différent: "aller-retour différent",
 } as const;
 
-/** Les deux possibilités d'urgence de `p2_transport_urgence` (A4.5). */
+/**
+ * Les possibilités de `cible_type_urgence`, la cible que la v9.5.1 expose. C'est
+ * elle qu'on lit plutôt que la réponse brute d'A4.5 : le modèle y range aussi
+ * l'exception d'aide médicale urgente, qu'aucune réponse d'A4.5 ne porte, et
+ * c'est à lui de dire ce qui vaut urgence attestée.
+ */
 export const URGENCE = {
-  samu: "Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15",
-  autre: "Autre urgence médicale attestée par le médecin prescripteur",
+  samu: "appel SAMU - Centre 15",
+  autre: "autre urgence médicale attestée",
+  aucune: "aucune",
 } as const;
 
 /**
@@ -100,5 +106,5 @@ export const VALEURS_COMPAREES: ReadonlyArray<
   ["p2_trajet_depart", Object.values(DEPART)],
   ["p2_trajet_arrivee", Object.values(ARRIVEE)],
   ["p2_trajet_aller_retour", Object.values(ALLER_RETOUR)],
-  ["p2_transport_urgence", Object.values(URGENCE)],
+  ["cible_type_urgence", Object.values(URGENCE)],
 ];

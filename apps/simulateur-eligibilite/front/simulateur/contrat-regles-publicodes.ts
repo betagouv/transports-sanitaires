@@ -25,6 +25,7 @@ export const CIBLES = [
   "cible_ald_reconnue_liee_aux_soins",
   "cible_article_80_mode",
   "cible_article_80_situation_specifique",
+  "cible_attente_accord_prealable_requise",
   "cible_cas_final",
   "cible_dap_motif_avion_bateau",
   "cible_dap_motif_camsp_cmpp",
@@ -53,6 +54,8 @@ export const CIBLES = [
   "cible_transport_partage_applicable",
   "cible_transport_partage_incompatible",
   "cible_transport_sanitaire_prescrit",
+  "cible_type_urgence",
+  "cible_urgence_attestee",
 ] as const;
 
 /**

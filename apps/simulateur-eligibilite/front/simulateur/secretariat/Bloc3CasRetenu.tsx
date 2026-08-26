@@ -6,6 +6,7 @@ import { type moteur, vrai } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
 import type { GroupeRetenu } from "./cases-documentaires";
 import { casesRetenues } from "./cases-documentaires";
+import { NoteUrgenceCorpsMedical } from "./urgence-attestee";
 
 type Props = {
   e: typeof moteur;
@@ -40,6 +41,9 @@ export function Bloc3CasRetenu({
           <strong>Document à remettre au patient :</strong> {doc}
         </p>
         <NoteCorpsMedical casFinal={casFinal} article80={article80} />
+        {vrai(e, "cible_urgence_attestee") && (
+          <NoteUrgenceCorpsMedical casFinal={casFinal} />
+        )}
         <QualificationDuMotifAld e={e} />
         <TracabiliteDuMotifAld e={e} casFinal={casFinal} />
         <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />

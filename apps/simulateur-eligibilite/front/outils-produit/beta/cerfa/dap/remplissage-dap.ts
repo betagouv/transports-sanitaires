@@ -170,7 +170,7 @@ export const REMPLISSAGE_DAP: Tableau = {
 
   // ---- ❹ Urgence, ❺ éléments médicaux, ❻ exonération ---------------------
   samu: étatSelon((r) => {
-    const urgence = r.texte("p2_transport_urgence");
+    const urgence = r.texte("cible_type_urgence");
     if (urgence === URGENCE.samu) return "Oui";
     return urgence === URGENCE.autre ? "non" : undefined;
   }),

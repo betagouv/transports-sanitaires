@@ -3,11 +3,14 @@
 // retenu. Ne consulte pas le moteur.
 
 import { ModalitesDAP, ModalitesPMT } from "./modalites-transport";
+import { EtapesDapUrgente } from "./urgence-attestee";
 
 type Props = {
   casFinal: string;
   transport: string;
   transportPrescrit: boolean;
+  /** `cible_urgence_attestee` : la DAP se passe-t-elle d'attendre la décision ? */
+  urgenceAttestee: boolean;
 };
 
 export function EtapesPatient({ casFinal, ...contexte }: Props) {
@@ -38,7 +41,17 @@ function EtapesPMT({ transport }: Contexte) {
   );
 }
 
-function EtapesDAP({ transport }: Contexte) {
+// Deux marches à suivre exclusives depuis la v9.5.1 : celle qui attend la
+// décision, et celle que l'urgence attestée en dispense.
+function EtapesDAP({ transport, urgenceAttestee }: Contexte) {
+  return urgenceAttestee ? (
+    <EtapesDapUrgente transport={transport} />
+  ) : (
+    <EtapesDapAAttendre transport={transport} />
+  );
+}
+
+function EtapesDapAAttendre({ transport }: Pick<Contexte, "transport">) {
   return (
     <ol>
       <li>
@@ -56,7 +69,11 @@ function EtapesDAP({ transport }: Contexte) {
       </li>
       <li>
         Attendez la réponse de l’Assurance Maladie avant d’organiser le
-        transport, sauf urgence.
+        transport.
+      </li>
+      <li>
+        L’absence de réponse dans un délai de 15 jours à compter de la réception
+        de la demande vaut accord.
       </li>
       <li>
         En cas de refus, le transport ne sera pas pris en charge dans les

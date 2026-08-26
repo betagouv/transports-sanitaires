@@ -4,6 +4,7 @@
 // évalués par `ResultatFinal`.
 
 import type { ReactNode } from "react";
+import { VerdictDapUrgente } from "./urgence-attestee";
 
 type Props = {
   casFinal: string;
@@ -11,6 +12,8 @@ type Props = {
   transportPrescrit: boolean;
   /** Les motifs de l'accord préalable, tels que le modèle les a établis. */
   motifs: string[];
+  /** `cible_attente_accord_prealable_requise` : la décision est-elle à attendre ? */
+  attenteRequise: boolean;
 };
 
 export function Bloc1Resultat({
@@ -18,11 +21,13 @@ export function Bloc1Resultat({
   transport,
   transportPrescrit,
   motifs,
+  attenteRequise,
 }: Props) {
   const { titre, corps } = verdict(casFinal, {
     transport,
     transportPrescrit,
     motifs,
+    attenteRequise,
   });
 
   return (
@@ -42,6 +47,7 @@ type Contexte = {
   transport: string;
   transportPrescrit: boolean;
   motifs: string[];
+  attenteRequise: boolean;
 };
 type Verdict = { titre: string; corps: ReactNode };
 
@@ -66,7 +72,17 @@ function prescriptionMedicale({ transport }: Contexte): Verdict {
   };
 }
 
-function accordPrealable({ transport, motifs }: Contexte): Verdict {
+// Deux variantes exclusives depuis la v9.5.1 : l'accord se réserve, ou l'urgence
+// attestée dispense de l'attendre. C'est le modèle qui tranche
+// (`cible_attente_accord_prealable_requise`) ; le document, lui, reste une DAP
+// dans les deux cas, puisqu'un motif réglementaire l'a déclenchée.
+function accordPrealable(contexte: Contexte): Verdict {
+  return contexte.attenteRequise
+    ? accordPrealableAAttendre(contexte)
+    : accordPrealableUrgent(contexte);
+}
+
+function accordPrealableAAttendre({ transport, motifs }: Contexte): Verdict {
   return {
     titre:
       "Vous êtes éligible sous réserve d’un accord préalable de l’Assurance Maladie",
@@ -77,6 +93,18 @@ function accordPrealable({ transport, motifs }: Contexte): Verdict {
           Document à remettre au patient :{" "}
           <strong>Demande d’Accord Préalable</strong>.
         </p>
+        <MotifsDeLAccord motifs={motifs} />
+      </>
+    ),
+  };
+}
+
+function accordPrealableUrgent({ transport, motifs }: Contexte): Verdict {
+  return {
+    titre: "Vous êtes éligible — urgence médicale attestée",
+    corps: (
+      <>
+        <VerdictDapUrgente transport={transport} />
         <MotifsDeLAccord motifs={motifs} />
       </>
     ),

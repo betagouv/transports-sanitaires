@@ -108,31 +108,48 @@ function DocumentARemettre({
   documentTelechargeable,
 }: Pick<Props, "situation" | "documentTelechargeable">) {
   const e = moteur.setSituation(situation);
-  const { casFinal, doc, transport, transportPrescrit, article80, motifs } =
-    cibles(e);
+  const lues = cibles(e);
+  return (
+    <>
+      <TroisBlocs e={e} cibles={lues} />
+      {lues.doc !== AUCUN_DOCUMENT && documentTelechargeable?.(situation)}
+    </>
+  );
+}
+
+// Les trois blocs du document, dans l'ordre où ils s'impriment. Chacun reçoit ce
+// qui le concerne ; le moteur ne va aux deux derniers que parce qu'ils lisent des
+// règles au cas par cas — le verdict, lui, est entièrement tranché ici.
+function TroisBlocs({
+  e,
+  cibles: c,
+}: {
+  e: typeof moteur;
+  cibles: ReturnType<typeof cibles>;
+}) {
   return (
     <>
       <Bloc1Resultat
-        casFinal={casFinal}
-        transport={transport}
-        transportPrescrit={transportPrescrit}
-        motifs={motifs}
+        casFinal={c.casFinal}
+        transport={c.transport}
+        transportPrescrit={c.transportPrescrit}
+        motifs={c.motifs}
+        attenteRequise={c.attenteRequise}
       />
       <Bloc2Etapes
         e={e}
-        casFinal={casFinal}
-        transport={transport}
-        transportPrescrit={transportPrescrit}
-        article80={article80}
+        casFinal={c.casFinal}
+        transport={c.transport}
+        transportPrescrit={c.transportPrescrit}
+        article80={c.article80}
       />
       <Bloc3CasRetenu
         e={e}
-        casFinal={casFinal}
-        transport={transport}
-        doc={doc}
-        article80={article80}
+        casFinal={c.casFinal}
+        transport={c.transport}
+        doc={c.doc}
+        article80={c.article80}
       />
-      {doc !== AUCUN_DOCUMENT && documentTelechargeable?.(situation)}
     </>
   );
 }
@@ -149,6 +166,7 @@ function cibles(e: typeof moteur) {
     transport,
     transportPrescrit: transport !== "" && transport !== "aucun",
     motifs: motifsDeLaDap(e),
+    attenteRequise: vrai(e, "cible_attente_accord_prealable_requise"),
     article80: {
       mode: texte(e, "cible_article_80_mode"),
       situationSpecifique: vrai(e, "cible_article_80_situation_specifique"),

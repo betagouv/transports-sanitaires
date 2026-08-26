@@ -172,9 +172,9 @@ export const REMPLISSAGE_PMT: Tableau = {
   //
   // Les deux cases d'urgence sont mutuellement exclusives.
   "Urg SAMU centre 15": coche(
-    (r) => r.texte("p2_transport_urgence") === URGENCE.samu,
+    (r) => r.texte("cible_type_urgence") === URGENCE.samu,
   ),
-  autres: coche((r) => r.texte("p2_transport_urgence") === URGENCE.autre),
+  autres: coche((r) => r.texte("cible_type_urgence") === URGENCE.autre),
 
   /** ❺ Volet 1 **uniquement** — donnée médicale, absente du Volet 2. */
   "comm évent": auPrescripteur("éléments d’ordre médical : rédaction libre"),
