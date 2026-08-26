@@ -14,7 +14,7 @@ import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { casesRetenues } from "../../front/simulateur/secretariat/cases-documentaires";
 import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
 import { moteurDeTest } from "./moteur";
-import { SMUR } from "./situations-v9-5-0";
+import { SMUR } from "./situations-v9-5-1";
 
 describe("nombre de transports", () => {
   it.each([

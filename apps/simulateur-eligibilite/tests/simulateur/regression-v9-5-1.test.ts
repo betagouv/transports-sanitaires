@@ -1,12 +1,12 @@
 // Le droit ouvert et le mode médical, part de la matrice de non-régression du
-// livrable v9.5.0 (tmp/9.5/…/transports-sanitaires.tests.v9-5-0.yaml).
+// livrable v9.5.1 (tmp/9.5.1/…/transports-sanitaires.tests.v9-5-1.yaml).
 //
 // Ce que la Partie 1 tranche, et ce qui ouvre — ou ferme — la prise en charge :
 // l'ALD et ses conditions cumulatives, l'acte non tarifé qui l'emporte sur tout
 // mode verrouillé, le motif ouvrant droit, la priorité de l'ambulance, et
 // l'accompagnant que Q1 désigne. La charge de l'établissement est dans
-// `article-80-v9-5-0.test.ts`, l'accord préalable et le trajet dans
-// `accord-prealable-v9-5-0.test.ts`.
+// `article-80-v9-5-1.test.ts`, l'accord préalable et le trajet dans
+// `accord-prealable-v9-5-1.test.ts`.
 //
 // Les assertions purement UI de la matrice (avancement automatique,
 // verrouillage, contenus interdits) ne sont nulle part ici : elles relèvent des
@@ -17,7 +17,6 @@ import { type Cas, rejouerLaMatrice } from "./matrice";
 import {
   ALD,
   AUTONOME,
-  DAP,
   HOSPITALISATION,
   NON_ELIGIBLE,
   PMT,
@@ -26,12 +25,12 @@ import {
   SMUR,
   TPMR,
   VSL,
-} from "./situations-v9-5-0";
+} from "./situations-v9-5-1";
 
 const PRESTATION_NON_PRISE_EN_CHARGE =
   "prestation non prise en charge par l’Assurance Maladie";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-0`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-1`.
 const matrice: Cas[] = [
   {
     id: "ALD-001",
@@ -39,10 +38,10 @@ const matrice: Cas[] = [
     expect: { p1_ald_validee: false, cible_cas_final: NON_ELIGIBLE },
   },
   {
-    // Le livrable n'attend ici que le motif ALD validé et le maintien du
-    // véhicule personnel. Le cas final, lui, a changé en v9.5.0 : la réponse
-    // « proche » de Q1 vaut désormais accompagnement par un tiers, motif de DAP
-    // à elle seule. Le document devient donc une DAP, sans que le mode bouge.
+    // La v9.5.0 avait fait basculer ce cas en DAP : la réponse « proche » de Q1
+    // y valait accompagnement par un tiers, motif d'accord préalable à elle
+    // seule. La v9.5.1 le retire, et le livrable le dit maintenant en toutes
+    // lettres — PMT hors autre motif réglementaire.
     id: "ALD-002",
     given: { p1_autonomie: PROCHE, ...ALD },
     expect: {
@@ -50,7 +49,7 @@ const matrice: Cas[] = [
       p1_ald_validee: true,
       cible_transport_sanitaire_prescrit:
         "véhicule personnel ou transport en commun",
-      cible_cas_final: DAP,
+      cible_cas_final: PMT,
     },
   },
   {
@@ -168,6 +167,6 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.5.0 — le droit ouvert et le mode médical", () => {
+describe("modèle v9.5.1 — le droit ouvert et le mode médical", () => {
   rejouerLaMatrice(matrice);
 });

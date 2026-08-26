@@ -191,10 +191,12 @@ describe("secrétariat — parcours administratif", () => {
     ).toBeNull();
   });
 
-  // ACCOMPAGNANT-UI-001 du livrable : A3.8 a disparu en v9.5.0. L'accompagnement
-  // se déduit de la deuxième réponse de Q1, et le motif de DAP avec lui — sans
-  // qu'aucune vue administrative ne vienne le redemander.
-  it("ACCOMPAGNANT-UI-001 : aucune vue ne redemande l'accompagnement par un tiers", async () => {
+  // ACCOMPAGNANT-UI-001 du livrable : A3.8 a disparu en v9.5.0, et le besoin d'un
+  // proche se déduit depuis de la deuxième réponse de Q1. La v9.5.0 en tirait
+  // aussi une cause d'accord préalable ; la v9.5.1 la retire. Reste une donnée
+  // médicale, qu'aucune vue administrative ne redemande et qui ne pèse plus sur
+  // le document conclu.
+  it("ACCOMPAGNANT-UI-001 : le besoin d'un proche n'est ni redemandé ni cause de DAP", async () => {
     const user = userEvent.setup({ delay: null });
     emettrePassation({
       ...PARTIE_1_AMBULANCE,
@@ -217,10 +219,17 @@ describe("secrétariat — parcours administratif", () => {
     expect(
       posees.filter((pose) => /assistance d’un tiers/i.test(pose)),
     ).toEqual([]);
-    // Le motif est bien retenu pour autant : il vient de Q1, pas d'une question.
+    // Ni cause d'accord préalable : le document conclu est une prescription, et
+    // l'accompagnement n'y figure que comme case à cocher du mode de transport.
+    expect(screen.queryAllByText(/assistance d’un tiers/i)).toEqual([]);
     expect(
-      screen.getAllByText(/assistance d’un tiers/i).length,
-    ).toBeGreaterThan(0);
+      screen.getByRole("heading", {
+        name: /vous êtes éligible à une prise en charge/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/personne accompagnante si nécessaire/i),
+    ).toBeInTheDocument();
   }, 20_000);
 
   it("traverse la Partie 2 jusqu'au résultat, saisies d'adresse comprises", async () => {

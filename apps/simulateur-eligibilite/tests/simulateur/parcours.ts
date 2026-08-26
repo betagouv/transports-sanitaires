@@ -31,6 +31,18 @@ export const PARTIE_1_AMBULANCE: Record<string, string> = {
 };
 
 /**
+ * La même chose, mais sans motif ouvrant droit : l'hygiène ne compte pas parmi
+ * les critères d'ambulance, seuls à valoir motif à eux seuls. C'est le seul
+ * chemin vers les questions que le modèle ne pose qu'à défaut d'autre motif —
+ * A2.4, la qualification précoce du dispositif Engagement maternité.
+ */
+export const PARTIE_1_SANS_MOTIF: Record<string, string> = {
+  ...PARTIE_1_AMBULANCE,
+  p1_critere_oxygene: "non",
+  p1_critere_hygiene_desinfection: "oui",
+};
+
+/**
  * Ce qu'un test veut voir coché. Il y a deux formes, selon la question :
  *   - `[question, valeur]` pour un choix unique ou un oui/non, le groupe étant
  *     nommé par `question` et l'option par `valeur` ;

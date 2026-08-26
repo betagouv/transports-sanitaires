@@ -1,7 +1,7 @@
 // Les motifs de l'accord préalable, tels que la Page Résultat 2 les restitue.
 //
-// Sept causes possibles, sept cibles du modèle — et sept seeds du catalogue, une
-// par cause, plus une qui en cumule deux. La page doit nommer exactement celles
+// Six causes réglementaires, six cibles du modèle — et six seeds du catalogue,
+// une par cause, plus une qui en cumule deux. La page doit nommer exactement celles
 // qui ont déclenché la demande, ni plus, ni moins : le prescripteur les reporte
 // sur le formulaire S3139, et l'application n'a pas le droit de les déduire
 // elle-même. Elle lit les cibles, c'est tout.
@@ -26,7 +26,6 @@ const MOTIFS_ATTENDUS: Record<string, RegExp[]> = {
   "secretariat-camsp-cmpp": [/CAMSP/],
   "secretariat-maternite-eloignee": [/dispositif Engagement maternité/i],
   "secretariat-samsah": [/SAMSAH/],
-  "secretariat-accompagnement-tiers": [/assistance d’un tiers/i],
   "secretariat-dap-motifs-cumules": [
     /avion ou bateau de ligne régulière/i,
     /CAMSP/,

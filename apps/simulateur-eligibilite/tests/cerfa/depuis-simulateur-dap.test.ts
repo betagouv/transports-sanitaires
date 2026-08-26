@@ -63,22 +63,17 @@ describe("le motif de la demande", () => {
     expect(lu).not.toHaveProperty("km");
   });
 
-  it("n’a pas de case pour le SAMSAH ni pour l’accompagnement d’un tiers", async () => {
-    // Le formulaire ne les prévoit pas : la rubrique ❶ part vierge, et le
+  it("n’a pas de case pour le SAMSAH", async () => {
+    // Le formulaire ne le prévoit pas : la rubrique ❶ part vierge, et le
     // prescripteur l'écrit à la main. On le verrouille pour que ce trou reste
     // visible plutôt que de passer pour un oubli.
-    for (const seed of [
-      "secretariat-samsah",
-      "secretariat-accompagnement-tiers",
-    ]) {
-      const lu = await depuisLaSeed(seed);
-      expect(lu, seed).not.toHaveProperty("km");
-      expect(lu, seed).not.toHaveProperty("bat ou av");
-    }
+    const lu = await depuisLaSeed("secretariat-samsah");
+    expect(lu).not.toHaveProperty("km");
+    expect(lu).not.toHaveProperty("bat ou av");
   });
 
   it("traite tous les motifs de DAP que le modèle porte", () => {
-    // Un huitième motif livré par une version ultérieure doit échouer ici plutôt
+    // Un septième motif livré par une version ultérieure doit échouer ici plutôt
     // que de disparaître du formulaire sans bruit.
     const duModèle = Object.keys(moteurDeTest().getParsedRules()).filter(
       (règle) => règle.startsWith("cible_dap_motif_"),

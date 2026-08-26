@@ -1,10 +1,10 @@
 // La charge de l'établissement, part de la matrice de non-régression du livrable
-// v9.5.0 (tmp/9.5/…/transports-sanitaires.tests.v9-5-0.yaml).
+// v9.5.1 (tmp/9.5.1/…/transports-sanitaires.tests.v9-5-1.yaml).
 //
 // L'Article 80 et le régime pénitentiaire ont ceci de commun qu'ils déplacent la
 // charge du transport : l'Assurance Maladie n'en est plus le payeur, et le
 // patient ne repart avec aucun document. Le reste de la matrice est dans
-// `regression-v9-5-0.test.ts` et `accord-prealable-v9-5-0.test.ts`.
+// `regression-v9-5-1.test.ts` et `accord-prealable-v9-5-1.test.ts`.
 
 import { describe } from "vitest";
 import { type Cas, rejouerLaMatrice } from "./matrice";
@@ -13,7 +13,7 @@ import {
   HOSPITALISATION,
   PMT,
   PRO,
-} from "./situations-v9-5-0";
+} from "./situations-v9-5-1";
 
 const matrice: Cas[] = [
   {
@@ -81,6 +81,6 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.5.0 — la charge de l’établissement", () => {
+describe("modèle v9.5.1 — la charge de l’établissement", () => {
   rejouerLaMatrice(matrice);
 });

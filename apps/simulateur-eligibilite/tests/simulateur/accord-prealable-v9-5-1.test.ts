@@ -1,11 +1,11 @@
 // L'accord préalable et le trajet, part de la matrice de non-régression du
-// livrable v9.5.0 (tmp/9.5/…/transports-sanitaires.tests.v9-5-0.yaml).
+// livrable v9.5.1 (tmp/9.5.1/…/transports-sanitaires.tests.v9-5-1.yaml).
 //
 // Ce qui fait basculer une prescription en demande d'accord préalable : la série
 // de transports et son exception ALD, le nombre exact saisi en A3.2, la distance,
 // puis ce que le trajet exige avant que le résultat s'affiche. Le droit ouvert
-// est dans `regression-v9-5-0.test.ts`, la charge de l'établissement dans
-// `article-80-v9-5-0.test.ts`.
+// est dans `regression-v9-5-1.test.ts`, la charge de l'établissement dans
+// `article-80-v9-5-1.test.ts`.
 
 import { describe } from "vitest";
 import { type Cas, rejouerLaMatrice } from "./matrice";
@@ -16,7 +16,7 @@ import {
   PMT,
   PRO,
   type Reponses,
-} from "./situations-v9-5-0";
+} from "./situations-v9-5-1";
 
 // Le fond des scénarios A3.2 : un VSL sur entrée d'hospitalisation, dont chaque
 // trajet aller dépasse 50 km. Seul le nombre de transports y varie.
@@ -27,7 +27,7 @@ const SERIE_50KM: Reponses = {
   p2_chaque_trajet_aller_superieur_50km: "oui",
 };
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-0`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-1`.
 const matrice: Cas[] = [
   {
     id: "SERIE-001",
@@ -170,6 +170,6 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.5.0 — l’accord préalable et le trajet", () => {
+describe("modèle v9.5.1 — l’accord préalable et le trajet", () => {
   rejouerLaMatrice(matrice);
 });

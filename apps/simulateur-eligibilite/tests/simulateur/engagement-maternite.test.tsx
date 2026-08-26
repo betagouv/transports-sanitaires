@@ -11,10 +11,13 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
-import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { type Reponse, terminerParcours } from "./parcours";
+import {
+  PARTIE_1_SANS_MOTIF,
+  type Reponse,
+  terminerParcours,
+} from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -28,18 +31,6 @@ const PRESTATION_PRISE_EN_CHARGE: Reponse = [
   /à l’origine du déplacement/i,
   /^oui$/i,
 ];
-
-// Une Partie 1 qui retient un VSL sans ouvrir aucun droit : l'hygiène ne compte
-// pas parmi les critères d'ambulance, seuls à valoir motif à eux seuls. C'est la
-// seule façon d'atteindre A2.4, qui ne se pose qu'à défaut d'autre motif.
-const PARTIE_1_SANS_MOTIF: Record<string, string> = {
-  ...Object.fromEntries(
-    Object.entries(BASE_NEUTRE).filter(([cle]) => cle.startsWith("p1_")),
-  ),
-  p1_autonomie:
-    "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
-  p1_critere_hygiene_desinfection: "oui",
-};
 
 describe("Engagement maternité — qualification précoce (A2.4)", () => {
   it("est posée, et n’est jamais reproposée dans A3.4", async () => {

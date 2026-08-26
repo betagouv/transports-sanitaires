@@ -128,9 +128,10 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
     {
       titre: "Situation nécessitant une DAP",
       icone: "fr-icon-health-book-line",
-      // Les sept causes d'une DAP sont calculées par le modèle depuis la v9.4.0 :
-      // chaque case ne s'affiche que si la sienne est vraie, là où le praticien
-      // devait auparavant retrouver lui-même celles qui s'appliquaient.
+      // Les six causes réglementaires d'une DAP sont calculées par le modèle
+      // depuis la v9.4.0 : chaque case ne s'affiche que si la sienne est vraie,
+      // là où le praticien devait auparavant retrouver lui-même celles qui
+      // s'appliquaient.
       cases: [
         {
           texte: "Trajet aller supérieur à 150 km.",
@@ -155,16 +156,6 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
         {
           texte: "Transport par avion ou bateau de ligne régulière.",
           visible: (e) => vrai(e, "cible_dap_motif_avion_bateau"),
-        },
-        {
-          // Le nom que le contrat d'interface donne à ce motif — le même que
-          // `motifs-de-la-dap.ts`. Le distinguer de la case « Personne
-          // accompagnante » du mode de transport n'est plus un luxe depuis la
-          // v9.5.0 : les deux cibles se déduisent désormais de la même réponse
-          // de Q1, et le même texte s'écrivait deux fois sur la même page.
-          texte:
-            "Accompagnement d’une personne nécessitant l’assistance d’un tiers.",
-          visible: (e) => vrai(e, "cible_dap_motif_accompagnement_tiers"),
         },
       ],
     },

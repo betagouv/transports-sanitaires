@@ -230,22 +230,18 @@ export const MOTIFS_DU_CHAMP_KM = [
 ] as const;
 
 /**
- * Le motif qui a son propre champ, et les deux que le formulaire ne sait pas
- * dire : la S3139h n'a de case ni pour le SAMSAH, ni pour l'accompagnement d'une
- * personne nécessitant l'assistance d'un tiers. Une demande fondée sur l'un des
- * deux part donc avec la rubrique ❶ vierge — le prescripteur l'écrit à la main.
+ * Le motif qui a son propre champ, et celui que le formulaire ne sait pas dire :
+ * la S3139h n'a pas de case pour le SAMSAH. Une demande fondée sur lui part donc
+ * avec la rubrique ❶ vierge — le prescripteur l'écrit à la main.
  *
  * Ces listes ne servent qu'à `tests/cerfa/depuis-simulateur-dap.test.ts`, qui
  * vérifie qu'elles couvrent, avec `MOTIFS_DU_CHAMP_KM`, tous les motifs que le
- * modèle porte : un huitième motif livré plus tard y échouera, au lieu de
+ * modèle porte : un septième motif livré plus tard y échouera, au lieu de
  * disparaître sans bruit du formulaire.
  */
 export const MOTIF_DU_CHAMP_BATEAU = "cible_dap_motif_avion_bateau";
 
-export const MOTIFS_SANS_CASE = [
-  "cible_dap_motif_samsah",
-  "cible_dap_motif_accompagnement_tiers",
-] as const;
+export const MOTIFS_SANS_CASE = ["cible_dap_motif_samsah"] as const;
 
 // ---- implémentation ----
 

@@ -24,6 +24,7 @@ import {
   allerAuChampNombre,
   allerAuGroupe,
   PARTIE_1_AMBULANCE,
+  PARTIE_1_SANS_MOTIF,
 } from "./parcours";
 
 const Q1 = /^concernant son déplacement, le patient/i;
@@ -49,6 +50,9 @@ type Cas = {
   information: string;
   // Ce qu'il faut répondre en chemin pour que la branche s'ouvre.
   reponses: Reponse[];
+  // La Partie 1 à passer au secrétariat, quand l'ambulance par défaut ferme la
+  // branche : A2.4 ne se pose qu'à défaut d'un motif ouvrant droit.
+  partie1?: Record<string, string>;
 };
 
 const QUESTIONS: Cas[] = [
@@ -124,6 +128,20 @@ const QUESTIONS: Cas[] = [
     reponses: [],
   },
   {
+    // La v9.5.1 ajoute la définition validée du dispositif, au même mot que
+    // celle d'A3.4 : le prescripteur doit la lire là où la question se pose,
+    // qu'elle vienne tôt ou tard dans le parcours.
+    spec: "A2.4",
+    regle: "p2_engagement_maternite_entree",
+    depuis: "secretariat",
+    partie1: PARTIE_1_SANS_MOTIF,
+    question:
+      "Le déplacement relève-t-il du dispositif Engagement maternité pour une patiente domiciliée à plus de 45 minutes de la maternité adaptée recommandée par l’équipe soignante ?",
+    information:
+      "Le dispositif Engagement maternité concerne les femmes enceintes résidant à plus de 45 minutes de la maternité la plus proche adaptée à leur situation. Il peut permettre la prise en charge d’un hébergement temporaire à proximité de cette maternité et des transports correspondants.",
+    reponses: [PRESTATION_PRISE_EN_CHARGE],
+  },
+  {
     spec: "A4.5",
     regle: "p2_transport_urgence",
     depuis: "secretariat",
@@ -153,7 +171,7 @@ const QUESTIONS: Cas[] = [
     question:
       "Le transport concerne-t-il une ou plusieurs des situations suivantes ?",
     information:
-      "Sélectionnez toutes les réponses correspondant à la situation du patient.",
+      "Le dispositif Engagement maternité concerne les femmes enceintes résidant à plus de 45 minutes de la maternité la plus proche adaptée à leur situation. Il peut permettre la prise en charge d’un hébergement temporaire à proximité de cette maternité et des transports correspondants. Sélectionnez toutes les réponses correspondant à la situation du patient.",
     reponses: [[/à l’origine du déplacement/i, /^oui$/i]],
   },
   {
@@ -228,7 +246,7 @@ async function ouvrir(cas: Cas) {
       />,
     );
   else {
-    emettrePassation(PARTIE_1_AMBULANCE);
+    emettrePassation(cas.partie1 ?? PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
   }
   if (cas.forme === "saisie") await allerAuChampNombre(user, cas.reponses);

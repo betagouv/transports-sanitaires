@@ -522,9 +522,9 @@ export const SEEDS: readonly Seed[] = [
       "Le pendant de la seed précédente, et un arbitrage propre à la v9.1 : " +
       "l'aide d'un proche accompagnant caractérise l'incapacité — l'ALD est donc " +
       "validée et ouvre le droit — tout en laissant le véhicule personnel ou le " +
-      "transport en commun comme mode retenu. Depuis la v9.5.0, la même réponse " +
-      "vaut accompagnement par un tiers, motif de DAP : le document n'est plus " +
-      "une PMT.",
+      "transport en commun comme mode retenu. La v9.5.0 en avait fait une DAP, " +
+      "l'accompagnement valant alors motif d'accord préalable ; la v9.5.1 " +
+      "corrige et rend la PMT.",
     outil: "prescripteur",
     entrees: {
       p1_autonomie: PROCHE_ACCOMPAGNANT,
@@ -536,9 +536,10 @@ export const SEEDS: readonly Seed[] = [
       cible_transport_sanitaire_prescrit:
         "véhicule personnel ou transport en commun",
       cible_partie_2_requise: "oui",
-      cible_cas_final: "demande d’accord préalable",
+      cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient:
+        "PMT (Prescription Médicale de Transport)",
     },
   },
   {
@@ -775,12 +776,13 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
-    id: "secretariat-accompagnement-tiers",
-    libelle: "Secrétariat — accompagnement par un tiers",
+    id: "secretariat-proche-accompagnant",
+    libelle: "Secrétariat — proche accompagnant, sans motif d’accord préalable",
     description:
-      "Déclencheur d'accord préalable que plus aucune question administrative ne " +
-      "porte : depuis la v9.5.0, l'accompagnement se déduit de la deuxième réponse " +
-      "de Q1, et le motif de DAP avec lui.",
+      "Le besoin d'un proche, et rien d'autre. La v9.5.0 en tirait un motif " +
+      "d'accord préalable, et donc une DAP ; la v9.5.1 l'a retiré : " +
+      "l'accompagnement est une donnée médicale, reportée sur la PMT, et non " +
+      "une cause de demande d'accord préalable.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: PROCHE_ACCOMPAGNANT,
@@ -791,9 +793,10 @@ export const SEEDS: readonly Seed[] = [
       cible_transport_sanitaire_prescrit:
         "véhicule personnel ou transport en commun",
       cible_partie_2_requise: "oui",
-      cible_cas_final: "demande d’accord préalable",
+      cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient:
+        "PMT (Prescription Médicale de Transport)",
     },
   },
   {

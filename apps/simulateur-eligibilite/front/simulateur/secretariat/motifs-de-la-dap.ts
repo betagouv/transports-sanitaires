@@ -1,6 +1,6 @@
 // Les motifs qui ont déclenché la demande d'accord préalable.
 //
-// Sept causes possibles, sept cibles du modèle. C'est lui qui décide laquelle
+// Six causes réglementaires, six cibles du modèle. C'est lui qui décide laquelle
 // s'applique : l'application les lit et rend celles qui sont vraies, sans jamais
 // rejouer le raisonnement. Une DAP peut en réunir plusieurs — d'où une liste, et
 // non un motif unique.
@@ -9,12 +9,12 @@ import type { Cible } from "../contrat-regles-publicodes";
 import { type moteur, vrai } from "../moteur";
 
 /**
- * Les sept causes, avec le libellé que le contrat d'interface leur donne — repris
+ * Les six causes, avec le libellé que le contrat d'interface leur donne — repris
  * mot pour mot (`ui_computed_content.motifs_dap`), sigles développés compris : ce
  * sont eux que le patient et le prescripteur doivent retrouver.
  *
  * Exportée pour que `tests/simulateur/motifs-de-la-dap.test.tsx` confronte cette
- * liste aux cibles du modèle : une huitième cause livrée en amont doit échouer
+ * liste aux cibles du modèle : une septième cause livrée en amont doit échouer
  * ici, et non passer inaperçue.
  */
 export const MOTIFS_DE_LA_DAP: ReadonlyArray<{
@@ -46,11 +46,6 @@ export const MOTIFS_DE_LA_DAP: ReadonlyArray<{
     cible: "cible_dap_motif_samsah",
     libelle:
       "Soins ou traitements dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)",
-  },
-  {
-    cible: "cible_dap_motif_accompagnement_tiers",
-    libelle:
-      "Accompagnement d’une personne nécessitant l’assistance d’un tiers",
   },
 ];
 

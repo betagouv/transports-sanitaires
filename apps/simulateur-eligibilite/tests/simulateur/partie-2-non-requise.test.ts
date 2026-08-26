@@ -22,7 +22,7 @@
 // c'est lui qui le dira si une prochaine recopie défait la correction.
 
 import { describe, expect, it } from "vitest";
-import { estApplicable, evalue, SMUR } from "./situations-v9-5-0";
+import { estApplicable, evalue, SMUR } from "./situations-v9-5-1";
 
 // Les trois sorties directes, avec les réponses qui les produisent et le cas
 // final que chacune arrête. La base neutre répond par ailleurs à tout le

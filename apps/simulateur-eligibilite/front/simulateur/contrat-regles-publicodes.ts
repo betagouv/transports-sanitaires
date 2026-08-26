@@ -26,7 +26,6 @@ export const CIBLES = [
   "cible_article_80_mode",
   "cible_article_80_situation_specifique",
   "cible_cas_final",
-  "cible_dap_motif_accompagnement_tiers",
   "cible_dap_motif_avion_bateau",
   "cible_dap_motif_camsp_cmpp",
   "cible_dap_motif_engagement_maternite",
