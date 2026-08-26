@@ -1,13 +1,18 @@
-// L'ALD reconnue et liée aux soins, mais que le modèle ne retient pas faute
-// d'incapacité ou de déficience.
+// Ce que la Page Résultat 2 dit du motif ALD, dans les deux sens.
 //
-// Le cas est piégeux pour le patient : il a déclaré une ALD, il s'attend à ce
-// qu'elle ouvre le droit, et elle ne le fait pas. La Page Résultat 2 doit donc le
-// lui dire — et dire au corps médical ce que cette conclusion ne fait pas : elle
-// ne touche ni le mode médical verrouillé, ni les autres motifs réglementaires.
-// Ces deux blocs sont conditionnés par une seule cible du modèle
-// (`cible_ald_non_retenue_absence_incapacite_deficience`) ; rien ici ne rejoue la
-// qualification.
+// Écartée, l'ALD est piégeuse pour le patient : il l'a déclarée, il s'attend à ce
+// qu'elle ouvre le droit, et elle ne le fait pas. La page doit donc le lui dire —
+// et dire au corps médical ce que cette conclusion ne fait pas : elle ne touche
+// ni le mode médical verrouillé, ni les autres motifs réglementaires.
+//
+// Retenue, elle demande l'inverse : dire d'où vient le motif, et rappeler que le
+// droit ne s'arrête pas là — l'acte doit encore être tarifé. C'est la traçabilité
+// que la v9.5.0 ajoute, après avoir vu des ALD reconnues servir à ouvrir un droit
+// que la prestation ne portait pas.
+//
+// Chaque bloc tient à une seule cible du modèle
+// (`cible_ald_non_retenue_absence_incapacite_deficience`,
+// `cible_ald_reconnue_liee_aux_soins`) ; rien ici ne rejoue la qualification.
 
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
@@ -19,6 +24,10 @@ const INFORMATION_PATIENT =
   /l’absence d’incapacité ou de déficience définie par le référentiel ne permet pas de retenir l’ALD/i;
 const QUALIFICATION_MEDICALE =
   /le motif ALD .* n’est pas retenu, car aucune incapacité ou déficience/i;
+const TRACABILITE =
+  /les soins ou examens à l’origine du déplacement concernent le traitement/i;
+const RESERVE_TARIFICATION =
+  /reste conditionnée au caractère tarifé et remboursable de l’acte/i;
 
 describe("ALD non retenue faute d’incapacité ou de déficience", () => {
   it("l’explique au patient et au corps médical", () => {
@@ -54,6 +63,28 @@ describe("ALD non retenue faute d’incapacité ou de déficience", () => {
     afficher("secretariat-prescription");
     expect(screen.queryByText(INFORMATION_PATIENT)).toBeNull();
     expect(screen.queryByText(QUALIFICATION_MEDICALE)).toBeNull();
+  });
+});
+
+describe("traçabilité du motif ALD retenu", () => {
+  it("dit d’où vient le motif, et ce qui reste à vérifier", () => {
+    // ALD reconnue et liée aux soins, incapacité caractérisée par un proche
+    // accompagnant : le motif est retenu, et le document le trace.
+    afficher("prescripteur-ald-proche-accompagnant");
+    expect(screen.getByText(TRACABILITE)).toBeInTheDocument();
+    expect(screen.getByText(RESERVE_TARIFICATION)).toBeInTheDocument();
+  });
+
+  it("se tait quand aucun document n’est établi", () => {
+    // L'ALD est bien reconnue et liée aux soins, mais le droit se referme : il
+    // n'y a ni PMT ni DAP sur quoi tracer quoi que ce soit.
+    afficher("prescripteur-ald-sans-incapacite");
+    expect(screen.queryByText(TRACABILITE)).toBeNull();
+  });
+
+  it("se tait quand aucune ALD n’est déclarée", () => {
+    afficher("secretariat-prescription");
+    expect(screen.queryByText(TRACABILITE)).toBeNull();
   });
 });
 

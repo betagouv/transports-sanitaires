@@ -90,7 +90,7 @@ function Verdict({
     <Alerte
       type="success"
       titre="Décision médicale établie"
-      texte={`Le mode de transport retenu est : ${transport}. C’est le mode le moins onéreux compatible avec l’état de santé et le niveau d’autonomie du patient.`}
+      texte={`Le mode de transport retenu est : ${transport}. Cette décision porte uniquement sur le mode de transport médicalement adapté. La prise en charge du transport et le document à utiliser sont vérifiés dans la partie administrative.`}
     />
   );
 }
@@ -250,7 +250,7 @@ const CAS_DIRECTS: Record<string, { titre: string; verdict: string }> = {
   "bariatrique seul": {
     titre: "Aucun transport prescriptible sur le seul fondement bariatrique",
     verdict:
-      "La contrainte bariatrique ne constitue pas, à elle seule, un motif médical ouvrant droit à une prescription prise en charge par l’Assurance Maladie. Contactez l’établissement ou la coordination territoriale compétente afin d’organiser un véhicule disposant de l’équipement adapté.",
+      "La morphologie du patient ou son poids supérieur à 150 kg nécessite un équipement bariatrique adapté, mais aucun autre besoin médical sélectionné ne justifie un transport prescrit. Contactez l’établissement ou la coordination territoriale compétente afin d’organiser un véhicule disposant de l’équipement adapté.",
   },
   "permission de sortie sans motif médical": {
     titre: "Permission de sortie sans motif médical",

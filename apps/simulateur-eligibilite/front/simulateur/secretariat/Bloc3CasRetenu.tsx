@@ -4,8 +4,8 @@
 
 import { type moteur, vrai } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
-import type { Groupe } from "./cases-documentaires";
-import { casesRetenues, texteDeCase } from "./cases-documentaires";
+import type { GroupeRetenu } from "./cases-documentaires";
+import { casesRetenues } from "./cases-documentaires";
 
 type Props = {
   e: typeof moteur;
@@ -41,6 +41,7 @@ export function Bloc3CasRetenu({
         </p>
         <NoteCorpsMedical casFinal={casFinal} article80={article80} />
         <QualificationDuMotifAld e={e} />
+        <TracabiliteDuMotifAld e={e} casFinal={casFinal} />
         <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />
       </div>
     </div>
@@ -131,7 +132,34 @@ function QualificationDuMotifAld({ e }: Pick<Props, "e">) {
   );
 }
 
-function CasesACompleter({ groupes }: { groupes: Groupe[] }) {
+// Le pendant du bloc précédent, quand l'ALD *est* retenue : dire d'où vient le
+// motif, et rappeler que le droit ne s'arrête pas là — l'acte doit encore être
+// tarifé. Né avec la v9.5.0, qui a vu des ALD reconnues servir à ouvrir un droit
+// que la prestation ne portait pas.
+function TracabiliteDuMotifAld({ e, casFinal }: Pick<Props, "e" | "casFinal">) {
+  const documente =
+    casFinal === "prescription médicale de transport" ||
+    casFinal === "demande d’accord préalable";
+  if (!documente || !vrai(e, "cible_ald_reconnue_liee_aux_soins")) return null;
+  return (
+    <div className="fr-mt-2w">
+      <p className="fr-mb-1v">
+        <strong>Traçabilité du motif ALD (Affection de Longue Durée)</strong>
+      </p>
+      <p>
+        Les soins ou examens à l’origine du déplacement concernent le
+        traitement, le suivi ou les conséquences d’une ALD (Affection de Longue
+        Durée) reconnue pour le patient.
+      </p>
+      <p>
+        La prise en charge du transport reste conditionnée au caractère tarifé
+        et remboursable de l’acte ou de la prestation dans le cadre concerné.
+      </p>
+    </div>
+  );
+}
+
+function CasesACompleter({ groupes }: { groupes: GroupeRetenu[] }) {
   if (groupes.length === 0) return null;
   return (
     <>
@@ -155,7 +183,7 @@ function CasesACompleter({ groupes }: { groupes: Groupe[] }) {
   );
 }
 
-function GroupeDeCases({ groupe }: { groupe: Groupe }) {
+function GroupeDeCases({ groupe }: { groupe: GroupeRetenu }) {
   return (
     <>
       {groupe.titre && (
@@ -168,7 +196,7 @@ function GroupeDeCases({ groupe }: { groupe: Groupe }) {
       )}
       <ul>
         {groupe.cases.map((laCase) => (
-          <li key={texteDeCase(laCase)}>{texteDeCase(laCase)}</li>
+          <li key={laCase}>{laCase}</li>
         ))}
       </ul>
     </>

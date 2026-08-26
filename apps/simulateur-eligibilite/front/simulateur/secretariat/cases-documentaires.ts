@@ -9,18 +9,27 @@ import type { moteur } from "../moteur";
 
 // Une case documentaire : soit un libellé toujours listé (checklist manuelle du
 // praticien), soit un libellé conditionné par une règle du modèle — auquel cas
-// il n'est affiché que si la simulation l'a établi.
-export type CaseDocumentaire =
+// il n'est affiché que si la simulation l'a établi. Le libellé lui-même peut se
+// calculer : la v9.5.0 expose le nombre exact de transports, et une case qui le
+// porte vaut mieux qu'une ligne à recopier.
+type CaseDocumentaire =
   | string
   | {
-      texte: string;
-      visible: (e: typeof moteur, transport: string) => boolean;
+      texte: string | ((e: typeof moteur) => string);
+      visible?: (e: typeof moteur, transport: string) => boolean;
     };
 
-export type Groupe = {
+type Groupe = {
   titre?: string;
   icone?: string;
   cases: CaseDocumentaire[];
+};
+
+/** Un groupe dont les cases sont tranchées : plus rien à évaluer pour l'afficher. */
+export type GroupeRetenu = {
+  titre?: string;
+  icone?: string;
+  cases: string[];
 };
 
 // Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
@@ -109,7 +118,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
         "Départ.",
         "Arrivée.",
         "Aller-retour.",
-        "Nombre de transports si applicable.",
+        { texte: nombreDeTransports },
         "Urgence si applicable.",
         "Éléments d’ordre médical justifiant le déplacement.",
       ],
@@ -180,7 +189,7 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
         "Départ.",
         "Arrivée.",
         "Aller-retour.",
-        "Nombre de transports.",
+        { texte: nombreDeTransports },
         "Urgence si applicable.",
         "Éléments d’ordre médical.",
       ],
@@ -238,25 +247,45 @@ export function casesRetenues(
   casFinal: string,
   e: typeof moteur,
   transport: string,
-): Groupe[] {
+): GroupeRetenu[] {
   return (CASES_BLOC3[casFinal] ?? [])
     .map((groupe) => ({
       ...groupe,
-      cases: groupe.cases.filter(
-        (laCase) => typeof laCase === "string" || laCase.visible(e, transport),
-      ),
+      cases: groupe.cases
+        .filter(
+          (laCase) =>
+            typeof laCase === "string" ||
+            (laCase.visible?.(e, transport) ?? true),
+        )
+        .map((laCase) => texteDeCase(laCase, e)),
     }))
     .filter((groupe) => groupe.cases.length > 0);
 }
 
-export function texteDeCase(laCase: CaseDocumentaire): string {
-  return typeof laCase === "string" ? laCase : laCase.texte;
+// ---- implémentation ----
+
+// A3.2 n'est pas posée sur tous les parcours. Quand elle l'est, la case porte le
+// chiffre plutôt que de le laisser à recopier ; sinon elle reste le rappel qu'elle
+// a toujours été.
+function nombreDeTransports(e: typeof moteur): string {
+  const nombre = valeur(e, "cible_nombre_transports_prevus");
+  return nombre === ""
+    ? "Nombre de transports si applicable."
+    : `Nombre de transports : ${nombre}.`;
 }
 
-// ---- implémentation ----
+function texteDeCase(laCase: CaseDocumentaire, e: typeof moteur): string {
+  if (typeof laCase === "string") return laCase;
+  return typeof laCase.texte === "string" ? laCase.texte : laCase.texte(e);
+}
 
 // Une règle du modèle s'évalue-t-elle à vrai pour la situation courante ? Le
 // paramètre passe par `CleDeRegle` : une règle renommée en amont ne compile plus.
 function vrai(e: typeof moteur, id: CleDeRegle): boolean {
   return e.evaluate(id).nodeValue === true;
+}
+
+// La valeur d'une règle, en texte. Vide tant que le parcours ne l'a pas tranchée.
+function valeur(e: typeof moteur, id: CleDeRegle): string {
+  return String(e.evaluate(id).nodeValue ?? "");
 }

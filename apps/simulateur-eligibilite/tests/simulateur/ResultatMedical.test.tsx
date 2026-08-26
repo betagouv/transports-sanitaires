@@ -38,6 +38,24 @@ describe("prescripteur — résultat médical", () => {
     expect(passer).toHaveBeenCalledTimes(1);
   });
 
+  // RESULT-004 du livrable : la v9.5.0 retire du verdict la phrase du mode le
+  // moins onéreux — qui parlait de coût là où l'écran ne tranche que le médical —
+  // et lui substitue la portée de la décision.
+  it("RESULT-004 : le verdict borne sa portée, sans parler du mode le moins onéreux", async () => {
+    const user = afficher();
+
+    await terminerParcours(user, [
+      [/^concernant son déplacement, le patient/i, /peut se déplacer seul/i],
+    ]);
+
+    expect(
+      screen.getByText(
+        /cette décision porte uniquement sur le mode de transport médicalement adapté/i,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/moins onéreux/i)).toBeNull();
+  });
+
   it("contrainte bariatrique seule → aucun transport prescriptible", async () => {
     const user = afficher();
 
