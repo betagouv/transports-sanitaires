@@ -3,8 +3,10 @@
 //
 // Ce qui fait basculer une prescription en demande d'accord préalable : la série
 // de transports et son exception ALD, le nombre exact saisi en A3.2, la distance,
-// puis ce que le trajet exige avant que le résultat s'affiche. Le droit ouvert
-// est dans `regression-v9-5-1.test.ts`, la charge de l'établissement dans
+// puis ce que le trajet exige avant que le résultat s'affiche. Et, depuis la
+// v9.5.1, ce qui dispense d'attendre la décision : l'urgence médicale attestée,
+// qui ne supprime pas le document mais bien l'attente. Le droit ouvert est dans
+// `regression-v9-5-1.test.ts`, la charge de l'établissement dans
 // `article-80-v9-5-1.test.ts`.
 
 import { describe } from "vitest";
@@ -17,6 +19,19 @@ import {
   PRO,
   type Reponses,
 } from "./situations-v9-5-1";
+
+// Le fond des scénarios d'urgence : un VSL sur entrée d'hospitalisation, auquel
+// chaque cas ajoute son motif de DAP — ou n'en ajoute aucun.
+const VSL_HOSPITALISATION: Reponses = {
+  p1_autonomie: PRO,
+  p1_critere_hygiene_desinfection: "oui",
+  ...HOSPITALISATION,
+};
+
+// Les deux réponses d'A4.5 qui attestent l'urgence, mot pour mot.
+const SAMU = "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'";
+const AUTRE_URGENCE =
+  "'Autre urgence médicale attestée par le médecin prescripteur'";
 
 // Le fond des scénarios A3.2 : un VSL sur entrée d'hospitalisation, dont chaque
 // trajet aller dépasse 50 km. Seul le nombre de transports y varie.
@@ -156,6 +171,60 @@ const matrice: Cas[] = [
     expect: {
       p2_adresses_obligatoires_completes: false,
       cible_resultat_2_affichable: false,
+    },
+  },
+  // Les quatre scénarios d'urgence de la v9.5.1. Le document ne bouge pas — une
+  // cause réglementaire de DAP reste une DAP — mais l'attente disparaît, et avec
+  // elle le délai de 15 jours.
+  {
+    id: "URGENCE-001",
+    given: { ...VSL_HOSPITALISATION, p2_transport_urgence: SAMU },
+    expect: {
+      cible_urgence_attestee: true,
+      cible_type_urgence: "appel SAMU - Centre 15",
+      cible_attente_accord_prealable_requise: false,
+      cible_cas_final: PMT,
+    },
+  },
+  {
+    id: "URGENCE-002",
+    given: {
+      ...VSL_HOSPITALISATION,
+      p2_distance_aller_superieure_150km: "oui",
+      p2_transport_urgence: SAMU,
+    },
+    expect: {
+      cible_urgence_attestee: true,
+      cible_attente_accord_prealable_requise: false,
+      cible_cas_final: DAP,
+    },
+  },
+  {
+    id: "URGENCE-003",
+    given: {
+      ...VSL_HOSPITALISATION,
+      p2_special_camsp_cmpp: "oui",
+      p2_special_aucune: "non",
+      p2_transport_urgence: AUTRE_URGENCE,
+    },
+    expect: {
+      cible_type_urgence: "autre urgence médicale attestée",
+      cible_attente_accord_prealable_requise: false,
+      cible_dap_motif_camsp_cmpp: true,
+      cible_cas_final: DAP,
+    },
+  },
+  {
+    id: "URGENCE-004",
+    given: {
+      ...VSL_HOSPITALISATION,
+      p2_distance_aller_superieure_150km: "oui",
+    },
+    expect: {
+      cible_urgence_attestee: false,
+      cible_type_urgence: "aucune",
+      cible_attente_accord_prealable_requise: true,
+      cible_cas_final: DAP,
     },
   },
   {

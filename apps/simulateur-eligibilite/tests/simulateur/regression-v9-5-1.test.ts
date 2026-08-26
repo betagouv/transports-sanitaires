@@ -17,6 +17,7 @@ import { type Cas, rejouerLaMatrice } from "./matrice";
 import {
   ALD,
   AUTONOME,
+  DAP,
   HOSPITALISATION,
   NON_ELIGIBLE,
   PMT,
@@ -141,9 +142,11 @@ const matrice: Cas[] = [
     // ACCOMPAGNANT-001 : la cible réintroduite en v9.2.1, qui remplace la
     // dérivation que l'application tenait depuis Q1. Ses quatre états — dont
     // l'absence de valeur avant réponse, qui interdit un « non » par défaut.
+    // Depuis la v9.5.1, le livrable y ajoute ce que cette réponse ne fait
+    // *pas* : elle produit une PMT, et jamais une DAP.
     id: "ACCOMPAGNANT-001 · proche accompagnant",
     given: { p1_autonomie: PROCHE, ...HOSPITALISATION },
-    expect: { cible_accompagnant_necessaire: true },
+    expect: { cible_accompagnant_necessaire: true, cible_cas_final: PMT },
   },
   {
     id: "ACCOMPAGNANT-001 · autonome",
@@ -164,6 +167,34 @@ const matrice: Cas[] = [
     id: "ACCOMPAGNANT-001 · Q1 sans réponse",
     given: { p1_autonomie: null, ...HOSPITALISATION },
     expect: { cible_accompagnant_necessaire: undefined },
+  },
+  // Les deux cas que la v9.5.1 ajoute pour verrouiller sa correction : le besoin
+  // d'un proche n'est plus une cause d'accord préalable, et ne masque pas non
+  // plus celles qui en sont.
+  {
+    id: "ACCOMPAGNANT-REGRESSION-001",
+    given: { p1_autonomie: PROCHE, ...HOSPITALISATION },
+    expect: {
+      cible_accompagnant_necessaire: true,
+      p2_accord_prealable_requis: false,
+      cible_cas_final: PMT,
+      cible_document_a_remettre_au_patient:
+        "PMT (Prescription Médicale de Transport)",
+    },
+  },
+  {
+    id: "ACCOMPAGNANT-REGRESSION-002",
+    given: {
+      p1_autonomie: PROCHE,
+      ...HOSPITALISATION,
+      p2_distance_aller_superieure_150km: "oui",
+    },
+    expect: {
+      cible_accompagnant_necessaire: true,
+      cible_dap_motif_longue_distance: true,
+      cible_dap_motif_serie: false,
+      cible_cas_final: DAP,
+    },
   },
 ];
 
