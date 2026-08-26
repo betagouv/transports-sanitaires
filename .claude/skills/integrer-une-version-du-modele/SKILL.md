@@ -13,7 +13,7 @@ composants et nos tests.
 
 **On ne corrige jamais le modèle localement.** Il est recopié tel qu'il est
 livré. Ce qui ne va pas se constate, se documente et se remonte à l'éditeur —
-voir « Quand le modèle a tort ». Un correctif local a existé une fois, en v9.1,
+voir § 12. Un correctif local a existé une fois, en v9.1,
 et a été retiré dès que l'éditeur a corrigé (`f4da5b7`).
 
 Précédents à relire au besoin : `128bbfa` (v9.4.1, un commit), et la v9.5.0 en
@@ -190,7 +190,13 @@ reformulation en passant ne se verrait nulle part.
 
 ## 11. La découpe en commits
 
-Quatre commits, dans cet ordre, chacun laissant `pnpm verifier` vert :
+**Un commit, une intention**, comme partout dans le dépôt — le nombre suit ce que
+la version apporte, pas un gabarit. Chacun laisse `pnpm verifier` vert : un
+commit qui ne compile qu'avec le suivant n'est pas une intention, c'est une
+moitié de geste.
+
+La v9.5.0 en a demandé quatre, qui donnent une idée des intentions qu'une
+intégration met en jeu :
 
 | Type | Ce qu'il porte |
 |---|---|
@@ -199,25 +205,56 @@ Quatre commits, dans cet ordre, chacun laissant `pnpm verifier` vert :
 | `feat(simulateur): rend les contenus de la v<version>` | ce que le contrat d'interface ajoute ou réécrit à l'écran |
 | `docs(simulateur): met le README à l'heure de la v<version>` | le compte de règles et de cibles, les noms des fichiers de recette |
 
-Le premier est gros par nature : il ne peut pas être vert à moitié. Les
-règles de commit du dépôt s'appliquent (`docs/contributing/regles-git.md`),
+Une version plus large en demandera davantage : un écran refondu, une mécanique
+d'interface à revoir, un correctif que le nouveau modèle rend possible sont
+autant d'intentions distinctes, et chacune vaut son commit. Une version étroite
+peut n'en demander qu'un — la v9.4.1 a tenu en `128bbfa`.
+
+Le premier, en revanche, est gros par nature et ne se découpe pas : le modèle
+recopié casse tout ce qui le nomme, et rien n'est vert tant que tout ne l'est pas.
+
+Les règles de commit du dépôt s'appliquent (`docs/contributing/regles-git.md`),
 GIT-005 compris — deux paragraphes, et l'état de vérification pour finir.
 
 **La livraison est un autre geste**, décrit par le skill `livrer-une-version` :
 ne pas monter `package.json` ni écrire dans `CHANGELOG.md` ici.
 
-## Quand le modèle a tort
+## 12. Le retour à l’éditeur
 
-Écrire un constat dans `tmp/anomalie-v<version>-<sujet>.md`, destiné à être
-envoyé tel quel. Le précédent est `tmp/anomalie-v9-5-0-accompagnement.md`, et sa
-structure vaut d'être reprise : en-tête (modèle, règles en cause, comment c'est
-reproduit), le constat en une phrase, ce qui se passait avant, ce qui se passe
-maintenant, pourquoi cela nous arrête, la cause qu'on suppose, ce qu'on a
-constaté à l'exécution, ce qu'on a fait de notre côté, et la question posée avec
-les pistes de correction.
+Une intégration apprend des choses que seul l'intégrateur voit : une règle qui se
+contredit, un libellé qui ne dit pas ce qu'il calcule, une question supprimée
+dont la valeur ne se déduit pas, un cas devenu inatteignable. **Rien de tout cela
+ne se remonte de mémoire** : ça s'écrit au moment où on le constate, dans un
+fichier, et ça part chez l’éditeur du modèle.
 
-En attendant la réponse, on intègre quand même. Les attendus touchés sont mis à
-jour pour constater le comportement réel, avec un commentaire qui dit pourquoi.
-Un test devenu inexécutable n'est pas supprimé : il est réécrit pour constater
-l'impasse, de sorte qu'il redevienne rouge le jour où l'éditeur la rouvre —
+Un fichier par sujet, dans `tmp/`, nommé `anomalie-v<version>-<sujet>.md`,
+**écrit pour être envoyé tel quel** — le destinataire ne connaît ni notre code ni
+nos tests. Le précédent est `tmp/anomalie-v9-5-0-accompagnement.md` ; sa structure
+vaut d'être reprise :
+
+| Section | Ce qu'elle porte |
+|---|---|
+| En-tête | le modèle concerné, les règles en cause, comment le constat est reproduit |
+| Le constat en une phrase | de quoi décider s'il faut lire la suite |
+| Ce qui se passait avant | la version précédente, et pourquoi elle tenait |
+| Ce qui se passe maintenant | l'enchaînement, étape par étape |
+| Pourquoi cela nous arrête | la conséquence pour le prescripteur ou le patient, pas pour notre code |
+| La cause supposée | ce qu'on croit avoir été confondu, sans l'affirmer |
+| Ce qu'on a constaté à l'exécution | les scénarios de la recette qui ont changé de résultat |
+| Ce qu'on a fait de notre côté | pour que l’éditeur sache ce qu'il défait s'il corrige |
+| La question | fermée, avec les pistes de correction — le choix lui revient |
+
+Deux réflexes qui rendent ces constats utiles :
+
+- **Reproduire avant d'écrire.** Un constat vaut par ce qu'il montre. Évaluer le
+  cas au moteur, ou nommer les scénarios de la recette qui ont basculé, plutôt
+  que de raisonner sur le diff.
+- **Séparer le fait de l'hypothèse.** Ce que le modèle fait est vérifiable ; ce
+  qui a été voulu ne l'est pas. Les deux ne s'écrivent pas sur le même ton.
+
+**En attendant la réponse, on intègre quand même** — voir la règle d'ouverture :
+le modèle est recopié tel qu'il est livré. Les attendus touchés sont mis à jour
+pour constater le comportement réel, avec un commentaire qui dit pourquoi. Un
+test devenu inexécutable n'est pas supprimé : il est réécrit pour constater
+l'impasse, de sorte qu'il redevienne rouge le jour où l’éditeur la rouvre —
 voir `tests/cerfa/depuis-simulateur.test.ts`, cas de l'accompagnant sur la PMT.
