@@ -12,12 +12,12 @@ premier est chargé par l'app ; les deux autres sont **réencodés** dans nos
 composants et nos tests.
 
 **On ne corrige jamais le modèle localement.** Il est recopié tel qu'il est
-livré. Ce qui ne va pas se constate, se documente et se remonte à l'éditeur —
-voir § 12. Un correctif local a existé une fois, en v9.1,
-et a été retiré dès que l'éditeur a corrigé (`f4da5b7`).
+livré. Ce qui ne va pas se constate, se documente et se remonte à l'éditeur
+(§ 12).
 
-Précédents à relire au besoin : `128bbfa` (v9.4.1, un commit), et la v9.5.0 en
-quatre commits — `afc1052`, `1914314`, `1de1038`, `7bc16d7`.
+Les intégrations passées ont laissé des traces datées : les commits, les pièges
+rencontrés, l'unique correctif local. Elles sont dans
+[`references/precedents.md`](references/precedents.md), à lire au besoin.
 
 ## 1. Le paquet
 
@@ -26,9 +26,10 @@ cd tmp/<version>/transports-sanitaires-package-v<version>
 sha256sum -c SHA256SUMS
 ```
 
-Puis lire, dans cet ordre : le `CHANGELOG-v<version>.md`, qui dit ce que
-l'éditeur a voulu, et `documentation-developpeur/DOCUMENTATION-DEVELOPPEUR-DIFFERENTIELLE-*.md`,
-qui sépare ce que publicodes calcule, ce que l'app doit rendre, et ce qu'il faut
+Puis lire, dans cet ordre, le `CHANGELOG-v<version>.md`, qui dit ce que
+l'éditeur a voulu. Puis
+`documentation-developpeur/DOCUMENTATION-DEVELOPPEUR-DIFFERENTIELLE-*.md`, qui
+sépare ce que publicodes calcule, ce que l'app doit rendre, et ce qu'il faut
 tester. Ce dernier est le plus utile des deux.
 
 ## 2. Le diff, avant toute chose
@@ -51,7 +52,7 @@ Trois questions à lui poser, dans cet ordre :
    pour une `valeur` n'est plus renseignable. C'est le changement le plus
    coûteux, et le moins visible.
 3. **Quels libellés changent ?** Ce sont eux qui cassent le plus de tests, et
-   pour la plus mauvaise raison — voir § 6.
+   pour la plus mauvaise raison (§ 6).
 
 ## 3. La recopie
 
@@ -77,22 +78,13 @@ console.log(Object.keys(r).length,'règles,',Object.keys(r).filter(n=>n.startsWi
 ## 4. Le contrat de règles
 
 `front/simulateur/contrat-regles-publicodes.ts` déclare les noms que le code a le
-droit d'employer. Trois listes, et le rangement compte :
-
-| Liste | Ce qu'on y met |
-|---|---|
-| `CIBLES` | les sorties que le produit affiche ou décide |
-| `QUESTIONS` | les règles **que le code renseigne** dans une situation |
-| `REGLES_LUES` | les règles que le code lit sans jamais les écrire |
+droit d'employer. Ses trois listes sont décrites par le skill `regle-publicodes` ;
+une intégration les rouvre toutes les trois.
 
 **Une question devenue calculée quitte `QUESTIONS`.** Sinon `SituationTypee`
 continue d'autoriser une seed ou un test à prétendre la renseigner, alors que le
 modèle en décide désormais seul. Si plus rien ne la nomme, elle quitte le
 contrat tout court : y déclarer une clé est le geste qui en autorise l'usage.
-
-En v9.5.0 : `p1_m0_smur` supprimée du modèle, `p2_accompagnement_tiers` et
-`p2_convocation_ou_avis` devenues calculées, `cible_nombre_transports_prevus` et
-`cible_ald_reconnue_liee_aux_soins` nouvellement consommées.
 
 ## 5. Les seeds
 
@@ -121,23 +113,23 @@ du modèle est recopié à ces endroits :
 | `tests/cerfa/gabarit.ts` | les situations de référence du CERFA |
 | les tests d'interface | les **regex** qui ciblent une question ou une réponse |
 
-Les regex des tests sont les plus traîtres : elles échouent loin de la cause. En
-v9.5.0, `/^le patient/i` ne matchait plus « Concernant son déplacement, le
-patient : », et `/entrée ou sortie d'hospitalisation/i` ne matchait plus « … d'une
-hospitalisation » — d'où une réponse manquée, un parcours qui bifurque, et un
-test qui échoue trois écrans plus loin.
+Les regex des tests sont les plus traîtres : elles échouent loin de la cause. Un
+énoncé reformulé fait manquer une réponse, le parcours bifurque, et le test tombe
+trois écrans plus loin. Les précédents en montrent deux exemples.
 
 ## 7. Le piège de la réponse par défaut
 
 `tests/simulateur/parcours.ts` remplit par défaut toute question qu'un test ne
-cible pas : « Non » pour un oui/non, l'option exclusive pour une mosaïque, la
-sortie « Aucun… » pour un choix unique qui en offre une, sa première possibilité
-sinon.
+cible pas :
+
+- « Non » pour un oui/non ;
+- l'option exclusive pour une mosaïque ;
+- la sortie « Aucun… » pour un choix unique qui en offre une ;
+- sa première possibilité sinon.
 
 **Une nouvelle question à choix unique dont la première réponse conclut le
-parcours casse tous les tests qui la traversent.** C'est ce qu'a fait A2.1 en
-v9.5.0, dont la première des huit réponses est une convocation. Vérifier, pour
-chaque choix unique ajouté, ce que la réponse par défaut y déclenche.
+parcours casse tous les tests qui la traversent.** Vérifier, pour chaque choix
+unique ajouté, ce que la réponse par défaut y déclenche.
 
 ## 8. La recette portée
 
@@ -155,7 +147,7 @@ tests/simulateur/familles-v<version>.test.ts       ce que le livrable décrit pa
 
 Ils gardent les identifiants du livrable (`ALD-002`, `CONVOCATION-001`, …) : c'est
 sous ce nom qu'un désaccord remonte à l'éditeur. Les assertions purement UI de la
-matrice n'y sont pas — elles relèvent des tests d'interface.
+matrice n'y sont pas : elles relèvent des tests d'interface.
 
 Chaque `test_case` neuf de la matrice livrée mérite son portage. La matrice est
 **séparée par sujet** et non par volume : à 300 lignes, `noExcessiveLinesPerFile`
@@ -181,56 +173,62 @@ Lire le message avant de toucher au code.
 
 Le `*.ui.yaml` n'est pas chargé : ses contenus sont réencodés dans les
 composants. Une version qui réécrit un bloc de résultat se répercute donc à la
-main — page Résultat 1 dans `front/simulateur/prescripteur/ResultatMedical.tsx`,
-page Résultat 2 dans `front/simulateur/secretariat/Bloc{1,2,3}*.tsx` et
-`cases-documentaires.ts`.
+main :
+
+| Bloc | Où |
+|---|---|
+| Page Résultat 1 | `front/simulateur/prescripteur/ResultatMedical.tsx` |
+| Page Résultat 2 | `front/simulateur/secretariat/Bloc{1,2,3}*.tsx` et `cases-documentaires.ts` |
 
 Reprendre les textes **mot pour mot** : ils sont validés par le porteur, et une
 reformulation en passant ne se verrait nulle part.
 
 ## 11. La découpe en commits
 
-**Un commit, une intention**, comme partout dans le dépôt — le nombre suit ce que
+**Un commit, une intention**, comme partout dans le dépôt : le nombre suit ce que
 la version apporte, pas un gabarit. Chacun laisse `pnpm verifier` vert : un
 commit qui ne compile qu'avec le suivant n'est pas une intention, c'est une
 moitié de geste.
 
-La v9.5.0 en a demandé quatre, qui donnent une idée des intentions qu'une
-intégration met en jeu :
+Les intentions qu'une intégration met typiquement en jeu :
 
 | Type | Ce qu'il porte |
 |---|---|
-| `feat(simulateur): porte le modèle d'éligibilité en v<version>` | le modèle, `VERSION`, le contrat, les seeds, la recette renommée, les libellés recopiés — tout ce qu'il faut pour que la suite repasse |
+| `feat(simulateur): porte le modèle d'éligibilité en v<version>` | le modèle, `VERSION`, le contrat, les seeds, la recette renommée, les libellés recopiés : tout ce qu'il faut pour que la suite repasse |
 | `test(simulateur): porte la recette v<version>` | les assertions neuves de la matrice livrée |
 | `feat(simulateur): rend les contenus de la v<version>` | ce que le contrat d'interface ajoute ou réécrit à l'écran |
-| `docs(simulateur): met le README à l'heure de la v<version>` | le compte de règles et de cibles, les noms des fichiers de recette |
+| `docs(simulateur): met à jour le README pour la v<version>` | le compte de règles et de cibles, les noms des fichiers de recette |
 
-Une version plus large en demandera davantage : un écran refondu, une mécanique
-d'interface à revoir, un correctif que le nouveau modèle rend possible sont
-autant d'intentions distinctes, et chacune vaut son commit. Une version étroite
-peut n'en demander qu'un — la v9.4.1 a tenu en `128bbfa`.
+Une version plus large en demandera davantage. Un écran refondu, une mécanique
+d'interface à revoir ou un correctif que le nouveau modèle rend possible sont
+autant d'intentions distinctes. Chacune vaut son commit, et une version étroite
+peut n'en demander qu'un seul.
 
-Le premier, en revanche, est gros par nature et ne se découpe pas : le modèle
-recopié casse tout ce qui le nomme, et rien n'est vert tant que tout ne l'est pas.
+Le premier, en revanche, est gros par nature et ne se découpe pas. Le modèle
+recopié casse tout ce qui le nomme, et rien n'est vert tant que tout ne l'est
+pas.
 
 Les règles de commit du dépôt s'appliquent (`docs/contributing/regles-git.md`),
-GIT-005 compris — deux paragraphes, et l'état de vérification pour finir.
+GIT-005 compris : deux paragraphes, et l'état de vérification pour finir.
 
 **La livraison est un autre geste**, décrit par le skill `livrer-une-version` :
 ne pas monter `package.json` ni écrire dans `CHANGELOG.md` ici.
 
-## 12. Le retour à l’éditeur
+## 12. Le retour à l'éditeur
 
-Une intégration apprend des choses que seul l'intégrateur voit : une règle qui se
-contredit, un libellé qui ne dit pas ce qu'il calcule, une question supprimée
-dont la valeur ne se déduit pas, un cas devenu inatteignable. **Rien de tout cela
-ne se remonte de mémoire** : ça s'écrit au moment où on le constate, dans un
-fichier, et ça part chez l’éditeur du modèle.
+Une intégration apprend des choses que seul l'intégrateur voit :
 
-Un fichier par sujet, dans `tmp/`, nommé `anomalie-v<version>-<sujet>.md`,
-**écrit pour être envoyé tel quel** — le destinataire ne connaît ni notre code ni
-nos tests. Le précédent est `tmp/anomalie-v9-5-0-accompagnement.md` ; sa structure
-vaut d'être reprise :
+- une règle qui se contredit ;
+- un libellé qui ne dit pas ce qu'il calcule ;
+- une question supprimée dont la valeur ne se déduit pas ;
+- un cas devenu inatteignable.
+
+**Rien de tout cela ne se remonte de mémoire.** Ça s'écrit au moment où on le
+constate, dans un fichier, et ça part chez l'éditeur du modèle.
+
+Un fichier par sujet, dans `tmp/`, nommé `anomalie-v<version>-<sujet>.md`, et
+**écrit pour être envoyé tel quel** : le destinataire ne connaît ni notre code,
+ni nos tests. Sa structure :
 
 | Section | Ce qu'elle porte |
 |---|---|
@@ -241,8 +239,8 @@ vaut d'être reprise :
 | Pourquoi cela nous arrête | la conséquence pour le prescripteur ou le patient, pas pour notre code |
 | La cause supposée | ce qu'on croit avoir été confondu, sans l'affirmer |
 | Ce qu'on a constaté à l'exécution | les scénarios de la recette qui ont changé de résultat |
-| Ce qu'on a fait de notre côté | pour que l’éditeur sache ce qu'il défait s'il corrige |
-| La question | fermée, avec les pistes de correction — le choix lui revient |
+| Ce qu'on a fait de notre côté | pour que l'éditeur sache ce qu'il défait s'il corrige |
+| La question | fermée, avec les pistes de correction : le choix lui revient |
 
 Deux réflexes qui rendent ces constats utiles :
 
@@ -252,9 +250,9 @@ Deux réflexes qui rendent ces constats utiles :
 - **Séparer le fait de l'hypothèse.** Ce que le modèle fait est vérifiable ; ce
   qui a été voulu ne l'est pas. Les deux ne s'écrivent pas sur le même ton.
 
-**En attendant la réponse, on intègre quand même** — voir la règle d'ouverture :
-le modèle est recopié tel qu'il est livré. Les attendus touchés sont mis à jour
-pour constater le comportement réel, avec un commentaire qui dit pourquoi. Un
-test devenu inexécutable n'est pas supprimé : il est réécrit pour constater
-l'impasse, de sorte qu'il redevienne rouge le jour où l’éditeur la rouvre —
-voir `tests/cerfa/depuis-simulateur.test.ts`, cas de l'accompagnant sur la PMT.
+**En attendant la réponse, on intègre quand même** : le modèle est recopié tel
+qu'il est livré, comme le dit la règle d'ouverture. Les attendus touchés sont mis
+à jour pour constater le comportement réel, avec un commentaire qui dit pourquoi.
+Un test devenu inexécutable n'est pas supprimé : il est réécrit pour constater
+l'impasse, de sorte qu'il redevienne rouge le jour où l'éditeur la rouvre. Voir
+`tests/cerfa/depuis-simulateur.test.ts`, cas de l'accompagnant sur la PMT.

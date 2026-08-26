@@ -72,13 +72,9 @@ vaut plus, et non un document qui fait comme si elle n'avait jamais existé.
 
 ## Ce qui ne va pas là
 
-| Ce que tu veux écrire | Où ça va |
-|---|---|
-| Le cadrage d'un chantier, avec ses décisions produit | `docs/specs/` |
-| Le mode d'emploi d'une app | son `README.md` |
-| Une règle pour l'IA | `AGENTS.md`, racine ou app |
-| Une garde | **un test** |
+Ce qui n'est pas une décision d'architecture se range ailleurs :
+`AGENTS.md § Où écrire quoi` dit où.
 
-Rappelle-toi enfin l'ordre d'autorité du dépôt : **le test > le code > le README de
-l'app > `docs/architecture/` > `docs/specs/`**. Un document d'architecture qui
-contredit le code a tort. Corrige-le, ne t'y fie pas.
+Un point vaut d'être retenu en écrivant ici. Le test, le code et le README d'une
+app priment sur `docs/architecture/`. Un document d'architecture qui contredit le
+code a tort : corrige-le, ne t'y fie pas.

@@ -155,14 +155,10 @@ Le message d'échec dit ce que la règle protège. Lis-le avant de contourner.
 
 ## Ce qui ne va pas là
 
-| Ce que tu veux écrire | Où ça va |
-|---|---|
-| Une décision d'architecture | `docs/architecture/`, skill `doc-architecture` |
-| Le cadrage d'un chantier | `docs/specs/` |
-| Le mode d'emploi d'une app | son `README.md` |
-| Une convention propre à une app | son `apps/<app>/AGENTS.md` |
-| Une garde | **un test**, pas une règle de plus |
+Ce qui n'est pas une règle numérotée se range ailleurs :
+`AGENTS.md § Où écrire quoi` dit où. Un cas ne s'y trouve pas, parce qu'il est
+propre à ce skill : **une convention qui ne vaut que pour une app va dans son
+`apps/<app>/AGENTS.md`**.
 
-Une règle qui ne vaut que pour une app n'entre pas dans `docs/contributing/`. Les
-recueils valent pour le dépôt entier, et une exception y serait invisible depuis
-l'app concernée.
+Les recueils valent pour le dépôt entier. Une exception logée dedans serait
+invisible depuis l'app qu'elle concerne.

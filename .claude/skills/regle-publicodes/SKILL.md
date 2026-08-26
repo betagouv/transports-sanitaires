@@ -23,11 +23,18 @@ dans un état incohérent que rien ne signale tout de suite.
 
 ### 2. Le contrat : `front/simulateur/contrat-regles-publicodes.ts`
 
-Rien dans le code ne peut nommer une clé absente de ce fichier. Ajoute la clé à
-`CIBLES` si c'est une sortie que le produit affiche, ou à `QUESTIONS` si c'est une
-entrée que le questionnaire pose. C'est cet ajout qui autorise l'usage : `Cible` et
-`CleDeRegle` font rejeter le reste par TypeScript, que ce soit dans un littéral de
-situation, dans un tableau `cibles` ou dans un appel à `texte()` ou `vrai()`.
+Rien dans le code ne peut nommer une clé absente de ce fichier. Trois listes s'y
+partagent le travail, et le rangement compte :
+
+| Liste | Ce qu'on y met |
+|---|---|
+| `CIBLES` | les sorties que le produit affiche ou décide |
+| `QUESTIONS` | les règles **que le code renseigne** dans une situation |
+| `REGLES_LUES` | les règles que le code lit sans jamais les écrire |
+
+C'est cet ajout qui autorise l'usage : `Cible` et `CleDeRegle` font rejeter le
+reste par TypeScript, que ce soit dans un littéral de situation, dans un tableau
+`cibles` ou dans un appel à `texte()` ou `vrai()`.
 
 Ne lis jamais une règle par un `engine.evaluate("…")` nu. Passe par `texte()` ou
 `vrai()`.

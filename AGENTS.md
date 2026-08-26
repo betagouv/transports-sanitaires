@@ -14,9 +14,9 @@
 - Poser des questions (produit, architecture, code)
 
 ### JAMAIS
-- Pas de tirets cadratins
-- Pas de sentence en fin de paragraphe
-- Pas de flatterie
+- De tirets cadratins
+- De sentence en fin de paragraphe
+- De flatterie
 
 ### PRÉFÉRER
 - Les listes à puces quand on énumère 3 éléments ou plus
@@ -172,7 +172,7 @@ t'y fie pas.
 
 ## Marches à suivre
 
-Cinq gestes récurrents ont leur mode d'emploi dans `.claude/skills/`, chargé à la
+Six gestes récurrents ont leur mode d'emploi dans `.claude/skills/`, chargé à la
 demande plutôt que recopié ici :
 
 | Skill | Quand |
@@ -180,6 +180,7 @@ demande plutôt que recopié ici :
 | `regle-de-contribution` | Ajouter, modifier ou retirer une règle de `docs/contributing/` : identifiant, raison, deux exemples, garde nommée |
 | `regle-publicodes` | Toucher au modèle d'éligibilité : les quatre endroits qu'une règle traverse, et l'encodage des choix multiples en mosaïque |
 | `situation-de-reference` | Couvrir un cas métier : il va dans le catalogue de seeds, pas dans un fichier de test |
+| `integrer-une-version-du-modele` | Intégrer une version du modèle livrée par l'éditeur : le diff du paquet, le contrat, les seeds, la recette portée, le retour à l'éditeur |
 | `doc-architecture` | Écrire ou réviser un document de `docs/architecture/` : format ADR maison, décisions révoquées conservées et barrées |
 | `livrer-une-version` | Livrer une app : numéro, journal des versions, tag `<app>@<version>` et release GitHub, qui vont ensemble |
 
