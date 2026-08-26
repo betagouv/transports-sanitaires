@@ -18,6 +18,7 @@ beforeEach(() => sessionStorage.clear());
 const AUTONOME = /peut se déplacer seul/i;
 const PROCHE = /accompagnement d’un proche/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
+const URGENCE_VITALE = /urgence vitale/i;
 const AIDES = /aides ou conditions particulières/i;
 const CAS_PARTICULIERS = /cas particuliers/i;
 /** Q1.1 n'a plus d'option exclusive : ce motif sert à constater son absence. */
@@ -143,6 +144,32 @@ describe("prescripteur — parcours médical", () => {
 
     expect(screen.queryByRole("button", { name: /^voir/i })).toBeNull();
     expect(screen.getByRole("button", { name: /^suivant$/i })).toBeDisabled();
+  });
+
+  // Q1-SMUR-001 du livrable. L'urgence vitale est née en Q1 avec la v9.5.0, et
+  // le SMUR a quitté M0 du même geste : la réponse tranche seule, sans qu'aucune
+  // des questions médicales suivantes soit posée.
+  it("Q1-SMUR-001 : l'urgence vitale conclut la Partie 1, et M0 ne propose plus le SMUR", async () => {
+    const user = afficher();
+    await repondreQ1(user, URGENCE_VITALE);
+
+    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
+    expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: /équipe SMUR/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("Q1-SMUR-001 : M0 n'offre plus le SMUR parmi ses cas particuliers", async () => {
+    const user = afficher();
+    await repondreQ1(user, AUTONOME);
+
+    const casParticuliers = screen.getByRole("group", {
+      name: CAS_PARTICULIERS,
+    });
+    expect(
+      within(casParticuliers).queryByRole("checkbox", { name: /SMUR/i }),
+    ).toBeNull();
   });
 
   it("un patient autonome saute Q1.1 et obtient le véhicule personnel", async () => {

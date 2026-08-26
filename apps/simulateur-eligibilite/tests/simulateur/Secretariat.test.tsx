@@ -191,6 +191,38 @@ describe("secrétariat — parcours administratif", () => {
     ).toBeNull();
   });
 
+  // ACCOMPAGNANT-UI-001 du livrable : A3.8 a disparu en v9.5.0. L'accompagnement
+  // se déduit de la deuxième réponse de Q1, et le motif de DAP avec lui — sans
+  // qu'aucune vue administrative ne vienne le redemander.
+  it("ACCOMPAGNANT-UI-001 : aucune vue ne redemande l'accompagnement par un tiers", async () => {
+    const user = userEvent.setup({ delay: null });
+    emettrePassation({
+      ...PARTIE_1_AMBULANCE,
+      p1_autonomie:
+        "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
+      p1_critere_oxygene: "non",
+    });
+    render(<Secretariat onNouvelleSimulation={() => {}} />);
+
+    const posees: string[] = [];
+    await terminerParcours(
+      user,
+      [[/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i]],
+      () => {
+        for (const groupe of screen.queryAllByRole("group"))
+          posees.push(groupe.textContent ?? "");
+      },
+    );
+
+    expect(
+      posees.filter((pose) => /assistance d’un tiers/i.test(pose)),
+    ).toEqual([]);
+    // Le motif est bien retenu pour autant : il vient de Q1, pas d'une question.
+    expect(
+      screen.getAllByText(/assistance d’un tiers/i).length,
+    ).toBeGreaterThan(0);
+  }, 20_000);
+
   it("traverse la Partie 2 jusqu'au résultat, saisies d'adresse comprises", async () => {
     // Le seul test qui parcourt la Partie 2 de bout en bout : c'est lui qui voit
     // les douze saisies libres d'adresse (D1-D12), rendues en champs texte.

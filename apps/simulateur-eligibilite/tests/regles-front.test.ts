@@ -32,9 +32,15 @@ import {
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const regles = yaml.load(
-  readFileSync(join(racine, "regles/regles.publicodes"), "utf-8"),
-) as Record<string, { "une possibilité"?: string[]; question?: string } | null>;
+const sourceDesRegles = readFileSync(
+  join(racine, "regles/regles.publicodes"),
+  "utf-8",
+);
+
+const regles = yaml.load(sourceDesRegles) as Record<
+  string,
+  { "une possibilité"?: string[]; question?: string } | null
+>;
 
 /** Les valeurs d'une règle `une possibilité`, débarrassées de leurs quotes. */
 function possibilites(cle: string): string[] {
@@ -92,6 +98,28 @@ describe("contrat de règles", () => {
     expect(
       REGLES_LUES.filter((r) => regles[r]?.question !== undefined),
     ).toEqual([]);
+  });
+});
+
+// REDUNDANCY-001, née de la matrice v9.5.0 : le livrable est engendré, et une
+// règle recopiée deux fois n'y ferait pas de bruit. YAML, lui, garde la dernière
+// des deux en silence — le doublon ne se verrait qu'à la première évaluation qui
+// tombe du mauvais côté.
+describe("modèle sans redondance", () => {
+  it("ne définit aucune règle deux fois", () => {
+    // Comparé au texte, et non aux clés chargées : c'est précisément ce que la
+    // lecture du YAML efface.
+    const declarees = [...sourceDesRegles.matchAll(/^([\w]+):/gm)].map(
+      (correspondance) => correspondance[1],
+    );
+    expect(declarees.length).toBe(Object.keys(regles).length);
+  });
+
+  it("ne pose jamais deux fois le même énoncé", () => {
+    const poses = Object.values(regles)
+      .map((corps) => corps?.question)
+      .filter((question) => question !== undefined);
+    expect(poses.length).toBe(new Set(poses).size);
   });
 });
 

@@ -117,6 +117,20 @@ describe("modèle v9.5.0 — générateurs du livrable", () => {
     );
   });
 
+  // La huitième réponse d'A2.1, née de la fusion des deux écrans : elle ne vaut
+  // pas prescription et laisse le parcours administratif se poursuivre. C'est la
+  // seule qui le fasse — d'où sa place au même endroit que les sept autres.
+  it("CONVOCATION-001 — « Aucun de ces cas. » poursuit le parcours", () => {
+    const moteur = evalue({
+      p1_autonomie: PRO,
+      p1_critere_hygiene_desinfection: "oui",
+      ...HOSPITALISATION,
+      p2_convocation_ou_avis_type: "'Aucun de ces cas.'",
+    });
+    expect(moteur.evaluate("p2_convocation_ou_avis").nodeValue).toBe(false);
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(PMT);
+  });
+
   it.each(EXCEPTIONS)(
     "EXCEPTION-001 — %s reste dans le parcours Assurance Maladie",
     (exception) => {
