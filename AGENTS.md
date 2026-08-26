@@ -12,6 +12,7 @@
 - Utiliser des mots simples
 - Faire des phrases courtes
 - Poser des questions (produit, architecture, code)
+- Faire un plan avant de démarrer un sujet complexe
 
 ### JAMAIS
 - De tirets cadratins
