@@ -33,6 +33,12 @@ type Props = {
   onRetourAuResultatMedical?: (situationP1: Situation<string>) => void;
   /** Transmis tel quel à la Page Résultat 2 (cf. `ResultatFinal`). */
   documentTelechargeable?: (situation: Situation<string>) => ReactNode;
+  /**
+   * Trace de debug ouverte sous la Partie 2 et sous le document. Même garde que
+   * `documentTelechargeable`, portée par un booléen : la trace lit l'état vivant
+   * du parcours, `App` ne peut donc pas la composer d'avance.
+   */
+  traceDebug?: boolean;
 };
 
 // La situation initiale (P1) rend les questions de Partie 1 déjà répondues :
@@ -43,6 +49,7 @@ export function Secretariat({
   situationFinale = null,
   onRetourAuResultatMedical,
   documentTelechargeable,
+  traceDebug = false,
 }: Props) {
   const parcours = useParcoursAdministratif(situationFinale);
 
@@ -55,6 +62,7 @@ export function Secretariat({
         onNouvelleSimulation={onNouvelleSimulation}
         onPrecedent={ecranPrecedent(parcours, onRetourAuResultatMedical)}
         documentTelechargeable={documentTelechargeable}
+        traceDebug={traceDebug}
       />
     );
   }
@@ -67,6 +75,7 @@ export function Secretariat({
     <Qualification
       situationP1={parcours.situationP1}
       etatInitial={parcours.etatQuestionnaire}
+      traceDebug={traceDebug}
       onTermine={parcours.conclure}
     />
   );
@@ -175,10 +184,12 @@ const RAPPEL_PORTEE_ADMINISTRATIVE = {
 function Qualification({
   situationP1,
   etatInitial,
+  traceDebug,
   onTermine,
 }: {
   situationP1: Situation<string>;
   etatInitial?: FormState<string>;
+  traceDebug: boolean;
   onTermine: (situation: Situation<string>, etat: FormState<string>) => void;
 }) {
   return (
@@ -191,6 +202,7 @@ function Qualification({
         situationInitiale={situationP1}
         libelleFin="Voir le document à remettre au patient"
         bandeau={RAPPEL_PORTEE_ADMINISTRATIVE}
+        traceDebug={traceDebug}
         onTermine={(s, etat) => {
           onTermine(s, etat);
           trackResultat(

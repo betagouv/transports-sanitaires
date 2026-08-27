@@ -138,7 +138,8 @@ front/                   le front, bundlé par Vite
                          sauf les adresses), l'avancement automatique du contrat 2.0.0,
                          les champs et les mosaïques, ce qui part vers l'analytics
     resultat/            ce qui entoure un résultat : la vulgarisation vers le patient,
-                         l'information à lui donner, la trace de débogage
+                         l'information à lui donner, la trace de débogage (outil
+                         produit : cf. AGENTS.md § Les outils produit)
     prescripteur/        Partie 1 puis Résultat 1
     secretariat/         Partie 2 puis Résultat 2 : l'assemblage de ses trois blocs et
                          la charge de l'établissement (article 80)

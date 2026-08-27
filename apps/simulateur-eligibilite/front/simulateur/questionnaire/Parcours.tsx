@@ -16,9 +16,18 @@ type Props = Options & {
   // question désignée. Le parcours reste générique : c'est l'appelant qui dit
   // quelle question porte quel message.
   bandeau?: { question: CleDeRegle; texte: string };
+  // La trace de debug sous le questionnaire est un outil produit : le simulateur
+  // sait *où* elle s'affiche, pas à qui elle s'ouvre. Défaut fermé, comme le
+  // panneau d'outils : un appelant qui l'oublie n'en montre pas.
+  traceDebug?: boolean;
 };
 
-export function Parcours({ libelleFin, bandeau, ...options }: Props) {
+export function Parcours({
+  libelleFin,
+  bandeau,
+  traceDebug = false,
+  ...options
+}: Props) {
   const passation = usePassation(options);
 
   // En cours de bascule vers la page de résultat : rien à afficher.
@@ -28,41 +37,44 @@ export function Parcours({ libelleFin, bandeau, ...options }: Props) {
     <>
       <Etapeur current={passation.current} pageCount={passation.pageCount} />
       <Bandeau bandeau={bandeau} champs={passation.champs} />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          passation.avancer();
-        }}
-      >
-        <ChampsDePage
-          champs={passation.champs}
-          situation={passation.formState.situation}
-          onReponse={passation.repondre}
-          onReponses={passation.repondrePlusieurs}
-        />
-        <Navigation passation={passation} libelleFin={libelleFin} />
-      </form>
-      <Debug passation={passation} outil={options.outil} />
+      <FormulaireDePage passation={passation} libelleFin={libelleFin} />
+      <TraceParcours
+        autorisee={traceDebug}
+        formState={passation.formState}
+        current={passation.current}
+        outil={options.outil}
+      />
     </>
   );
 }
 
 // ---- implémentation ----
 
-function Debug({
+// La page elle-même : ses champs, et de quoi la quitter. Valider le formulaire
+// avance d'une page, il ne conclut pas le parcours — c'est `passation` qui sait
+// quand il n'y a plus rien à poser.
+function FormulaireDePage({
   passation,
-  outil,
+  libelleFin,
 }: {
   passation: ReturnType<typeof usePassation>;
-  outil: string;
+  libelleFin: string;
 }) {
-  if (!import.meta.env.DEV) return null;
   return (
-    <TraceParcours
-      formState={passation.formState}
-      current={passation.current}
-      outil={outil}
-    />
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        passation.avancer();
+      }}
+    >
+      <ChampsDePage
+        champs={passation.champs}
+        situation={passation.formState.situation}
+        onReponse={passation.repondre}
+        onReponses={passation.repondrePlusieurs}
+      />
+      <Navigation passation={passation} libelleFin={libelleFin} />
+    </form>
   );
 }
 

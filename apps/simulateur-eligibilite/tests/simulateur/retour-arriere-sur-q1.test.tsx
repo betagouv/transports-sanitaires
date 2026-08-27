@@ -131,23 +131,17 @@ const caseACocher = async (nom: RegExp) =>
   await screen.findByRole("checkbox", { name: nom });
 
 /**
- * Ce que la page affiche, deux choses ôtées.
+ * Ce que la page affiche, le compteur d'étapes ôté.
  *
- * Le panneau de debug d'abord : il montre la situation brute, où les réponses
- * neutralisées figurent encore. C'est son propos, et ce n'est pas un résultat.
- *
- * Le compteur d'étapes ensuite. Le parcours corrigé n'écarte la page devenue
- * sans objet qu'en **quittant** celle où la correction a eu lieu — le temps
- * d'effacer une réponse, le modèle ne conclut plus rien en aval, et juger la
- * suite à chaque saisie supprimerait des questions encore utiles (cf.
- * `questionnaire/suite-du-parcours.ts`). « Étape 1 sur 3 » se lit donc un
- * instant là où la simulation neuve annonce « sur 2 ». C'est le seul écart, et
- * il se referme au pas suivant.
+ * Le parcours corrigé n'écarte la page devenue sans objet qu'en **quittant**
+ * celle où la correction a eu lieu — le temps d'effacer une réponse, le modèle
+ * ne conclut plus rien en aval, et juger la suite à chaque saisie supprimerait
+ * des questions encore utiles (cf. `questionnaire/suite-du-parcours.ts`).
+ * « Étape 1 sur 3 » se lit donc un instant là où la simulation neuve annonce
+ * « sur 2 ». C'est le seul écart, et il se referme au pas suivant.
  */
 function pageAffichee(container: HTMLElement): string {
-  const copie = container.cloneNode(true) as HTMLElement;
-  for (const debug of copie.querySelectorAll("details")) debug.remove();
-  return (copie.textContent ?? "")
+  return (container.textContent ?? "")
     .replace(/Étape \d+ sur \d+/g, "")
     .replace(/\s+/g, " ")
     .trim();

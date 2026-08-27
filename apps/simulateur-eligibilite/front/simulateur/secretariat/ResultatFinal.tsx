@@ -31,6 +31,8 @@ type Props = {
    * Défaut fermé : un appelant qui l'oublie ne propose rien.
    */
   documentTelechargeable?: (situation: Situation<string>) => ReactNode;
+  /** Trace de debug ouverte : outil produit, cf. `resultat/TraceDebug`. */
+  traceDebug?: boolean;
 };
 
 export function ResultatFinal({
@@ -38,6 +40,7 @@ export function ResultatFinal({
   onNouvelleSimulation,
   onPrecedent,
   documentTelechargeable,
+  traceDebug = false,
 }: Props) {
   return (
     <div>
@@ -51,6 +54,7 @@ export function ResultatFinal({
         onPrecedent={onPrecedent}
       />
       <TraceDebug
+        autorisee={traceDebug}
         titre="résultat administratif"
         situation={situation}
         sorties={[

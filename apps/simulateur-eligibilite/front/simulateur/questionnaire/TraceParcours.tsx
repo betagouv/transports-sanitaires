@@ -1,18 +1,27 @@
-// Trace de debug d'un parcours (DEV uniquement) : les pages traversées et à
-// venir, puis les réponses saisies. Sert à comprendre un séquencement
-// inattendu sans instrumenter le moteur.
+// Trace de debug d'un parcours : les pages traversées et à venir, puis les
+// réponses saisies. Sert à comprendre un séquencement inattendu sans
+// instrumenter le moteur.
+//
+// C'est un outil produit comme la galerie ou le labo : disponible sur tous les
+// environnements, production comprise, et réservé au service qui les déverrouille
+// (`front/outils-produit/deverrouillage.ts`). Le simulateur ignore ce service :
+// `App` lui passe la réponse, que `autorisee` porte jusqu'ici. Le prop est
+// obligatoire pour qu'aucun appelant ne puisse rendre la trace sans avoir dit à
+// qui elle s'ouvre.
 
 import type { FormState } from "@publicodes/forms";
 import { reglesBrutes } from "../moteur";
 
 type Props = {
+  autorisee: boolean;
   formState: FormState<string>;
   // Numéro de la page courante (1-indexé, comme la pagination de la lib).
   current: number;
   outil: string;
 };
 
-export function TraceParcours({ formState, current, outil }: Props) {
+export function TraceParcours({ autorisee, formState, current, outil }: Props) {
+  if (!autorisee) return null;
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>
@@ -30,7 +39,10 @@ export function TraceParcours({ formState, current, outil }: Props) {
 
 // ---- implémentation ----
 
-function ListePages({ formState, current }: Omit<Props, "outil">) {
+function ListePages({
+  formState,
+  current,
+}: Omit<Props, "autorisee" | "outil">) {
   const pages = [...formState.pages, ...formState.nextPages];
   return (
     <ol style={{ margin: "0.25rem 0 1rem" }}>

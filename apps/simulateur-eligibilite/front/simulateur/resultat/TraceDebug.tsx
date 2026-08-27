@@ -1,11 +1,16 @@
-// Panneau de debug (mode dev uniquement) : les réponses saisies et les sorties
-// évaluées, depuis une page de résultat.
+// Panneau de debug : les réponses saisies et les sorties évaluées, depuis une
+// page de résultat.
+//
+// Même garde que `questionnaire/TraceParcours` : c'est un outil produit,
+// disponible en production et réservé au service qui les déverrouille. Le prop
+// `autorisee` est obligatoire, et porte la réponse depuis `App`.
 
 import type { Situation } from "publicodes";
 import type { CleDeRegle } from "../contrat-regles-publicodes";
 import { moteur } from "../moteur";
 
 type Props = {
+  autorisee: boolean;
   titre: string;
   situation: Situation<string>;
   // Règles à évaluer et afficher (sorties calculées du moteur).
@@ -14,8 +19,13 @@ type Props = {
 
 // Une page de résultat n'a plus le `formState` du parcours sous la main : d'où
 // la relecture de la situation.
-export function TraceDebug({ titre, situation, sorties = [] }: Props) {
-  if (!import.meta.env.DEV) return null;
+export function TraceDebug({
+  autorisee,
+  titre,
+  situation,
+  sorties = [],
+}: Props) {
+  if (!autorisee) return null;
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — {titre}</summary>
@@ -33,7 +43,7 @@ export function TraceDebug({ titre, situation, sorties = [] }: Props) {
 function SortiesEvaluees({
   situation,
   sorties,
-}: Required<Omit<Props, "titre">>) {
+}: Required<Omit<Props, "autorisee" | "titre">>) {
   if (sorties.length === 0) return null;
   const e = moteur.setSituation(situation);
   return (

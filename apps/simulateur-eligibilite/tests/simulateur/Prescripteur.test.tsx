@@ -189,7 +189,8 @@ describe("prescripteur — parcours médical", () => {
     expect(
       screen.getByRole("heading", { name: /décision médicale établie/i }),
     ).toBeInTheDocument();
-    // (getAllByText : le panneau de debug répète la valeur du transport.)
+    // (getAllByText : le verdict et l'information au patient nomment tous deux
+    // le transport retenu.)
     expect(
       screen.getAllByText(/véhicule personnel ou transport en commun/i).length,
     ).toBeGreaterThan(0);

@@ -164,6 +164,7 @@ function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
           navigation.outilsProduit,
           chargerGabarit,
         )}
+        traceDebug={navigation.outilsProduit}
       />
     );
   }
@@ -177,14 +178,18 @@ function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
       }}
       onNouvelleSimulation={navigation.recommencer}
       panneauOutilsProduit={panneauOutilsProduit(navigation)}
+      traceDebug={navigation.outilsProduit}
     />
   );
 }
 
-// Les deux branchements du simulateur vers les outils produit se décident ici,
-// et nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
+// Les branchements du simulateur vers les outils produit se décident ici, et
+// nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
-// d'œil, tout ce que le service n° 4 déverrouille dans le parcours.
+// d'œil, tout ce que le service n° 4 déverrouille dans le parcours — le panneau
+// de la galerie, le document téléchargeable, et les traces de debug (`traceDebug`,
+// un booléen plutôt qu'un contenu composé : elles lisent l'état vivant du
+// parcours, qu'`App` n'a pas sous la main).
 //
 // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran-porte, sans avoir à ressortir du simulateur. Le mode test des règles,

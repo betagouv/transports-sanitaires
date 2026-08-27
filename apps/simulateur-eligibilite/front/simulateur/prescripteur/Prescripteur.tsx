@@ -28,6 +28,10 @@ type Props = {
   // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
   // compose, et il est absent hors du service produit.
   panneauOutilsProduit?: ReactNode;
+  // Trace de debug ouverte sous le questionnaire et sous le résultat médical.
+  // Même garde que le panneau ci-dessus, portée par un booléen : la trace lit
+  // l'état vivant du parcours, `App` ne peut donc pas la composer d'avance.
+  traceDebug?: boolean;
 };
 
 export function Prescripteur({
@@ -35,6 +39,7 @@ export function Prescripteur({
   onNouvelleSimulation,
   situationInitiale = null,
   panneauOutilsProduit,
+  traceDebug = false,
 }: Props) {
   const parcours = useParcoursMedical(situationInitiale);
   const { situation } = parcours;
@@ -46,6 +51,7 @@ export function Prescripteur({
         onContinuer={() => onPasserAuSecretariat(situation)}
         onRecommencer={onNouvelleSimulation}
         onPrecedent={parcours.retourAuQuestionnaire}
+        traceDebug={traceDebug}
       />
     );
 
@@ -53,6 +59,7 @@ export function Prescripteur({
     <EvaluationMedicale
       etatInitial={parcours.etatQuestionnaire}
       panneauOutilsProduit={panneauOutilsProduit}
+      traceDebug={traceDebug}
       onTermine={parcours.conclure}
     />
   );
@@ -99,10 +106,12 @@ const RAPPEL_ALLER_RETOUR = {
 function EvaluationMedicale({
   etatInitial,
   panneauOutilsProduit,
+  traceDebug,
   onTermine,
 }: {
   etatInitial?: FormState<string>;
   panneauOutilsProduit?: ReactNode;
+  traceDebug: boolean;
   onTermine: (situation: Situation<string>, etat: FormState<string>) => void;
 }) {
   return (
@@ -114,6 +123,7 @@ function EvaluationMedicale({
         cibles={CIBLES_MEDICALES}
         libelleFin="Voir le résultat médical"
         bandeau={RAPPEL_ALLER_RETOUR}
+        traceDebug={traceDebug}
         onTermine={(s, etat) => {
           onTermine(s, etat);
           trackResultat(

@@ -194,17 +194,26 @@ lisibles par Node. Le catalogue sert trois usages :
 
 ## Les outils produit
 
-La galerie de seeds et le **labo** de règles sont les deux outils produit. Ils
-partagent :
+La galerie de seeds, le **labo** de règles et les **traces de debug** sont les
+trois outils produit. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
   référentiel, `front/outils-produit/deverrouillage.ts`) ;
-- le même panneau ;
 - le même moment : ils sont atteints **après** l'identification.
+
+La galerie et le labo partagent en plus le même panneau. Les traces n'y sont pas :
+elles se lisent sous l'écran qu'elles décrivent, pas dans un encadré d'entrées.
 
 Pas de conditionnement sur `import.meta.env.DEV`.
 
-Le simulateur ne les connaît pas. C'est `App.tsx` qui lui passe du contenu déjà
-composé (`panneauOutilsProduit`, `documentTelechargeable`). Une seule exception,
+Le simulateur ne connaît ni la galerie ni le labo. C'est `App.tsx` qui lui passe
+du contenu déjà composé (`panneauOutilsProduit`, `documentTelechargeable`). Une
+seule exception,
 assertée nommément pour qu'elle ne puisse pas en engendrer une deuxième en
 silence : `moteur.ts` demande à `labo/labo.ts` quelles règles charger.
+
+Les traces, elles, vivent dans le simulateur : elles lisent l'état vivant du
+parcours, qu'`App` n'a pas sous la main. Ce n'est donc pas un contenu composé qui
+descend, mais le booléen `traceDebug`, jusqu'au prop obligatoire `autorisee` des
+deux composants de trace. Obligatoire pour qu'aucun appelant ne puisse en rendre
+une sans avoir dit à qui elle s'ouvre.

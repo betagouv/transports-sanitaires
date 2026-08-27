@@ -22,6 +22,8 @@ type Props = {
   onRecommencer: () => void;
   /** Retour au questionnaire. Absent quand aucun parcours ne précède (seed). */
   onPrecedent?: () => void;
+  /** Trace de debug ouverte : outil produit, cf. `resultat/TraceDebug`. */
+  traceDebug?: boolean;
 };
 
 // La décision affichée ici n'est pas encore figée : c'est l'action principale
@@ -39,6 +41,7 @@ export function ResultatMedical({
   onContinuer,
   onRecommencer,
   onPrecedent,
+  traceDebug = false,
 }: Props) {
   const e = moteur.setSituation(situation);
   const casFinal = texte(e, "cible_cas_final");
@@ -59,6 +62,7 @@ export function ResultatMedical({
         onPrecedent={onPrecedent}
       />
       <TraceDebug
+        autorisee={traceDebug}
         titre="résultat médical"
         situation={situation}
         sorties={SORTIES_TRACEES}
