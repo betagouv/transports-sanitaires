@@ -7,6 +7,56 @@ commit lui-même.
 Le simulateur affiche en bas de page la version qu'il exécute, le commit déployé
 et la version du modèle de règles.
 
+## [0.2.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.2.0) — 27 août 2026
+
+Deux montées du modèle d'éligibilité, de la v9.4.1 à la v9.5.1, et le passage du
+dépôt en workspace pnpm. Dix-neuf commits depuis la 0.1.2.
+
+### TL;DR
+
+- Le modèle passe de la v9.4.1 à la v9.5.1 : 188 règles, 42 cibles.
+- Le questionnaire se resserre : Q1 absorbe l'urgence vitale SMUR, A2.1 et A2.2 fondent en une seule question, A3.8 disparaît.
+- L'urgence médicale attestée ne supprime pas la demande d'accord préalable, elle supprime l'attente de la décision.
+- L'accompagnement par un proche n'impose plus à lui seul une demande d'accord préalable : c'était une régression de la v9.5.0, remontée à l'éditeur et corrigée par la v9.5.1.
+- Les deux transports assis retrouvent la marche à suivre du patient, muette sur treize seeds sur vingt.
+- La trace du parcours s'ouvre au service produit, y compris en production.
+- Le serveur refuse désormais de démarrer en production sans ses secrets, au lieu de se replier en silence.
+- La suite de tests passe de 403 à 473 tests.
+
+### ✨ Nouveautés
+
+- [28b95fd](https://github.com/betagouv/transports-sanitaires/commit/28b95fd) : ouvre la trace du parcours au service produit, sur tous les environnements. Le prescripteur qui signalait un séquencement inattendu ne pouvait rien montrer : la trace du chemin parcouru et des réponses saisies n'existait pas dans le build déployé. Elle devient le troisième outil produit, derrière la même porte que la galerie de seeds et le labo.
+- [3246572](https://github.com/betagouv/transports-sanitaires/commit/3246572) : distingue l'urgence médicale attestée de l'attente d'une décision. Une cause réglementaire de demande d'accord préalable en reste une, mais l'urgence lève le délai de quinze jours : la page de résultat dit alors le S3139h valant prescription, la réalisation immédiate et la prescription a posteriori. Les cases d'urgence des deux CERFA lisent désormais le type d'urgence que le modèle tranche, l'exception d'aide médicale urgente comprise.
+- [0836f83](https://github.com/betagouv/transports-sanitaires/commit/0836f83) : passe le modèle en v9.5.1, qui défait la régression qu'on avait remontée à l'éditeur. L'accompagnement par un proche n'impose plus à lui seul une demande d'accord préalable : les motifs exposés passent de sept à six, et une prescription peut de nouveau porter un accompagnant. A2.4 gagne au passage la définition validée du dispositif Engagement maternité.
+- [1de1038](https://github.com/betagouv/transports-sanitaires/commit/1de1038) : rend les quatre contenus que le contrat d'interface de la v9.5.0 ajoute ou réécrit. Le verdict médical dit la portée de sa décision au lieu de parler de coût, le verdict bariatrique dit ce qui manque plutôt que ce que la contrainte n'est pas, la page administrative trace le motif ALD quand il est retenu, et la case du nombre de transports porte le chiffre exact au lieu de le laisser à recopier.
+- [afc1052](https://github.com/betagouv/transports-sanitaires/commit/afc1052) : passe le modèle en v9.5.0, soit 187 règles et 40 cibles. Q1 absorbe l'urgence vitale SMUR en quatrième réponse et M0 devient inapplicable derrière elle, A2.1 et A2.2 fondent en une seule question dont seul « Aucun de ces cas » poursuit le parcours, et A3.8 disparaît de même.
+- [f7d5a84](https://github.com/betagouv/transports-sanitaires/commit/f7d5a84) : arrête le serveur au démarrage si une variable manque en production. Sans `GRIST_API_KEY` ni `PSEUDONYMISATION_SECRET`, il se repliait en silence sur un référentiel factice et sur un secret que tout le monde peut lire : le simulateur aurait servi des établissements inventés et signé ses refs Matomo avec un secret public. Hors production, les deux replis et leurs avertissements ne bougent pas.
+
+### 🐛 Corrections
+
+- [404cb01](https://github.com/betagouv/transports-sanitaires/commit/404cb01) : rétablit la marche à suivre des deux transports assis. Deux clés écrites en abrégé ne correspondaient plus à ce que le modèle nomme, et un mode introuvable ne rend rien sans rien dire : sur treize seeds sur vingt, l'écran s'arrêtait avant les deux phrases qui disent quoi faire du document, organiser le transport et présenter la prescription au transporteur.
+
+### ♻️ Sous le capot
+
+- [9829cb8](https://github.com/betagouv/transports-sanitaires/commit/9829cb8) : passe le dépôt en workspace pnpm. Les trois apps tenaient trois installations npm indépendantes, où rien n'empêchait Biome, TypeScript, vitest et knip de diverger ; les versions partagées vivent désormais dans un `catalog:` unique, et la divergence n'est plus exprimable. Les apps restent indépendantes de code, et le déploiement Scalingo se fait maintenant depuis la racine.
+
+### ✅ Tests
+
+- [5eff34f](https://github.com/betagouv/transports-sanitaires/commit/5eff34f) : porte la recette v9.5.1, six scénarios nés du correctif. Deux verrouillent la régression défaite, et quatre décrivent l'urgence médicale attestée : sans motif réglementaire elle conclut à une prescription, avec un motif elle laisse la demande en place mais lève l'attente.
+- [1914314](https://github.com/betagouv/transports-sanitaires/commit/1914314) : porte la recette v9.5.0, six familles que rien ne couvrait encore. Elles constatent à l'écran qu'aucune vue ne propose plus le SMUR en M0 ni ne redemande l'accompagnement, que la huitième réponse d'A2.1 est la seule à poursuivre le parcours, et croisent le nombre de transports avec l'exception ALD et les seuils de 50 et 150 km.
+
+### 📝 Documentation
+
+- [8493730](https://github.com/betagouv/transports-sanitaires/commit/8493730) : allège le README du simulateur et le met dans l'ordre de lecture. Commandes, Configuration et Structure passent en tête, les commandes deviennent un tableau, et les sous-sections qui racontaient un correctif désormais amont sont retirées.
+- [33e0c9f](https://github.com/betagouv/transports-sanitaires/commit/33e0c9f) : met le README à l'heure de la v9.5.1, de ses 188 règles et de ses 42 cibles.
+- [c7f9f69](https://github.com/betagouv/transports-sanitaires/commit/c7f9f69) : extrait en skill la marche à suivre d'une intégration de modèle. L'intégration de la v9.5.0 avait redécouvert ce que celle de la v9.4.1 avait déjà appris, faute que ce soit écrit ailleurs que dans des messages de commit.
+- [7bc16d7](https://github.com/betagouv/transports-sanitaires/commit/7bc16d7) : met le README à l'heure de la v9.5.0, et nomme les quatre fichiers qui portent désormais la recette du livrable.
+- [f59b14c](https://github.com/betagouv/transports-sanitaires/commit/f59b14c) : refait les 38 liens de commit de ce journal, que la réécriture des messages avait laissés sur des commits hors de l'historique. La correspondance a été établie par la date d'auteur et le sujet, puis recoupée par le hash d'arbre.
+- [3a30fee](https://github.com/betagouv/transports-sanitaires/commit/3a30fee) : sort les vingt-trois règles de code et de commit d'AGENTS.md vers `docs/contributing/`, et rend le style de la documentation exécutable. `verifier-documentation.ts` refuse désormais le tiret cadratin, la phrase de plus de vingt-cinq mots et le paragraphe de plus de quatre phrases.
+- [efd55d8](https://github.com/betagouv/transports-sanitaires/commit/efd55d8) : réécrit les commentaires de l'analytics, des seeds et du pilote de parcours, sans toucher une ligne de code.
+- [06cbaf4](https://github.com/betagouv/transports-sanitaires/commit/06cbaf4) : réécrit les commentaires du contrat partagé et du backend, en disant en toutes lettres les invariants qui comptent : le secret reste au serveur, le nom ne circule jamais en clair, l'annuaire complet ne sort pas de Grist.
+- [be001cf](https://github.com/betagouv/transports-sanitaires/commit/be001cf) : réécrit les deux README dans la langue du dépôt, sans qu'aucun fait change.
+
 ## [0.1.2](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.1.2) — 24 août 2026
 
 Correctif d'outillage. Le simulateur ne change pas : le commit livré ne touche
