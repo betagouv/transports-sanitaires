@@ -304,18 +304,9 @@ complétant les colonnes manquantes, puis remplace tout son contenu, en le vidan
 réinsérant. La sémantique est celle d'un snapshot : idempotente, sans lignes périmées, et
 relançable après chaque `pnpm marts`.
 
-Le document mêle deux familles de tables : celles que l'ETL produit, et celles construites
-à la main dans Grist pour la visualisation. Rien ne les distingue au premier coup d'œil, et
-Grist ajoute une page à la racine à chaque table nouvelle. La publication **range donc les
-pages des marts sous une page parente**, nommée `marts` dans `PAGE_PARENTE`. Trois choses à
-savoir.
-
-- La page parente est **créée à la main** dans Grist. Si elle est absente, le rangement ne
-  fait rien et n'échoue pas.
-- Le rangement rejoue tout le bloc à chaque exécution, donc il est idempotent et remet en
-  ordre un mart publié seul.
-- Les pages hors du bloc, celles de la visualisation, sont laissées à la racine, dans leur
-  ordre d'origine.
+La publication ne touche pas à l'arborescence des pages : Grist crée une page à la racine
+pour chaque table nouvelle, et elle y reste. Ranger la barre latérale, si le besoin s'en
+fait sentir, se fait à la main dans Grist.
 
 | Mart | Table Grist |
 |---|---|
