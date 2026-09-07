@@ -30,7 +30,7 @@ c'est-à-dire ré-clés sur l'autorité du référentiel puis rattachés au GHT.
 |---|---|---|
 | `mart_geographique.csv` | finess **géographique** | Le plus fin, mais **beaucoup de `part` NULL** : le référentiel n'a pas toujours de valeur sur *le même site* que la plateforme (dénominateur absent). Exclut les sources sans finess géographique. |
 | `mart_juridique.csv` | finess **juridique** (autorité référentiel) | Livrable établissement principal. Résidu de `part>1` (divergence réelle entre les deux systèmes, cf. point 1). |
-| `mart_ght.csv` | **GHT** | **Le plus fiable** : les désaccords d'attribution intra-GHT se réconcilient (quasi 0 `part>1`). Couvre les établissements **publics en GHT** (cf. point 2) **et** la plateforme au niveau GHT (cf. point 6). |
+| `mart_ght.csv` | **GHT** | **Le plus fiable** : les désaccords d'attribution intra-GHT se réconcilient (quasi 0 `part>1`). Couvre les établissements **publics en GHT** (cf. point 2) **et** la part d'une source hiérarchique restée au grain GHT (cf. point 6). |
 | `mart_hors_ght.csv` | finess **juridique**, hors GHT | Complément de `mart_ght` : les établissements **sans GHT** (~91 % : cliniques privées, imagerie…). |
 | `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national, cf. point 3). Colonne `grain` = `juridique`/`ght`. |
 | `mart_ght_2024.csv` | **GHT**, année 2024, **tous transports** | **Rollup du mart GHT** : une ligne par GHT (136), somme des véhicules pour 2024. Colonnes `nb_plateforme`, `nb_cnam` (= référentiel CNAM), `ratio = nb_plateforme / nb_cnam`. Vue de synthèse « taux réel de recours aux plateformes par GHT ». |
@@ -106,29 +106,41 @@ acceptable ? À confirmer.
 
 La plateforme B ne fournit que « TAP », de l'assis qu'on ne peut pas décomposer entre taxi
 et VSL. La seule granularité commune à toutes les sources est donc Ambulance, Assis et
-Autre, auxquels s'ajoute `Total` pour l'article 80 des plateformes au niveau GHT. C'est ce
+Autre, auxquels s'ajoute `Total` pour l'article 80, qu'aucune source ne ventile. C'est ce
 grain canonique qui garantit la comparabilité entre numérateur et dénominateur ; le détail
 fin, taxi contre VSL, pourra venir en itération.
 
-### 6. Plateforme au niveau GHT (sans finess), et ses cas particuliers
+### 6. Plateforme hiérarchique : une couverture au finess partielle
 
-La plateforme qui remonte au niveau GHT est rattachée par un mapping manuel, dont la
-mécanique est décrite dans [Référentiels](#référentiels-ref). Trois conséquences sont à
-connaître à la lecture des marts :
+Une source remonte un fichier **hiérarchique** : une ligne par GHT ou par établissement, et
+sous certaines d'entre elles le détail de leurs sites, avec finess. Le format
+`plateforme-ght-xlsx` en tire deux grains à la fois. Quatre conséquences à la lecture des
+marts.
 
+- **La couverture au finess est partielle.** Environ 94 % du volume hors article 80 2024 de
+  cette source porte un finess juridique, donc apparaît dans `mart_juridique`. Le reste,
+  une entité réellement multi-sites et sans détail, n'existe qu'au grain GHT. Sommer
+  `mart_juridique` sous-compte donc cette source de quelques pour cent, sans signal.
+- **L'écart entre une ligne parente et la somme de ses lignes filles est perdu.** Il va
+  jusqu'à 13 % sur une entité. Un parent qui a des filles est ignoré, pour ne rien compter
+  deux fois. Reprendre cet écart demanderait d'émettre un résidu, ce qui n'est pas fait.
 - Le référentiel finess vers GHT est au **millésime 2018**. La carte des 135 GHT est
   stable depuis 2016, mais des fusions ont pu bouger. Les finess non reconnus sont
   signalés par `reconcile`, jamais inventés.
-- L'**AP-HP**, environ 18 % du volume de cette plateforme, n'est pas dans les 135 GHT open
-  data, mais le référentiel porte les trajets de ses quelque 59 sites. Elle est donc
-  traitée comme un GHT à part entière et a un vrai dénominateur, ce qui rend sa `part`
-  calculable — environ 0,07 pour l'Ambulance en 2024.
-- **FOCH**, un ESPIC, et **CGFL Dijon**, un centre anti-cancer, ne sont membres d'aucun
-  GHT. Le choix de gestion, assumé, est de les rattacher par territoire. ⚠️ Leur volume
-  plateforme gonfle alors le numérateur du GHT d'accueil sans dénominateur en face, ce qui
-  peut tirer la `part` vers le haut. De même, un `part>1` apparaît si le périmètre « GHT »
-  de la plateforme dépasse le GHT officiel : c'est le cas observé du GHT Vendée, à
-  `part ≈ 2,9`. C'est exposé par `alerte_qualite`, et à investiguer.
+- Un `part>1` apparaît si le périmètre annoncé par la source dépasse le GHT officiel :
+  c'est le cas observé du GHT Vendée, à `part ≈ 2,9`. C'est exposé par `alerte_qualite`, et
+  à investiguer.
+
+Les libellés qui désignent un **établissement** et non un GHT, ce qui est le cas de la
+plupart, reçoivent leur finess juridique par le mapping manuel
+`ref/plateforme-finess-mapping.csv`, et leur GHT suit tout seul. Cf.
+[Référentiels](#référentiels-ref).
+
+Deux d'entre eux, un **ESPIC** et un **CLCC**, ne sont membres d'aucun GHT. Ils ne sont
+**pas** rattachés par territoire : leur volume vit dans `mart_juridique` et
+`mart_hors_ght`, jamais dans `mart_ght`. C'est un changement assumé, qui supprime une
+distorsion : les rattacher gonflait le numérateur d'un GHT d'accueil sans dénominateur en
+face.
 
 ### 7. Établissements hors GHT rattachés par territoire
 
@@ -147,10 +159,11 @@ rattache au GHT de leur territoire de santé via `ref/finess-ght-manuel.csv` :
 | 970211207 | CHU de Martinique | Martinique (972) | `ght-MAR-01` — GHT Centre Sud |
 
 Ces quatre rattachements sont sans ambiguïté : l'établissement est sur le même territoire
-de santé que le GHT retenu. Comme pour FOCH et CGFL
-([point 6](#6-plateforme-au-niveau-ght-sans-finess-et-ses-cas-particuliers)), ils gonflent
-le numérateur du GHT d'accueil sans dénominateur en face, ces établissements n'étant pas
-dans le référentiel national du GHT, et peuvent donc tirer la `part` vers le haut.
+de santé que le GHT retenu. ⚠️ Ils gonflent le numérateur du GHT d'accueil sans
+dénominateur en face, ces établissements n'étant pas dans le référentiel national du GHT,
+et peuvent donc tirer la `part` vers le haut. C'est la raison pour laquelle les deux cas
+du [point 6](#6-plateforme-hiérarchique--une-couverture-au-finess-partielle) ne sont plus
+rattachés ainsi.
 
 **Un cas est exclu, le CH de Cayenne (970302022, Guyane).** La Guyane n'a aucun GHT dans
 l'open data, et le GHT le plus proche se trouve à quelque 1 400 km d'océan, en Martinique
@@ -160,6 +173,18 @@ fausserait sa `part`. Il est donc laissé hors GHT : ses trajets restent visible
 `mart_juridique`, `mart_geographique` et `mart_hors_ght`, mais pas dans `mart_ght`. À
 rouvrir avec le porteur si un rattachement outre-mer devient pertinent, ce qui ne demande
 qu'une ligne de plus dans `ref/finess-ght-manuel.csv`.
+
+### 8. Les extractions successives d'une source ne sont pas stables
+
+Une source a livré une nouvelle version de son extraction, qui apporte le détail par
+établissement attendu, mais qui **révise aussi des totaux déjà publiés**, sur des périodes
+closes et hors de toute question de granularité. Les écarts constatés vont de quelques
+dizaines de trajets à plus de 10 000 sur une entité.
+
+Le parti pris est de **retenir la dernière version livrée**, qui fait autorité, et de ne
+rien réconcilier avec la précédente. Conséquence pour l'analyste : un chiffre extrait avant
+cette bascule peut ne pas se retrouver à l'identique aujourd'hui, sans qu'il y ait d'erreur
+de calcul. L'origine de ces révisions est à faire confirmer par l'éditeur de la source.
 
 ---
 
@@ -211,6 +236,11 @@ comporte de manière générique quels que soient les fichiers fournis.
   `src/01-extract/adapteurs/registry.ts` : `referentiel-remboursement-xlsx`,
   `plateforme-finess-tsv`, `plateforme-finess-xlsx`, `plateforme-ght-xlsx` ou
   `ght-fhir-datagouv`, ce dernier ayant pour `location` le dossier `ref/ght/`. Le format
+  `plateforme-ght-xlsx` lit un fichier **hiérarchique** : une ligne fille, reconnue à son
+  préfixe `« - »`, porte son finess juridique en fin de libellé ; une ligne parente porte un
+  libellé libre. Un parent qui a des filles est ignoré, sauf pour son détail véhicule quand
+  aucune de ses filles n'en porte. Cf. le
+  [point 6](#6-plateforme-hiérarchique--une-couverture-au-finess-partielle). Le format
   `plateforme-finess-xlsx`, au grain établissement, avec des en-têtes multi-niveaux et une
   colonne par année, porte l'article 80 en total et le hors article 80 en détail partiel,
   taxi, VSL et ambulance. Le reliquat, la différence entre le total et le détail, est
@@ -296,11 +326,14 @@ fournisseur.
 | Fichier | Rôle | Colonnes | Jointure `reconcile` | Contenu |
 |---|---|---|---|---|
 | `ght/*.json` | Référentiel **finess → GHT** open data (source `referentiel-ght`). | — (FHIR) | via l'adaptateur `ght-fhir-datagouv` → `build/extract/ght.csv` | 135 bundles FHIR data.gouv `etablissements-de-sante-par-ght` (ODbL), 1 par GHT, ~24 Mo. Rattache **888 finess juridiques à 135 GHT**. `pnpm fetch-ght` les rafraîchit. |
-| `plateforme-ght-mapping.csv` | Rattache les **libellés GHT libres** de la plateforme au niveau GHT (sans finess) à un GHT. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 23 entrées ; un fuzzy match pré-remplit, la table relue **fait foi**. |
+| `plateforme-finess-mapping.csv` | Rend son **finess juridique** à un libellé libre qui désigne un **établissement** et non un GHT. Le GHT suit alors tout seul, par l'open data. | `libelle, finess_juridique, nom` | sur `libelle` (nettoyé de ses notes entre parenthèses), **avant** le mapping GHT | 19 entrées, relues par le porteur. Les libellés sont recopiés tels quels, fautes de frappe de la source comprises : c'est la clé de jointure. |
+| `plateforme-ght-mapping.csv` | Rattache à un GHT les **libellés libres** qui désignent un vrai GHT et pour lesquels il n'y a aucun finess à trouver. | `libelle, ght_code, ght_officiel` | sur `libelle` (nettoyé de ses notes entre parenthèses) | 12 entrées ; un fuzzy match a pré-rempli, la table relue **fait foi**. C'est désormais un **repli**, plus la clé principale : 9 de ces entrées ne sont plus jointes, leur GHT ayant du détail au finess. Elles restent comme filet si une version ultérieure de la source le retirait. |
 | `finess-ght-manuel.csv` | Overrides **finess juridique → GHT**, fusionnés par-dessus l'open data pour les entités hors référentiel. | `finess_juridique, ght_code, ght_officiel` | sur `finess_juridique` | L'**AP-HP** (750712184 → `AP-HP`, GHT à part entière) ; et **4 établissements structurellement hors des 135 GHT** (CLCC, EFS, Martinique) rencontrés dans les sources plateforme, rattachés au **GHT de leur territoire** (cf. [point 7](#7-établissements-hors-ght-rattachés-par-territoire), qui documente aussi le CH de Cayenne, laissé **hors GHT**). |
 
-Les conséquences métier de ces rattachements manuels — AP-HP, FOCH, CGFL, millésime — sont
-au [point 6](#6-plateforme-au-niveau-ght-sans-finess-et-ses-cas-particuliers). Les
+Le finess prime toujours sur le libellé : `reconcile` cherche d'abord un finess, qui porte
+le rattachement au GHT, et ne retombe sur le mapping GHT que s'il n'en trouve aucun. Les
+conséquences métier de ces rattachements manuels sont au
+[point 6](#6-plateforme-hiérarchique--une-couverture-au-finess-partielle). Les
 rattachements par territoire des établissements hors GHT sont au
 [point 7](#7-établissements-hors-ght-rattachés-par-territoire).
 

@@ -27,11 +27,12 @@ export class Reconcile {
   execute(): void {
     const etablissements = this.#readEtablissements();
     this.#writeDimension(etablissements);
-    this.#writeTrajets(
-      this.#geoToJuridique(etablissements),
-      this.#juridiqueToGht(),
-      this.#libelleToGht(),
-    );
+    this.#writeTrajets({
+      geoToJuridique: this.#geoToJuridique(etablissements),
+      juridiqueToGht: this.#juridiqueToGht(),
+      libelleToFiness: this.#libelleToFiness(),
+      libelleToGht: this.#libelleToGht(),
+    });
   }
 
   // --- Dimension établissements (un libellé représentatif par finess juridique) ---
@@ -74,14 +75,8 @@ export class Reconcile {
 
   // --- Trajets réconciliés (ré-clé sur l'autorité du référentiel + rattachement GHT) ---
 
-  #writeTrajets(
-    geoToJuridique: Map<string, string>,
-    juridiqueToGht: Map<string, string>,
-    libelleToGht: Map<string, string>,
-  ): void {
-    const trajets = this.#readTrajets().map((t) =>
-      this.#recle(t, geoToJuridique, juridiqueToGht, libelleToGht),
-    );
+  #writeTrajets(autorites: Autorites): void {
+    const trajets = this.#readTrajets().map((t) => this.#recle(t, autorites));
     const reagreges = this.#reagreger(trajets);
     Csv.write(
       join(Paths.RECONCILE, "trajets.csv"),
@@ -93,24 +88,37 @@ export class Reconcile {
     );
   }
 
-  // Rattachement au GHT : par finess (référentiel) ; à défaut, par libellé libre (plateforme
-  // au niveau GHT, sans finess) via le mapping manuel commité `ref/plateforme-ght-mapping.csv`.
-  #recle(
-    t: TrajetRow,
-    geoToJuridique: Map<string, string>,
-    juridiqueToGht: Map<string, string>,
-    libelleToGht: Map<string, string>,
-  ): TrajetReconcilieRow {
-    const geo = t.finess_geographique;
-    const juridique =
-      (this.#usable(geo) && geoToJuridique.get(geo)) || t.finess_juridique;
-    const ghtParFiness = juridiqueToGht.get(juridique) ?? "";
+  // Deux replis successifs pour une ligne dont la source ne donne qu'un libellé libre, tous
+  // deux appuyés sur des mappings manuels commités et relus par le porteur :
+  //  1. `ref/plateforme-finess-mapping.csv` — le libellé désigne un **établissement**, on lui
+  //     rend son finess juridique, qui donne le GHT par ricochet ;
+  //  2. `ref/plateforme-ght-mapping.csv` — le libellé désigne un **GHT**, il n'y a pas de
+  //     finess à trouver. C'est un repli, plus la clé principale.
+  // Le finess prime toujours : il est plus fin, et il porte le rattachement au GHT.
+  #recle(t: TrajetRow, autorites: Autorites): TrajetReconcilieRow {
+    const juridique = this.#juridique(t, autorites);
     const ght_code =
-      ghtParFiness ||
-      (t.ght_libelle
-        ? (libelleToGht.get(this.#normaliserLibelle(t.ght_libelle)) ?? "")
-        : "");
+      autorites.juridiqueToGht.get(juridique) ||
+      this.#ghtParLibelle(t, autorites);
     return { ...t, finess_juridique: juridique, ght_code };
+  }
+
+  #juridique(t: TrajetRow, autorites: Autorites): string {
+    const geo = t.finess_geographique;
+    return (
+      (this.#usable(geo) && autorites.geoToJuridique.get(geo)) ||
+      t.finess_juridique ||
+      this.#chercherParLibelle(t.ght_libelle, autorites.libelleToFiness)
+    );
+  }
+
+  #ghtParLibelle(t: TrajetRow, autorites: Autorites): string {
+    return this.#chercherParLibelle(t.ght_libelle, autorites.libelleToGht);
+  }
+
+  #chercherParLibelle(libelle: string, table: Map<string, string>): string {
+    if (!libelle) return "";
+    return table.get(this.#normaliserLibelle(libelle)) ?? "";
   }
 
   // Le libellé de la plateforme porte des notes entre parenthèses (non versionnées) ; la clé
@@ -175,14 +183,25 @@ export class Reconcile {
     return map;
   }
 
+  // Mapping manuel « libellé libre » → finess juridique, pour les libellés qui désignent un
+  // établissement et non un GHT (relu par le porteur).
+  #libelleToFiness(): Map<string, string> {
+    return this.#mappingManuel(
+      "plateforme-finess-mapping.csv",
+      "finess_juridique",
+    );
+  }
+
   // Mapping manuel « libellé libre de la plateforme au niveau GHT » → GHT (relu par le porteur).
   #libelleToGht(): Map<string, string> {
-    const path = join(Paths.REF, "plateforme-ght-mapping.csv");
+    return this.#mappingManuel("plateforme-ght-mapping.csv", "ght_code");
+  }
+
+  #mappingManuel(fichier: string, colonne: string): Map<string, string> {
+    const path = join(Paths.REF, fichier);
     if (!existsSync(path)) return new Map();
-    const rows = Csv.read(path);
-    return new Map(
-      rows.filter((r) => r.ght_code).map((r) => [r.libelle!, r.ght_code!]),
-    );
+    const rows = Csv.read(path).filter((r) => r.libelle && r[colonne]);
+    return new Map(rows.map((r) => [r.libelle!, r[colonne]!]));
   }
 
   // --- Lecture ---
@@ -216,3 +235,11 @@ if (import.meta.url === `file://${process.argv[1]}`) new Reconcile().execute();
 // ---- implémentation ----
 
 type Row = Record<string, string | number>;
+
+/** Les tables d'autorité que `reconcile` applique à chaque trajet. */
+interface Autorites {
+  geoToJuridique: Map<string, string>;
+  juridiqueToGht: Map<string, string>;
+  libelleToFiness: Map<string, string>;
+  libelleToGht: Map<string, string>;
+}
