@@ -4,10 +4,11 @@
 // referentiel-grist.ts) : base = `…/api/docs/<docId>`, auth `Bearer <clé>`.
 //
 // Ce module ne fait que ce dont un mart a besoin : garantir la table et ses
-// colonnes, puis **remplacer** intégralement son contenu (vider + réinsérer). Un
-// mart est un snapshot régénéré à chaque ETL : le remplacement évite les lignes
-// périmées et rend la publication idempotente. Personne n'édite ces tables à la
-// main — les charts/vues Grist référencent la table et les valeurs, pas les rowId.
+// colonnes, **remplacer** intégralement son contenu (vider + réinsérer), et
+// **ranger** sa page. Un mart est un snapshot régénéré à chaque ETL : le
+// remplacement évite les lignes périmées et rend la publication idempotente.
+// Personne n'édite ces tables à la main : les charts et vues Grist référencent la
+// table et les valeurs, pas les rowId.
 
 export type GristType = "Text" | "Int" | "Numeric";
 
@@ -64,6 +65,55 @@ export class GristDoc {
     }
   }
 
+  // Ranger les pages des marts sous une page parente, pour que le document distingue à
+  // l'œil ce que l'ETL produit de ce qui est construit à la main dans Grist. Grist crée une
+  // page à la racine à chaque table nouvelle : sans ça, la barre latérale redevient plate.
+  //
+  // L'imbrication est portée par `_grist_Pages` : une page est fille de la précédente dont
+  // l'indentation est plus faible. On réécrit donc tout le bloc, ce qui rend l'opération
+  // idempotente et indépendante des marts publiés lors de cette exécution.
+  async rangerSous(parent: string, tables: string[]): Promise<void> {
+    const pages = await this.#pages();
+    const bloc = [parent, ...tables]
+      .map((nom) => pages.find((p) => p.name === nom)?.id)
+      .filter((id): id is number => id !== undefined);
+    if (bloc.length < 2) return; // page parente absente, ou aucun mart : rien à ranger
+    const reste = pages.filter((p) => !bloc.includes(p.id));
+    await this.#apply([
+      [
+        "BulkUpdateRecord",
+        "_grist_Pages",
+        bloc,
+        {
+          pagePos: bloc.map((_, i) => i + 1),
+          indentation: bloc.map((_, i) => (i === 0 ? 0 : 1)),
+        },
+      ],
+      ...reste.map((p, i) => [
+        "UpdateRecord",
+        "_grist_Pages",
+        p.id,
+        { pagePos: bloc.length + 1 + i, indentation: 0 },
+      ]),
+    ]);
+  }
+
+  /** Les pages du document, dans l'ordre d'affichage. */
+  async #pages(): Promise<PageRecord[]> {
+    const q =
+      "select p.id, v.name from _grist_Pages p " +
+      "join _grist_Views v on v.id = p.viewRef order by p.pagePos";
+    const res = await this.#get<{ records: { fields: PageRecord }[] }>(
+      `/sql?q=${encodeURIComponent(q)}`,
+    );
+    return res.records.map((r) => r.fields);
+  }
+
+  /** Actions utilisateur Grist (métadonnées comprises). */
+  async #apply(actions: unknown[]): Promise<void> {
+    await this.#post("/apply", actions);
+  }
+
   async #get<T>(path: string): Promise<T> {
     const res = await fetch(`${this.#base}${path}`, {
       headers: { Authorization: `Bearer ${this.#apiKey}` },
@@ -101,6 +151,8 @@ export function coerce(value: string, type: GristType): string | number | null {
 // ---- implémentation ----
 
 type GristRecord = { id: number };
+
+type PageRecord = { id: number; name: string };
 
 function colDef(c: ColumnSpec) {
   return { id: c.id, fields: { label: c.id, type: c.type } };

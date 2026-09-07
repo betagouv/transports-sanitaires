@@ -297,12 +297,25 @@ sinon on prend les variables du shell.
 | `GRIST_DOC_URL` | Base API du doc **dédié dataviz** (≠ doc d'identification), ex. `https://…/api/docs/<docId>` |
 | `GRIST_API_KEY` | Clé API Grist |
 
-Chaque mart publiable déclare sa table et ses colonnes dans `MARTS`
+Chaque mart publiable déclare sa table et ses colonnes dans `marts()`
 (`src/05-publish/publish.ts`) : ajouter un mart revient à ajouter une entrée. Pour chacun,
 la publication garantit la table, en la créant avec ses colonnes si elle est absente et en
 complétant les colonnes manquantes, puis remplace tout son contenu, en le vidant et en
 réinsérant. La sémantique est celle d'un snapshot : idempotente, sans lignes périmées, et
 relançable après chaque `pnpm marts`.
+
+Le document mêle deux familles de tables : celles que l'ETL produit, et celles construites
+à la main dans Grist pour la visualisation. Rien ne les distingue au premier coup d'œil, et
+Grist ajoute une page à la racine à chaque table nouvelle. La publication **range donc les
+pages des marts sous une page parente**, nommée `marts` dans `PAGE_PARENTE`. Trois choses à
+savoir.
+
+- La page parente est **créée à la main** dans Grist. Si elle est absente, le rangement ne
+  fait rien et n'échoue pas.
+- Le rangement rejoue tout le bloc à chaque exécution, donc il est idempotent et remet en
+  ordre un mart publié seul.
+- Les pages hors du bloc, celles de la visualisation, sont laissées à la racine, dans leur
+  ordre d'origine.
 
 | Mart | Table Grist |
 |---|---|
@@ -315,6 +328,11 @@ relançable après chaque `pnpm marts`.
 
 ⚠️ Le mart contient de vrais établissements, cf. [Confidentialité](#confidentialité) : le
 doc Grist cible doit rester privé.
+
+⚠️ `publish-grist` n'a **aucune reprise sur erreur**. Comme chaque table est vidée avant
+d'être réinsérée par lots, une coupure en cours de mart laisse la table vide ou partielle,
+et la relance suivante ne le signale pas. Vérifier le compte de lignes après une
+publication interrompue.
 
 ## Référentiels (`ref/`)
 

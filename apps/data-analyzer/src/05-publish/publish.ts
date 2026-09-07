@@ -10,11 +10,20 @@
 //
 //   pnpm publish-grist            # tous les marts publiables
 //   pnpm publish-grist ght_2024   # un seul (par son nom court)
+//
+// En fin d'exécution, les pages des marts sont rangées sous la page `PAGE_PARENTE`, pour
+// que le document distingue ce que l'ETL produit de ce qui est construit à la main.
 
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 import { type ColumnSpec, coerce, GristDoc } from "./grist.ts";
+
+// Page du document sous laquelle vivent les tables produites par l'ETL. Elle est créée à
+// la main dans Grist : si elle est absente, le rangement ne fait rien, sans échouer.
+// Déclarée ici, et non plus bas : le bloc CLI s'exécute au chargement du module, une
+// constante déclarée après lui serait lue en TDZ.
+const PAGE_PARENTE = "marts";
 
 export class PublishMart {
   readonly #doc: GristDoc;
@@ -60,8 +69,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     );
     process.exit(1);
   }
-  const publisher = new PublishMart(new GristDoc(docUrl, apiKey));
+  const doc = new GristDoc(docUrl, apiKey);
+  const publisher = new PublishMart(doc);
   for (const spec of specs) await publisher.execute(spec);
+  await doc.rangerSous(
+    PAGE_PARENTE,
+    marts().map((m) => m.table),
+  );
+  console.log(`Grist pages rangées sous « ${PAGE_PARENTE} ».`);
 }
 
 // ---- implémentation ----
