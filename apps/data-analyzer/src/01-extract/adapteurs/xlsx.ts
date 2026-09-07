@@ -1,6 +1,11 @@
 // Accès bas niveau à une feuille xlsx (SheetJS), partagé par les adaptateurs xlsx.
 
+import * as fs from "node:fs";
 import XLSX from "xlsx";
+
+// Le build ESM de SheetJS ne câble pas `fs` tout seul : sans ça, `readFile` échoue sur
+// « Cannot access file » pour toute source xlsx. C'est le point d'accès unique, donc ici.
+XLSX.set_fs(fs);
 
 export class Xlsx {
   /** Première feuille d'un classeur. */
