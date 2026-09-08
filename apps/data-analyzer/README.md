@@ -33,17 +33,40 @@ c'est-à-dire ré-clés sur l'autorité du référentiel puis rattachés au GHT.
 | `mart_ght.csv` | **GHT** | **Le plus fiable** : les désaccords d'attribution intra-GHT se réconcilient (quasi 0 `part>1`). Couvre les établissements **publics en GHT** (cf. point 2) **et** la part d'une source hiérarchique restée au grain GHT (cf. point 6). |
 | `mart_hors_ght.csv` | finess **juridique**, hors GHT | Complément de `mart_ght` : les établissements **sans GHT** (~91 % : cliniques privées, imagerie…). |
 | `mart_article80.csv` | juridique **et** GHT | **Volumes + part par plateforme** (pas de ratio national, cf. point 3). Colonne `grain` = `juridique`/`ght`. |
-| `mart_ght_2024.csv` | **GHT**, année 2024, **tous transports** | **Rollup du mart GHT** : une ligne par GHT (136), somme des véhicules pour 2024. Colonnes `nb_plateforme`, `nb_cnam` (= référentiel CNAM), `ratio = nb_plateforme / nb_cnam`. Vue de synthèse « taux réel de recours aux plateformes par GHT ». |
+| `mart_ght_2024.csv` | **GHT**, année 2024, **tous transports** | **Rollup du mart GHT** : une ligne par GHT couvert (56 des 136), somme des véhicules pour 2024. Vue de synthèse « taux réel de recours aux plateformes par GHT ». |
+| `mart_juridique_2024.csv` | **finess juridique**, année 2024, **tous transports** | **Rollup du mart juridique** : une ligne par établissement couvert (442). Le même chiffre que ci-dessus, au grain où il s'interprète (cf. [point 9](#9-un-rollup-annuel-ne-répond-quà-la-question-qui-lui-est-posée)). C'est ce mart que consomme la vue Grist « part plateforme par établissement ». |
 
 Les marts de ratio — `geographique`, `juridique`, `ght` et `hors_ght` — portent les
-colonnes `… annee, vehicule, nb_plateforme, nb_reference, part, alerte_qualite`, où :
+colonnes `… annee, vehicule, plateforme, nb_plateforme, nb_reference, part, alerte_qualite`,
+où :
 
 - `part = nb_plateforme / nb_reference`, hors Article 80, et reste vide, donc NULL, s'il
   n'y a pas de dénominateur ;
 - `alerte_qualite = "part>1"` quand le numérateur dépasse le dénominateur. C'est un signal
   assumé, qu'on ne corrige pas.
 
-`mart_article80` porte à la place `nb` et `part_plateforme = source / Σ plateformes`. La
+Ils portent en plus une colonne **`plateforme`**, qui nomme d'où vient le numérateur de la
+cellule. Elle est vide quand la cellule n'a que du référentiel. Quand plusieurs plateformes
+déclarent des trajets sur la même cellule, les noms sont triés et joints par ` + `, par
+exemple `Plateforme A + Plateforme B` : réduire à une seule mentirait sur l'origine du
+chiffre. Les noms eux-mêmes viennent de `mapping.json`, cf.
+[Configuration des entrées](#configuration-des-entrées--mappingjson).
+
+Les deux **rollups annuels**, `ght_2024` et `juridique_2024`, sont le même calcul à deux
+grains : ils somment les véhicules du mart de ratio correspondant pour la seule année 2024
+et portent `… annee, plateforme, nb_plateforme, nb_cnam, ratio, alerte_qualite`, où `nb_cnam` est le
+référentiel national, `ratio = nb_plateforme / nb_cnam` et
+`alerte_qualite = "ratio>1"` selon la même règle que `part>1`.
+
+**Ils ne retiennent que les entités qui portent les deux membres du ratio**, donc au moins
+un trajet plateforme et au moins un trajet remboursé. Une entité sans trajet plateforme
+sortirait à 0, une entité sans remboursement à NULL : ni l'une ni l'autre ne dit quoi que
+ce soit d'un taux de recours, et à elles deux elles représentaient 94 % des lignes. Le
+fait « cet établissement n'a aucun trajet plateforme » reste lisible dans le mart de ratio
+dont le rollup dérive.
+
+`mart_article80` porte à la place `nb` et `part_plateforme = source / Σ plateformes`, et sa
+colonne `plateforme` porte une seule plateforme par ligne, puisque c'est son grain. La
 nomenclature véhicule canonique est `vehicule ∈ {Ambulance, Assis, Autre, Total}`.
 
 ## Points d'attention métier
@@ -186,6 +209,60 @@ rien réconcilier avec la précédente. Conséquence pour l'analyste : un chiffr
 cette bascule peut ne pas se retrouver à l'identique aujourd'hui, sans qu'il y ait d'erreur
 de calcul. L'origine de ces révisions est à faire confirmer par l'éditeur de la source.
 
+### 9. Un rollup annuel ne répond qu'à la question qui lui est posée
+
+`mart_ght_2024` et `mart_juridique_2024` somment les véhicules d'une seule année. C'est ce
+qui les rend lisibles, et c'est aussi ce qu'ils coûtent. Quatre limites à connaître avant
+de citer un de leurs ratios.
+
+- **Le rollup masque une anomalie portée par un seul véhicule.** `GHT Vendée` sort à
+  `166 678 / 56 707` sur l'ambulance en 2024, soit `part ≈ 2,9` et une `alerte_qualite`
+  dans `mart_ght`. Une fois les véhicules sommés, son ratio repasse sous 1 et l'alerte
+  disparaît. **Aucun GHT n'est signalé en 2024**, ce qui ne veut pas dire qu'aucun ne pose
+  question : c'est `mart_ght` qu'il faut ouvrir pour le savoir.
+- **Au grain établissement, le numérateur est incomplet de 10 %.** 183 813 des 1 827 882
+  trajets plateforme 2024 hors article 80 n'ont aucun finess juridique, et n'entrent donc
+  pas dans `mart_juridique_2024`. C'est le [point 6](#6-plateforme-hiérarchique--une-couverture-au-finess-partielle)
+  vu depuis le livrable.
+- **Le rollup ne porte plus l'agrégat national.** Il ne retient que les 442 établissements
+  qui ont à la fois des trajets plateforme et des trajets remboursés, et son agrégat,
+  `1 643 844 / 20 578 041` soit **7,99 %**, se lit « chez les établissements couverts par
+  une plateforme ». La part du remboursement national réalisée via les plateformes est une
+  autre question, et elle se calcule sur `mart_juridique` filtré sur 2024 :
+  `1 644 069 / 62 930 184` soit **2,61 %**, un plancher pour la raison ci-dessus. **Les
+  deux chiffres sont justes et ne répondent pas à la même question.** Le filtre écarte au
+  passage 225 trajets plateforme, ceux des 4 établissements sans remboursement 2024.
+- **Le nom affiché est celui du site le plus gros, pas celui de l'entité.** `reconcile` élit
+  un libellé représentatif par finess juridique. Sur une entité multi-sites, il désigne un
+  site et peut contredire le département de la ligne ; sur un CHU, il désigne parfois le
+  siège administratif. **Le `finess_juridique` fait foi, le nom n'est qu'un confort.**
+
+### 10. Quelques lignes sortent sans nom ni ville
+
+Un mart n'habille une clé que si le référentiel national la connaît. Un finess déclaré par
+une plateforme mais absent du référentiel produit une ligne avec ses volumes et une
+identité vide. Deux causes ont été corrigées, une troisième reste ouverte.
+
+| Cause | Où c'est traité | Effet |
+|---|---|---|
+| Zéro de tête perdu (colonne stockée en numérique en amont) | `extract` normalise tout finess à 9 caractères (`src/finess.ts`) | corrigé |
+| Colonnes juridique et géographique interverties | `reconcile` rend son entité juridique à un code déclaré juridique qui n'est qu'un site du référentiel | corrigé |
+| Finess inconnu du référentiel | rien | ligne sans identité |
+
+Le référentiel d'identité n'est pas l'annuaire FINESS complet : il est dérivé de la source
+nationale de remboursement, soit 8 522 finess juridiques pour 19 789 sites. Un
+établissement qui n'y figure pas n'a pas de nom, et pas de dénominateur non plus : ces
+lignes sortent toujours avec `nb_reference = 0` et une `part` à `NULL`.
+
+Il en reste **5 clés dans `mart_juridique`, 4 995 trajets, 0,05 % du numérateur
+plateforme**. Elles sont à faire qualifier par les plateformes : soit le code est erroné,
+soit l'établissement est absent du référentiel de remboursement. Aucune n'apparaît dans
+les rollups 2024, qui écartent les entités sans trajet remboursé.
+
+Trois codes de test présents dans les extractions sources ont par ailleurs été retirés à la
+main. Le geste ne tient pas : `data/` n'est pas versionné, et une nouvelle livraison les
+ramènera tant que la correction n'est pas faite chez la plateforme.
+
 ---
 
 ## Lancer
@@ -224,6 +301,7 @@ comporte de manière générique quels que soient les fichiers fournis.
     "format": "plateforme-finess-tsv",
     "location": "data/plateforme-a.csv",
     "label": "plateforme-a",
+    "plateforme": "Plateforme A",
     "options": { "colFinessJuridique": 1, "colFinessGeographique": 0 }
   }
 ]
@@ -247,6 +325,10 @@ comporte de manière générique quels que soient les fichiers fournis.
   imputé à `Autre` pour boucler le total annoncé.
 - **`location`** est le chemin du fichier, absolu ou relatif à la racine de l'app.
 - **`label`** est un identifiant neutre et unique, qui nomme les artefacts de traçabilité.
+- **`plateforme`** est le nom affiché dans la colonne `plateforme` des marts. Il n'a de sens
+  que pour le rôle `plateforme` et **n'existe nulle part dans le code versionné** : c'est
+  ici, dans un fichier non versionné, que le nom d'un fournisseur est autorisé. Absent, la
+  colonne retombe sur le `label`.
 - **`options`** porte les paramètres propres au format, par exemple les index de colonnes
   finess pour le TSV. C'est ce qui permet à plusieurs fichiers de partager un adaptateur.
 
@@ -262,7 +344,7 @@ rôles.
 
 | Étape | Responsabilité | Entrée → sortie |
 |---|---|---|
-| `extract`   | appliquer à chaque fichier l'**adaptateur de son format** → lignes normalisées (rôle + nomenclature canonique) | `mapping.json`, sources → `build/extract/` |
+| `extract`   | appliquer à chaque fichier l'**adaptateur de son format** → lignes normalisées (rôle + nomenclature canonique), puis **rétablir le zéro de tête** des finess tronqués | `mapping.json`, sources → `build/extract/` |
 | `staging`   | **réunir** les sources et **agréger** au grain canonique | `build/extract/trajets/` → `build/staging/trajets.csv` |
 | `reconcile` | poser les **clés** : dimension établissements ; **ré-clé** des trajets sur l'autorité du référentiel ; rattachement au GHT | `build/extract/`, `build/staging/` → `build/reconcile/` |
 | `marts`     | appliquer les **règles de calcul** (part / volumes), à chaque grain | `build/reconcile/` → `build/marts/` |
@@ -275,14 +357,15 @@ rôles.
 | `build/staging/trajets.csv` | staging | Toutes les sources réunies et agrégées au grain canonique. | idem `trajets/<label>.csv` |
 | `build/reconcile/etablissements.csv` | reconcile | Libellé représentatif de chaque établissement, pour habiller les marts. | `finess_juridique, nom, ville, departement, categorie` |
 | `build/reconcile/trajets.csv` | reconcile | Trajets **ré-clés** (autorité référentiel) et **rattachés au GHT**. Base commune des marts. | idem staging + `ght_code` |
-| `build/marts/mart_*.csv` | marts | Les **6 [livrables](#livrables-marts)** (dont `mart_ght_2024`, rollup dérivé de `mart_ght`). | selon le mart |
+| `build/marts/mart_*.csv` | marts | Les **7 [livrables](#livrables-marts)** (dont les deux rollups annuels, dérivés de `mart_ght` et de `mart_juridique`). | selon le mart |
 
 ## Publication (dataviz)
 
 C'est une étape optionnelle, hors des 4 étapes de l'ETL, et la seule étape réseau, en
 écriture. Elle pousse les marts dans Grist pour les explorer et bâtir la dataviz. Son but
 premier est de révéler le taux réel de recours aux plateformes par GHT, dans la colonne
-`part` de `Mart_Ght` et la colonne `ratio` de `Mart_Ght_2024`.
+`part` de `Mart_Ght`, et surtout la colonne `ratio` de `Mart_Juridique_2024`, au grain
+établissement, qui est celui où le chiffre s'interprète.
 
 ```bash
 pnpm publish-grist            # tous les marts publiables
@@ -312,6 +395,7 @@ fait sentir, se fait à la main dans Grist.
 |---|---|
 | `mart_ght.csv` (`ght`) | `Mart_Ght` |
 | `mart_ght_2024.csv` (`ght_2024`) | `Mart_Ght_2024` |
+| `mart_juridique_2024.csv` (`juridique_2024`) | `Mart_Juridique_2024` |
 | `mart_juridique.csv` (`juridique`) | `Mart_Juridique` |
 | `mart_geographique.csv` (`geographique`) | `Mart_Geographique` |
 | `mart_hors_ght.csv` (`hors_ght`) | `Mart_Hors_Ght` |
