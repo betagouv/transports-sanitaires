@@ -45,10 +45,10 @@ export interface GhtRattachementRow {
 }
 
 /**
- * Trajet **réconcilié** : comme `TrajetRow`, mais le `finess_juridique` est ré-clé sur
- * l'**autorité du référentiel** (le juridique du site géographique tel que le connaît le
- * référentiel national, et non celui déclaré par la source), et le GHT est rattaché.
- * Produit par : reconcile (re-clé + rattachement) → `build/reconcile/trajets.csv`.
+ * Trajet **réconcilié** : comme `TrajetRow`, mais le `finess_juridique` est **aligné sur
+ * le référentiel**, qui fait autorité (le juridique du site géographique tel que le connaît
+ * le référentiel national, et non celui déclaré par la source), et le GHT est rattaché.
+ * Produit par : reconcile (alignement des finess + rattachement) → `build/reconcile/trajets.csv`.
  * Consommé par : marts (tous les livrables en dérivent, par agrégation à leur grain).
  */
 export interface TrajetReconcilieRow {

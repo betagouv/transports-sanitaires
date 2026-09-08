@@ -60,7 +60,7 @@ sans build. Les dossiers portent leur ordre :
 |---|---|
 | `src/01-extract/` | applique à chaque fichier l'**adaptateur de son format** → lignes normalisées. Un format = un adaptateur dans `adapteurs/`, déclaré dans `registry.ts`. |
 | `src/02-staging/` | normalise et empile |
-| `src/03-reconcile/` | ré-clé sur l'**autorité du référentiel**, puis rattache au GHT |
+| `src/03-reconcile/` | **aligne les finess sur le référentiel**, qui fait autorité, puis rattache au GHT |
 | `src/04-marts/` | le même calcul à différents grains, un fichier par mart |
 | `src/05-publish/` | publication Grist (document cible **privé**) |
 

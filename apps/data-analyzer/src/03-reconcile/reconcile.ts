@@ -3,8 +3,8 @@
 // Deux responsabilités :
 //  1. Dimension établissements — un finess juridique regroupe plusieurs sites ; on retient
 //     l'identité du site au plus gros volume (`score`) comme libellé représentatif.
-//  2. Trajets réconciliés — ré-clé chaque trajet sur l'**autorité du référentiel** : le
-//     finess juridique retenu est celui que le référentiel national associe au site
+//  2. Trajets réconciliés — aligne le finess de chaque trajet sur le **référentiel**, qui
+//     fait autorité : le finess juridique retenu est celui que le référentiel associe au site
 //     géographique (et non celui déclaré par la source, qui peut diverger — cf. Points
 //     d'attention métier du README). On rattache aussi chaque trajet à son GHT.
 //
@@ -73,10 +73,10 @@ export class Reconcile {
     };
   }
 
-  // --- Trajets réconciliés (ré-clé sur l'autorité du référentiel + rattachement GHT) ---
+  // --- Trajets réconciliés (finess alignés sur le référentiel + rattachement GHT) ---
 
   #writeTrajets(autorites: Autorites): void {
-    const trajets = this.#readTrajets().map((t) => this.#recle(t, autorites));
+    const trajets = this.#readTrajets().map((t) => this.#aligner(t, autorites));
     const reagreges = this.#reagreger(trajets);
     Csv.write(
       join(Paths.RECONCILE, "trajets.csv"),
@@ -95,7 +95,7 @@ export class Reconcile {
   //  2. `ref/plateforme-ght-mapping.csv` — le libellé désigne un **GHT**, il n'y a pas de
   //     finess à trouver. C'est un repli, plus la clé principale.
   // Le finess prime toujours : il est plus fin, et il porte le rattachement au GHT.
-  #recle(t: TrajetRow, autorites: Autorites): TrajetReconcilieRow {
+  #aligner(t: TrajetRow, autorites: Autorites): TrajetReconcilieRow {
     const juridique = this.#juridique(t, autorites);
     const ght_code =
       autorites.juridiqueToGht.get(juridique) ||
@@ -135,7 +135,7 @@ export class Reconcile {
     return libelle.split("(")[0]!.trim();
   }
 
-  // La ré-clé peut faire coïncider des lignes jusque-là distinctes : on re-somme.
+  // L'alignement peut faire coïncider des lignes jusque-là distinctes : on re-somme.
   #reagreger(rows: TrajetReconcilieRow[]): TrajetReconcilieRow[] {
     const parCle = new Map<string, TrajetReconcilieRow>();
     for (const row of rows) {

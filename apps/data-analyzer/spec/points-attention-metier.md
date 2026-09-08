@@ -12,13 +12,14 @@ porteur.
 Elles sont exposées et non corrigées.
 
 Les deux systèmes rangent parfois le *même trajet réel* sous des finess différents : la
-plateforme rattache un site au groupe A, le référentiel au groupe B. `reconcile` ré-clé
-donc les trajets sur l'autorité du référentiel, en retenant le finess juridique que le
-référentiel associe au site géographique, et non celui déclaré par la source. Les deux
-plateformes à finess fournissent bien un finess géographique, sur environ 99 % des lignes.
-L'idée répandue d'une plateforme A sans géo est fausse sur la donnée réelle.
+plateforme rattache un site au groupe A, le référentiel au groupe B. `reconcile` aligne
+donc les finess des trajets sur le référentiel, qui fait autorité, en retenant le finess
+juridique que le référentiel associe au site géographique, et non celui déclaré par la
+source. Les deux plateformes à finess fournissent bien un finess géographique, sur environ
+99 % des lignes. L'idée répandue d'une plateforme A sans géo est fausse sur la donnée
+réelle.
 
-Ce ré-clé répare les cas spectaculaires, ceux des réseaux nationaux, mais ne fait pas
+Cet alignement répare les cas spectaculaires, ceux des réseaux nationaux, mais ne fait pas
 tomber `part>1` à zéro. Deux systèmes indépendants ne s'emboîtent jamais parfaitement,
 pour des raisons de périmètre, de calendrier et de reclassement de véhicule. Le résidu est
 assumé et exposé par `alerte_qualite`, jamais plafonné ni supprimé.

@@ -2,8 +2,8 @@
 
 > Statut : cadrage validé avec le porteur le 2026-07-22. Le code est dans
 > `apps/data-analyzer`, voir son README. **Livré** : le référentiel finess vers GHT
-> (source `referentiel-ght`, 888 finess et 135 GHT) ; `reconcile`, qui ré-clé les trajets
-> sur l'autorité du référentiel et les rattache au GHT ; et **5 marts**
+> (source `referentiel-ght`, 888 finess et 135 GHT) ; `reconcile`, qui aligne les finess
+> des trajets sur le référentiel et les rattache au GHT ; et **5 marts**
 > (`mart_geographique`, `mart_juridique`, `mart_ght`, `mart_hors_ght`, `mart_article80`).
 > **Décisions actées** : l'autorité est le référentiel ; `part>1` est exposé et non
 > corrigé ; l'article 80 a son mart dédié ; la plateforme au niveau GHT, qui n'a pas de
@@ -223,7 +223,7 @@ juridique et GHT. La plateforme au niveau GHT, sans finess, rejoindra `mart_ght`
 ## Limite connue — `part > 1` résiduel (divergence entre systèmes)
 
 Deux systèmes indépendants, les plateformes et le remboursement national, ne s'emboîtent
-jamais parfaitement. Après la ré-clé sur l'autorité du référentiel, il reste des cellules
+jamais parfaitement. Après l'alignement des finess sur le référentiel, il reste des cellules
 `part > 1`, pour des raisons de périmètre, de calendrier ou de reclassement de véhicule.
 Elles sont exposées par `alerte_qualite`, sans correction. Le grain amortit la divergence :
 elle est la plus forte au grain géographique, moindre au juridique, et proche de zéro au

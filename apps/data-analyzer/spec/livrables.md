@@ -4,8 +4,8 @@
 > [README de l'app](../README.md).
 
 Chaque mart est le même calcul à un grain différent, sur des trajets réconciliés,
-c'est-à-dire ré-clés sur l'autorité du référentiel puis rattachés au GHT. Voir
-[Pipeline](../README.md#pipeline--artefacts) et le
+c'est-à-dire dont les finess sont alignés sur le référentiel, qui fait autorité, puis
+rattachés au GHT. Voir [Pipeline](../README.md#pipeline--artefacts) et le
 [point 1](points-attention-metier.md#1-divergence-dattribution-entre-sources-et-cellules-part--1).
 
 | Livrable | Grain | À savoir / limite |

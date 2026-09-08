@@ -24,7 +24,7 @@ flowchart LR
         direction LR
         E["1 · extract<br/>un adaptateur par format"]
         S["2 · staging<br/>réunir et agréger"]
-        R["3 · reconcile<br/>ré-clé + rattachement GHT"]
+        R["3 · reconcile<br/>alignement des finess<br/>+ rattachement GHT"]
         M["4 · marts<br/>règles de calcul"]
         E -->|"build/extract/"| S -->|"build/staging/"| R -->|"build/reconcile/"| M
     end
@@ -120,7 +120,7 @@ rôles.
 |---|---|---|
 | `extract`   | appliquer à chaque fichier l'**adaptateur de son format** → lignes normalisées (rôle + nomenclature canonique), puis **rétablir le zéro de tête** des finess tronqués | `mapping.json`, sources → `build/extract/` |
 | `staging`   | **réunir** les sources et **agréger** au grain canonique | `build/extract/trajets/` → `build/staging/trajets.csv` |
-| `reconcile` | poser les **clés** : dimension établissements ; **ré-clé** des trajets sur l'autorité du référentiel ; rattachement au GHT | `build/extract/`, `build/staging/` → `build/reconcile/` |
+| `reconcile` | poser les **clés** : dimension établissements ; **alignement des finess** des trajets sur le référentiel, qui fait autorité ; rattachement au GHT | `build/extract/`, `build/staging/` → `build/reconcile/` |
 | `marts`     | appliquer les **règles de calcul** (part / volumes), à chaque grain | `build/reconcile/` → `build/marts/` |
 
 | Artefact | Étape | Description | Colonnes |
@@ -130,7 +130,7 @@ rôles.
 | `build/extract/ght.csv` | extract | Rattachement finess juridique → GHT, dérivé des bundles `ref/ght/`. | `finess_juridique, ght_code, ght_libelle, region, raison_sociale` |
 | `build/staging/trajets.csv` | staging | Toutes les sources réunies et agrégées au grain canonique. | idem `trajets/<label>.csv` |
 | `build/reconcile/etablissements.csv` | reconcile | Libellé représentatif de chaque établissement, pour habiller les marts. | `finess_juridique, nom, ville, departement, categorie` |
-| `build/reconcile/trajets.csv` | reconcile | Trajets **ré-clés** (autorité référentiel) et **rattachés au GHT**. Base commune des marts. | idem staging + `ght_code` |
+| `build/reconcile/trajets.csv` | reconcile | Trajets aux **finess alignés sur le référentiel** et **rattachés au GHT**. Base commune des marts. | idem staging + `ght_code` |
 | `build/marts/mart_*.csv` | marts | Les **7 [livrables](spec/livrables.md)** (dont les deux rollups annuels, dérivés de `mart_ght` et de `mart_juridique`). | selon le mart |
 
 ## Publication (dataviz)
