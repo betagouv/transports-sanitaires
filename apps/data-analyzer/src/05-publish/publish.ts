@@ -108,6 +108,22 @@ function marts(): MartSpec[] {
       ],
     },
     {
+      nom: "juridique_2024",
+      fichier: "mart_juridique_2024.csv",
+      table: "Mart_Juridique_2024",
+      columns: [
+        { id: "finess_juridique", type: "Text" },
+        { id: "nom", type: "Text" },
+        { id: "ville", type: "Text" },
+        { id: "departement", type: "Text" },
+        { id: "annee", type: "Int" },
+        { id: "nb_plateforme", type: "Int" },
+        { id: "nb_cnam", type: "Int" },
+        { id: "ratio", type: "Numeric" },
+        { id: "alerte_qualite", type: "Text" },
+      ],
+    },
+    {
       nom: "juridique",
       fichier: "mart_juridique.csv",
       table: "Mart_Juridique",
