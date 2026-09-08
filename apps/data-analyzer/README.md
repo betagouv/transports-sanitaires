@@ -89,33 +89,25 @@ comporte de manière générique quels que soient les fichiers fournis.
 ]
 ```
 
-- **`role`** vaut `referentiel-national` pour le dénominateur hors article 80, `plateforme`
-  pour le numérateur, ou `referentiel-ght` pour le rattachement finess vers GHT en open
-  data, cf. [Référentiels](#référentiels-ref).
-- **`format`** nomme un adaptateur enregistré dans
-  `src/01-extract/adapteurs/registry.ts` : `referentiel-remboursement-xlsx`,
-  `plateforme-finess-tsv`, `plateforme-finess-xlsx`, `plateforme-ght-xlsx` ou
-  `ght-fhir-datagouv`, ce dernier ayant pour `location` le dossier `ref/ght/`. Le format
-  `plateforme-ght-xlsx` lit un fichier **hiérarchique** : une ligne fille, reconnue à son
-  préfixe `« - »`, porte son finess juridique en fin de libellé ; une ligne parente porte un
-  libellé libre. Un parent qui a des filles est ignoré, sauf pour son détail véhicule quand
-  aucune de ses filles n'en porte. Cf. le
-  [point 6](spec/points-attention-metier.md#6-plateforme-hiérarchique--une-couverture-au-finess-partielle). Le format
-  `plateforme-finess-xlsx`, au grain établissement, avec des en-têtes multi-niveaux et une
-  colonne par année, porte l'article 80 en total et le hors article 80 en détail partiel,
-  taxi, VSL et ambulance. Le reliquat, la différence entre le total et le détail, est
-  imputé à `Autre` pour boucler le total annoncé.
-- **`location`** est le chemin du fichier, absolu ou relatif à la racine de l'app.
-- **`label`** est un identifiant neutre et unique, qui nomme les artefacts de traçabilité.
-- **`plateforme`** est le nom affiché dans la colonne `plateforme` des marts. Il n'a de sens
-  que pour le rôle `plateforme` et **n'existe nulle part dans le code versionné** : c'est
-  ici, dans un fichier non versionné, que le nom d'un fournisseur est autorisé. Absent, la
-  colonne retombe sur le `label`.
-- **`options`** porte les paramètres propres au format, par exemple les index de colonnes
-  finess pour le TSV. C'est ce qui permet à plusieurs fichiers de partager un adaptateur.
+| Champ | Requis | Rôle |
+|---|---|---|
+| `role` | oui | `referentiel-national` pour le dénominateur hors article 80, `plateforme` pour le numérateur, `referentiel-ght` pour le rattachement finess vers GHT en open data, cf. [Référentiels](#référentiels-ref) |
+| `format` | oui | nomme un adaptateur enregistré dans `src/01-extract/adapteurs/registry.ts`, cf. le tableau des formats ci-dessous |
+| `location` | oui | chemin du fichier, absolu ou relatif à la racine de l'app |
+| `label` | oui | identifiant neutre et unique, qui nomme les artefacts de traçabilité |
+| `plateforme` | non | nom affiché dans la colonne `plateforme` des marts. N'a de sens que pour le rôle `plateforme` et **n'existe nulle part dans le code versionné** : c'est ici, dans un fichier non versionné, que le nom d'un fournisseur est autorisé. Absent, la colonne retombe sur le `label` |
+| `options` | non | paramètres propres au format, par exemple les index de colonnes finess pour le TSV. C'est ce qui permet à plusieurs fichiers de partager un adaptateur |
 
 Une entrée invalide, à laquelle il manque le rôle, le format, la location ou le label, ou
 dont le format est inconnu, fait échouer l'ETL avec un message explicite.
+
+| `format` | Ce qu'il lit |
+|---|---|
+| `referentiel-remboursement-xlsx` | le référentiel national de remboursement, xlsx à double en-tête : une bande de colonnes véhicule par période. Ne couvre que le hors article 80 |
+| `plateforme-finess-tsv` | un CSV UTF-16 tabulé au grain établissement. Les colonnes finess variant d'un fichier à l'autre, elles sont passées en `options` : `colFinessJuridique`, `colFinessGeographique` |
+| `plateforme-finess-xlsx` | un xlsx au grain établissement, en-têtes multi-niveaux et une colonne par année, portant l'article 80 en total et le hors article 80 en détail partiel, taxi, VSL et ambulance. Le reliquat, la différence entre le total et le détail, est imputé à `Autre` pour boucler le total annoncé |
+| `plateforme-ght-xlsx` | un xlsx **hiérarchique** : une ligne fille, reconnue à son préfixe `« - »`, porte son finess juridique en fin de libellé ; une ligne parente porte un libellé libre. Un parent qui a des filles est ignoré, sauf pour son détail véhicule quand aucune de ses filles n'en porte. Cf. le [point 6](spec/points-attention-metier.md#6-plateforme-hiérarchique--une-couverture-au-finess-partielle) |
+| `ght-fhir-datagouv` | les bundles FHIR du jeu open data `etablissements-de-sante-par-ght`, dont la `location` est le dossier `ref/ght/`. Sortie : une dimension finess juridique vers GHT, aucun trajet |
 
 ## Pipeline & artefacts
 
