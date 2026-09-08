@@ -94,6 +94,7 @@ export class AdapterPlateformeFinessXlsx implements Adapter {
     trajets.push({
       role: this.#entry.role,
       source: this.#entry.label,
+      plateforme: this.#entry.plateforme,
       finess_juridique: finess,
       finess_geographique: "",
       ght_libelle: "",

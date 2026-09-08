@@ -15,6 +15,7 @@ describe("MartRollup2024.calculer", () => {
       ght_libelle: "",
       annee: "2024",
       vehicule: "Ambulance",
+      plateforme: "Plateforme A",
       nb_plateforme: "0",
       nb_reference: "0",
       part: "",
@@ -71,6 +72,7 @@ describe("MartRollup2024.calculer", () => {
         region: "ARA",
         ght_libelle: "GHT Un",
         annee: "2024",
+        plateforme: "Plateforme A",
         nb_plateforme: 50,
         nb_cnam: 150,
         ratio: 0.3333,
@@ -122,6 +124,27 @@ describe("MartRollup2024.calculer", () => {
     expect(rows[0]).toMatchObject({ nb_plateforme: 5, nb_cnam: 100 });
   });
 
+  it("refusionne les plateformes des lignes véhicule sans les dupliquer", () => {
+    const rows = parGht.calculer([
+      ghtRow({
+        ght_code: "G1",
+        vehicule: "Ambulance",
+        plateforme: "Plateforme B",
+        nb_plateforme: "10",
+        nb_reference: "50",
+      }),
+      ghtRow({
+        ght_code: "G1",
+        vehicule: "Assis",
+        plateforme: "Plateforme A + Plateforme B",
+        nb_plateforme: "5",
+        nb_reference: "50",
+      }),
+    ]);
+    expect(rows[0]).toMatchObject({
+      plateforme: "Plateforme A + Plateforme B",
+    });
+  });
 
   it("signale ratio > 1 sans jamais le plafonner", () => {
     const rows = parGht.calculer([
@@ -155,6 +178,7 @@ describe("MartRollup2024.calculer", () => {
       departement: "",
       annee: "2024",
       vehicule: "Ambulance",
+      plateforme: "Plateforme A",
       nb_plateforme: "0",
       nb_reference: "0",
       part: "",
@@ -187,6 +211,7 @@ describe("MartRollup2024.calculer", () => {
         ville: "Ville",
         departement: "01000",
         annee: "2024",
+        plateforme: "Plateforme A",
         nb_plateforme: 20,
         nb_cnam: 100,
         ratio: 0.2,

@@ -1,5 +1,7 @@
-// Tests du calcul des marts (sans mock, sans I/O) : on appelle `calculer()` sur des trajets
-// réconciliés synthétiques et on vérifie les règles (ratio, part>1, NULL, grain, Article 80).
+// Tests des marts calculés sur les trajets réconciliés (sans mock, sans I/O) : on appelle
+// `calculer()` sur des trajets synthétiques et on vérifie les règles (part, part>1, NULL,
+// grain, Article 80). Le rollup annuel, qui dérive d'un mart et non des trajets, a son
+// propre fichier : mart-rollup-2024.test.ts.
 
 import { describe, expect, it } from "vitest";
 import { MartArticle80 } from "../src/04-marts/mart-article80.ts";
@@ -11,6 +13,7 @@ function trajet(p: Partial<TrajetReconcilieRow>): TrajetReconcilieRow {
   return {
     role: "plateforme" as Role,
     source: "src",
+    plateforme: "Plateforme A",
     finess_juridique: "",
     finess_geographique: "",
     ght_code: "",
@@ -51,6 +54,7 @@ describe("MartRatio.calculer", () => {
         finess_juridique: "J1",
         annee: "2024",
         vehicule: "Ambulance",
+        plateforme: "Plateforme A",
         nb_plateforme: 40,
         nb_reference: 100,
         part: 0.4,
@@ -60,12 +64,38 @@ describe("MartRatio.calculer", () => {
         finess_juridique: "J2",
         annee: "2024",
         vehicule: "Ambulance",
+        plateforme: "Plateforme A",
         nb_plateforme: 10,
         nb_reference: 5,
         part: 2,
         alerte_qualite: "part>1",
       },
     ]);
+  });
+
+  it("nomme les plateformes du numérateur, jointes et triées quand il y en a plusieurs", () => {
+    const rows = mart.calculer([
+      trajet({
+        finess_juridique: "J1",
+        plateforme: "Plateforme B",
+        nb_trajets: 10,
+      }),
+      trajet({
+        finess_juridique: "J1",
+        plateforme: "Plateforme A",
+        nb_trajets: 5,
+      }),
+      trajet({
+        role: "referentiel-national",
+        finess_juridique: "J1",
+        plateforme: "",
+        nb_trajets: 100,
+      }),
+    ]);
+    expect(rows[0]).toMatchObject({
+      plateforme: "Plateforme A + Plateforme B",
+      nb_plateforme: 15,
+    });
   });
 
   it("laisse part vide (NULL) sans dénominateur, et ignore grain vide + Article 80", () => {
@@ -84,6 +114,7 @@ describe("MartRatio.calculer", () => {
         finess_juridique: "J3",
         annee: "2024",
         vehicule: "Ambulance",
+        plateforme: "Plateforme A",
         nb_plateforme: 7,
         nb_reference: 0,
         part: "",
@@ -101,21 +132,21 @@ describe("MartArticle80.calculer", () => {
     ).calculer([
       trajet({
         enveloppe: "Article 80",
-        source: "a",
+        plateforme: "Plateforme A",
         finess_juridique: "J1",
         ght_code: "G1",
         nb_trajets: 30,
       }),
       trajet({
         enveloppe: "Article 80",
-        source: "b",
+        plateforme: "Plateforme B",
         finess_juridique: "J1",
         ght_code: "G1",
         nb_trajets: 10,
       }),
       trajet({
         enveloppe: "Hors Article 80",
-        source: "a",
+        plateforme: "Plateforme A",
         finess_juridique: "J1",
         ght_code: "G1",
         nb_trajets: 999,
@@ -129,7 +160,7 @@ describe("MartArticle80.calculer", () => {
         libelle: "CH Test",
         annee: "2024",
         vehicule: "Ambulance",
-        plateforme: "a",
+        plateforme: "Plateforme A",
         nb: 30,
         part_plateforme: 0.75,
       },
@@ -139,7 +170,7 @@ describe("MartArticle80.calculer", () => {
         libelle: "CH Test",
         annee: "2024",
         vehicule: "Ambulance",
-        plateforme: "b",
+        plateforme: "Plateforme B",
         nb: 10,
         part_plateforme: 0.25,
       },

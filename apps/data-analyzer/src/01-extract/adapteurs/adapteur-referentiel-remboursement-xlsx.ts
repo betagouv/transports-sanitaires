@@ -106,6 +106,7 @@ export class AdapterReferentielRemboursementXlsx implements Adapter {
     return {
       role: this.#entry.role,
       source: this.#entry.label,
+      plateforme: this.#entry.plateforme,
       finess_juridique: jur,
       finess_geographique: geo,
       ght_libelle: "",

@@ -165,6 +165,7 @@ export class AdapterPlateformeGhtXlsx implements Adapter {
     trajets.push({
       role: this.#entry.role,
       source: this.#entry.label,
+      plateforme: this.#entry.plateforme,
       finess_juridique: cle.finess_juridique,
       finess_geographique: "",
       ght_libelle: cle.ght_libelle,

@@ -16,6 +16,7 @@
 import { join } from "node:path";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
+import { joindrePlateformes, separerPlateformes } from "./plateformes.ts";
 
 export interface MartRollup2024Config {
   source: string; // mart de ratio lu dans build/marts/
@@ -57,6 +58,8 @@ export class MartRollup2024 {
     const accu = this.#accu(parCle, cle, r);
     accu.nb_plateforme += Number(r.nb_plateforme) || 0;
     accu.nb_cnam += Number(r.nb_reference) || 0;
+    for (const nom of separerPlateformes(r.plateforme ?? ""))
+      accu.plateformes.add(nom);
   }
 
   #accu(parCle: Map<string, Accu>, cle: string, r: Ligne): Accu {
@@ -66,6 +69,7 @@ export class MartRollup2024 {
       identite: this.#config.identite(r),
       nb_plateforme: 0,
       nb_cnam: 0,
+      plateformes: new Set(),
     };
     parCle.set(cle, accu);
     return accu;
@@ -79,6 +83,7 @@ export class MartRollup2024 {
     return {
       ...accu.identite,
       annee: ANNEE,
+      plateforme: joindrePlateformes(accu.plateformes),
       nb_plateforme: accu.nb_plateforme,
       nb_cnam: accu.nb_cnam,
       ratio,
@@ -109,6 +114,7 @@ interface Accu {
   identite: Row;
   nb_plateforme: number;
   nb_cnam: number;
+  plateformes: Set<string>;
 }
 
 // Un rollup se lit comme un taux de recours. Une entité qui n'a aucun des deux membres du

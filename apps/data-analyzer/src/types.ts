@@ -31,6 +31,7 @@ export interface MappingEntry {
   format: string; // clé d'un adaptateur enregistré (voir 01-extract/adapteurs/registry.ts)
   location: string; // chemin résolu (absolu) vers le fichier source
   label: string; // identifiant neutre, unique
+  plateforme: string; // nom à afficher dans les marts ; "" pour un référentiel
   options: Record<string, unknown>; // paramètres propres au format (ex. index de colonnes)
 }
 

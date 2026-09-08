@@ -55,7 +55,7 @@ export class MartArticle80 {
     for (const t of art80) {
       const cle = grain.cle(t);
       if (!cle) continue;
-      const k = `${cle}|${t.annee}|${t.vehicule_canonique}|${t.source}`;
+      const k = `${cle}|${t.annee}|${t.vehicule_canonique}|${t.plateforme}`;
       parSource.set(k, (parSource.get(k) ?? 0) + Number(t.nb_trajets));
     }
     return parSource;

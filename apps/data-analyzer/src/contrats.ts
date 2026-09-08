@@ -20,6 +20,7 @@ import type { Enveloppe, Role, VehiculeCanonique } from "./types.ts";
 export interface TrajetRow {
   role: Role;
   source: string; // libellé neutre issu du mapping (traçabilité)
+  plateforme: string; // nom d'affichage issu du mapping ; "" pour un référentiel
   finess_juridique: string;
   finess_geographique: string;
   ght_libelle: string;
@@ -53,6 +54,7 @@ export interface GhtRattachementRow {
 export interface TrajetReconcilieRow {
   role: Role;
   source: string;
+  plateforme: string;
   finess_juridique: string; // autoritatif (via le référentiel), pas celui déclaré par la source
   finess_geographique: string;
   ght_code: string; // "" si l'établissement n'appartient à aucun GHT
@@ -101,6 +103,7 @@ export interface EtablissementDimensionRow {
 export interface CelluleRatio {
   annee: string;
   vehicule: VehiculeCanonique;
+  plateforme: string; // plateformes du numérateur, cf. `plateformes()` ; "" s'il n'y en a pas
   nb_plateforme: number;
   nb_reference: number;
   part: number | "";

@@ -1,6 +1,9 @@
 // Chargement et validation de mapping.json — le seul endroit qui lie des fichiers réels
 // (et l'identité de leurs fournisseurs) à un rôle et à un format. Ce fichier n'est PAS
 // versionné ; mapping.example.json en est le gabarit neutre.
+//
+// C'est aussi d'ici que vient le **nom d'affichage** d'une plateforme, porté jusqu'aux
+// marts par la colonne `plateforme`. Il n'a donc pas à exister dans le code versionné.
 
 import { readFileSync } from "node:fs";
 import { dirname, isAbsolute, join } from "node:path";
@@ -36,6 +39,7 @@ export class Mapping {
       format: e.format!,
       location: Mapping.#resolve(e.location!),
       label: e.label!,
+      plateforme: Mapping.#plateforme(e),
       options: e.options ?? {},
     };
   }
@@ -55,6 +59,13 @@ export class Mapping {
     if (labels.has(e.label))
       throw new Error(`mapping.json : label en double « ${e.label} ».`);
     labels.add(e.label);
+  }
+
+  // Un référentiel n'est pas une plateforme : sa colonne reste vide. Une plateforme qui
+  // n'a pas déclaré de nom retombe sur son label, qui vaut mieux que rien.
+  static #plateforme(e: Partial<MappingEntry>): string {
+    if (e.role !== "plateforme") return "";
+    return e.plateforme?.trim() || e.label!;
   }
 
   static #resolve(location: string): string {

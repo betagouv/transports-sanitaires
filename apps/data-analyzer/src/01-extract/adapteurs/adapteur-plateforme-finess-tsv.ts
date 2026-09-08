@@ -60,6 +60,7 @@ export class AdapterPlateformeFinessTsv implements Adapter {
     return {
       role: this.#entry.role,
       source: this.#entry.label,
+      plateforme: this.#entry.plateforme,
       finess_juridique: juridique,
       finess_geographique:
         geographique === FINESS_GEOGRAPHIQUE_ABSENT ? "" : geographique,

@@ -10,6 +10,7 @@ import type { CelluleRatio, TrajetReconcilieRow } from "../contrats.ts";
 import { Csv } from "../csv.ts";
 import { Paths } from "../paths.ts";
 import type { VehiculeCanonique } from "../types.ts";
+import { joindrePlateformes } from "./plateformes.ts";
 
 export interface MartRatioConfig {
   fichier: string; // nom du CSV produit dans build/marts/
@@ -21,6 +22,7 @@ export interface MartRatioConfig {
 interface Accu {
   nb_plateforme: number;
   nb_reference: number;
+  plateformes: Set<string>;
 }
 
 export class MartRatio {
@@ -57,14 +59,20 @@ export class MartRatio {
     );
     if (t.role === "referentiel-national")
       accu.nb_reference += Number(t.nb_trajets);
-    else if (t.role === "plateforme")
+    else if (t.role === "plateforme") {
       accu.nb_plateforme += Number(t.nb_trajets);
+      if (t.plateforme) accu.plateformes.add(t.plateforme);
+    }
   }
 
   #accu(cellules: Map<string, Accu>, cle: string): Accu {
     const connu = cellules.get(cle);
     if (connu) return connu;
-    const accu: Accu = { nb_plateforme: 0, nb_reference: 0 };
+    const accu: Accu = {
+      nb_plateforme: 0,
+      nb_reference: 0,
+      plateformes: new Set(),
+    };
     cellules.set(cle, accu);
     return accu;
   }
@@ -99,6 +107,7 @@ export class MartRatio {
     return {
       annee,
       vehicule,
+      plateforme: joindrePlateformes(accu.plateformes),
       nb_plateforme: accu.nb_plateforme,
       nb_reference: accu.nb_reference,
       part,
