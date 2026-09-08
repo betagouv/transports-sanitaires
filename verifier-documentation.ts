@@ -55,6 +55,8 @@ const RECUEILS = [
 const A_REPRENDRE = [
   "apps/simulateur-eligibilite/README.md",
   "apps/data-analyzer/README.md",
+  "apps/data-analyzer/spec/livrables.md",
+  "apps/data-analyzer/spec/points-attention-metier.md",
   "docs/architecture/identification.md",
   "docs/architecture/analytics.md",
   "docs/specs/etl-part-plateformes.md",

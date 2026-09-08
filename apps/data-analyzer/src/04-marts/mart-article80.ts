@@ -5,7 +5,7 @@
 // Produit un seul fichier, à deux grains (juridique et GHT), avec une colonne `grain` :
 //   part_plateforme = nb(source) / Σ nb(toutes plateformes) pour la cellule.
 // La plateforme au niveau GHT sans finess (rôle plateforme, ni finess ni GHT rattaché) ne
-// remonte pour l'instant ni au juridique ni au GHT — cf. Points d'attention métier du README.
+// remonte pour l'instant ni au juridique ni au GHT — cf. spec/points-attention-metier.md.
 
 import { join } from "node:path";
 import type { TrajetReconcilieRow } from "../contrats.ts";

@@ -227,8 +227,8 @@ jamais parfaitement. Après la ré-clé sur l'autorité du référentiel, il res
 `part > 1`, pour des raisons de périmètre, de calendrier ou de reclassement de véhicule.
 Elles sont exposées par `alerte_qualite`, sans correction. Le grain amortit la divergence :
 elle est la plus forte au grain géographique, moindre au juridique, et proche de zéro au
-grain GHT. Le détail et des exemples sont dans la section « Points d'attention métier » du
-README.
+grain GHT. Le détail et des exemples sont dans
+[`apps/data-analyzer/spec/points-attention-metier.md`](../../apps/data-analyzer/spec/points-attention-metier.md).
 
 ## Vérification
 

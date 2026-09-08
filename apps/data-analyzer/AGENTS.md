@@ -39,14 +39,17 @@ La **part des trajets réalisés via les plateformes** (numérateur), rapportée
 **référentiel national de remboursement** (dénominateur). Ventilée par
 établissement ou GHT, par année, par type de transport et par enveloppe.
 
-Deux sources écrites, dans cet ordre d'autorité :
+Trois sources écrites, dans cet ordre d'autorité :
 
-1. le [README](README.md), qui fait autorité sur les livrables et les points
-   d'attention métier ;
-2. [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-part-plateformes.md),
-   qui porte le cadrage.
+1. [`spec/`](spec/), qui fait autorité sur le métier : `livrables.md` décrit les
+   sept marts, `points-attention-metier.md` les dix propriétés de la donnée à
+   connaître avant de citer un chiffre ;
+2. le [README](README.md), qui ne traite que de l'exécution du pipeline ;
+3. [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-part-plateformes.md),
+   qui porte le cadrage d'origine.
 
-**Le README est le plus à jour des deux** : la spec annonce 5 marts, il y en a 6.
+**Le cadrage est le moins à jour des trois** : il annonce 5 marts, il y en a 7.
+Le métier ne s'écrit plus dans le README : il va dans `spec/`.
 
 ## Le pipeline
 

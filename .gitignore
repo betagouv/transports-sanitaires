@@ -23,6 +23,9 @@ apps/data-analyzer/data/
 apps/data-analyzer/build/
 !apps/data-analyzer/ref/**
 apps/data-analyzer/mapping.json
+# La doc métier de l'app, elle, est publique : elle ne nomme aucun fournisseur et le
+# README y renvoie. Elle échappe donc au motif `spec` ci-dessus.
+!apps/data-analyzer/spec/
 
 # apps/simulateur-eligibilite : CERFA générés à la racine de l'app par
 # `npm run apercu-cerfa` (documents de travail). Le gabarit officiel, lui, est
