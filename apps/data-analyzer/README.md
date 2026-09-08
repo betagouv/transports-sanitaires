@@ -11,6 +11,29 @@ ventilé par établissement ou GHT, par année, par type de transport et par env
 > vit dans `mapping.json`, qui n'est pas versionné. Voir
 > [Confidentialité](#confidentialité).
 
+```mermaid
+flowchart LR
+    SRC[("Sources<br/>déclarées dans mapping.json")]
+
+    subgraph ETL["pnpm etl — les 4 étapes"]
+        direction LR
+        E["1 · extract<br/>un adaptateur par format"]
+        S["2 · staging<br/>réunir et agréger"]
+        R["3 · reconcile<br/>ré-clé + rattachement GHT"]
+        M["4 · marts<br/>règles de calcul"]
+        E -->|"build/extract/"| S -->|"build/staging/"| R -->|"build/reconcile/"| M
+    end
+
+    P["5 · publish-grist<br/>optionnel, seule étape réseau"]
+    G[("Grist<br/>exploration et dataviz")]
+
+    SRC --> E
+    M -->|"build/marts/ — les 7 marts"| P --> G
+```
+
+Les quatre premières étapes sont locales et déterministes ; la cinquième, optionnelle,
+publie les marts dans [Grist](#publication-dataviz).
+
 Spec de cadrage : [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-part-plateformes.md).
 
 Ce document sert deux publics. Les analystes qui consomment les marts liront
