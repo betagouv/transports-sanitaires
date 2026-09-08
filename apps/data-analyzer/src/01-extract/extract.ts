@@ -5,7 +5,13 @@
 // pipeline est générique et ne connaît que les rôles.
 
 import { join } from "node:path";
+import type {
+  EtablissementRow,
+  GhtRattachementRow,
+  TrajetRow,
+} from "../contrats.ts";
 import { Csv } from "../csv.ts";
+import { normaliserFiness } from "../finess.ts";
 import { Mapping } from "../mapping.ts";
 import { Paths } from "../paths.ts";
 import type { AdapterOutput, FormatRegistry, MappingEntry } from "../types.ts";
@@ -29,11 +35,24 @@ export class Extract {
     const AdapterClass = this.#formats[entry.format];
     if (!AdapterClass)
       throw new Error(`Format inconnu dans le mapping : « ${entry.format} ».`);
-    const output = new AdapterClass(entry.location, entry).execute();
+    const output = this.#normaliser(
+      new AdapterClass(entry.location, entry).execute(),
+    );
     console.log(
       `extract ${entry.label.padEnd(14)} [${entry.role}] : ${output.trajets.length} lignes`,
     );
     return { entry, output };
+  }
+
+  // Le zéro de tête des finess se rétablit ici, une fois pour toutes les sources : c'est un
+  // défaut de transport de la donnée, pas une particularité de format qui vaudrait à
+  // chaque adaptateur de la connaître.
+  #normaliser(output: AdapterOutput): AdapterOutput {
+    return {
+      trajets: output.trajets.map(finessDuTrajet),
+      etablissements: output.etablissements?.map(finessDeLEtablissement),
+      ght: output.ght?.map(finessDuRattachement),
+    };
   }
 
   #writeTrajets(results: Result[]): void {
@@ -76,4 +95,24 @@ type Row = Record<string, string | number>;
 interface Result {
   entry: MappingEntry;
   output: AdapterOutput;
+}
+
+function finessDuTrajet(t: TrajetRow): TrajetRow {
+  return {
+    ...t,
+    finess_juridique: normaliserFiness(t.finess_juridique),
+    finess_geographique: normaliserFiness(t.finess_geographique),
+  };
+}
+
+function finessDeLEtablissement(e: EtablissementRow): EtablissementRow {
+  return {
+    ...e,
+    finess_juridique: normaliserFiness(e.finess_juridique),
+    finess_geographique: normaliserFiness(e.finess_geographique),
+  };
+}
+
+function finessDuRattachement(g: GhtRattachementRow): GhtRattachementRow {
+  return { ...g, finess_juridique: normaliserFiness(g.finess_juridique) };
 }

@@ -107,9 +107,17 @@ export class Reconcile {
     const geo = t.finess_geographique;
     return (
       (this.#usable(geo) && autorites.geoToJuridique.get(geo)) ||
-      t.finess_juridique ||
+      this.#juridiqueDeclare(t.finess_juridique, autorites) ||
       this.#chercherParLibelle(t.ght_libelle, autorites.libelleToFiness)
     );
+  }
+
+  // Une source peut intervertir ses deux colonnes finess. Quand le code déclaré juridique
+  // n'est en fait qu'un site du référentiel, on lui rend son entité juridique. Sans risque
+  // de confusion : aucun code du référentiel n'est à la fois juridique et site d'un autre.
+  #juridiqueDeclare(declare: string, autorites: Autorites): string {
+    if (!this.#usable(declare)) return declare;
+    return autorites.geoToJuridique.get(declare) ?? declare;
   }
 
   #ghtParLibelle(t: TrajetRow, autorites: Autorites): string {
