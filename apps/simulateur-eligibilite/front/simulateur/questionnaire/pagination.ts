@@ -1,15 +1,23 @@
-// La pagination du parcours : une question par page, sauf les adresses.
+// La pagination du parcours : une étape par page, les adresses d'un seul tenant.
 //
 // `@publicodes/forms` pagine avec `groupByNamespace`, qui regroupe les règles
 // partageant le premier segment d'un nom pointé. Le modèle est plat
-// (`p2_depart_adresse`, et non `départ . adresse`) : chaque question fait donc sa
-// propre page. C'est le flux voulu — une question, un écran — partout sauf pour
-// les douze saisies d'adresse : une adresse est **une** information, et le
+// (`p2_depart_adresse`, et non `départ . adresse`) : ce regroupement n'y trouve
+// rien à regrouper, et rendait toutes les questions d'un coup. Ce qui les
+// séparait en écrans n'était donc pas lui, mais le front d'évaluation du
+// moteur — publicodes ne réclame pas ce qui suit sa première condition non
+// satisfaite, si bien que les questions arrivaient par paquets, un par étape.
+// Un découpage juste, mais que personne n'avait décidé.
+//
+// C'est `etapes.ts` qui le décide désormais : les questions sont réunies par
+// l'étape que le modèle leur donne, et les pages se suivent dans l'ordre déclaré
+// là-bas. Le flux voulu reste le même — une question, un écran — partout sauf
+// pour les douze saisies d'adresse : une adresse est **une** information, et le
 // livrable la veut d'un seul tenant. Un lieu par page, le départ puis l'arrivée.
 
 import type { FormPages } from "@publicodes/forms";
-import { groupByNamespace } from "@publicodes/forms";
 import type { CleDeRegle } from "../contrat-regles-publicodes";
+import { etapeDe, rangDe } from "./etapes";
 
 /**
  * Les douze saisies d'adresse (D1-D12), par lieu et dans l'ordre du formulaire
@@ -46,7 +54,7 @@ const LIEUX: ReadonlyArray<{
 ];
 
 export function pagesDuParcours(champs: string[]): FormPages<string> {
-  return adressesParLieu(groupByNamespace(champs));
+  return adressesParLieu(pagesParEtape(champs));
 }
 
 /**
@@ -62,10 +70,29 @@ export function regleDeComplétude(
 
 // ---- implémentation ----
 
+// Une page par étape, les étapes dans l'ordre déclaré. Les questions arrivent
+// ici dans l'ordre où le moteur les réclame — un classement par nombre de
+// dépendances, que `etapes.ts` remplace par le nôtre.
+//
+// Une règle que le modèle ne rattache à aucune étape ferait sa propre page, en
+// queue de parcours. `tests/simulateur/etapes.test.ts` interdit ce cas plutôt
+// que de le laisser passer en silence : une question sans étape n'a pas de rang,
+// donc pas de place.
+function pagesParEtape(champs: string[]): FormPages<string> {
+  const parEtape = new Map<string, string[]>();
+  for (const champ of champs) {
+    const etape = etapeDe(champ) ?? champ;
+    parEtape.set(etape, [...(parEtape.get(etape) ?? []), champ]);
+  }
+  return [...parEtape.entries()]
+    .sort(([a], [b]) => rangDe(a) - rangDe(b))
+    .map(([, elements]) => ({ elements }));
+}
+
 // Les douze saisies d'adresse quittent leurs pages pour en former deux, une par
-// lieu, **à la place de la première d'entre elles**. Le reste du parcours garde
-// la pagination de la bibliothèque, et l'ordre reste celui du modèle : le
-// regroupement est la seule chose que ce module décide.
+// lieu, **à la place de la première d'entre elles**. C'est le second geste de ce
+// module : le premier a réuni les questions par étape, celui-ci réunit les six
+// étapes d'un lieu.
 //
 // Il en décidait une seconde. Jusqu'à la v9.4.0, les deux pages étaient renvoyées
 // **en queue** : D1 — le nom du lieu de départ — devenait applicable une question
