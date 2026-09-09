@@ -286,7 +286,7 @@ export const SEEDS: readonly Seed[] = [
       "lien avec une ALD : le droit est pourtant ouvert, et le document une PMT. " +
       "En v9.5.1, cette même situation se refermait faute de motif ; en v9.7, un " +
       "critère clinique d'ambulance vaut motif à lui seul. La question est posée " +
-      "à l'éditeur (`tmp/anomalie-v9-7-critere-ambulance-motif.md`) : cette seed " +
+      "à l'éditeur (`tmp/9.7/anomalie-v9-7-critere-ambulance-motif.md`) : cette seed " +
       "constate le comportement observé, elle ne l'approuve pas.",
     outil: "secretariat",
     entrees: {
@@ -430,7 +430,7 @@ export const SEEDS: readonly Seed[] = [
       // neutre n'a pas, son départ étant un domicile. La valeur des cibles ne
       // s'en trouve pas changée ; seules leurs variables manquantes le sont.
       // Le nom est donc donné ici pour que la seed ne laisse rien d'indécis.
-      // Question posée à l'éditeur : `tmp/anomalie-v9-7-convocation-lieu.md`.
+      // Question posée à l'éditeur : `tmp/9.7/anomalie-v9-7-convocation-lieu.md`.
       p2_depart_nom_lieu: "'Domicile du patient'",
     },
     attendu: {

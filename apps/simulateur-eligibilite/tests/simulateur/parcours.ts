@@ -21,9 +21,11 @@ import { screen, waitFor } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import {
+  completerDate,
   completerGroupe,
   completerListe,
   repondre,
+  saisiesCalendaires,
   valeurParDefaut,
 } from "./reponses-de-page";
 
@@ -88,6 +90,10 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
   for (const champ of screen.queryAllByRole("spinbutton")) {
     if (!memePage()) return;
     if ((champ as HTMLInputElement).value === "") await user.type(champ, "1");
+  }
+  for (const champ of saisiesCalendaires()) {
+    if (!memePage()) return;
+    await completerDate(user, champ);
   }
 }
 

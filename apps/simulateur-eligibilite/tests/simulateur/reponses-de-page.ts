@@ -137,3 +137,36 @@ export function valeurParDefaut(champ: HTMLInputElement): string {
     return arrivee ? "Centre hospitalier" : "Cabinet médical";
   return "x";
 }
+
+/**
+ * Les saisies calendaires de la page. Un `<input type="date">` n'a pas de rôle
+ * ARIA — ni `textbox`, ni rien —, et aucune requête de Testing Library ne le
+ * trouve : on passe donc par le DOM.
+ */
+export function saisiesCalendaires(): HTMLInputElement[] {
+  return [
+    ...document.querySelectorAll<HTMLInputElement>(
+      'input[type="date"], input[type="datetime-local"]',
+    ),
+  ];
+}
+
+/**
+ * Une date par défaut, cohérente avec ce que le modèle attend d'une permission :
+ * une hospitalisation commencée, une sortie plus de quatorze jours après, et une
+ * durée bien inférieure aux quarante-huit heures admises.
+ */
+export async function completerDate(user: User, champ: HTMLInputElement) {
+  if (champ.value !== "") return;
+  await user.type(champ, valeurCalendaire(champ));
+}
+
+function valeurCalendaire(champ: HTMLInputElement): string {
+  if (champ.type === "date")
+    return champ.id === "p2_permission_debut_hospitalisation"
+      ? "2026-01-05"
+      : "2026-03-31";
+  return champ.id === "p2_permission_fin"
+    ? "2026-01-20T18:00"
+    : "2026-01-20T10:00";
+}

@@ -12,6 +12,7 @@ import type {
   FormPageElementProp,
 } from "@publicodes/forms";
 import { bornesDeSaisie } from "./bornes-de-saisie";
+import { formeDeSaisie } from "./formes-de-saisie";
 import { libelleDeReponse } from "./libelle-de-reponse";
 
 type Props = {
@@ -141,9 +142,15 @@ function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
   );
 }
 
-// Les douze saisies d'adresse de la v9.1 (D1-D12). Le modèle ne les vérifie ni
-// ne les normalise — aucun contrôle d'adresse, aucune interface externe —, elles
-// ne servent qu'à préremplir le document.
+// Les saisies libres : les douze champs d'adresse, les précisions en texte, et
+// les six dates de la v9.7. Le modèle les déclare toutes en `type: texte` — il ne
+// connaît pas la date —, et c'est le contrat d'interface qui distingue les
+// calendaires (`formes-de-saisie.ts`). Sans cette distinction, le prescripteur
+// taperait une date à la main, dans un format que l'application aurait à deviner
+// pour en tirer une durée ou un rang de jour.
+//
+// Le modèle ne vérifie ni ne normalise rien : ni les adresses, ni les dates. Un
+// `<input type="date">` garantit au moins le format ISO que le calcul attend.
 function SaisieTexte({ champ, onChange }: ChampProps<EvaluatedStringInput>) {
   return (
     <Input
@@ -151,14 +158,25 @@ function SaisieTexte({ champ, onChange }: ChampProps<EvaluatedStringInput>) {
       hintText={champ.description}
       disabled={champ.disabled}
       classes={{ label: "fr-text--lead" }}
+      style={typeHtml(champ.id) === "text" ? undefined : { maxWidth: "16rem" }}
       nativeInputProps={{
         id: champ.id,
         name: champ.id,
-        type: "text",
+        type: typeHtml(champ.id),
         value: champ.value ?? "",
         onChange: (e) => onChange(e.target.value),
         autoFocus: champ.autofocus,
       }}
     />
   );
+}
+
+// Le type HTML d'une saisie libre. `datetime-local` et non `datetime` : c'est le
+// seul des deux que les navigateurs rendent, et il donne une heure locale — celle
+// de l'établissement, qui est bien ce qu'on demande.
+function typeHtml(id: string): "text" | "date" | "datetime-local" {
+  const forme = formeDeSaisie(id);
+  if (forme === "date") return "date";
+  if (forme === "datetime") return "datetime-local";
+  return "text";
 }
