@@ -15,9 +15,10 @@
 // Ces deux cas sont donc remplacés par les deux natures de transfert.
 
 import { describe, expect, it } from "vitest";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7";
 import { type Cas, rejouerLaMatrice } from "./matrice";
 import { moteurDeTest } from "./moteur";
-import { CHARGE_ETABLISSEMENT, PMT, PRO } from "./situations-v9-7";
+import { CHARGE_ETABLISSEMENT, DAP, PMT, PRO } from "./situations-v9-7";
 
 const TRANSFERT = {
   p2_raison_principale:
@@ -106,5 +107,75 @@ describe("modèle v9.7 — la charge de l’établissement", () => {
     expect(
       "p2_article_80_situation_specifique" in moteurDeTest({}).getParsedRules(),
     ).toBe(false);
+  });
+});
+
+// Les cas nommés de la matrice v9.7 sur ce sujet. Ils passent par les options du
+// livrable (`livrable-v9-7.ts`) plutôt que par notre vocabulaire : ce sont ses
+// situations, et ses attendus.
+
+// Un transfert qualifié met le transport à la charge de l'établissement — c'est
+// la qualification positive que la v9.7 demande, là où la v9.5.1 la déduisait de
+// l'hospitalisation du patient.
+const TRANSFERT_DU_LIVRABLE: OptionsDuLivrable = {
+  transfer: true,
+  reason: "Séance de chimiothérapie",
+  m0: { p1_m0_seance_chimiotherapie: "oui" },
+};
+
+/**
+ * Les huit exceptions qui rendent le transport à l'Assurance Maladie malgré le
+ * transfert. Sept donnent une prescription ; l'avion ou le bateau appelle en plus
+ * un accord préalable, et c'est la seule à le faire.
+ */
+const EXCEPTIONS: ReadonlyArray<[nom: string, attendu: string]> = [
+  ["aide_medicale_urgente", PMT],
+  ["avion_bateau", DAP],
+  ["had_hors_protocole", PMT],
+  ["usld", PMT],
+  ["ehpad", PMT],
+  ["radiotherapie_moins_48h", PMT],
+  ["dialyse_domicile", PMT],
+  ["admission_had", PMT],
+];
+
+describe("matrice v9.7 — l’Article 80 et ses exceptions", () => {
+  it("ARTICLE80-POSITIF — un transfert déclaré suffit", () => {
+    const moteur = evaluerLeCas({ transfer: true });
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(
+      CHARGE_ETABLISSEMENT,
+    );
+  });
+
+  it.each(EXCEPTIONS)("ARTICLE80-EXCEPTION-%s", (nom, attendu) => {
+    const moteur = evaluerLeCas({
+      ...TRANSFERT_DU_LIVRABLE,
+      exceptions: { [`p2_exception_${nom}`]: "oui" },
+    });
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(attendu);
+  });
+});
+
+// JULIEN-RETOUR-1 et 2 sont **synthétiques** : l'éditeur reproduit par eux deux
+// mécanismes qu'il décrit — un Article 80 trop large, et un refus trop précoce —
+// sans avoir pu joindre les situations d'origine. Le guide demande de rejouer
+// les vraies dès qu'elles seront disponibles.
+describe("matrice v9.7 — les deux retours de Julien, reproduits", () => {
+  it("JULIEN-RETOUR-1 — une séance seule ne met pas le transport à la charge de l’établissement", () => {
+    const moteur = evaluerLeCas({
+      reason: "Séance de chimiothérapie",
+      m0: { p1_m0_seance_chimiotherapie: "oui" },
+    });
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(PMT);
+    expect(moteur.evaluate("p2_transport_charge_etablissement").nodeValue).toBe(
+      false,
+    );
+  });
+
+  it("JULIEN-RETOUR-2 — la distance est recueillie avant tout refus", () => {
+    // Le refus trop précoce fermait le parcours avant la distance : au-delà de
+    // 150 km, c'est un accord préalable qui doit être conclu, et non un refus.
+    const moteur = evaluerLeCas({ distance: 2 });
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(DAP);
   });
 });

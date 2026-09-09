@@ -173,9 +173,14 @@ version qu'elle n'exécute pas.
 Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.0.0), une matrice de
 tests et, depuis la v9.7, une correspondance documentaire. Tous sont réencodés ici plutôt
 que chargés : le contrat se lit dans les composants et dans `questionnaire/etapes.ts`, la
-matrice dans quatre fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
-identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001` et les autres) pour
-qu'un désaccord remonte au fournisseur sous son nom.
+matrice dans sept fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
+identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001`, `GRID-AMB-SEANCE-D2-N4`
+et les autres) pour qu'un désaccord remonte au fournisseur sous son nom.
+
+La matrice v9.7 en compte 275, dont 225 engendrés par un produit croisé — cinq modes, cinq
+motifs, trois distances, trois nombres de transports. Elle ne donne pas des situations mais
+des **options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7.ts`
+en est la recopie, et c'est par lui que tous ces cas se rejouent.
 
 Trois choses ont quitté le modèle en v9.7, et vivent désormais dans le code parce que le
 contrat d'interface les y met :
