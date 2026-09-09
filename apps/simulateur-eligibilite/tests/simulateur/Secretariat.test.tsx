@@ -64,7 +64,7 @@ describe("secrétariat — parcours administratif", () => {
     // Bloc 1 — résultat final.
     expect(
       screen.getByRole("heading", {
-        name: /vous êtes éligible à une prise en charge/i,
+        name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
     // Bloc 2 — information destinée au patient, avec les étapes.
@@ -101,7 +101,7 @@ describe("secrétariat — parcours administratif", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /n’êtes pas éligible|aucune prise en charge/i,
+        name: /ne peut pas être remboursé/i,
       }),
     ).toBeInTheDocument();
     expect(
@@ -137,7 +137,7 @@ describe("secrétariat — parcours administratif", () => {
     // On est bien sur le cas PMT (ambulance).
     expect(
       screen.getByRole("heading", {
-        name: /vous êtes éligible à une prise en charge/i,
+        name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
 
@@ -193,7 +193,7 @@ describe("secrétariat — parcours administratif", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /vous êtes éligible à une prise en charge/i,
+        name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
     expect(
@@ -239,7 +239,7 @@ describe("secrétariat — parcours administratif", () => {
     expect(screen.queryAllByText(/assistance d’un tiers/i)).toEqual([]);
     expect(
       screen.getByRole("heading", {
-        name: /vous êtes éligible à une prise en charge/i,
+        name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
     expect(

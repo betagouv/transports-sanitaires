@@ -104,6 +104,19 @@ function sources(...dossiers: string[]): string[] {
 
 const lire = (fichier: string) => readFileSync(join(racine, fichier), "utf-8");
 
+/**
+ * Les tables indexées par cas final d'un bloc de résultat : le corps de chaque
+ * `Record<string, …> = { … }`. C'est la forme que les trois blocs emploient pour
+ * ranger ce qu'ils disent, cas par cas.
+ */
+function tablesDeCasFinal(source: string): string[] {
+  return [
+    ...source.matchAll(/: Record<string,[\s\S]*?> = \{\n([\s\S]*?)\n\};/g),
+  ]
+    .map(([, corps]) => corps)
+    .filter((corps) => corps !== undefined);
+}
+
 describe("contrat de règles", () => {
   // `front/simulateur/contrat-regles-publicodes.ts` déclare les noms que le code a
   // le droit d'employer, et TypeScript refuse tout le reste — dans une situation,
@@ -228,5 +241,24 @@ describe("exhaustivité de la Page Résultat 2", () => {
       (cas) => !source.includes(cas),
     );
     expect(absents).toEqual([]);
+  });
+
+  // Le pendant, que la v9.7 a rendu nécessaire : elle a retiré trois cas finaux,
+  // et l'un d'eux a laissé derrière lui une entrée orpheline dans la table des
+  // verdicts — enregistrée sous le nom de sa fonction, faute d'une clé. Le test
+  // ci-dessus ne l'aurait jamais vue : il vérifie que chaque cas final est
+  // traité, pas que chaque traitement porte sur un cas final.
+  //
+  // Une entrée morte ne casse rien tout de suite. Elle ment sur ce que l'écran
+  // sait faire, et le jour où un cas final reprend ce nom, elle décide à sa
+  // place.
+  it.each(BLOCS)("%s ne traite aucun cas final disparu", (bloc) => {
+    const declares = possibilites("cible_cas_final");
+    const orphelines = tablesDeCasFinal(lire(bloc))
+      .flatMap((table) => [...table.matchAll(/^ {2}(?:"([^"]+)"|(\w+))[,:]/gm)])
+      .map(([, entreGuillemets, nu]) => entreGuillemets ?? nu)
+      .filter((cle) => cle !== undefined)
+      .filter((cle) => !declares.includes(cle));
+    expect(orphelines).toEqual([]);
   });
 });

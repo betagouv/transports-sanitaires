@@ -79,7 +79,9 @@ describe("trace de debug du résultat médical", () => {
 
     await terminerParcours(user, []);
 
-    await screen.findByRole("heading", { name: /décision médicale/i });
+    await screen.findByRole("heading", {
+      name: /le transport le plus adapté/i,
+    });
     expect(screen.queryByText(TRACE_RESULTAT)).toBeNull();
   });
 });

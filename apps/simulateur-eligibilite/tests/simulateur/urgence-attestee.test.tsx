@@ -33,7 +33,9 @@ describe("demande d’accord préalable en urgence attestée", () => {
     afficher("secretariat-urgence-dap");
 
     expect(
-      screen.getByRole("heading", { name: /urgence médicale attestée/i }),
+      screen.getByRole("heading", {
+        name: /sans attendre l’accord préalable/i,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/permet sa réalisation sans attendre la réponse/i),
@@ -74,7 +76,7 @@ describe("demande d’accord préalable sans urgence", () => {
     afficher("secretariat-accord-prealable-distance");
 
     expect(
-      screen.getByRole("heading", { name: /sous réserve d’un accord/i }),
+      screen.getByRole("heading", { name: /nécessite un accord préalable/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/attendez la réponse/i)).toBeInTheDocument();
     expect(screen.getByText(/délai de 15 jours/i)).toBeInTheDocument();

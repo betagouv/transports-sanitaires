@@ -177,11 +177,11 @@ describe("galerie branchée sur l'App", () => {
     // avoir répondu à une seule question.
     expect(
       await screen.findByRole("heading", {
-        name: /décision médicale établie/i,
+        name: /le transport le plus adapté à votre état de santé/i,
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/le mode de transport retenu est/i),
+      screen.getByText(/le transport le plus adapté à votre état de santé/i),
     ).toHaveTextContent("ambulance");
     expect(
       screen.queryByRole("group", {

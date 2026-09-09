@@ -35,7 +35,9 @@ describe("prescripteur — résultat médical", () => {
       screen.queryByRole("button", { name: /voir le résultat final/i }),
     ).toBeNull();
     expect(
-      screen.getByRole("heading", { name: /décision médicale établie/i }),
+      screen.getByRole("heading", {
+        name: /le transport le plus adapté à votre état de santé/i,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -51,7 +53,7 @@ describe("prescripteur — résultat médical", () => {
 
     expect(
       screen.getByText(
-        /cette décision porte uniquement sur le mode de transport médicalement adapté/i,
+        /pour en savoir plus sur les conditions de prise en charge/i,
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/moins onéreux/i)).toBeNull();
@@ -122,7 +124,9 @@ describe("prescripteur — résultat médical", () => {
     ]);
 
     expect(
-      screen.getByRole("heading", { name: /décision médicale établie/i }),
+      screen.getByRole("heading", {
+        name: /le transport le plus adapté à votre état de santé/i,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.queryByText(/ne permettent pas à votre médecin de prescrire/i),

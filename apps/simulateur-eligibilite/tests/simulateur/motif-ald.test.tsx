@@ -46,7 +46,7 @@ describe("ALD non retenue faute d’incapacité ou de déficience", () => {
     expect(screen.getByText(QUALIFICATION_MEDICALE)).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: /vous êtes éligible à une prise en charge/i,
+        name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
   });

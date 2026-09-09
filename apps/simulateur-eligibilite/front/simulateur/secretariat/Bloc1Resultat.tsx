@@ -8,6 +8,8 @@ import { VerdictDapUrgente } from "./urgence-attestee";
 
 type Props = {
   casFinal: string;
+  /** `cible_resultat_2_couleur` : « vert » ou « bleu », et le modèle seul décide. */
+  couleur: string;
   transport: string;
   transportPrescrit: boolean;
   /** Les motifs de l'accord préalable, tels que le modèle les a établis. */
@@ -18,6 +20,7 @@ type Props = {
 
 export function Bloc1Resultat({
   casFinal,
+  couleur,
   transport,
   transportPrescrit,
   motifs,
@@ -32,7 +35,7 @@ export function Bloc1Resultat({
 
   return (
     <div
-      className={`fr-alert fr-alert--${TEINTE[casFinal] ?? "info"}`}
+      className={`fr-alert fr-alert--${teinte(couleur)}`}
       style={{ marginBottom: "2rem" }}
     >
       <h3 className="fr-alert__title">{titre}</h3>
@@ -59,7 +62,7 @@ function verdict(casFinal: string, contexte: Contexte): Verdict {
 
 function prescriptionMedicale({ transport }: Contexte): Verdict {
   return {
-    titre: "Vous êtes éligible à une prise en charge par l’Assurance Maladie",
+    titre: "Votre transport peut être pris en charge par l’Assurance Maladie",
     corps: (
       <>
         <TransportPrescrit transport={transport} />
@@ -77,7 +80,7 @@ function prescriptionMedicale({ transport }: Contexte): Verdict {
 // sa page de résultat en vert, comme la PMT — le droit est ouvert, sans réserve.
 function prescriptionS3141({ transport }: Contexte): Verdict {
   return {
-    titre: "Vous êtes éligible à une prise en charge par l’Assurance Maladie",
+    titre: "Votre transport pour cette permission peut être pris en charge",
     corps: (
       <>
         <TransportPrescrit transport={transport} />
@@ -103,7 +106,7 @@ function accordPrealable(contexte: Contexte): Verdict {
 function accordPrealableAAttendre({ transport, motifs }: Contexte): Verdict {
   return {
     titre:
-      "Vous êtes éligible sous réserve d’un accord préalable de l’Assurance Maladie",
+      "La prise en charge de votre transport nécessite un accord préalable",
     corps: (
       <>
         <TransportPrescrit transport={transport} />
@@ -119,7 +122,7 @@ function accordPrealableAAttendre({ transport, motifs }: Contexte): Verdict {
 
 function accordPrealableUrgent({ transport, motifs }: Contexte): Verdict {
   return {
-    titre: "Vous êtes éligible — urgence médicale attestée",
+    titre: "Votre transport peut être réalisé sans attendre l’accord préalable",
     corps: (
       <>
         <VerdictDapUrgente transport={transport} />
@@ -154,7 +157,8 @@ const INTITULE_DES_MOTIFS = "motifs-de-l-accord-prealable";
 
 function convocation({ transport }: Contexte): Verdict {
   return {
-    titre: "Vous êtes éligible",
+    titre:
+      "Votre convocation permet de demander la prise en charge du transport",
     corps: (
       <>
         <TransportPrescrit transport={transport} />
@@ -168,7 +172,7 @@ function convocation({ transport }: Contexte): Verdict {
 
 function chargeEtablissement({ transport }: Contexte): Verdict {
   return {
-    titre: "Transport à charge de l’établissement de santé",
+    titre: "Votre transport relève du financement de l’établissement",
     corps: (
       <>
         <TransportPrescrit transport={transport} />
@@ -185,30 +189,14 @@ function chargeEtablissement({ transport }: Contexte): Verdict {
   };
 }
 
-function prestationNonPriseEnCharge({ transport }: Contexte): Verdict {
-  return {
-    titre:
-      "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
-    corps: (
-      <>
-        <p>
-          Transport médicalement retenu : <strong>{transport}</strong>.
-        </p>
-        <p>
-          Aucune Prescription Médicale de Transport ni Demande d’Accord
-          Préalable ouvrant droit à une prise en charge ne doit être établie
-          dans ce parcours.
-        </p>
-      </>
-    ),
-  };
-}
-
 function permissionSortie(): Verdict {
   return {
-    titre:
-      "Aucun mode de transport n’est éligible à une prise en charge par l’Assurance Maladie au titre du seul motif « permission de sortie sans motif médical ».",
-    corps: <p>Le transport reste à votre charge.</p>,
+    titre: "Les frais de cette permission restent à votre charge",
+    corps: (
+      <p>
+        Les frais de transport liés à cette permission restent à votre charge.
+      </p>
+    ),
   };
 }
 
@@ -216,23 +204,25 @@ function nonEligible({ transport, transportPrescrit }: Contexte): Verdict {
   // Variante A — aucun transport sanitaire prescrit.
   if (!transportPrescrit) {
     return {
-      titre:
-        "Aucun transport sanitaire ne peut être prescrit par votre médecin.",
+      titre: "Ce déplacement ne peut pas être remboursé",
       corps: (
-        <p>Le transport reste à votre charge si vous décidez de l’organiser.</p>
+        <p>
+          D’après les informations renseignées, ce déplacement ne peut pas être
+          remboursé par l’Assurance Maladie.
+        </p>
       ),
     };
   }
   // Variante B — transport prescrit mais non pris en charge ici.
   return {
-    titre: "Vous n’êtes pas éligible à une prise en charge dans ce parcours",
+    titre: "Ce déplacement ne peut pas être remboursé",
     corps: (
       <>
         <p>
-          Transport sanitaire prescrit par le médecin :{" "}
-          <strong>{transport}</strong>.
+          D’après les informations renseignées, ce déplacement ne peut pas être
+          remboursé par l’Assurance Maladie.
         </p>
-        <p>Le transport reste à votre charge.</p>
+        <FraisAPrevoir transport={transport} />
       </>
     ),
   };
@@ -252,18 +242,56 @@ const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
   "demande d’accord préalable": accordPrealable,
   "convocation ou avis d’audience": convocation,
   "transport à la charge de l’établissement": chargeEtablissement,
-  prestationNonPriseEnCharge,
   "permission de sortie sans motif médical": permissionSortie,
   "non éligible à une prise en charge par l’Assurance Maladie": nonEligible,
 };
 
-// Teinte DSFR de l'alerte selon le cas final déterminé par le moteur.
-const TEINTE: Record<string, "success" | "info" | "warning" | "error"> = {
-  "prescription médicale de transport": "success",
-  "prescription S3141": "success",
-  "demande d’accord préalable": "info",
-  "convocation ou avis d’audience": "success",
-  "transport à la charge de l’établissement": "warning",
-  "permission de sortie sans motif médical": "error",
-  "non éligible à une prise en charge par l’Assurance Maladie": "error",
-};
+// La teinte DSFR de l'alerte, traduite de la couleur que le modèle décide.
+//
+// Elle se lisait ici, dans une table tenue à la main, cas final par cas final —
+// et la table avait dérivé : elle rendait un transport à la charge de
+// l'établissement en orange, quand le contrat le veut vert. La v9.7 porte la
+// couleur en cible (`cible_resultat_2_couleur`), et c'est elle qui tranche
+// désormais : vert quand un document est dû, bleu pour un accord préalable comme
+// pour un refus.
+function teinte(couleur: string): "success" | "info" {
+  return couleur === "vert" ? "success" : "info";
+}
+
+/**
+ * Ce que le contrat fait dire à un refus, selon le mode retenu : le patient qui
+ * organisera quand même son déplacement doit savoir ce qu'il engage.
+ *
+ * Trois formulations, parce que trois situations : celui qui prend sa voiture ne
+ * s'adresse à personne, celui qui prend le bus achète un titre, et celui qui
+ * réserve un transporteur peut lui demander son tarif d'avance.
+ */
+function FraisAPrevoir({ transport }: { transport: string }) {
+  if (transport === "véhicule personnel")
+    return (
+      <p>
+        Si vous effectuez ce déplacement en véhicule personnel, les frais
+        correspondants ne seront pas remboursés par l’Assurance Maladie.
+      </p>
+    );
+  if (transport === "transport en commun terrestre")
+    return (
+      <p>
+        Avant d’acheter vos titres de transport en commun, vérifiez leur prix.
+        Ces frais ne seront pas remboursés par l’Assurance Maladie.
+      </p>
+    );
+  return (
+    <p>
+      Avant d’éventuellement réserver {aReserver(transport)}, renseignez-vous
+      auprès du transporteur sur le montant à régler.
+    </p>
+  );
+}
+
+function aReserver(transport: string): string {
+  if (transport === "ambulance") return "une ambulance";
+  if (transport.includes("TPMR"))
+    return "un VSL (Véhicule Sanitaire Léger) adapté au transport de personnes à mobilité réduite (TPMR) ou un taxi conventionné adapté TPMR";
+  return "un VSL (Véhicule Sanitaire Léger) ou un taxi conventionné";
+}

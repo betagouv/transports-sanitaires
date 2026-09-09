@@ -158,6 +158,7 @@ function TroisBlocs({
     <>
       <Bloc1Resultat
         casFinal={c.casFinal}
+        couleur={c.couleur}
         transport={c.transport}
         transportPrescrit={c.transportPrescrit}
         motifs={c.motifs}
@@ -189,6 +190,7 @@ function cibles(e: typeof moteur) {
   const transport = texte(e, "cible_transport_sanitaire_prescrit");
   return {
     casFinal: texte(e, "cible_cas_final"),
+    couleur: texte(e, "cible_resultat_2_couleur"),
     doc: texte(e, "cible_document_a_remettre_au_patient"),
     transport,
     transportPrescrit: transport !== "" && transport !== "aucun",

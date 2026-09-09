@@ -191,7 +191,7 @@ describe("prescripteur — parcours médical", () => {
     // Page à choix unique : elle avance d'elle-même, sans bouton de validation.
     expect(
       await screen.findByRole("heading", {
-        name: /décision médicale établie/i,
+        name: /le transport le plus adapté à votre état de santé/i,
       }),
     ).toBeInTheDocument();
     // (getAllByText : le verdict et l'information au patient nomment tous deux

@@ -52,6 +52,12 @@ export type OptionsDuLivrable = {
   organization?: string;
   /** L'instant de référence, pour les règles datées — la bascule du 1er octobre. */
   instant?: string;
+  /**
+   * Des réponses posées directement, pour ce que les options ne nomment pas.
+   * Le livrable en offre autant (`o.overrides`), et s'en sert pour les cas d'un
+   * seul tenant — une convocation, un âge du patient.
+   */
+  overrides?: Record<string, string>;
 };
 
 /** Les trois réponses de Q1, dans l'ordre du modèle. */
@@ -78,7 +84,7 @@ export function situationDuLivrable(
   options: OptionsDuLivrable = {},
 ): Situation<string> {
   return avecEntreesCalculees(
-    { ...partie1(options), ...partie2(options) },
+    { ...partie1(options), ...partie2(options), ...options.overrides },
     options.instant
       ? new Date(options.instant)
       : new Date("2026-09-08T10:00:00Z"),

@@ -55,7 +55,7 @@ describe("Engagement maternité — un contexte réglementaire", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /sous réserve d’un accord préalable/i,
+        name: /nécessite un accord préalable/i,
       }),
     ).toBeInTheDocument();
     // Le dispositif est la cause de l'accord préalable, et la seule.

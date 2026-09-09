@@ -89,22 +89,51 @@ function Verdict({
 }) {
   const direct = CAS_DIRECTS[casFinal];
   if (direct)
-    return <Alerte type="error" titre={direct.titre} texte={direct.verdict} />;
+    return <Alerte type="info" titre={direct.titre} texte={direct.verdict} />;
   return (
     <Alerte
-      type="success"
-      titre="Décision médicale établie"
-      texte={`Le mode de transport retenu est : ${transport}. Cette décision porte uniquement sur le mode de transport médicalement adapté. La prise en charge du transport et le document à utiliser sont vérifiés dans la partie administrative.`}
+      type="info"
+      titre={PHRASE_DU_MODE[transport] ?? PHRASE_TPMR}
+      texte={SOUS_TITRE}
     />
   );
 }
 
+/**
+ * Le Résultat 1 nomme le mode dans son titre, une phrase par mode, et ne dit rien
+ * d'autre : la prise en charge relève de la partie administrative.
+ *
+ * La v9.5.1 titrait « Décision médicale établie » et rangeait le mode dans le
+ * corps. La v9.7 recopie ici les phrases que le contrat d'interface fixe, et son
+ * sous-titre. Aucune ne promet un remboursement, et aucune ne dit « ou transport
+ * en commun » : le prescripteur a choisi entre les deux, et l'écran l'annonce.
+ */
+const PHRASE_DU_MODE: Record<string, string> = {
+  "véhicule personnel":
+    "Le transport le plus adapté à votre état de santé est un véhicule personnel.",
+  "transport en commun terrestre":
+    "Le transport le plus adapté à votre état de santé est un transport en commun.",
+  ambulance:
+    "Le transport le plus adapté à votre état de santé est une ambulance.",
+  "VSL (Véhicule Sanitaire Léger) ou taxi conventionné":
+    "Le transport le plus adapté à votre état de santé est un VSL (Véhicule Sanitaire Léger) ou un taxi conventionné.",
+};
+
+const PHRASE_TPMR =
+  "Le transport le plus adapté à votre état de santé est un VSL (Véhicule Sanitaire Léger) adapté au transport de personnes à mobilité réduite (TPMR) ou un taxi conventionné adapté TPMR.";
+
+const SOUS_TITRE =
+  "Pour en savoir plus sur les conditions de prise en charge, la partie administrative doit être complétée.";
+
+// Le contrat d'interface veut le Résultat 1 **toujours bleu**
+// (`cible_resultat_1_couleur`) : il ne tranche que le mode médical, et une teinte
+// verte ou rouge y ferait lire un accord ou un refus qui n'y sont pas.
 function Alerte({
   type,
   titre,
   texte: contenu,
 }: {
-  type: "success" | "error";
+  type: "info";
   titre: string;
   texte: string;
 }) {
