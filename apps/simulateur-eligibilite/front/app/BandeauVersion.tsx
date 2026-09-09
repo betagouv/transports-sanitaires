@@ -19,7 +19,7 @@ import type { CSSProperties } from "react";
 
 export function BandeauVersion() {
   return (
-    <footer className="fr-text--xs" style={STYLE_DU_BANDEAU}>
+    <footer className="fr-text--xs fr-no-print" style={STYLE_DU_BANDEAU}>
       Version{" "}
       <a
         className="fr-link"

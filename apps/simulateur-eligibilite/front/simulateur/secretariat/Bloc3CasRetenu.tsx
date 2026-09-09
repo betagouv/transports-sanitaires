@@ -14,6 +14,8 @@ type Props = {
   transport: string;
   doc: string;
   article80: Article80;
+  /** Le jour où le prescripteur est arrivé sur le Résultat 2. */
+  datePrescription: string;
 };
 
 export function Bloc3CasRetenu({
@@ -22,6 +24,7 @@ export function Bloc3CasRetenu({
   transport,
   doc,
   article80,
+  datePrescription,
 }: Props) {
   return (
     <div className="fr-callout" style={{ marginBottom: "2rem" }}>
@@ -31,15 +34,12 @@ export function Bloc3CasRetenu({
       </h3>
 
       <div className="fr-callout__text">
-        <p>
-          <strong>Cas retenu :</strong> {CAS_RETENU[casFinal] ?? casFinal}
-        </p>
-        <p>
-          <strong>Transport sanitaire prescrit :</strong> {transport}
-        </p>
-        <p>
-          <strong>Document à remettre au patient :</strong> {doc}
-        </p>
+        <ARecopierSurLeFormulaire
+          casFinal={casFinal}
+          transport={transport}
+          doc={doc}
+          datePrescription={datePrescription}
+        />
         <NoteCorpsMedical casFinal={casFinal} article80={article80} />
         {vrai(e, "cible_urgence_attestee") && (
           <NoteUrgenceCorpsMedical casFinal={casFinal} />
@@ -53,6 +53,37 @@ export function Bloc3CasRetenu({
 }
 
 // ---- implémentation ----
+
+// Les quatre lignes que le corps médical recopie sur le formulaire, et rien
+// d'autre : ce qui suit dans le bloc explique, quand celles-ci se transcrivent.
+function ARecopierSurLeFormulaire({
+  casFinal,
+  transport,
+  doc,
+  datePrescription,
+}: Pick<Props, "casFinal" | "transport" | "doc" | "datePrescription">) {
+  return (
+    <>
+      <p>
+        <strong>Cas retenu :</strong> {CAS_RETENU[casFinal] ?? casFinal}
+      </p>
+      <p>
+        <strong>Transport sanitaire prescrit :</strong> {transport}
+      </p>
+      {/*
+        Le modèle ne date rien : « Le moteur ne lit jamais une date système
+        implicite ». C'est l'application qui pose ce jour-là, à l'arrivée sur cet
+        écran, et le report sur le formulaire s'y réfère.
+      */}
+      <p>
+        <strong>Date de prescription :</strong> {datePrescription}
+      </p>
+      <p>
+        <strong>Document à remettre au patient :</strong> {doc}
+      </p>
+    </>
+  );
+}
 
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
 // la valeur brute de `cas_final`).

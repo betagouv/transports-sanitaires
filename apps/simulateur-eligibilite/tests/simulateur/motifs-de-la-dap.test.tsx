@@ -72,6 +72,7 @@ function seedParId(id: string): Seed {
 function afficher(seed: Seed) {
   render(
     <ResultatFinal
+      datePrescription="08/09/2026"
       situation={situationDe(seed)}
       onNouvelleSimulation={() => {}}
     />,

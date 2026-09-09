@@ -49,6 +49,7 @@ describe("nombre de transports", () => {
 function afficher(id: string) {
   render(
     <ResultatFinal
+      datePrescription="08/09/2026"
       situation={situationDe(seedParId(id))}
       onNouvelleSimulation={() => {}}
     />,

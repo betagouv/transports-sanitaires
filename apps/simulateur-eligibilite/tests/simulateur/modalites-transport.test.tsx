@@ -87,6 +87,7 @@ describe("sur la Page Résultat 2", () => {
 function afficher(id: string) {
   render(
     <ResultatFinal
+      datePrescription="08/09/2026"
       situation={situationDe(seedParId(id))}
       onNouvelleSimulation={() => {}}
     />,

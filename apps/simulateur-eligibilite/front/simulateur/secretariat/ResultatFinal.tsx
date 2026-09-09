@@ -16,6 +16,8 @@ import { motifsDeLaDap } from "./motifs-de-la-dap";
 
 type Props = {
   situation: Situation<string>;
+  /** Le jour où le prescripteur est arrivé sur cet écran (`date-de-prescription.ts`). */
+  datePrescription: string;
   onNouvelleSimulation: () => void;
   /**
    * Retour à la Partie 2, réponses intactes. Absent quand aucun parcours ne
@@ -37,6 +39,7 @@ type Props = {
 
 export function ResultatFinal({
   situation,
+  datePrescription,
   onNouvelleSimulation,
   onPrecedent,
   documentTelechargeable,
@@ -47,6 +50,7 @@ export function ResultatFinal({
       <h2>Document à imprimer et à remettre au patient</h2>
       <DocumentARemettre
         situation={situation}
+        datePrescription={datePrescription}
         documentTelechargeable={documentTelechargeable}
       />
       <SuiteDuParcours
@@ -77,7 +81,17 @@ function SuiteDuParcours({
   onPrecedent,
 }: Pick<Props, "onNouvelleSimulation" | "onPrecedent">) {
   return (
-    <div className="fr-btns-group fr-btns-group--inline">
+    <div className="fr-btns-group fr-btns-group--inline fr-no-print">
+      {/*
+        L'impression est toujours offerte, quel que soit le cas final : c'est ce
+        que le contrat de la v9.7 demande, et ce que le guide redit — aucune
+        question d'identité, de RPPS, de structure ni de signature n'y est posée,
+        et rien de ce qui s'imprime ne vaut prescription signée. Quand aucun CERFA
+        n'est dû, c'est cette page-ci qui s'imprime, et non un formulaire factice.
+      */}
+      <button type="button" className="fr-btn" onClick={() => window.print()}>
+        Imprimer
+      </button>
       {onPrecedent && (
         <button
           type="button"
@@ -109,14 +123,15 @@ function SuiteDuParcours({
 // `documentTelechargeable`).
 function DocumentARemettre({
   situation,
+  datePrescription,
   documentTelechargeable,
-}: Pick<Props, "situation" | "documentTelechargeable">) {
+}: Pick<Props, "situation" | "datePrescription" | "documentTelechargeable">) {
   const e = moteur.setSituation(situation);
   if (!vrai(e, "cible_resultat_2_affichable")) return <Incomplet />;
   const lues = cibles(e);
   return (
     <>
-      <TroisBlocs e={e} cibles={lues} />
+      <TroisBlocs e={e} cibles={lues} datePrescription={datePrescription} />
       {lues.doc !== AUCUN_DOCUMENT && documentTelechargeable?.(situation)}
     </>
   );
@@ -150,9 +165,11 @@ function Incomplet() {
 function TroisBlocs({
   e,
   cibles: c,
+  datePrescription,
 }: {
   e: typeof moteur;
   cibles: ReturnType<typeof cibles>;
+  datePrescription: string;
 }) {
   return (
     <>
@@ -172,6 +189,7 @@ function TroisBlocs({
         article80={c.article80}
       />
       <Bloc3CasRetenu
+        datePrescription={datePrescription}
         e={e}
         casFinal={c.casFinal}
         transport={c.transport}

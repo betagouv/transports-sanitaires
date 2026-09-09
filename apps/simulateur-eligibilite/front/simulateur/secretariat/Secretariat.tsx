@@ -19,6 +19,7 @@ import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
 import { rejouerLesReponses } from "../questionnaire/rejeu";
+import { dateDePrescription } from "./date-de-prescription";
 import { ResultatFinal } from "./ResultatFinal";
 
 type Props = {
@@ -60,6 +61,7 @@ export function Secretariat({
     return (
       <ResultatFinal
         situation={parcours.situation}
+        datePrescription={parcours.datePrescription}
         onNouvelleSimulation={onNouvelleSimulation}
         onPrecedent={ecranPrecedent(parcours, onRetourAuResultatMedical)}
         documentTelechargeable={documentTelechargeable}
@@ -116,9 +118,13 @@ function useParcoursAdministratif(situationFinale: Situation<string> | null) {
     situationFinale && avecEntreesCalculees(situationFinale),
   );
   const [amorce] = useState(() => amorceDuParcours(situationFinale));
+  // Posée une fois, à la première arrivée sur le résultat, et conservée ensuite :
+  // revenir au questionnaire puis y ressortir ne redate pas la prescription.
+  const [datePrescription] = useState(() => dateDePrescription());
   const [etatQuestionnaire, setEtatQuestionnaire] = useState(amorce.parcours);
   return {
     situation,
+    datePrescription,
     situationP1: amorce.situationP1,
     etatQuestionnaire,
     retourAuQuestionnaire: etatQuestionnaire && (() => setSituation(null)),
