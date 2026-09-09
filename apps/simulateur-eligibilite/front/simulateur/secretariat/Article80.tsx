@@ -3,17 +3,17 @@
 // corps médical (Bloc 3), qui ne disent pas la même chose. Les regrouper ici évite
 // que les deux volets divergent au fil des évolutions du modèle.
 //
-// Contenus différenciés selon le mode retenu et les situations spécifiques
-// (détenu / UHSA-UHSI…).
+// Contenus différenciés selon le seul mode retenu.
 //
 // La v9.1 a retiré du modèle la permission de sortie thérapeutique : elle n'est
 // plus une variante de l'Article 80 mais un cas particulier médical (M0) qui
-// tranche dès la Partie 1. Le volet patient n'a donc plus qu'un seul rendu.
+// tranche dès la Partie 1. La v9.7 a retiré la seconde variante, la « situation
+// spécifique » du patient détenu : sa branche entière a disparu du modèle, le
+// transfert inter-établissements étant désormais qualifié en amont.
 
 export type Article80 = {
-  // "transport professionnel" | "véhicule personnel ou transport en commun" | "non applicable"
+  // "véhicule personnel" | "transport en commun terrestre" | un mode sanitaire
   mode: string;
-  situationSpecifique: boolean;
 };
 
 // Volet patient. La variante « situation spécifique » (détenu/UHSA-UHSI) n'évoque
@@ -39,24 +39,8 @@ export function Article80CorpsMedical({ article80 }: { article80: Article80 }) {
 // ---- implémentation ----
 
 function ConsignesPatient({ article80 }: { article80: Article80 }) {
-  if (article80.situationSpecifique) return <PatientSituationSpecifique />;
   if (estVehiculePersonnel(article80)) return <PatientVehiculePersonnel />;
   return <PatientProcedureInterne />;
-}
-
-function PatientSituationSpecifique() {
-  return (
-    <ul>
-      <li>
-        Le transport est organisé dans le cadre de votre prise en charge par
-        l’établissement.
-      </li>
-      <li>
-        Vous n’avez aucune demande de remboursement à adresser directement à
-        votre caisse d’Assurance Maladie.
-      </li>
-    </ul>
-  );
 }
 
 function PatientVehiculePersonnel() {
@@ -89,15 +73,6 @@ function PatientProcedureInterne() {
 }
 
 function ConsigneCorpsMedical({ article80 }: { article80: Article80 }) {
-  if (article80.situationSpecifique) {
-    return (
-      <p>
-        Le transport doit être organisé selon la procédure interne de
-        l’établissement et les règles spécifiques applicables à la situation du
-        patient.
-      </p>
-    );
-  }
   if (estVehiculePersonnel(article80)) {
     return (
       <p>
@@ -116,6 +91,11 @@ function ConsigneCorpsMedical({ article80 }: { article80: Article80 }) {
   );
 }
 
+// La v9.7 a scindé le mode non professionnalisé en deux : le véhicule personnel
+// et le transport en commun terrestre. La consigne, elle, vaut pour les deux.
 function estVehiculePersonnel(article80: Article80): boolean {
-  return article80.mode === "véhicule personnel ou transport en commun";
+  return (
+    article80.mode === "véhicule personnel" ||
+    article80.mode === "transport en commun terrestre"
+  );
 }

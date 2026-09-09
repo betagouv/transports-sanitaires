@@ -47,12 +47,11 @@ export const situation = (entrées: Record<string, string>) => ({
 
 /** Les deux réponses de Q1 que ces cas citent, et un contexte ouvrant droit. */
 export const AIDE_PROFESSIONNEL =
-  "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
+  "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'";
 export const PROCHE_ACCOMPAGNANT =
   "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
 export const HOSPITALISATION = {
-  p2_contexte_hospitalisation: "oui",
-  p2_contexte_aucun: "non",
+  p2_raison_principale: "'Entrée en hospitalisation'",
 };
 
 /** Les états d'apparence qu'un champ sait rendre, `/Off` exclu, dans l'ordre. */

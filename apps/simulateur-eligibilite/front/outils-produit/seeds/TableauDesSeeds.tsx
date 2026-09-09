@@ -15,7 +15,6 @@ const LIBELLE_CIBLE: Record<CibleSeed, string> = {
   cible_cas_final: "Cas final",
   cible_document_a_remettre_au_patient: "Document",
   cible_regime_financement: "Qui paie",
-  cible_article_80_situation_specifique: "Article 80 — situation spécifique",
 };
 
 // Le titre de section passe par la légende du tableau : DSFR la rend visible

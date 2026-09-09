@@ -154,7 +154,15 @@ function DapAmbulance() {
   );
 }
 
-const VEHICULE_PERSO = "véhicule personnel ou transport en commun";
+// La v9.7 a scindé le mode non professionnalisé en deux : le prescripteur
+// choisit entre le véhicule personnel et les transports en commun. Les modalités
+// sont les mêmes des trois côtés — c'est l'absence de transporteur qui les dicte.
+//
+// Trois, parce que la catégorie d'origine reste une valeur du modèle : tant que
+// le choix n'est pas fait, c'est elle que la cible rend.
+const NON_PROFESSIONNALISE = "véhicule personnel ou transport en commun";
+const VEHICULE_PERSO = "véhicule personnel";
+const TRANSPORT_EN_COMMUN = "transport en commun terrestre";
 const VSL_TAXI = "VSL (Véhicule Sanitaire Léger) ou taxi conventionné";
 const VSL_TAXI_TPMR =
   "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)";
@@ -165,30 +173,34 @@ const AMBULANCE = "ambulance";
  * test puisse dire « toutes les possibilités du modèle sont traitées, sauf
  * celles-ci » plutôt que d'énumérer les quatre autres une seconde fois.
  */
-export const MODES_SANS_MODALITE = [
-  // Aucun transport prescrit : il n'y a pas de document, donc rien à organiser.
-  "aucun",
-  // Le SMUR est organisé par l'équipe médicale ; `EtapesSMUR` le dit à sa place.
-  "transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)",
-] as const;
+// La v9.5.1 en comptait deux — « aucun » et le SMUR — que la v9.7 a retirés du
+// modèle : la Partie 1 conclut toujours sur un mode, et l'urgence vitale n'est
+// plus une réponse de Q1. Tous les modes portent donc désormais des modalités.
+export const MODES_SANS_MODALITE = [] as const;
 
-/** Les quatre modes qui portent des modalités, pour le test comme pour le rendu. */
+/** Les six modes qui portent des modalités, pour le test comme pour le rendu. */
 export const MODES_AVEC_MODALITE = [
+  NON_PROFESSIONNALISE,
   VEHICULE_PERSO,
+  TRANSPORT_EN_COMMUN,
   VSL_TAXI,
   VSL_TAXI_TPMR,
   AMBULANCE,
 ] as const;
 
 const PMT: Record<string, () => React.ReactElement> = {
+  [NON_PROFESSIONNALISE]: PmtVehiculePerso,
   [VEHICULE_PERSO]: PmtVehiculePerso,
+  [TRANSPORT_EN_COMMUN]: PmtVehiculePerso,
   [VSL_TAXI]: PmtVslTaxi,
   [VSL_TAXI_TPMR]: PmtVslTaxiTpmr,
   [AMBULANCE]: PmtAmbulance,
 };
 
 const DAP: Record<string, () => React.ReactElement> = {
+  [NON_PROFESSIONNALISE]: DapVehiculePerso,
   [VEHICULE_PERSO]: DapVehiculePerso,
+  [TRANSPORT_EN_COMMUN]: DapVehiculePerso,
   [VSL_TAXI]: DapVslTaxi,
   [VSL_TAXI_TPMR]: DapVslTaxiTpmr,
   [AMBULANCE]: DapAmbulance,

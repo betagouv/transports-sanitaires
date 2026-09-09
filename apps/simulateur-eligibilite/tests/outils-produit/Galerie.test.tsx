@@ -73,11 +73,11 @@ describe("écran de galerie", () => {
         .getByRole("button", { name: `Ouvrir : ${seedParId(id).libelle}` })
         .closest("tr")!;
 
-    expect(ligne("secretariat-detenu-inter-etablissements")).toHaveTextContent(
-      "établissement prescripteur",
-    );
+    expect(
+      ligne("secretariat-transfert-inter-etablissements"),
+    ).toHaveTextContent("Établissement");
     expect(ligne("prescripteur-ald-sans-incapacite")).toHaveTextContent(
-      "aucune prise en charge dans ce parcours",
+      "Absence de prise en charge Assurance Maladie",
     );
     expect(ligne("secretariat-prescription")).toHaveTextContent(
       "Assurance Maladie",
@@ -113,7 +113,7 @@ describe("écran de galerie", () => {
 });
 
 describe("galerie branchée sur l'App", () => {
-  it("depuis un cas tranché en Partie 1, le document ramène au résultat médical", async () => {
+  it("depuis une seed de Partie 1, le résultat médical mène à la Partie 2", async () => {
     // Aucune question administrative à poser : l'écran en deçà du document est
     // le résultat médical, et « Précédent » doit y ramener — quel que soit ce
     // qu'a conclu la Partie 1, et quelle que soit la façon d'être arrivé là.
@@ -126,7 +126,11 @@ describe("galerie branchée sur l'App", () => {
     );
 
     await ouvrirGalerie(user);
-    const seed = seedParId("prescripteur-smur");
+    // La v9.5.1 employait ici une seed tranchée dès la Partie 1 — l'urgence
+    // vitale — dont le document ramenait au résultat médical. La v9.7 a retiré
+    // ces sorties directes : une seed de Partie 1 traverse désormais la Partie 2,
+    // et c'est le retour depuis le document qu'on vérifie.
+    const seed = seedParId("prescripteur-bariatrique");
     // La galerie est chargée à la demande, et l'ouverture d'une seed rejoue son
     // parcours : de quoi dépasser la seconde par défaut quand la suite tourne en
     // parallèle.
@@ -137,22 +141,21 @@ describe("galerie branchée sur l'App", () => {
         { timeout: 10_000 },
       ),
     );
+    // La Partie 2 étant désormais toujours requise, le bouton invite à la
+    // compléter plutôt qu'à sauter au résultat final.
     await user.click(
-      screen.getByRole("button", { name: /voir le résultat final/i }),
+      screen.getByRole("button", {
+        name: /compléter la partie administrative/i,
+      }),
     );
     expect(
-      screen.getByRole("heading", { name: /document à imprimer/i }),
+      screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
-    expect(
-      screen.getByRole("heading", { name: /équipe SMUR/i }),
-    ).toBeInTheDocument();
-    // Et l'on repart d'où l'on vient : le résultat médical rouvre le document.
-    expect(
-      screen.getByRole("button", { name: /voir le résultat final/i }),
-    ).toBeInTheDocument();
-  }, 20_000);
+    // Et l'on repart d'où l'on vient : la première page du questionnaire
+    // administratif ne rend pas la main, c'est le verrou médical.
+    expect(screen.queryByRole("button", { name: /^précédent$/i })).toBeNull();
+  }, 40_000);
 
   it("ouvre une seed de Partie 1 sur la page de résultat médical", async () => {
     const user = userEvent.setup();

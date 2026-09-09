@@ -6,17 +6,15 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  DAP,
   evalue,
   HOSPITALISATION,
   PMT,
   PRO,
-  SMUR,
   TPMR,
   VSL,
-} from "./situations-v9-5-1";
+} from "./situations-v9-7";
 
-describe("modèle v9.5.1 — P1-EXHAUSTIVE", () => {
+describe("modèle v9.7 — P1-EXHAUSTIVE", () => {
   const CRITERES_AMBULANCE = [
     "p1_critere_position_allongee_demi_assise",
     "p1_critere_brancardage_portage",
@@ -32,6 +30,7 @@ describe("modèle v9.5.1 — P1-EXHAUSTIVE", () => {
         p1_autonomie: PRO,
         [critere]: "oui",
         p1_critere_fauteuil_sans_transfert: "oui",
+        p1_critere_aucun: "non",
       });
       expect(moteur.evaluate("p1_mode_transport_medical").nodeValue).toBe(
         "ambulance",
@@ -44,6 +43,7 @@ describe("modèle v9.5.1 — P1-EXHAUSTIVE", () => {
       p1_autonomie: PRO,
       p1_critere_fauteuil_sans_transfert: "oui",
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
     });
     expect(moteur.evaluate("p1_mode_transport_medical").nodeValue).toBe(TPMR);
   });
@@ -51,42 +51,62 @@ describe("modèle v9.5.1 — P1-EXHAUSTIVE", () => {
   // Q1.1 n'a plus d'option « Aucune » : sans critère coché, la question reste
   // sans réponse et le mode n'est pas conclu. C'est le modèle qui l'impose —
   // la branche VSL exige désormais `p1_criteres_transport_repondus`.
-  it("un besoin professionnel sans aucun critère ne conclut à aucun mode", () => {
-    const moteur = evalue({ p1_autonomie: PRO });
-    expect(moteur.evaluate("p1_mode_transport_medical").nodeValue).toBeNull();
+  it("un besoin professionnel sans critère coché ne conclut à aucun mode", () => {
+    // Ni critère ni sortie « aucun » : la mosaïque est sans réponse, et le
+    // modèle ne tranche pas. La base neutre répond « aucun », il faut donc la
+    // défaire pour retrouver l'indécision.
+    const moteur = evalue({ p1_autonomie: PRO, p1_critere_aucun: null });
+    expect(
+      moteur.evaluate("p1_mode_transport_medical").nodeValue ?? null,
+    ).toBeNull();
   });
 
   it("un besoin professionnel dont le seul critère est l'aide produit un VSL", () => {
     const moteur = evalue({
       p1_autonomie: PRO,
       p1_critere_aide_professionnel: "oui",
+      p1_critere_aucun: "non",
     });
     expect(
       moteur.evaluate("cible_transport_sanitaire_prescrit").nodeValue,
     ).toBe(VSL);
   });
 
-  it("la permission de sortie sans motif médical l'emporte sur les critères médicaux", () => {
+  // La v9.5.1 qualifiait la permission de sortie en M0, par une case du
+  // prescripteur qui l'emportait sur les critères médicaux et tranchait la
+  // Partie 1. La v9.7 l'a déplacée en Partie 2 : elle se déclare par la raison
+  // principale puis par son cadre, et ne touche plus au mode retenu.
+  it("la permission de sortie ne touche plus au mode médical", () => {
     const moteur = evalue({
       p1_autonomie: PRO,
       p1_critere_oxygene: "oui",
-      p1_m0_permission_sans_motif_medical: "oui",
-      p1_m0_aucun: "non",
+      p1_critere_aucun: "non",
+      p2_raison_principale: "'Permission temporaire de sortie'",
+      p2_permission_cadre: "'Demande du patient sans justification médicale'",
     });
-    expect(moteur.evaluate("p1_cas_final_direct").nodeValue).toBe(
-      "permission sortie sans motif médical",
+    expect(
+      moteur.evaluate("cible_transport_sanitaire_prescrit").nodeValue,
+    ).toBe("ambulance");
+    expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(
+      "permission de sortie sans motif médical",
     );
   });
 
-  // Le SMUR ne se dispute plus la priorité avec les critères : il est répondu en
-  // Q1, qui n'ouvre alors ni Q1.1 ni M0.
-  it("l'urgence vitale répondue en Q1 tranche à elle seule", () => {
-    const moteur = evalue({ p1_autonomie: SMUR });
-    expect(moteur.evaluate("p1_cas_final_direct").nodeValue).toBe("SMUR");
+  // La v9.5.0 avait fait du SMUR une réponse de Q1, qui tranchait la Partie 1 à
+  // elle seule ; la v9.7 a retiré cette réponse et le cas final qui allait avec.
+  // Q1 n'a plus que trois réponses, et aucune ne conclut sans la Partie 2.
+  it("Q1 n’offre plus de réponse qui tranche à elle seule", () => {
+    const possibles = (
+      evalue({}).getRule("p1_autonomie").rawNode as {
+        "une possibilité"?: string[];
+      }
+    )["une possibilité"];
+    expect(possibles).toHaveLength(3);
+    expect(possibles?.join(" ")).not.toMatch(/SMUR/);
   });
 });
 
-describe("modèle v9.5.1 — générateurs du livrable", () => {
+describe("modèle v9.7 — générateurs du livrable", () => {
   const CONVOCATIONS = [
     "Convocation du contrôle médical de l’Assurance Maladie.",
     "Convocation d’un médecin-expert ou consultant désigné par une juridiction.",
@@ -105,7 +125,6 @@ describe("modèle v9.5.1 — générateurs du livrable", () => {
     "p2_exception_radiotherapie_moins_48h",
     "p2_exception_dialyse_domicile",
     "p2_exception_admission_had",
-    "p2_exception_permission_mineur",
   ];
 
   it.each(CONVOCATIONS)("CONVOCATION-001 — %s vaut prescription", (type) => {
@@ -124,10 +143,11 @@ describe("modèle v9.5.1 — générateurs du livrable", () => {
     const moteur = evalue({
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
       p2_convocation_ou_avis_type: "'Aucun de ces cas.'",
     });
-    expect(moteur.evaluate("p2_convocation_ou_avis").nodeValue).toBe(false);
+    expect(moteur.evaluate("p2_convocation").nodeValue).toBe(false);
     expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(PMT);
   });
 
@@ -137,15 +157,17 @@ describe("modèle v9.5.1 — générateurs du livrable", () => {
       const moteur = evalue({
         p1_autonomie: PRO,
         p1_critere_hygiene_desinfection: "oui",
+        p1_critere_aucun: "non",
         ...HOSPITALISATION,
-        p2_patient_hospitalise: "oui",
+        p2_transfert_en_cours: "oui",
         [exception]: "oui",
         p2_exception_aucune: "non",
       });
-      // L'avion ou le bateau ouvre le droit, mais sous accord préalable.
-      expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(
-        exception === "p2_exception_avion_bateau" ? DAP : PMT,
-      );
+      // Les huit exceptions laissent le transport dans le champ de l'Assurance
+      // Maladie, et aucune n'appelle d'accord préalable. La v9.5.1 faisait
+      // exception pour l'avion et le bateau ; la v9.7 a déplacé ce motif vers
+      // les situations spéciales (`p2_special_avion_bateau`), où il vaut DAP.
+      expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(PMT);
     },
   );
 });

@@ -19,6 +19,7 @@ import {
   type FormState,
 } from "@publicodes/forms";
 import type { Situation } from "publicodes";
+import { avecEntreesCalculees } from "../entrees-calculees";
 import { moteur } from "../moteur";
 import { formBuilder } from "./constructeur-de-formulaire";
 import { pagesDuParcours } from "./pagination";
@@ -39,7 +40,7 @@ export function rejouerLesReponses({
   situationInitiale,
 }: Options): FormState<string> {
   let etat = formBuilder.start(
-    FormBuilder.newState(situationInitiale),
+    FormBuilder.newState(avecEntreesCalculees(situationInitiale ?? {})),
     ...cibles,
   );
   for (let i = 0; i < LIMITE_DE_PAGES; i++) {
@@ -63,11 +64,15 @@ function avecLesReponsesDeLaPage(
   etat: FormState<string>,
   reponses: Situation<string>,
 ): FormState<string> {
-  const situation = { ...etat.situation };
+  const saisies = { ...etat.situation };
   for (const champ of formBuilder.currentPage(etat).elements) {
     const reponse = reponses[champ.id];
-    if (reponse !== undefined) situation[champ.id] = reponse;
+    if (reponse !== undefined) saisies[champ.id] = reponse;
   }
+  // Les entrées que l'application calcule sont reversées comme dans un parcours
+  // saisi (`questionnaire/passation.ts`) : sans elles, le rejeu buterait sur des
+  // questions sans énoncé.
+  const situation = avecEntreesCalculees(saisies);
   moteur.setSituation(situation);
   const repondu = { ...etat, situation };
   return {

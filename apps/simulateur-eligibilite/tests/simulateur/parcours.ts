@@ -2,17 +2,30 @@
 // page, aller jusqu'au bout. Ce fichier est partagé par les tests du prescripteur
 // et du secrétariat, qui traversent le même questionnaire.
 //
-// Le modèle mêle quatre formes de question sur une même page : des choix uniques
-// (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple (Q1.1, M0, A0.2,
-// A3.4, M1.1) et douze saisies libres d'adresse. Répondre « par défaut » n'a donc
-// pas un seul sens. C'est « Non » pour un oui/non, l'option exclusive pour une
-// mosaïque, ou sa première case quand elle n'en a pas, la sortie « Aucun… » pour un
-// choix unique qui en offre une et sa première possibilité sinon, et un texte
-// quelconque pour une saisie libre.
+// Le modèle mêle cinq formes de question sur une même page : des choix uniques
+// (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple, des saisies
+// libres et — depuis la v9.7 — des listes déroulantes. Répondre « par défaut »
+// n'a donc pas un seul sens. C'est « Non » pour un oui/non, l'option exclusive
+// pour une mosaïque, ou sa première case quand elle n'en a pas, la sortie
+// « Aucun… » pour un choix unique qui en offre une et sa première possibilité
+// sinon, et un texte quelconque pour une saisie libre.
+//
+// La liste déroulante est la nouveauté de la v9.7. `selectTreshold` fait basculer
+// une question de boutons radio en `<select>` au-delà de dix réponses, et la
+// raison principale en offre douze. Un `select` n'est ni un `group` ni un
+// `textbox` : sans le cas ci-dessous, le parcours administratif ne démarrait
+// pas — sa première question restait sans réponse, et le questionnaire tournait
+// en rond jusqu'à ce qu'un test abandonne « question jamais posée ».
 
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
+import {
+  completerGroupe,
+  completerListe,
+  repondre,
+  valeurParDefaut,
+} from "./reponses-de-page";
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -26,8 +39,11 @@ export const PARTIE_1_AMBULANCE: Record<string, string> = {
     Object.entries(BASE_NEUTRE).filter(([cle]) => cle.startsWith("p1_")),
   ),
   p1_autonomie:
-    "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
+    "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'",
   p1_critere_oxygene: "oui",
+  // Q1.1 a gagné une option exclusive en v9.7 : cocher un critère suppose de la
+  // décocher, sans quoi la mosaïque reste incomplète et la Partie 1 ne conclut pas.
+  p1_critere_aucun: "non",
 };
 
 /**
@@ -40,6 +56,7 @@ export const PARTIE_1_SANS_MOTIF: Record<string, string> = {
   ...PARTIE_1_AMBULANCE,
   p1_critere_oxygene: "non",
   p1_critere_hygiene_desinfection: "oui",
+  p1_critere_aucun: "non",
 };
 
 /**
@@ -59,9 +76,14 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
     if (!memePage()) return;
     await completerGroupe(user, groupe);
   }
+  for (const liste of screen.queryAllByRole("combobox")) {
+    if (!memePage()) return;
+    await completerListe(user, liste as HTMLSelectElement);
+  }
   for (const champ of screen.queryAllByRole("textbox")) {
     if (!memePage()) return;
-    if ((champ as HTMLInputElement).value === "") await user.type(champ, "x");
+    if ((champ as HTMLInputElement).value === "")
+      await user.type(champ, valeurParDefaut(champ as HTMLInputElement));
   }
   for (const champ of screen.queryAllByRole("spinbutton")) {
     if (!memePage()) return;
@@ -192,60 +214,6 @@ async function avancerDUnePage(
 function pageEnCours(): () => boolean {
   const depart = etape();
   return () => etape() === depart;
-}
-
-// Une réponse ciblée. Sans `valeur`, `question` nomme directement l'option, ce qui
-// est le cas d'une mosaïque, dont les cases portent l'énoncé complet. Avec
-// `valeur`, la recherche est restreinte au groupe que `question` nomme.
-async function repondre(
-  user: User,
-  question: RegExp,
-  valeur?: string | RegExp,
-) {
-  if (valeur === undefined) return cliquerOption(user, screen, question);
-  const groupe = screen.queryByRole("group", { name: question });
-  if (groupe) await cliquerOption(user, within(groupe), valeur);
-}
-
-type Portee = typeof screen | ReturnType<typeof within>;
-
-async function cliquerOption(user: User, dans: Portee, nom: string | RegExp) {
-  const option =
-    dans.queryByRole("radio", { name: nom }) ??
-    dans.queryByRole("checkbox", { name: nom });
-  if (option) await user.click(option);
-}
-
-// Un groupe resté sans réponse en reçoit une, la plus neutre de sa forme.
-async function completerGroupe(user: User, groupe: HTMLElement) {
-  const dedans = within(groupe);
-  const cases = dedans.queryAllByRole("checkbox");
-  if (cases.length > 0) return completerMosaique(user, dedans, cases);
-  if (dedans.queryByRole("radio", { checked: true })) return;
-  const radios = dedans.queryAllByRole("radio");
-  // « Aucun… » vaut pour un choix unique ce que l'option exclusive vaut pour une
-  // mosaïque : la réponse qui n'engage rien et laisse le parcours continuer. A2.1,
-  // née en v9.5.0 de la fusion de deux écrans, en fait sa huitième réponse — sans
-  // quoi la première, une convocation, conclurait le parcours sur-le-champ.
-  const neutre =
-    dedans.queryByRole("radio", { name: /^non$/i }) ??
-    dedans.queryByRole("radio", { name: /^aucun/i });
-  if (neutre) await user.click(neutre);
-  else if (radios[0]) await user.click(radios[0]);
-}
-
-// Une mosaïque est répondue par son option exclusive, « Aucun… » ou « Aucune… »,
-// sauf si une case est déjà cochée. Q1.1 n'en a plus : le modèle y exige au moins un
-// critère, et la réponse la plus neutre devient sa première case, celle qui ne fait
-// pas escalader le mode au-delà du VSL.
-async function completerMosaique(
-  user: User,
-  dans: Portee,
-  cases: HTMLElement[],
-) {
-  if (cases.some((c) => (c as HTMLInputElement).checked)) return;
-  const neutre = dans.queryByRole("checkbox", { name: /^aucun/i }) ?? cases[0];
-  if (neutre) await user.click(neutre);
 }
 
 // Le rang de l'étape affichée par l'étapeur, ou `null` s'il n'y en a plus. Le

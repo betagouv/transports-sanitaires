@@ -242,26 +242,17 @@ function SuiteDuParcours({
   );
 }
 
-// Les trois cas particuliers médicaux qui closent le parcours dès la Partie 1.
-// Absent de cette table = décision standard.
-const CAS_DIRECTS: Record<string, { titre: string; verdict: string }> = {
-  SMUR: {
-    titre:
-      "Transport par une équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
-    verdict:
-      "Le déplacement relève d’un transport par une équipe SMUR. Aucune prescription médicale de transport ni demande d’accord préalable ne doit être établie dans ce parcours.",
-  },
-  "bariatrique seul": {
-    titre: "Aucun transport prescriptible sur le seul fondement bariatrique",
-    verdict:
-      "La morphologie du patient ou son poids supérieur à 150 kg nécessite un équipement bariatrique adapté, mais aucun autre besoin médical sélectionné ne justifie un transport prescrit. Contactez l’établissement ou la coordination territoriale compétente afin d’organiser un véhicule disposant de l’équipement adapté.",
-  },
-  "permission de sortie sans motif médical": {
-    titre: "Permission de sortie sans motif médical",
-    verdict:
-      "Le déplacement correspond à une permission de sortie demandée par le patient, sans motif médical : il ne donne pas lieu à une prescription médicale de transport.",
-  },
-};
+// Les cas qui closaient le parcours dès la Partie 1. Absent de cette table =
+// décision standard.
+//
+// La v9.5.1 en comptait trois. La v9.7 a retiré les trois sorties directes : le
+// SMUR n'est plus une réponse de Q1, le seul motif bariatrique ne conclut plus
+// rien, et la permission de sortie se qualifie en Partie 2. `cible_partie_2_requise`
+// vaut désormais « oui » dès que la décision médicale est complète.
+//
+// La table reste, vide, parce que la porte, elle, reste ouverte : une prochaine
+// livraison peut rouvrir une sortie directe, et c'est ici qu'elle se rendrait.
+const CAS_DIRECTS: Record<string, { titre: string; verdict: string }> = {};
 
 const SORTIES_TRACEES: CleDeRegle[] = [
   "cible_resultat_medical",

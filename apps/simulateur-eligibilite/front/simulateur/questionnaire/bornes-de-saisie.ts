@@ -1,47 +1,45 @@
-// Les bornes d'une saisie numérique, telles que le modèle les déclare.
+// Les bornes d'une saisie numérique, telles que le contrat d'interface les
+// déclare.
 //
-// Le moteur n'interprète pas la clé `saisie` : elle reste dans les règles brutes,
-// comme la clé `mosaique` (cf. `mosaique.ts`), et `@publicodes/forms` n'en expose
-// rien sur le champ évalué. C'est donc à l'interface d'aller la lire — faute de
-// quoi elle inventerait ses propres bornes, et le formulaire accepterait à la
-// saisie ce que le modèle refuse ensuite.
+// Elles vivaient dans le modèle jusqu'en v9.5.1, sous une clé `saisie` que le
+// moteur n'interprétait pas — l'interface allait la lire dans les règles brutes,
+// comme elle lit encore `mosaique`. La v9.7 les a déplacées : le modèle ne porte
+// plus aucune borne, et c'est `ui.inputs` qui dit le minimum, le maximum et le
+// pas de chaque question chiffrée.
+//
+// Ce fichier en est la recopie. Comme `etapes.ts`, il tient d'un côté ce que le
+// livrable dit de l'autre, et `tests/simulateur/bornes-de-saisie.test.tsx` garde
+// les deux en vis-à-vis : une question chiffrée sans bornes déclarées y échoue.
 
-import { reglesBrutes } from "../moteur";
+import type { CleDeRegle } from "../contrat-regles-publicodes";
 
 export type Bornes = {
   /** Plus petite valeur acceptée. */
   min?: number;
+  /** Plus grande valeur acceptée. */
+  max?: number;
   /** Écart entre deux valeurs acceptées ; `1` pour un entier. */
   pas?: number;
 };
 
 /**
- * Les bornes que la règle déclare. Vides quand elle n'en déclare pas : le modèle
- * ne contraint alors rien, et l'interface s'en garde autant.
+ * Les bornes que le contrat déclare pour cette question. Vides quand il n'en
+ * déclare pas : rien ne contraint alors la saisie, et l'interface s'en garde
+ * autant — inventer une borne ferait refuser à l'écran ce que le modèle accepte.
  */
 export function bornesDeSaisie(id: string): Bornes {
-  const saisie = corps(id)?.saisie;
-  if (!saisie) return {};
-  return {
-    min: saisie.minimum,
-    // Un entier avance de 1 en 1 — c'est ce que dit `entier` quand le modèle ne
-    // nomme pas de pas. `valeur_par_defaut` n'a pas à être lue ici : le moteur
-    // s'en charge, et le champ la porte déjà dans `defaultValue`.
-    pas: saisie.pas ?? (saisie.entier ? 1 : undefined),
-  };
+  return BORNES[id as CleDeRegle] ?? {};
 }
 
 // ---- implémentation ----
 
-type CorpsRegle = {
-  saisie?: {
-    minimum?: number;
-    pas?: number;
-    entier?: boolean;
-  };
+// Les quatre questions chiffrées de la v9.7, avec les bornes du contrat. Toutes
+// sont entières et valent au moins un transport ; seule la fréquence mensuelle
+// d'une permission porte un plafond — au plus un aller-retour par semaine, soit
+// cinq selon le calendrier.
+const BORNES: Partial<Record<CleDeRegle, Bornes>> = {
+  p2_nombre_transports_prevus: { min: 1, pas: 1 },
+  p2_nombre_transports_couvert_simulation: { min: 1, pas: 1 },
+  p2_nombre_transports_permission_dap: { min: 1, pas: 1 },
+  p2_permission_ar_par_mois: { min: 1, max: 5, pas: 1 },
 };
-
-function corps(id: string): CorpsRegle | undefined {
-  const c = reglesBrutes[id as keyof typeof reglesBrutes];
-  return c && typeof c === "object" ? (c as CorpsRegle) : undefined;
-}

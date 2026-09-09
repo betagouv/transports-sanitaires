@@ -87,20 +87,20 @@ function EtapesDapAAttendre({ transport }: Pick<Contexte, "transport">) {
 function EtapesConvocation({ transport }: Contexte) {
   // En véhicule personnel, le patient organise lui-même son trajet et garde ses
   // justificatifs ; sinon, c'est la convocation qu'il présente au transporteur.
-  return transport === "véhicule personnel ou transport en commun" ? (
-    <ConvocationVehiculePerso />
+  return transport === "véhicule personnel" ||
+    transport === "transport en commun terrestre" ? (
+    <ConvocationVehiculePerso transport={transport} />
   ) : (
     <ConvocationTransporteur transport={transport} />
   );
 }
 
-function ConvocationVehiculePerso() {
+function ConvocationVehiculePerso({ transport }: Pick<Contexte, "transport">) {
   return (
     <ol>
       <li>Conservez votre convocation ou votre avis d’audience.</li>
       <li>
-        Le transport retenu est :{" "}
-        <strong>véhicule personnel ou transport en commun</strong>.
+        Le transport retenu est : <strong>{transport}</strong>.
       </li>
       <li>
         Organisez votre trajet selon les indications figurant sur la

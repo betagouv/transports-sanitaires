@@ -18,17 +18,14 @@ import { InformationUrgencePmt } from "./urgence-attestee";
 const RESTE_A_CHARGE: Record<string, string> = {
   "prescription médicale de transport":
     "Votre transport peut être pris en charge par l’Assurance Maladie selon les règles applicables à votre situation. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
+  "prescription S3141":
+    "Votre transport peut être pris en charge par l’Assurance Maladie selon les règles applicables aux permissions temporaires de sortie. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
   "demande d’accord préalable":
     "Votre transport peut être pris en charge par l’Assurance Maladie uniquement si l’accord préalable est obtenu. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
   "convocation ou avis d’audience":
     "La convocation ou l’avis d’audience sert de document patient pour votre transport. La prise en charge dépend des règles applicables à cette convocation ou à cet avis. Un reste à charge peut exister selon votre situation.",
   "transport à la charge de l’établissement":
     "Ce transport est à la charge de l’établissement de santé. Le service ou le secrétariat de l’établissement vous indiquera les modalités d’organisation applicables.",
-  "prestation non prise en charge par l’Assurance Maladie":
-    "La prestation à l’origine du déplacement n’étant pas prise en charge par l’Assurance Maladie, le transport ne peut pas être pris en charge, même si un mode de transport est médicalement adapté. N’adressez aucune demande de remboursement à votre caisse pour ce déplacement.",
-  SMUR: "Ce transport est organisé dans le cadre de l’urgence médicale. Les éventuelles informations de facturation ou de prise en charge sont communiquées par l’établissement concerné.",
-  "bariatrique seul":
-    "Aucune prise en charge par l’Assurance Maladie n’est ouverte au titre du seul motif bariatrique. Les solutions éventuelles et leur coût doivent être vus avec le service médical ou le secrétariat.",
   "permission de sortie sans motif médical":
     "Le transport reste à votre charge.",
   "non éligible à une prise en charge par l’Assurance Maladie":
@@ -77,14 +74,17 @@ export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
 
 // ---- implémentation ----
 
-// Une ALD reconnue et liée aux soins, mais sans incapacité ni déficience : le
-// patient a déclaré une ALD et pourrait croire qu'elle ouvre le droit à elle
-// seule. Le modèle dit qu'elle ne le fait pas, et c'est cette conclusion-là qu'il
-// faut lui expliquer — indépendamment du cas final, qu'un autre motif peut très
-// bien avoir ouvert.
+// Une ALD déclarée qui n'ouvre pas le droit : le patient pourrait croire qu'elle
+// suffit. Le modèle dit qu'elle ne le fait pas, et c'est cette conclusion-là
+// qu'il faut lui expliquer — indépendamment du cas final, qu'un autre motif peut
+// très bien avoir ouvert.
+//
+// La v9.5.1 portait une cible pour ce constat
+// (`cible_ald_non_retenue_absence_incapacite_deficience`) ; la v9.7 l'a retirée
+// et ne dit plus que le résultat — l'ALD ouvre le droit, ou non. Le constat se
+// reconstitue donc de la déclaration et de son effet.
 function AldNonRetenue({ e }: Pick<Props, "e">) {
-  if (!vrai(e, "cible_ald_non_retenue_absence_incapacite_deficience"))
-    return null;
+  if (!vrai(e, "p1_m0_ald") || vrai(e, "cible_situation_ald")) return null;
   return (
     <>
       <SousTitre icone="fr-icon-info-line">

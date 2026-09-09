@@ -26,6 +26,7 @@ describe("saisiesDepuisSituation", () => {
         p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_position_allongee_demi_assise: "oui",
         p1_critere_brancardage_portage: "oui",
+        p1_critere_aucun: "non",
         ...HOSPITALISATION,
       }),
     );
@@ -49,6 +50,7 @@ describe("saisiesDepuisSituation", () => {
       situation({
         p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_fauteuil_sans_transfert: "oui",
+        p1_critere_aucun: "non",
         ...HOSPITALISATION,
       }),
     );
@@ -87,14 +89,13 @@ describe("saisiesDepuisSituation", () => {
       situation({
         p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_brancardage_portage: "oui",
+        p1_critere_aucun: "non",
         ...HOSPITALISATION,
-        p2_trajet_aller_retour: "'aller-retour identique'",
+        p2_organisation_transports: "'aller-retour identique'",
         p2_trajet_depart: "'Domicile'",
-        p2_trajet_arrivee:
-          "'Une structure de soins différente du lieu de départ.'",
+        p2_trajet_arrivee: "'Structure de soins'",
         p2_arrivee_nom_lieu: "'CH de Vannes'",
-        p2_transport_urgence:
-          "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'",
+        p2_transport_urgence: "'Appel au SAMU - Centre 15'",
         p2_nombre_transports_prevus: "3",
       }),
     );
@@ -127,8 +128,18 @@ describe("saisiesDepuisSituation", () => {
       situation({
         p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_brancardage_portage: "oui",
-        ...HOSPITALISATION,
-        p2_patient_hospitalise: "oui",
+        p1_critere_aucun: "non",
+        // Les exceptions ne se posent que derrière un transfert qualifié, que
+        // la v9.7 demande positivement — raison, puis nature.
+        p2_raison_principale:
+          "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+        p2_transfert_en_cours: "oui",
+        p2_nature_transfert: "'Définitif'",
+        // Un transfert relie deux structures de soins : le contrat le contraint,
+        // et le lieu de départ porte alors un nom.
+        p2_trajet_depart: "'Structure de soins'",
+        p2_depart_nom_lieu: "'CH de Lorient'",
+        p2_trajet_arrivee: "'Structure de soins'",
         p2_exception_aide_medicale_urgente: "oui",
         p2_exception_aucune: "non",
       }),
@@ -148,6 +159,7 @@ describe("saisiesDepuisSituation", () => {
       situation({
         p1_autonomie: AIDE_PROFESSIONNEL,
         p1_critere_brancardage_portage: "oui",
+        p1_critere_aucun: "non",
         ...HOSPITALISATION,
         p2_arrivee_nom_lieu: "'Clinique Saint-Roch'",
         p2_arrivee_adresse: "'12 avenue des Thermes'",
@@ -173,11 +185,13 @@ describe("saisiesDepuisSituation", () => {
     const série = situation({
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_position_allongee_demi_assise: "oui",
+      p1_critere_aucun: "non",
       p1_m0_ald: "oui",
-      p1_m0_seance: "oui",
+      p1_m0_seance_chimiotherapie: "oui",
       p1_m0_aucun: "non",
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     });
 
     // Le garde `CerfaNonApplicable` ne l'écarte pas : c'est bien une prescription.
@@ -231,8 +245,12 @@ describe("saisiesDepuisSituation", () => {
     const accordPréalable = situation({
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_brancardage_portage: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     });
 
     expect(() =>

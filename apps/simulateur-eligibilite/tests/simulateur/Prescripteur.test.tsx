@@ -18,12 +18,10 @@ beforeEach(() => sessionStorage.clear());
 const AUTONOME = /peut se déplacer seul/i;
 const PROCHE = /accompagnement d’un proche/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
-const URGENCE_VITALE = /urgence vitale/i;
 const AIDES = /aides ou conditions particulières/i;
 const CAS_PARTICULIERS = /cas particuliers/i;
-/** Q1.1 n'a plus d'option exclusive : ce motif sert à constater son absence. */
-const AUCUNE_AIDE = /aucune de ces situations/i;
-const AUCUN_CAS = /aucun de ces cas médicaux/i;
+/** La sortie exclusive, que la v9.7 donne aux huit mosaïques du même libellé. */
+const AUCUNE_SITUATION = /aucune de ces situations/i;
 
 function afficher() {
   render(
@@ -39,9 +37,6 @@ const questionQ1 = () =>
   screen.getByRole("group", {
     name: /^concernant son déplacement, le patient/i,
   });
-const voirResultat = () =>
-  screen.getByRole("button", { name: /voir le résultat médical/i });
-
 // Q1 est une question à choix unique : elle n'a pas de bouton « Suivant », elle
 // avance d'elle-même 200 ms après la réponse. On attend donc la page d'après.
 async function repondreQ1(user: ReturnType<typeof afficher>, option: RegExp) {
@@ -101,14 +96,14 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
   });
 
-  it("Q1.1 : une seule question à cases à cocher, sans sortie de secours", async () => {
+  it("Q1.1 : une seule question à cases à cocher, avec sa sortie de secours", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
 
     const aides = screen.getByRole("group", { name: AIDES });
     const oxygene = within(aides).getByRole("checkbox", { name: /oxygène/i });
     const fauteuil = within(aides).getByRole("checkbox", {
-      name: /doit rester dans son fauteuil roulant/i,
+      name: /transporté dans son fauteuil roulant/i,
     });
 
     // Choix multiple : deux aides cochées simultanément (les autres options ne
@@ -118,12 +113,13 @@ describe("prescripteur — parcours médical", () => {
     expect(oxygene).toBeChecked();
     expect(fauteuil).toBeChecked();
 
-    // Q1.1 est la seule mosaïque sans option exclusive : le modèle exige au
-    // moins un critère dès qu'elle est posée, et l'écran ne doit donc offrir
-    // aucune façon de la traverser sans en cocher un.
-    expect(
-      within(aides).queryByRole("checkbox", { name: AUCUNE_AIDE }),
-    ).toBeNull();
+    // La v9.5.1 privait Q1.1 d'option exclusive — le modèle exigeait alors au
+    // moins un critère. La v9.7 la lui rend, et l'écran doit donc l'offrir, en
+    // dernier comme pour les sept autres mosaïques.
+    const sortie = within(aides).getByRole("checkbox", {
+      name: AUCUNE_SITUATION,
+    });
+    expect(within(aides).getAllByRole("checkbox").at(-1)).toBe(sortie);
   });
 
   it("Q1.1 : décocher la dernière case rebloque l'avancement (aucune sélection ≠ répondu)", async () => {
@@ -146,21 +142,20 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.getByRole("button", { name: /^suivant$/i })).toBeDisabled();
   });
 
-  // Q1-SMUR-001 du livrable. L'urgence vitale est née en Q1 avec la v9.5.0, et
-  // le SMUR a quitté M0 du même geste : la réponse tranche seule, sans qu'aucune
-  // des questions médicales suivantes soit posée.
-  it("Q1-SMUR-001 : l'urgence vitale conclut la Partie 1, et M0 ne propose plus le SMUR", async () => {
-    const user = afficher();
-    await repondreQ1(user, URGENCE_VITALE);
-
-    expect(screen.queryByRole("group", { name: AIDES })).toBeNull();
-    expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
-    expect(
-      screen.getByRole("heading", { name: /équipe SMUR/i }),
-    ).toBeInTheDocument();
+  // Q1-SMUR-001 du livrable v9.5.0 : l'urgence vitale était une réponse de Q1,
+  // qui tranchait la Partie 1 sans que Q1.1 ni M0 soient posées. La v9.7 a
+  // retiré cette réponse et le cas final « SMUR » qui allait avec — l'urgence
+  // se recueille désormais en Partie 2. Ce test constate la disparition : le
+  // jour où l'éditeur la rouvre, il faudra rétablir le scénario complet.
+  it("Q1-SMUR-001 : Q1 n’offre plus l’urgence vitale", async () => {
+    afficher();
+    const reponses = within(questionQ1()).getAllByRole("radio");
+    expect(reponses).toHaveLength(3);
+    for (const reponse of reponses)
+      expect(reponse).not.toHaveAccessibleName(/urgence vitale|SMUR/i);
   });
 
-  it("Q1-SMUR-001 : M0 n'offre plus le SMUR parmi ses cas particuliers", async () => {
+  it("Q1-SMUR-001 : M0 n’offre pas davantage le SMUR", async () => {
     const user = afficher();
     await repondreQ1(user, AUTONOME);
 
@@ -181,47 +176,48 @@ describe("prescripteur — parcours médical", () => {
     await user.click(
       within(screen.getByRole("group", { name: CAS_PARTICULIERS })).getByRole(
         "checkbox",
-        { name: AUCUN_CAS },
+        { name: AUCUNE_SITUATION },
       ),
     );
-    await user.click(voirResultat());
+    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 
+    // La v9.7 ajoute une étape : le mode non professionnalisé ne se devine plus,
+    // le prescripteur choisit entre le véhicule personnel et les transports en
+    // commun. La v9.5.1 rendait les deux d'un seul tenant.
+    await user.click(
+      screen.getByRole("radio", { name: /^véhicule personnel$/i }),
+    );
+
+    // Page à choix unique : elle avance d'elle-même, sans bouton de validation.
     expect(
-      screen.getByRole("heading", { name: /décision médicale établie/i }),
+      await screen.findByRole("heading", {
+        name: /décision médicale établie/i,
+      }),
     ).toBeInTheDocument();
     // (getAllByText : le verdict et l'information au patient nomment tous deux
     // le transport retenu.)
-    expect(
-      screen.getAllByText(/véhicule personnel ou transport en commun/i).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/véhicule personnel/i).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("une aide menant au VSL fait poser la question du transport partagé", async () => {
     const user = afficher();
     await repondreQ1(user, PROFESSIONNEL);
+    // Le maintien dans le fauteuil roulant est le seul critère qui, à lui seul,
+    // conduit à un TPMR — donc à un transport où la question du partage se pose.
     await user.click(
       within(screen.getByRole("group", { name: AIDES })).getByRole("checkbox", {
-        name: /règles d’hygiène ou la désinfection/i,
+        name: /transporté dans son fauteuil roulant/i,
       }),
     );
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
 
-    // M0 avant M4 : le modèle subordonne le transport partagé aux cas
-    // particuliers médicaux, qui décident seuls d'un cas tranché dès la
-    // Partie 1. La question du partage ne peut donc pas être posée avant.
-    expect(
-      screen.queryByRole("group", { name: /transport partagé/i }),
-    ).toBeNull();
-    await user.click(
-      within(screen.getByRole("group", { name: CAS_PARTICULIERS })).getByRole(
-        "checkbox",
-        { name: AUCUN_CAS },
-      ),
-    );
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-
-    // Le mode retenu est un VSL ou taxi conventionné : M4 devient applicable et,
-    // la sortie étant ciblée, la question est posée.
+    // M4 avant M0 : la v9.5.1 subordonnait le transport partagé aux cas
+    // particuliers médicaux, qui décidaient seuls d'un cas tranché dès la
+    // Partie 1. La v9.7 a retiré ces sorties directes, et pose le partage dès
+    // que le mode est un TAP ou un TPMR — donc avant M0.
+    expect(screen.queryByRole("group", { name: CAS_PARTICULIERS })).toBeNull();
     expect(
       screen.getByRole("group", { name: /transport partagé/i }),
     ).toBeInTheDocument();

@@ -8,9 +8,16 @@
 // `ChampsDePage`, et c'est ici qu'elle est vérifiée, groupe par groupe, telle
 // que l'utilisateur la manipule.
 //
-// Q1.1 fait bande à part : le modèle y exige au moins un critère, elle n'a donc
-// aucune sortie de secours à offrir. Ce qu'elle partage avec les autres est
-// vérifié pour toutes ; l'exclusivité ne l'est que pour celles qui en ont une.
+// La v9.7 en porte huit, contre cinq en v9.5.1, et leur donne à toutes une sortie
+// exclusive — Q1.1 comprise, qui en était privée parce que le modèle y exigeait
+// alors au moins un critère. Les huit la nomment du même libellé, « Aucune de ces
+// situations ».
+//
+// Trois d'entre elles — les listes d'exonération du ticket modérateur, une par
+// document — ne sont pas encore atteignables à l'écran : elles s'ouvrent en aval
+// de la détermination du document, et celle du S3141 attend les durées que
+// l'application ne calcule pas encore. Leur contrat est donc vérifié sur le
+// modèle, et leur rendu le sera quand le parcours y mènera.
 
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -45,6 +52,11 @@ type Cas = {
   reponses: Reponse[];
 };
 
+const EXCLUSIVE = /aucune de ces situations/i;
+
+// Ce qu'il faut répondre pour qu'un document soit déterminé, et sa liste
+// d'exonération posée. Trois routes distinctes, dont deux seulement sont
+// atteignables tant que l'application ne calcule pas les durées de permission.
 const MOSAIQUES: Cas[] = [
   {
     spec: "Q1.1",
@@ -52,6 +64,7 @@ const MOSAIQUES: Cas[] = [
     depuis: "prescripteur",
     intitule:
       "Quelles aides ou conditions particulières sont nécessaires pendant le transport ?",
+    exclusive: EXCLUSIVE,
     reponses: [[Q1, PROFESSIONNEL]],
   },
   {
@@ -60,16 +73,16 @@ const MOSAIQUES: Cas[] = [
     depuis: "prescripteur",
     intitule:
       "Avant d’établir le mode de transport adéquat, sélectionnez tous les éventuels cas particuliers concernant le patient.",
-    exclusive: /aucun de ces cas médicaux/i,
+    exclusive: EXCLUSIVE,
     reponses: [],
   },
   {
-    spec: "M1.1",
-    parent: "p2_contexte_administratif",
+    spec: "M1.2",
+    parent: "p2_contextes_complementaires",
     depuis: "secretariat",
-    intitule: "Dans quel contexte le déplacement est-il réalisé ?",
-    exclusive:
-      /aucun de ces contextes ne correspond à la situation du patient/i,
+    intitule:
+      "Le déplacement est-il également réalisé dans l’un des contextes suivants ?",
+    exclusive: EXCLUSIVE,
     reponses: [],
   },
   {
@@ -77,23 +90,28 @@ const MOSAIQUES: Cas[] = [
     parent: "p2_exceptions_assurance_maladie",
     depuis: "secretariat",
     intitule:
-      "Le transport relève-t-il d’une ou plusieurs de ces exceptions restant prises en charge dans les conditions de l’Assurance Maladie ?",
-    exclusive: /aucune de ces exceptions ne s’applique au transport/i,
-    // A0.2 ne se pose qu'au patient encore hospitalisé au moment du transport.
-    reponses: [[/toujours hospitalisé/i, /^oui$/i]],
+      "Le transport relève-t-il d’une exception restant prise en charge dans les conditions de l’Assurance Maladie ?",
+    exclusive: EXCLUSIVE,
+    // A0.2 ne se pose que derrière un transfert qualifié, que la v9.7 demande
+    // positivement là où la v9.5.1 le déduisait de l'hospitalisation.
+    reponses: [
+      [/raison principale/i, /transfert d’un patient hospitalisé/i],
+      [/transfert.*en cours/i, /^oui$/i],
+    ],
   },
   {
-    spec: "A3.4",
-    parent: "p2_situations_accord_prealable",
+    spec: "A3.1",
+    parent: "p2_situations_speciales",
     depuis: "secretariat",
-    intitule:
-      "Le transport concerne-t-il une ou plusieurs des situations suivantes ?",
-    exclusive: /aucune de ces situations ne concerne le transport/i,
-    // A3.4 est en aval de l'accord préalable, que seule une prestation prise en
-    // charge par l'Assurance Maladie fait qualifier.
-    reponses: [[/à l’origine du déplacement/i, /^oui$/i]],
+    intitule: "Le transport relève-t-il de l’une des situations suivantes ?",
+    exclusive: EXCLUSIVE,
+    reponses: [],
   },
 ];
+
+// Les trois listes d'exonération du ticket modérateur, vérifiées sur le modèle
+// seul : le parcours n'y mène pas encore à l'écran.
+const TICKET_MODERATEUR = ["p2_tm_pmt", "p2_tm_dap", "p2_tm_s3141"] as const;
 
 /** Les quatre mosaïques qui offrent une sortie de secours — toutes sauf Q1.1. */
 type CasAvecSortie = Cas & { exclusive: RegExp };
@@ -181,20 +199,33 @@ describe.each(AVEC_SORTIE)("$spec — la sortie de secours", (cas) => {
   });
 });
 
-it("Q1.1 est la seule mosaïque sans sortie de secours", async () => {
-  // Le modèle exige au moins un critère dès que Q1.1 est posée : l'écran ne
-  // doit donc offrir aucune case permettant de la traverser sans en cocher un,
-  // et c'est la seule mosaïque dans ce cas.
-  const q1_1 = MOSAIQUES.find((cas) => cas.spec === "Q1.1");
-  if (!q1_1) throw new Error("Q1.1 absente du tableau des mosaïques");
-  expect(MOSAIQUES.filter((cas) => cas.exclusive === undefined)).toEqual([
-    q1_1,
-  ]);
-
-  await ouvrir(q1_1);
-  for (const option of cases(q1_1))
-    expect(option).not.toHaveAccessibleName(/^aucun/i);
+it("donne à chaque mosaïque du modèle la même sortie de secours", () => {
+  // La v9.5.1 privait Q1.1 de sortie : le modèle y exigeait au moins un critère.
+  // La v9.7 la lui rend, et unifie le libellé des huit — c'est ce qui permet à
+  // l'interface de les traiter d'une seule façon.
+  const sansSortie = Object.entries(regles)
+    .filter(([, corps]) => corps && "mosaique" in corps)
+    .filter(([, corps]) => {
+      const mosaique = corps?.mosaique as { "option aucun"?: string };
+      return mosaique["option aucun"] === undefined;
+    })
+    .map(([nom]) => nom);
+  expect(sansSortie).toEqual([]);
 });
+
+it.each(TICKET_MODERATEUR)(
+  "%s déclare une mosaïque, que le parcours n’atteint pas encore",
+  (parent) => {
+    // Ces trois-là s'ouvrent derrière la détermination du document. Leur rendu
+    // n'est donc pas vérifié ici ; leur déclaration l'est, pour qu'une liste
+    // ajoutée ou retirée en amont ne passe pas inaperçue.
+    const corps = regles[parent];
+    expect(corps?.mosaique).toMatchObject({ type: "selection" });
+    expect(corps?.question).toBe(
+      "L’un des cas particuliers d’exonération du ticket modérateur suivants s’applique-t-il ?",
+    );
+  },
+);
 
 it("couvre toutes les mosaïques du modèle", () => {
   // Une mosaïque ajoutée en amont n'a aucune raison d'hériter de l'exclusivité :
@@ -202,7 +233,10 @@ it("couvre toutes les mosaïques du modèle", () => {
   const declarees = Object.entries(regles)
     .filter(([, corps]) => corps && "mosaique" in corps)
     .map(([nom]) => nom);
-  const couvertes = MOSAIQUES.map((cas) => cas.parent);
+  const couvertes = [
+    ...MOSAIQUES.map((cas) => cas.parent),
+    ...TICKET_MODERATEUR,
+  ];
   expect(declarees.filter((nom) => !couvertes.includes(nom))).toEqual([]);
 });
 

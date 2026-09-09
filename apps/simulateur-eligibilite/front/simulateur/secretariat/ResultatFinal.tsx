@@ -112,12 +112,35 @@ function DocumentARemettre({
   documentTelechargeable,
 }: Pick<Props, "situation" | "documentTelechargeable">) {
   const e = moteur.setSituation(situation);
+  if (!vrai(e, "cible_resultat_2_affichable")) return <Incomplet />;
   const lues = cibles(e);
   return (
     <>
       <TroisBlocs e={e} cibles={lues} />
       {lues.doc !== AUCUN_DOCUMENT && documentTelechargeable?.(situation)}
     </>
+  );
+}
+
+// La garde que le contrat d'interface pose sur la page — `resultat_2.gate` —, et
+// que la v9.7 rend indispensable : ses cibles ne valent plus rien tant que les
+// données requises ne sont pas réunies, et le cas final vaut alors `non`. Sans
+// cette porte, le verdict affichait « false » en guise de titre.
+//
+// Le guide le dit sans détour : « Un écran technique "incomplet" ne doit jamais
+// devenir un document. »
+function Incomplet() {
+  return (
+    <div className="fr-alert fr-alert--info">
+      <h3 className="fr-alert__title">
+        Les informations recueillies ne suffisent pas encore
+      </h3>
+      <p>
+        Le document à remettre au patient ne peut pas être déterminé tant que
+        toutes les réponses nécessaires n’ont pas été apportées. Revenez au
+        questionnaire pour les compléter.
+      </p>
+    </div>
   );
 }
 
@@ -171,9 +194,10 @@ function cibles(e: typeof moteur) {
     transportPrescrit: transport !== "" && transport !== "aucun",
     motifs: motifsDeLaDap(e),
     attenteRequise: vrai(e, "cible_attente_accord_prealable_requise"),
-    article80: {
-      mode: texte(e, "cible_article_80_mode"),
-      situationSpecifique: vrai(e, "cible_article_80_situation_specifique"),
-    } satisfies Article80,
+    // La v9.5.1 donnait à l'Article 80 deux cibles à lui : le mode qu'il retient
+    // et la « situation spécifique » (détenu, UHSA/UHSI) qui en changeait le
+    // rendu. La v9.7 a retiré les deux — la branche détenu n'existe plus, et le
+    // mode se lit sur le transport prescrit comme partout ailleurs.
+    article80: { mode: transport } satisfies Article80,
   };
 }

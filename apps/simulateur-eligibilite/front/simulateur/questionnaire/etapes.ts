@@ -1,91 +1,268 @@
 // L'ordre du parcours, déclaré.
 //
-// Il ne l'a pas toujours été. Jusqu'ici, l'ordre des questions **se déduisait**
-// de ce qui manquait au moteur : `computeNextFields` classe les variables
-// manquantes par le score que publicodes leur attribue — en gros, le nombre de
-// fois qu'une cible les réclame —, et le parcours suivait ce classement.
-// Personne ne l'avait choisi : il tombait du graphe, et changeait avec lui. Une
-// règle citée une fois de plus pouvait déplacer sa question.
+// Il ne l'a pas toujours été. Jusqu'à la v9.7, l'ordre des questions **se
+// déduisait** de ce qui manquait au moteur : `computeNextFields` classe les
+// variables manquantes par le score que publicodes leur attribue, et le parcours
+// suivait ce classement. Personne ne l'avait choisi : il tombait du graphe, et
+// changeait avec lui.
 //
-// Le contrat d'interface du modèle demande l'inverse : une liste ordonnée
-// d'étapes, dont les variables manquantes ne sont plus qu'un diagnostic. C'est
-// cette liste. Les étapes portent les identifiants du livrable — ceux que le
-// modèle inscrit lui-même en `spec_id` sur chaque question, et sous lesquels
-// l'éditeur les désigne.
+// Le contrat d'interface de la v9.7 tranche — `navigation.source: ordered_steps`
+// —, et les variables manquantes n'y valent plus que comme diagnostic. Cette
+// liste est la recopie de ses cinquante et une étapes, dans son ordre. Le
+// modèle, lui, ne dit plus à quelle étape appartient une question : il portait un
+// `spec_id` jusqu'en v9.5.1, il n'en porte plus. C'est ici, et nulle part
+// ailleurs, que le rattachement se lit.
 //
-// L'ordre inscrit ici est celui que le parcours suivait déjà : il a été relevé
-// sur les trente-deux situations de référence, qui s'accordent sans exception.
-// Le déclarer ne change donc rien à ce que voit le prescripteur ; ce qui change,
-// c'est qu'il tient désormais à une décision plutôt qu'à un classement.
+// Les identifiants sont ceux du contrat. Quand le livrable en donne un second,
+// hérité de la spécification (`Q1.1`, `A4.3`), il est recopié en `livrable` :
+// c'est sous ce nom qu'un désaccord se discute avec l'éditeur.
 
-import { reglesBrutes } from "../moteur";
+import type { CleDeRegle } from "../contrat-regles-publicodes";
+
+export type Etape = {
+  /** Identifiant du contrat d'interface (`ui.steps[].id`). */
+  readonly id: string;
+  /** Identifiant de spécification, quand le livrable en donne un. */
+  readonly livrable?: string;
+  /** Les règles que l'étape pose, dans l'ordre où elle les présente. */
+  readonly champs: readonly CleDeRegle[];
+  /**
+   * La règle par laquelle le modèle dit l'étape complète. Les mosaïques et les
+   * deux pages d'adresse en portent une : leurs champs facultatifs feraient
+   * autrement attendre une réponse que personne ne doit donner.
+   */
+  readonly complet?: CleDeRegle;
+};
 
 /**
- * Les étapes du questionnaire, dans l'ordre où elles se posent. La Partie 1
- * d'abord, la Partie 2 ensuite : ce sont deux parcours distincts, et aucune
- * situation ne les mêle, mais les écrire à la suite dit le tout dans un ordre.
- *
- * Les douze saisies d'adresse (D1-D12) figurent une à une : c'est
- * `pagination.ts` qui les réunit en deux pages, une par lieu.
+ * Les étapes du questionnaire, dans l'ordre où elles se posent : la partie
+ * médicale d'abord, l'administrative ensuite.
  */
-export const ETAPES = [
+export const ETAPES: readonly Etape[] = [
   // Partie 1 — la décision médicale.
-  "Q1",
-  "Q1.1",
-  "M0",
-  "M4",
-
+  { id: "Q1", champs: ["p1_autonomie"] },
+  {
+    id: "p1_criteres_transport",
+    livrable: "Q1.1",
+    champs: [
+      "p1_critere_incapacite_deplacement_autonome",
+      "p1_critere_aide_technique",
+      "p1_critere_aide_professionnel",
+      "p1_critere_hygiene_desinfection",
+      "p1_critere_risque_effets_secondaires",
+      "p1_critere_fauteuil_sans_transfert",
+      "p1_critere_position_allongee_demi_assise",
+      "p1_critere_brancardage_portage",
+      "p1_critere_surveillance_constante",
+      "p1_critere_oxygene",
+      "p1_critere_isolement_asepsie",
+      "p1_critere_aucun",
+    ],
+    complet: "p1_criteres_transport_complet",
+  },
+  { id: "M4", champs: ["p1_transport_partage_incompatible"] },
+  {
+    id: "p1_cas_particuliers_medicaux",
+    livrable: "M0",
+    champs: [
+      "p1_m0_bariatrique",
+      "p1_m0_ald",
+      "p1_m0_seance_chimiotherapie",
+      "p1_m0_seance_radiotherapie",
+      "p1_m0_seance_dialyse_centre",
+      "p1_m0_aucun",
+    ],
+    complet: "p1_cas_particuliers_medicaux_complet",
+  },
+  { id: "p1_type_ald", champs: ["p1_type_ald"] },
+  {
+    id: "p1_mode_non_professionnalise",
+    champs: ["p1_mode_non_professionnalise"],
+  },
   // Partie 2 — le cas administratif.
-  "M1.1",
-  "A0.1",
-  "A0.2",
-  "A1.1",
-  "A1.2",
-  "A1.3",
-  "A2.1",
-  "A2.3",
-  "A2.4",
-  "A4.5",
-  "A3.1",
-  "A3.2",
-  "A3.4",
-  "A3.3",
-  "A4.1",
-  "A4.2",
-  "A4.3",
-  "D1",
-  "D2",
-  "D3",
-  "D4",
-  "D5",
-  "D6",
-  "D7",
-  "D8",
-  "D9",
-  "D10",
-  "D11",
-  "D12",
-  "A4.6",
-] as const;
+  {
+    id: "p2_raison_principale",
+    livrable: "M1.1",
+    champs: ["p2_raison_principale"],
+  },
+  { id: "p2_motif_detail", champs: ["p2_motif_detail"] },
+  { id: "p2_motif_detail_autre", champs: ["p2_motif_detail_autre"] },
+  { id: "p2_type_hospitalisation", champs: ["p2_type_hospitalisation"] },
+  {
+    id: "p2_contextes_complementaires",
+    livrable: "M1.2",
+    champs: [
+      "p2_contexte_at_mp",
+      "p2_contexte_engagement_maternite",
+      "p2_contexte_retour_penitentiaire",
+      "p2_contexte_centre_reference",
+      "p2_contexte_pension_militaire",
+      "p2_contexte_aucun",
+    ],
+    complet: "p2_contextes_complementaires_complet",
+  },
+  {
+    id: "p2_transfert_en_cours",
+    livrable: "A0.1",
+    champs: ["p2_transfert_en_cours"],
+  },
+  { id: "p2_nature_transfert", champs: ["p2_nature_transfert"] },
+  { id: "p2_transfert_motif_detail", champs: ["p2_transfert_motif_detail"] },
+  { id: "p2_transfert_motif_autre", champs: ["p2_transfert_motif_autre"] },
+  { id: "p2_permission_age", champs: ["p2_permission_age"] },
+  {
+    id: "p2_permission_debut_hospitalisation",
+    champs: ["p2_permission_debut_hospitalisation"],
+  },
+  { id: "p2_permission_debut", champs: ["p2_permission_debut"] },
+  { id: "p2_permission_fin", champs: ["p2_permission_fin"] },
+  { id: "p2_permission_cadre", champs: ["p2_permission_cadre"] },
+  {
+    id: "p2_exceptions_assurance_maladie",
+    livrable: "A0.2",
+    champs: [
+      "p2_exception_aide_medicale_urgente",
+      "p2_exception_avion_bateau",
+      "p2_exception_had_hors_protocole",
+      "p2_exception_usld",
+      "p2_exception_ehpad",
+      "p2_exception_radiotherapie_moins_48h",
+      "p2_exception_dialyse_domicile",
+      "p2_exception_admission_had",
+      "p2_exception_aucune",
+    ],
+    complet: "p2_exceptions_assurance_maladie_complet",
+  },
+  {
+    id: "p2_convocation_ou_avis_type",
+    champs: ["p2_convocation_ou_avis_type"],
+  },
+  {
+    id: "p2_transport_urgence",
+    livrable: "A2.4",
+    champs: ["p2_transport_urgence"],
+  },
+  { id: "p2_urgence_autre_precision", champs: ["p2_urgence_autre_precision"] },
+  {
+    id: "p2_situations_speciales",
+    livrable: "A3.1",
+    champs: [
+      "p2_special_avion_bateau",
+      "p2_special_camsp_cmpp",
+      "p2_special_samsah",
+      "p2_special_aucune",
+    ],
+    complet: "p2_situations_speciales_complet",
+  },
+  {
+    id: "p2_nombre_transports_prevus",
+    champs: ["p2_nombre_transports_prevus"],
+  },
+  { id: "p2_organisation_transports", champs: ["p2_organisation_transports"] },
+  {
+    id: "p2_nombre_transports_couvert_simulation",
+    champs: ["p2_nombre_transports_couvert_simulation"],
+  },
+  { id: "p2_permission_ar_par_mois", champs: ["p2_permission_ar_par_mois"] },
+  { id: "p2_permission_periode_fin", champs: ["p2_permission_periode_fin"] },
+  { id: "p2_trajet_depart", livrable: "A4.1", champs: ["p2_trajet_depart"] },
+  {
+    id: "page_adresse_depart",
+    champs: [
+      "p2_depart_nom_lieu",
+      "p2_depart_adresse",
+      "p2_depart_complement_adresse",
+      "p2_depart_code_postal",
+      "p2_depart_commune",
+      "p2_depart_pays",
+    ],
+    complet: "p2_adresse_depart_obligatoire_complete",
+  },
+  { id: "p2_trajet_arrivee", livrable: "A4.2", champs: ["p2_trajet_arrivee"] },
+  {
+    id: "page_adresse_arrivee",
+    champs: [
+      "p2_arrivee_nom_lieu",
+      "p2_arrivee_adresse",
+      "p2_arrivee_complement_adresse",
+      "p2_arrivee_code_postal",
+      "p2_arrivee_commune",
+      "p2_arrivee_pays",
+    ],
+    complet: "p2_adresse_arrivee_obligatoire_complete",
+  },
+  {
+    id: "p2_tranche_distance_trajet_aller",
+    livrable: "A4.3",
+    champs: ["p2_tranche_distance_trajet_aller"],
+  },
+  {
+    id: "p2_justification_longue_distance",
+    champs: ["p2_justification_longue_distance"],
+  },
+  {
+    id: "p2_nombre_transports_permission_dap",
+    champs: ["p2_nombre_transports_permission_dap"],
+  },
+  { id: "p2_date_at_mp", livrable: "A5.1", champs: ["p2_date_at_mp"] },
+  {
+    id: "p2_accident_cause_par_tiers",
+    livrable: "A5.2",
+    champs: ["p2_accident_cause_par_tiers"],
+  },
+  {
+    id: "p2_date_accident_cause_par_tiers",
+    livrable: "A5.3",
+    champs: ["p2_date_accident_cause_par_tiers"],
+  },
+  { id: "p2_patient_moins_16_ans", champs: ["p2_patient_moins_16_ans"] },
+  {
+    id: "p2_tm_pmt",
+    champs: [
+      "p2_tm_pmt_acte",
+      "p2_tm_pmt_consecutif",
+      "p2_tm_pmt_urgence",
+      "p2_tm_pmt_had",
+      "p2_tm_pmt_nouveau_ne",
+      "p2_tm_pmt_aucun",
+    ],
+    complet: "p2_tm_pmt_complet",
+  },
+  {
+    id: "p2_tm_dap",
+    champs: [
+      "p2_tm_dap_acte",
+      "p2_tm_dap_consecutif",
+      "p2_tm_dap_adapte",
+      "p2_tm_dap_nouveau_ne",
+      "p2_tm_dap_aucun",
+    ],
+    complet: "p2_tm_dap_complet",
+  },
+  {
+    id: "p2_tm_s3141",
+    champs: [
+      "p2_tm_s3141_acte",
+      "p2_tm_s3141_consecutif",
+      "p2_tm_s3141_urgence",
+      "p2_tm_s3141_had",
+      "p2_tm_s3141_nouveau_ne",
+      "p2_tm_s3141_aucun",
+    ],
+    complet: "p2_tm_s3141_complet",
+  },
+  { id: "p2_maternite_lieu", champs: ["p2_maternite_lieu"] },
+  { id: "p2_maternite_nom", champs: ["p2_maternite_nom"] },
+  { id: "p2_maternite_adresse", champs: ["p2_maternite_adresse"] },
+  { id: "p2_maternite_niveau", champs: ["p2_maternite_niveau"] },
+  { id: "p2_htnm_lieu", champs: ["p2_htnm_lieu"] },
+  { id: "p2_htnm_nom", champs: ["p2_htnm_nom"] },
+  { id: "p2_htnm_adresse", champs: ["p2_htnm_adresse"] },
+];
 
-export type Etape = (typeof ETAPES)[number];
-
-/**
- * L'étape à laquelle appartient une question, telle que le modèle la nomme.
- *
- * Rend `undefined` pour une règle sans `spec_id` : le contrat n'en connaît pas,
- * et `tests/simulateur/etapes.test.ts` l'exige de chaque question. Une question
- * hors étape n'aurait pas de rang, donc pas de place dans le parcours.
- */
+/** L'étape qui pose cette question, si le parcours en connaît une. */
 export function etapeDe(champ: string): Etape | undefined {
-  const brut = reglesBrutes[champ as keyof typeof reglesBrutes];
-  const spec =
-    brut && typeof brut === "object" && "spec_id" in brut
-      ? brut.spec_id
-      : undefined;
-  return typeof spec === "string" && RANGS.has(spec)
-    ? (spec as Etape)
-    : undefined;
+  return PAR_CHAMP.get(champ);
 }
 
 /**
@@ -93,12 +270,18 @@ export function etapeDe(champ: string): Etape | undefined {
  * rang qui suit la dernière étape : ces inconnues se retrouvent en queue, dans
  * l'ordre où elles sont venues, plutôt que dispersées au hasard d'un tri.
  */
-export function rangDe(etape: string): number {
-  return RANGS.get(etape) ?? ETAPES.length;
+export function rangDe(id: string): number {
+  return RANGS.get(id) ?? ETAPES.length;
 }
 
 // ---- implémentation ----
 
 const RANGS = new Map<string, number>(
-  ETAPES.map((etape, rang) => [etape, rang]),
+  ETAPES.map((etape, rang) => [etape.id, rang]),
+);
+
+const PAR_CHAMP = new Map<string, Etape>(
+  ETAPES.flatMap((etape) =>
+    etape.champs.map((champ) => [champ, etape] as const),
+  ),
 );

@@ -21,7 +21,7 @@ const moteur = moteurDeTest();
 const COMPLETES = SEEDS.filter((seed) => !ouvreLeQuestionnaire(seed));
 const ARRETS = SEEDS.filter(ouvreLeQuestionnaire);
 
-describe("modèle v9.5.1 — le moteur confirme les attendus des seeds", () => {
+describe("modèle v9.7 — le moteur confirme les attendus des seeds", () => {
   for (const seed of COMPLETES) {
     it(seed.id, () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
@@ -35,16 +35,18 @@ describe("modèle v9.5.1 — le moteur confirme les attendus des seeds", () => {
   }
 });
 
-describe("modèle v9.5.1 — couverture des cas finaux", () => {
-  it("les 9 cas finaux sont atteints par le catalogue", () => {
+describe("modèle v9.7 — couverture des cas finaux", () => {
+  // La v9.7 en compte six, contre neuf en v9.5.1. Elle a retiré « SMUR »,
+  // « bariatrique seul » et « prestation non prise en charge » — les trois
+  // sorties directes de la Partie 1 —, et ajouté la prescription S3141, que la
+  // permission temporaire de sortie fait naître.
+  it("les 7 cas finaux sont atteints par le catalogue", () => {
     const attendus = [
       "prescription médicale de transport",
       "demande d’accord préalable",
+      "prescription S3141",
       "convocation ou avis d’audience",
       "transport à la charge de l’établissement",
-      "prestation non prise en charge par l’Assurance Maladie",
-      "SMUR",
-      "bariatrique seul",
       "permission de sortie sans motif médical",
       "non éligible à une prise en charge par l’Assurance Maladie",
     ];
@@ -57,16 +59,16 @@ describe("modèle v9.5.1 — couverture des cas finaux", () => {
   });
 });
 
-describe("modèle v9.5.1 — couverture des régimes de financement", () => {
-  it("les 5 régimes sont atteints par le catalogue", () => {
+describe("modèle v9.7 — couverture des régimes de financement", () => {
+  it("les 4 régimes sont atteints par le catalogue", () => {
     // L'axe sur lequel se lit une non-conformité : un transport dont le régime
-    // n'est pas « assurance maladie » ne doit pas lui être facturé.
+    // n'est pas « Assurance Maladie » ne doit pas lui être facturé. La v9.7 les
+    // nomme d'un mot, et a retiré « urgence spécifique » avec le SMUR.
     const attendus = [
       "Assurance Maladie",
-      "établissement prescripteur",
-      "patient",
-      "urgence spécifique",
-      "aucune prise en charge dans ce parcours",
+      "Établissement",
+      "Patient",
+      "Absence de prise en charge Assurance Maladie",
     ];
     const couverts = new Set(
       COMPLETES.map(
@@ -77,15 +79,20 @@ describe("modèle v9.5.1 — couverture des régimes de financement", () => {
   });
 
   it("distingue les deux Article 80", () => {
-    // Deux seeds concluent à une charge de l'établissement pour deux raisons
-    // différentes : sans ce drapeau, elles seraient indiscernables. La v9.1 a
-    // retiré le second volet (permission de sortie thérapeutique), devenu un cas
-    // particulier médical qui tranche dès la Partie 1.
-    const spécifique = (id: string) =>
+    // Deux seeds concluent à une charge de l'établissement, par les deux
+    // natures de transfert que la v9.7 distingue. Le drapeau qui les séparait
+    // (`cible_article_80_situation_specifique`) a disparu du modèle : c'est
+    // désormais la nature du transfert qui les distingue, et le cas final qui
+    // les réunit.
+    const casFinal = (id: string) =>
       evaluerSeed(moteur, SEEDS.find((s) => s.id === id)!).valeurs
-        .cible_article_80_situation_specifique;
-    expect(spécifique("secretariat-detenu-inter-etablissements")).toBe(true);
-    expect(spécifique("secretariat-charge-etablissement")).toBe(false);
+        .cible_cas_final;
+    expect(casFinal("secretariat-transfert-inter-etablissements")).toBe(
+      "transport à la charge de l’établissement",
+    );
+    expect(casFinal("secretariat-transfert-provisoire")).toBe(
+      "transport à la charge de l’établissement",
+    );
   });
 });
 

@@ -18,44 +18,48 @@ import {
   PMT,
   PRO,
   type Reponses,
-} from "./situations-v9-5-1";
+} from "./situations-v9-7";
 
 // Le fond des scénarios d'urgence : un VSL sur entrée d'hospitalisation, auquel
 // chaque cas ajoute son motif de DAP — ou n'en ajoute aucun.
 const VSL_HOSPITALISATION: Reponses = {
   p1_autonomie: PRO,
   p1_critere_hygiene_desinfection: "oui",
+  p1_critere_aucun: "non",
   ...HOSPITALISATION,
 };
 
 // Les deux réponses d'A4.5 qui attestent l'urgence, mot pour mot.
-const SAMU = "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'";
-const AUTRE_URGENCE =
-  "'Autre urgence médicale attestée par le médecin prescripteur'";
+// La v9.7 a raccourci le libellé : le SAMU n'y est plus développé.
+const SAMU = "'Appel au SAMU - Centre 15'";
+const AUTRE_URGENCE = "'Autre urgence médicale attestée'";
 
 // Le fond des scénarios A3.2 : un VSL sur entrée d'hospitalisation, dont chaque
 // trajet aller dépasse 50 km. Seul le nombre de transports y varie.
 const SERIE_50KM: Reponses = {
   p1_autonomie: PRO,
   p1_critere_hygiene_desinfection: "oui",
+  p1_critere_aucun: "non",
   ...HOSPITALISATION,
-  p2_chaque_trajet_aller_superieur_50km: "oui",
+  p2_tranche_distance_trajet_aller: "'Plus de 50 km et jusqu’à 150 km inclus'",
 };
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-1`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7`.
 const matrice: Cas[] = [
   {
     id: "SERIE-001",
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     expect: {
       p2_transport_en_serie: true,
-      p2_transport_serie_declenche_dap: true,
+      cible_dap_motif_serie: true,
       cible_cas_final: DAP,
     },
   },
@@ -64,14 +68,16 @@ const matrice: Cas[] = [
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...ALD,
-      p1_m0_seance: "oui",
+      p1_m0_seance_chimiotherapie: "oui",
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     expect: {
       p2_transport_en_serie: true,
-      p2_transport_serie_declenche_dap: false,
+      cible_dap_motif_serie: false,
       cible_cas_final: PMT,
     },
   },
@@ -80,34 +86,39 @@ const matrice: Cas[] = [
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
       p2_nombre_transports_prevus: "3",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     expect: { p2_transport_en_serie: false, cible_cas_final: PMT },
   },
   {
     // La v9.4.0 renverse l'ordre : A3.4 précède désormais A3.3. C'est donc la
-    // réponse à A3.3 qu'une situation ne doit plus faire compter tant qu'A3.4
-    // reste sans réponse — `p2_chaque_trajet_aller_superieur_50km` exige
-    // `p2_situations_accord_prealable_repondues` pour être applicable.
+    // tranche de distance qu'une situation ne doit plus faire compter tant que
+    // les situations spéciales restent sans réponse. La v9.5.1 posait la
+    // question en oui/non (`p2_chaque_trajet_aller_superieur_50km`) ; la v9.7 la
+    // pose en trois tranches, et c'est cette réponse-là qui devient sans objet.
     id: "A3.3-002",
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
       p2_nombre_transports_prevus: "4",
       p2_special_avion_bateau: null,
       p2_special_camsp_cmpp: null,
-      p2_special_engagement_maternite: null,
+      p2_contexte_engagement_maternite: null,
       p2_special_samsah: null,
       p2_special_aucune: null,
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     expect: {
-      // Répondue « oui » dans la situation : sans la neutralisation elle
-      // vaudrait `true`. Non applicable, elle ne vaut plus rien.
-      p2_chaque_trajet_aller_superieur_50km: undefined,
+      // Renseignée dans la situation : sans la neutralisation, la distance
+      // compterait. Les situations spéciales sans réponse la rendent sans objet,
+      // et le résultat n'est pas affichable.
       cible_resultat_2_affichable: false,
     },
   },
@@ -149,9 +160,12 @@ const matrice: Cas[] = [
     given: {
       ...SERIE_50KM,
       ...ALD,
-      p1_m0_seance: "oui",
+      p1_m0_seance_chimiotherapie: "oui",
       p2_nombre_transports_prevus: "5",
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     },
     expect: {
       cible_nombre_transports_prevus: 5,
@@ -165,6 +179,7 @@ const matrice: Cas[] = [
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
       p2_depart_adresse: null,
     },
@@ -190,7 +205,10 @@ const matrice: Cas[] = [
     id: "URGENCE-002",
     given: {
       ...VSL_HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
       p2_transport_urgence: SAMU,
     },
     expect: {
@@ -206,6 +224,9 @@ const matrice: Cas[] = [
       p2_special_camsp_cmpp: "oui",
       p2_special_aucune: "non",
       p2_transport_urgence: AUTRE_URGENCE,
+      // La v9.7 exige de préciser une urgence qui n'est pas un appel au 15 :
+      // sans ce texte, l'urgence reste incomplète et rien en aval ne compte.
+      p2_urgence_autre_precision: "'Détresse respiratoire aiguë.'",
     },
     expect: {
       cible_type_urgence: "autre urgence médicale attestée",
@@ -218,7 +239,10 @@ const matrice: Cas[] = [
     id: "URGENCE-004",
     given: {
       ...VSL_HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     },
     expect: {
       cible_urgence_attestee: false,
@@ -232,13 +256,14 @@ const matrice: Cas[] = [
     given: {
       p1_autonomie: PRO,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
-      p2_trajet_aller_retour: "'aller-retour différent'",
+      p2_organisation_transports: "'aller-retour différent'",
     },
     expect: { cible_resultat_2_affichable: true, cible_cas_final: PMT },
   },
 ];
 
-describe("modèle v9.5.1 — l’accord préalable et le trajet", () => {
+describe("modèle v9.7 — l’accord préalable et le trajet", () => {
   rejouerLaMatrice(matrice);
 });

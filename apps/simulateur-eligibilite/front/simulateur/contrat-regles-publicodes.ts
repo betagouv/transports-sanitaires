@@ -21,11 +21,10 @@
 /** Les sorties du modèle : ce que le produit affiche ou décide. */
 export const CIBLES = [
   "cible_accompagnant_necessaire",
-  "cible_ald_non_retenue_absence_incapacite_deficience",
-  "cible_ald_reconnue_liee_aux_soins",
-  "cible_article_80_mode",
-  "cible_article_80_situation_specifique",
+  "cible_ald_exonerante",
+  "cible_ald_non_exonerante",
   "cible_attente_accord_prealable_requise",
+  "cible_case_aller_retour",
   "cible_cas_final",
   "cible_dap_motif_avion_bateau",
   "cible_dap_motif_camsp_cmpp",
@@ -47,10 +46,17 @@ export const CIBLES = [
   "cible_document_depart_nom",
   "cible_document_depart_pays",
   "cible_equipement_bariatrique_requis",
+  "cible_nombre_transports_document",
   "cible_nombre_transports_prevus",
   "cible_partie_2_requise",
   "cible_regime_financement",
+  "cible_resultat_2_affichable",
   "cible_resultat_medical",
+  "cible_situation_ald",
+  "cible_situation_at_mp",
+  "cible_situation_centre_reference_maladies_rares",
+  "cible_situation_hospitalisation",
+  "cible_situation_pension_militaire",
   "cible_transport_partage_applicable",
   "cible_transport_partage_incompatible",
   "cible_transport_sanitaire_prescrit",
@@ -59,15 +65,18 @@ export const CIBLES = [
 ] as const;
 
 /**
- * Les entrées du modèle citées par le code : questions du questionnaire et règles
- * intermédiaires servant de réponse. Ce sont elles qui composent les situations —
- * base neutre, seeds, pré-remplissage du CERFA.
+ * Les questions du modèle : celles que le prescripteur répond. Ce sont elles qui
+ * composent les situations — base neutre, seeds, pré-remplissage du CERFA.
+ *
+ * Le contrat d'interface les désigne par `owner: prescripteur`, et c'est la
+ * frontière qui compte : une entrée que l'application calcule n'a rien à faire
+ * ici, sans quoi une seed pourrait prétendre y répondre.
  */
 export const QUESTIONS = [
   "p1_autonomie",
   "p1_critere_aide_professionnel",
   "p1_critere_aide_technique",
-  "p1_critere_ambulance",
+  "p1_critere_aucun",
   "p1_critere_brancardage_portage",
   "p1_critere_fauteuil_sans_transfert",
   "p1_critere_hygiene_desinfection",
@@ -80,9 +89,12 @@ export const QUESTIONS = [
   "p1_m0_ald",
   "p1_m0_aucun",
   "p1_m0_bariatrique",
-  "p1_m0_permission_sans_motif_medical",
-  "p1_m0_seance",
+  "p1_m0_seance_chimiotherapie",
+  "p1_m0_seance_dialyse_centre",
+  "p1_m0_seance_radiotherapie",
+  "p1_mode_non_professionnalise",
   "p1_transport_partage_incompatible",
+  "p1_type_ald",
 
   "p2_accident_cause_par_tiers",
   "p2_arrivee_adresse",
@@ -91,24 +103,21 @@ export const QUESTIONS = [
   "p2_arrivee_complement_adresse",
   "p2_arrivee_nom_lieu",
   "p2_arrivee_pays",
-  "p2_chaque_trajet_aller_superieur_50km",
-  "p2_contexte_administratif",
   "p2_contexte_at_mp",
   "p2_contexte_aucun",
-  "p2_contexte_hospitalisation",
+  "p2_contexte_centre_reference",
+  "p2_contexte_engagement_maternite",
+  "p2_contexte_pension_militaire",
   "p2_contexte_retour_penitentiaire",
   "p2_convocation_ou_avis_type",
+  "p2_date_accident_cause_par_tiers",
+  "p2_date_at_mp",
   "p2_depart_adresse",
   "p2_depart_code_postal",
   "p2_depart_commune",
   "p2_depart_complement_adresse",
   "p2_depart_nom_lieu",
   "p2_depart_pays",
-  "p2_detenu_hospitalise",
-  "p2_detenu_inter_etablissements",
-  "p2_detenu_uhsa_uhsi",
-  "p2_distance_aller_superieure_150km",
-  "p2_engagement_maternite_entree",
   "p2_exception_admission_had",
   "p2_exception_aide_medicale_urgente",
   "p2_exception_aucune",
@@ -116,24 +125,86 @@ export const QUESTIONS = [
   "p2_exception_dialyse_domicile",
   "p2_exception_ehpad",
   "p2_exception_had_hors_protocole",
-  "p2_exception_permission_mineur",
   "p2_exception_radiotherapie_moins_48h",
   "p2_exception_usld",
+  "p2_htnm_adresse",
+  "p2_htnm_lieu",
+  "p2_htnm_nom",
+  "p2_justification_longue_distance",
+  "p2_maternite_adresse",
+  "p2_maternite_lieu",
+  "p2_maternite_niveau",
+  "p2_maternite_nom",
+  "p2_motif_detail",
+  "p2_motif_detail_autre",
+  "p2_nature_transfert",
+  "p2_nombre_transports_couvert_simulation",
+  "p2_nombre_transports_permission_dap",
   "p2_nombre_transports_prevus",
-  "p2_patient_hospitalise",
-  "p2_prestation_prise_en_charge_applicable",
-  "p2_prestation_prise_en_charge_assurance_maladie",
+  "p2_organisation_transports",
+  "p2_patient_moins_16_ans",
+  "p2_permission_age",
+  "p2_permission_ar_par_mois",
+  "p2_permission_cadre",
+  "p2_permission_debut",
+  "p2_permission_debut_hospitalisation",
+  "p2_permission_fin",
+  "p2_permission_periode_fin",
+  "p2_raison_principale",
   "p2_special_aucune",
   "p2_special_avion_bateau",
   "p2_special_camsp_cmpp",
-  "p2_special_engagement_maternite",
   "p2_special_samsah",
-  "p2_trajet_aller_retour",
+  "p2_tm_dap_acte",
+  "p2_tm_dap_adapte",
+  "p2_tm_dap_aucun",
+  "p2_tm_dap_consecutif",
+  "p2_tm_dap_nouveau_ne",
+  "p2_tm_pmt_acte",
+  "p2_tm_pmt_aucun",
+  "p2_tm_pmt_consecutif",
+  "p2_tm_pmt_had",
+  "p2_tm_pmt_nouveau_ne",
+  "p2_tm_pmt_urgence",
+  "p2_tm_s3141_acte",
+  "p2_tm_s3141_aucun",
+  "p2_tm_s3141_consecutif",
+  "p2_tm_s3141_had",
+  "p2_tm_s3141_nouveau_ne",
+  "p2_tm_s3141_urgence",
   "p2_trajet_arrivee",
   "p2_trajet_depart",
-  "p2_transport_en_serie",
-  "p2_transport_serie_declenche_dap",
+  "p2_tranche_distance_trajet_aller",
+  "p2_transfert_en_cours",
+  "p2_transfert_motif_autre",
+  "p2_transfert_motif_detail",
   "p2_transport_urgence",
+  "p2_type_hospitalisation",
+  "p2_urgence_autre_precision",
+] as const;
+
+/**
+ * Les entrées que **l'application** calcule et verse au modèle : la date de
+ * référence, le verrou médical, les durées et rangs de jour d'une permission, la
+ * validité des formats d'adresse et la compatibilité des lieux.
+ *
+ * Le contrat d'interface les marque `owner: application`. Leur nom commence par
+ * `p1_` ou `p2_` comme celui d'une question, mais elles n'en sont pas une : les
+ * poser au prescripteur reviendrait à lui demander de faire le calcul. Les tenir
+ * dans une liste à part est ce qui empêche qu'un écran les affiche.
+ */
+export const ENTREES_CALCULEES = [
+  "p0_date_reference_yyyymmdd",
+  "p1_verrou_medical_valide",
+  "p2_adresses_strictement_identiques",
+  "p2_arrivee_format_valide",
+  "p2_depart_format_valide",
+  "p2_permission_calendrier_valide",
+  "p2_permission_dates_valides",
+  "p2_permission_duree_heures",
+  "p2_permission_rang_jour",
+  "p2_types_lieux_valides",
+  "p2_validations_documentaires",
 ] as const;
 
 /**
@@ -142,18 +213,39 @@ export const QUESTIONS = [
  * sont des garde-fous que le modèle calcule et dont l'interface se sert pour
  * savoir ce qu'elle a le droit de faire. Les tenir à part des `QUESTIONS`
  * empêche qu'une situation prétende les renseigner.
+ *
+ * Les dix premières sont les règles de complétude que le contrat d'interface
+ * attache à ses étapes de groupe : une mosaïque ou une page d'adresse est
+ * complète quand elles le disent, et non quand chacun de ses champs a répondu.
  */
 export const REGLES_LUES = [
+  "p1_cas_particuliers_medicaux_complet",
+  "p1_criteres_transport_complet",
   "p2_adresse_arrivee_obligatoire_complete",
   "p2_adresse_depart_obligatoire_complete",
+  "p2_contextes_complementaires_complet",
+  "p2_exceptions_assurance_maladie_complet",
+  "p2_situations_speciales_complet",
+  "p2_tm_dap_complet",
+  "p2_tm_pmt_complet",
+  "p2_tm_s3141_complet",
+  // Le transport en série au sens de la notice : quatre trajets ou plus sur deux
+  // mois, chacun à plus de 50 km. Le CERFA en a besoin pour *ne pas* remplir la
+  // rubrique des transports itératifs, qu'elle lui réserve.
+  "p2_transport_en_serie",
 ] as const;
 
 export type Cible = (typeof CIBLES)[number];
 type Question = (typeof QUESTIONS)[number];
+type EntreeCalculee = (typeof ENTREES_CALCULEES)[number];
 type RegleLue = (typeof REGLES_LUES)[number];
 
 /** Toute clé du modèle que le code a le droit de nommer. */
-export type CleDeRegle = Cible | Question | RegleLue;
+export type CleDeRegle = Cible | Question | EntreeCalculee | RegleLue;
 
-/** Une situation publicodes dont les clés sont vérifiées à la compilation. */
-export type SituationTypee = Partial<Record<Question, string>>;
+/**
+ * Une situation publicodes dont les clés sont vérifiées à la compilation. Elle
+ * porte les réponses du prescripteur **et** les entrées que l'application
+ * calcule : les deux sont écrites, et le moteur ne les distingue pas.
+ */
+export type SituationTypee = Partial<Record<Question | EntreeCalculee, string>>;

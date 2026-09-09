@@ -14,6 +14,7 @@ import {
   CIBLES_ADMINISTRATIVES,
   CIBLES_MEDICALES,
 } from "../cibles-du-parcours";
+import { avecEntreesCalculees } from "../entrees-calculees";
 import { moteur, texte } from "../moteur";
 import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
@@ -108,8 +109,11 @@ function ecranPrecedent(
 // `retourAuQuestionnaire` est absent quand la Partie 2 n'a rien eu à poser (cf.
 // `retourPossible`).
 function useParcoursAdministratif(situationFinale: Situation<string> | null) {
+  // Une situation venue d'ailleurs — une seed, un raccourci — n'a traversé aucun
+  // questionnaire : les entrées que l'application calcule n'y sont pas, et le
+  // modèle ne conclurait rien. On les y verse, comme le fait la passation.
   const [situation, setSituation] = useState<Situation<string> | null>(
-    situationFinale,
+    situationFinale && avecEntreesCalculees(situationFinale),
   );
   const [amorce] = useState(() => amorceDuParcours(situationFinale));
   const [etatQuestionnaire, setEtatQuestionnaire] = useState(amorce.parcours);
@@ -120,7 +124,7 @@ function useParcoursAdministratif(situationFinale: Situation<string> | null) {
     retourAuQuestionnaire: etatQuestionnaire && (() => setSituation(null)),
     conclure: (s: Situation<string>, etat: FormState<string>) => {
       setEtatQuestionnaire(retourPossible(etat) ? etat : undefined);
-      setSituation(s);
+      setSituation(avecEntreesCalculees(s));
     },
   };
 }
@@ -173,7 +177,7 @@ function partie2Rejouee(
 // M1.1 ouvre la Partie 2 : c'est là qu'il faut dire ce que cette partie peut, et
 // surtout ne peut pas, changer — le mode de transport est arrêté en Partie 1.
 const RAPPEL_PORTEE_ADMINISTRATIVE = {
-  question: "p2_contexte_administratif",
+  question: "p2_raison_principale",
   texte:
     "Les réponses apportées dans cette partie déterminent le régime de prise en charge et le document à utiliser. Elles ne peuvent pas modifier le mode de transport validé par le prescripteur.",
 } as const;

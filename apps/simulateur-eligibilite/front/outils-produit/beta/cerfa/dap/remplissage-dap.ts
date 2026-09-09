@@ -33,14 +33,7 @@ import {
   àLaCaisse,
   écrit,
 } from "../remplissage.ts";
-import {
-  ALLER_RETOUR,
-  ARRIVEE,
-  DEPART,
-  MODE,
-  type Reponses,
-  URGENCE,
-} from "../reponses.ts";
+import { LIEU, MODE, type Reponses, URGENCE } from "../reponses.ts";
 
 export const REMPLISSAGE_DAP: Tableau = {
   // ---- En-tête des trois volets : bénéficiaire, assuré ---------------------
@@ -81,9 +74,8 @@ export const REMPLISSAGE_DAP: Tableau = {
   // exonérante ou non, seule distinction que le formulaire demande ici.
   sit: étatSelon((r) => {
     if (!r.vrai(MOTIF_DU_CHAMP_BATEAU)) return undefined;
-    if (r.vrai("p2_contexte_hospitalisation") || r.vrai("p1_m0_seance"))
-      return "Oui";
-    return r.vrai("p2_contexte_at_mp") ? "atmp" : undefined;
+    if (r.vrai("cible_situation_hospitalisation")) return "Oui";
+    return r.vrai("cible_situation_at_mp") ? "atmp" : undefined;
   }),
   "dat at": auPrescripteur("date de l’AT/MP : le modèle ne la demande pas"),
 
@@ -128,7 +120,8 @@ export const REMPLISSAGE_DAP: Tableau = {
   ti: auPrescripteur("le modèle ne sépare pas individuel et commun"),
   "pat acc": coche(
     (r) =>
-      r.transport === MODE.véhiculePersonnel &&
+      (r.transport === MODE.véhiculePersonnel ||
+        r.transport === MODE.transportEnCommun) &&
       r.vrai("cible_accompagnant_necessaire"),
   ),
   ald: auPrescripteur(
@@ -142,24 +135,21 @@ export const REMPLISSAGE_DAP: Tableau = {
   //
   // Un domicile se coche ; une structure de soins ou un autre lieu se nomment, sur
   // l'unique ligne que le formulaire leur donne (cf. `lieux-du-trajet.ts`).
-  dép: coche((r) => r.texte("p2_trajet_depart") === DEPART.domicile),
+  dép: coche((r) => r.texte("p2_trajet_depart") === LIEU.domicile),
   "struct soins": écrit((r) =>
-    r.texte("p2_trajet_depart") === DEPART.structure ? adresseDépart(r) : "",
+    r.texte("p2_trajet_depart") === LIEU.structure ? adresseDépart(r) : "",
   ),
   "autre lieu": écrit((r) =>
-    r.texte("p2_trajet_depart") === DEPART.autre ? adresseDépart(r) : "",
+    r.texte("p2_trajet_depart") === LIEU.autre ? adresseDépart(r) : "",
   ),
-  arr: coche((r) => r.texte("p2_trajet_arrivee") === ARRIVEE.domicile),
+  arr: coche((r) => r.texte("p2_trajet_arrivee") === LIEU.domicile),
   "struct soins 2": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === ARRIVEE.structure ? adresseArrivée(r) : "",
+    r.texte("p2_trajet_arrivee") === LIEU.structure ? adresseArrivée(r) : "",
   ),
   "autre lieu 2": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === ARRIVEE.autre ? adresseArrivée(r) : "",
+    r.texte("p2_trajet_arrivee") === LIEU.autre ? adresseArrivée(r) : "",
   ),
-  alret: coche((r) => {
-    const sens = r.texte("p2_trajet_aller_retour");
-    return sens === ALLER_RETOUR.identique || sens === ALLER_RETOUR.différent;
-  }),
+  alret: coche((r) => r.vrai("cible_case_aller_retour")),
   // « nombre de transports », sans réserve : contrairement aux « transports
   // itératifs » de la PMT, cette rubrique-ci vaut aussi pour une série — c'est
   // même l'un des motifs qui amènent à ce formulaire.

@@ -106,10 +106,12 @@ function ChoixDeroulant({ champ, onChange }: ChampProps<EvaluatedSelect>) {
   );
 }
 
-// Les bornes viennent du modèle, jamais d'ici : A3.2 exige un entier d'au moins
-// 1, et l'écrire en dur ferait accepter à l'écran un 0 que le modèle rejette.
+// Les bornes viennent du contrat d'interface, jamais d'ici : le nombre de
+// transports exige un entier d'au moins 1, la fréquence mensuelle d'une
+// permission en accepte cinq au plus. Les écrire en dur ferait accepter à l'écran
+// ce que le modèle rejette ensuite.
 function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
-  const { min, pas } = bornesDeSaisie(champ.id);
+  const { min, max, pas } = bornesDeSaisie(champ.id);
   return (
     <Input
       label={champ.label}
@@ -129,6 +131,7 @@ function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
         name: champ.id,
         type: "number",
         min,
+        max,
         step: pas,
         value: champ.value ?? champ.defaultValue ?? "",
         onChange: (e) => onChange(Number(e.target.value)),

@@ -33,31 +33,34 @@ export function seedParId(id: string): Seed {
 
 // ---- le catalogue ----
 
-// Les trois réponses de Q1 qui écartent la base neutre (patient autonome). C'est
+// Les deux réponses de Q1 qui écartent la base neutre (patient autonome). C'est
 // Q1 qui commande tout le reste de la Partie 1 : l'aide d'un professionnel ouvre
-// Q1.1, le proche accompagnant caractérise l'incapacité sans ouvrir Q1.1, et
-// l'urgence vitale tranche à elle seule — depuis la v9.5.0, le SMUR se qualifie ici
-// et non plus en M0.
+// Q1.1, le proche accompagnant caractérise l'incapacité sans l'ouvrir.
+//
+// La v9.7 a retiré la quatrième réponse, l'urgence vitale qui qualifiait un SMUR :
+// le cas final « SMUR » n'existe plus, et l'urgence se recueille désormais en
+// Partie 2 (`p2_transport_urgence`).
 const AIDE_PROFESSIONNEL =
-  "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'";
+  "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'";
 const PROCHE_ACCOMPAGNANT =
   "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'";
-const URGENCE_VITALE_SMUR =
-  "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'";
 
-// Le contexte administratif (M1.1) est une mosaïque : cocher un contexte décoche
-// l'option exclusive de la base neutre.
-const CONTEXTE_HOSPITALISATION = {
-  p2_contexte_hospitalisation: "oui",
-  p2_contexte_aucun: "non",
+// L'entrée en hospitalisation, motif ouvrant droit le plus banal. La v9.7 a
+// remplacé le contexte administratif (M1.1, une mosaïque) par une **raison
+// principale** à choix unique : cocher un contexte n'a plus de sens, on choisit.
+const RAISON_HOSPITALISATION = {
+  p2_raison_principale: "'Entrée en hospitalisation'",
 } as const;
 
-// La réponse d'A4.5 qui atteste l'urgence médicale. Depuis la v9.5.1, c'est elle
-// qui dispense d'attendre la décision d'accord préalable.
-const URGENCE_SAMU =
-  "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'";
+// La réponse d'A2.4 qui atteste l'urgence médicale. Depuis la v9.5.1, c'est elle
+// qui dispense d'attendre la décision d'accord préalable. La v9.7 a raccourci son
+// libellé — le SAMU n'y est plus développé.
+const URGENCE_SAMU = "'Appel au SAMU - Centre 15'";
 
-// Cas particulier médical (M0) : même mécanique d'option exclusive.
+// Les deux mosaïques à option exclusive de la Partie 1. Cocher un critère ou un
+// cas particulier suppose de décocher l'option « aucun » que porte la base
+// neutre. Q1.1 en a gagné une en v9.7 : elle n'avait pas de sortie « aucun ».
+const CRITERE_AUCUN_DECOCHE = { p1_critere_aucun: "non" } as const;
 const M0_AUCUN_DECOCHE = { p1_m0_aucun: "non" } as const;
 
 // Les douze saisies d'adresse (D1-D12) retirées de la base neutre : `null` ôte la
@@ -78,14 +81,6 @@ const SANS_ADRESSES = {
   p2_arrivee_pays: null,
 } as const;
 
-// Exception A0.2 qui laisse le transport dans le champ de l'Assurance Maladie :
-// c'est la réponse qui ouvre la branche « patient détenu » (A1.x) au lieu de
-// conclure tout de suite à une prise en charge par l'établissement.
-const EXCEPTION_ADMISSION_HAD = {
-  p2_exception_admission_had: "oui",
-  p2_exception_aucune: "non",
-} as const;
-
 export const SEEDS: readonly Seed[] = [
   // ————————————————————————————————————————————————————————————————
   // Partie 1 — routes médicales, atterrissage sur la Page Résultat 1.
@@ -101,16 +96,15 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_position_allongee_demi_assise: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit: "ambulance",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -125,33 +119,15 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_aide_professionnel: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final:
         "non éligible à une prise en charge par l’Assurance Maladie",
-      cible_regime_financement: "aucune prise en charge dans ce parcours",
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-  {
-    id: "prescripteur-smur",
-    libelle: "Prescripteur — intervention SMUR",
-    description:
-      "Urgence vitale qualifiée dès Q1 : elle tranche la Partie 1 et court-circuite " +
-      "la qualification administrative — ni Q1.1, ni M0, ni Partie 2.",
-    outil: "prescripteur",
-    entrees: { p1_autonomie: URGENCE_VITALE_SMUR },
-    attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "SMUR",
-      cible_regime_financement: "urgence spécifique",
+      cible_regime_financement: "Absence de prise en charge Assurance Maladie",
       cible_document_a_remettre_au_patient: "aucun document",
     },
   },
@@ -160,35 +136,39 @@ export const SEEDS: readonly Seed[] = [
     libelle: "Prescripteur — bariatrique seul",
     description:
       "Contrainte bariatrique sans autre besoin médical : elle ne constitue pas à " +
-      "elle seule un motif ouvrant droit, et aucun transport n'est prescriptible.",
+      "elle seule un motif ouvrant droit. La v9.5.1 en faisait une sortie " +
+      "précoce, avec son cas final « bariatrique seul » et le transport à la " +
+      "charge du patient ; la v9.7 a retiré ce cas final et fait aller le " +
+      "parcours jusqu'au bout — le mode reste celui d'un patient autonome, et " +
+      "c'est la Partie 2 qui conclut à l'absence de droit.",
     outil: "prescripteur",
     entrees: { p1_m0_bariatrique: "oui", ...M0_AUCUN_DECOCHE },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit: "aucun",
-      cible_partie_2_requise: "non",
-      cible_cas_final: "bariatrique seul",
-      cible_regime_financement: "patient",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
+      cible_partie_2_requise: "oui",
+      cible_cas_final:
+        "non éligible à une prise en charge par l’Assurance Maladie",
+      cible_regime_financement: "Absence de prise en charge Assurance Maladie",
       cible_document_a_remettre_au_patient: "aucun document",
     },
   },
   {
-    id: "prescripteur-permission-sortie",
-    libelle: "Prescripteur — permission de sortie",
+    id: "secretariat-permission-sans-motif-medical",
+    libelle: "Secrétariat — permission de sortie à la charge du patient",
     description:
-      "Permission de sortie demandée sans motif médical : autre porte de sortie " +
-      "précoce de la Partie 1.",
-    outil: "prescripteur",
+      "Permission de sortie demandée par le patient, sans justification " +
+      "médicale : le transport reste à sa charge. La v9.7 a déplacé ce cas — il " +
+      "se qualifiait en M0, par une case du prescripteur, et se qualifie " +
+      "désormais en Partie 2, par la raison principale puis le cadre de la " +
+      "permission. Il n'est donc plus une sortie précoce de la Partie 1.",
+    outil: "secretariat",
     entrees: {
-      p1_m0_permission_sans_motif_medical: "oui",
-      ...M0_AUCUN_DECOCHE,
+      p2_raison_principale: "'Permission temporaire de sortie'",
+      p2_permission_cadre: "'Demande du patient sans justification médicale'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit: "aucun",
-      cible_partie_2_requise: "non",
       cible_cas_final: "permission de sortie sans motif médical",
-      cible_regime_financement: "patient",
+      cible_regime_financement: "Patient",
       cible_document_a_remettre_au_patient: "aucun document",
     },
   },
@@ -199,15 +179,17 @@ export const SEEDS: readonly Seed[] = [
       "Aucun contexte administratif coché, mais un critère d'ambulance (oxygène) : " +
       "le motif ouvrant droit se déduit du critère, et l'ambulance reste justifiée.",
     outil: "prescripteur",
-    entrees: { p1_autonomie: AIDE_PROFESSIONNEL, p1_critere_oxygene: "oui" },
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_oxygene: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+    },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit: "ambulance",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -217,16 +199,13 @@ export const SEEDS: readonly Seed[] = [
       "Contexte ouvrant droit mais patient autonome : le transport reste pris en " +
       "charge, sans véhicule sanitaire.",
     outil: "prescripteur",
-    entrees: { ...CONTEXTE_HOSPITALISATION },
+    entrees: { ...RAISON_HOSPITALISATION },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -239,17 +218,16 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_fauteuil_sans_transfert: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
 
@@ -276,52 +254,55 @@ export const SEEDS: readonly Seed[] = [
       p1_critere_surveillance_constante: "oui",
       p1_critere_oxygene: "oui",
       p1_critere_isolement_asepsie: "oui",
-      // Deux contextes administratifs cochés en même temps (choix multiple).
-      p2_contexte_hospitalisation: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      // Une raison principale, et un contexte réglementaire par-dessus : la
+      // v9.7 sépare les deux, là où la v9.5.1 cochait deux cases d'une même
+      // mosaïque.
+      ...RAISON_HOSPITALISATION,
       p2_contexte_at_mp: "oui",
       p2_contexte_aucun: "non",
       // Trois transports à moins de 50 km : répété, mais **pas** « en série » — la
       // notice réserve la case « transports itératifs » à ce cas précis.
       p2_nombre_transports_prevus: "3",
-      p2_trajet_aller_retour: "'aller-retour identique'",
-      p2_transport_urgence:
-        "'Appel au SAMU (Service d’Aide Médicale Urgente) - Centre 15'",
+      p2_organisation_transports: "'aller-retour identique'",
+      p2_transport_urgence: URGENCE_SAMU,
+      p2_date_at_mp: "'2026-01-12'",
       p2_accident_cause_par_tiers: "oui",
+      p2_date_accident_cause_par_tiers: "'2026-01-12'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit: "ambulance",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
-    id: "secretariat-non-eligible",
-    libelle: "Secrétariat — non éligible",
+    id: "secretariat-ambulance-ouvre-le-droit",
+    libelle: "Secrétariat — un critère d’ambulance ouvre le droit à lui seul",
     description:
-      "Partie 1 concluante (ambulance), puis patient détenu hospitalisé sans " +
-      "transport inter-établissements ni aller sans consentement : la Partie 2 " +
-      "referme un droit ouvert en Partie 1.",
+      "Un besoin de brancardage, et une raison qui n'ouvre rien — un examen sans " +
+      "lien avec une ALD : le droit est pourtant ouvert, et le document une PMT. " +
+      "En v9.5.1, cette même situation se refermait faute de motif ; en v9.7, un " +
+      "critère clinique d'ambulance vaut motif à lui seul. La question est posée " +
+      "à l'éditeur (`tmp/anomalie-v9-7-critere-ambulance-motif.md`) : cette seed " +
+      "constate le comportement observé, elle ne l'approuve pas.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
-      p1_critere_position_allongee_demi_assise: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_patient_hospitalise: "oui",
-      ...EXCEPTION_ADMISSION_HAD,
-      p2_detenu_hospitalise: "oui",
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale: "'Autre examen ou soin'",
+      p2_motif_detail: "'Autre - préciser'",
+      p2_motif_detail_autre: "'Bilan de suivi sans lien avec une ALD.'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit: "ambulance",
       cible_partie_2_requise: "oui",
-      cible_cas_final:
-        "non éligible à une prise en charge par l’Assurance Maladie",
-      cible_regime_financement: "aucune prise en charge dans ce parcours",
-      cible_document_a_remettre_au_patient: "aucun document",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -334,16 +315,18 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_oxygene: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit: "ambulance",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -356,21 +339,21 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
       p1_m0_ald: "oui",
-      p1_m0_seance: "oui",
+      p1_m0_seance_chimiotherapie: "oui",
       ...M0_AUCUN_DECOCHE,
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -383,42 +366,49 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_nombre_transports_prevus: "4",
-      p2_chaque_trajet_aller_superieur_50km: "oui",
+      p2_tranche_distance_trajet_aller:
+        "'Plus de 50 km et jusqu’à 150 km inclus'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
-    id: "secretariat-charge-etablissement",
-    libelle: "Secrétariat — charge de l'établissement",
+    id: "secretariat-transfert-provisoire",
+    libelle: "Secrétariat — transfert provisoire pour un examen",
     description:
-      "Patient hospitalisé, transport hors des exceptions : la facture revient à " +
-      "l'établissement, et aucun document de l'Assurance Maladie n'est remis.",
+      "Transfert provisoire vers un plateau technique, et le motif recueilli " +
+      "après sa nature : la facture revient à l'établissement, et aucun document " +
+      "de l'Assurance Maladie n'est remis. C'est le pendant du transfert " +
+      "définitif — la v9.7 distingue les deux natures, là où la v9.5.1 tirait " +
+      "cette conclusion de la seule hospitalisation du patient.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_patient_hospitalise: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Provisoire'",
+      p2_transfert_motif_detail: "'Imagerie médicale'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "transport à la charge de l’établissement",
-      cible_regime_financement: "établissement prescripteur",
+      cible_regime_financement: "Établissement",
       cible_document_a_remettre_au_patient:
-        "formulaire ou document interne de l’établissement",
+        "Document interne de l’établissement",
     },
   },
   {
@@ -431,39 +421,50 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_convocation_ou_avis_type:
         "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      // La convocation conclut sans passer par les données de prescription, mais
+      // le modèle continue de réclamer le nom du lieu de départ — que la base
+      // neutre n'a pas, son départ étant un domicile. La valeur des cibles ne
+      // s'en trouve pas changée ; seules leurs variables manquantes le sont.
+      // Le nom est donc donné ici pour que la seed ne laisse rien d'indécis.
+      // Question posée à l'éditeur : `tmp/anomalie-v9-7-convocation-lieu.md`.
+      p2_depart_nom_lieu: "'Domicile du patient'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "convocation ou avis d’audience",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "convocation ou avis d’audience",
+      cible_document_a_remettre_au_patient: "Convocation ou avis d’audience",
     },
   },
   {
-    id: "secretariat-prestation-non-prise-en-charge",
-    libelle: "Secrétariat — prestation non prise en charge",
+    id: "secretariat-permission-s3141",
+    libelle: "Secrétariat — permission de sortie, prescription S3141",
     description:
-      "La prestation à l'origine du déplacement n'est pas prise en charge " +
-      "(A2.3 = Non) — prioritaire sur le mode de transport, aucun document.",
+      "Permission temporaire de sortie pour un patient de moins de 20 ans, dans " +
+      "les six mois d'une hospitalisation : la v9.7 lui donne un formulaire à " +
+      "elle, le S3141, et un septième cas final. Elle prend la place de " +
+      "l'ancienne « prestation non prise en charge », que la v9.7 a retirée.",
     outil: "secretariat",
     entrees: {
-      p1_autonomie: AIDE_PROFESSIONNEL,
-      p1_critere_oxygene: "oui",
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
+      p2_raison_principale: "'Permission temporaire de sortie'",
+      p2_permission_age: "'De 16 à 19 ans'",
+      // Le rang du jour et la durée ne sont pas des questions : l'application
+      // les calcule à partir des dates saisies, et le modèle les reçoit. Le
+      // S3141 exige le quatorzième jour au moins, et au plus quarante-huit
+      // heures — c'est ce que ces deux valeurs décrivent.
+      p2_permission_rang_jour: "15",
+      p2_permission_duree_heures: "8",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit: "ambulance",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "prestation non prise en charge par l’Assurance Maladie",
-      cible_regime_financement: "aucune prise en charge dans ce parcours",
-      cible_document_a_remettre_au_patient: "aucun document",
+      cible_cas_final: "prescription S3141",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "S3141",
     },
   },
 
@@ -484,13 +485,11 @@ export const SEEDS: readonly Seed[] = [
     outil: "prescripteur",
     entrees: { p1_m0_ald: "oui", ...M0_AUCUN_DECOCHE },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_partie_2_requise: "oui",
       cible_cas_final:
         "non éligible à une prise en charge par l’Assurance Maladie",
-      cible_regime_financement: "aucune prise en charge dans ce parcours",
+      cible_regime_financement: "Absence de prise en charge Assurance Maladie",
       cible_document_a_remettre_au_patient: "aucun document",
     },
   },
@@ -507,17 +506,14 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_m0_ald: "oui",
       ...M0_AUCUN_DECOCHE,
-      ...CONTEXTE_HOSPITALISATION,
+      ...RAISON_HOSPITALISATION,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -537,99 +533,70 @@ export const SEEDS: readonly Seed[] = [
       ...M0_AUCUN_DECOCHE,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
-    id: "secretariat-detenu-inter-etablissements",
-    libelle: "Secrétariat — détenu, transport inter-établissements",
+    id: "secretariat-transfert-inter-etablissements",
+    libelle: "Secrétariat — transfert entre deux établissements",
     description:
-      "Patient détenu hospitalisé, transport entre deux établissements (A1.2) : la " +
-      "charge revient à l'établissement, pas à l'Assurance Maladie. Article 80 — " +
-      "situation spécifique, incompatible avec un véhicule personnel.",
+      "Transfert définitif d'un patient hospitalisé vers un autre établissement : " +
+      "la charge revient à l'établissement, pas à l'Assurance Maladie. La v9.5.1 " +
+      "y arrivait par la branche « patient détenu » (A1.2) ; la v9.7 qualifie le " +
+      "transfert positivement et a supprimé le détour.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_patient_hospitalise: "oui",
-      ...EXCEPTION_ADMISSION_HAD,
-      p2_detenu_hospitalise: "oui",
-      p2_detenu_inter_etablissements: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Définitif'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "transport à la charge de l’établissement",
-      cible_regime_financement: "établissement prescripteur",
+      cible_regime_financement: "Établissement",
       cible_document_a_remettre_au_patient:
-        "formulaire ou document interne de l’établissement",
-      cible_article_80_situation_specifique: true,
+        "Document interne de l’établissement",
     },
   },
   {
-    id: "secretariat-detenu-uhsa-uhsi",
-    libelle: "Secrétariat — détenu, aller sans consentement UHSA/UHSI",
+    id: "secretariat-retour-penitentiaire",
+    libelle: "Secrétariat — retour en établissement pénitentiaire",
     description:
-      "Même branche, autre porte (A1.3) : l'aller sans consentement vers une UHSA ou " +
-      "une UHSI relève lui aussi de la charge de l'établissement.",
+      "Le contre-exemple du transfert : le retour pénitentiaire reste un contexte " +
+      "réglementaire cumulable, et maintient le parcours standard au lieu de " +
+      "renvoyer la charge à l'établissement.",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_patient_hospitalise: "oui",
-      ...EXCEPTION_ADMISSION_HAD,
-      p2_detenu_hospitalise: "oui",
-      p2_detenu_uhsa_uhsi: "oui",
-    },
-    attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
-      cible_partie_2_requise: "oui",
-      cible_cas_final: "transport à la charge de l’établissement",
-      cible_regime_financement: "établissement prescripteur",
-      cible_document_a_remettre_au_patient:
-        "formulaire ou document interne de l’établissement",
-      cible_article_80_situation_specifique: true,
-    },
-  },
-  {
-    id: "secretariat-detenu-retour-penitentiaire",
-    libelle: "Secrétariat — détenu, retour en établissement pénitentiaire",
-    description:
-      "Le contre-exemple de la branche détenu : en v9.1 le retour pénitentiaire est " +
-      "un contexte administratif (M1.1) qui écarte d'emblée les questions A1.x et " +
-      "maintient le parcours standard. Avec les deux seeds précédentes et " +
-      "« non éligible », les quatre issues de la branche sont couvertes.",
-    outil: "secretariat",
-    entrees: {
-      p1_autonomie: AIDE_PROFESSIONNEL,
-      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
       p2_contexte_retour_penitentiaire: "oui",
       p2_contexte_aucun: "non",
-      p2_patient_hospitalise: "oui",
+      // Le retour pénitentiaire **déduit** le lieu de départ — une structure de
+      // soins, jamais demandée au prescripteur —, et une structure porte un nom
+      // là où le domicile de la base neutre n'en a pas. L'arrivée, elle, est
+      // contrainte par le contrat : un établissement pénitentiaire.
+      p2_depart_nom_lieu: "'Centre hospitalier de départ'",
+      p2_trajet_arrivee: "'Établissement pénitentiaire'",
+      p2_arrivee_nom_lieu: "'Maison d’arrêt'",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
-      cible_article_80_situation_specifique: false,
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -644,18 +611,18 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_special_avion_bateau: "oui",
       p2_special_aucune: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -667,18 +634,18 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_special_camsp_cmpp: "oui",
       p2_special_aucune: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -694,16 +661,17 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      p2_engagement_maternite_entree: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_contexte_engagement_maternite: "oui",
+      p2_contexte_aucun: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -717,18 +685,18 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_special_engagement_maternite: "oui",
-      p2_special_aucune: "non",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_contexte_engagement_maternite: "oui",
+      p2_contexte_aucun: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -739,18 +707,18 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_special_samsah: "oui",
       p2_special_aucune: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -765,19 +733,19 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_special_avion_bateau: "oui",
       p2_special_camsp_cmpp: "oui",
       p2_special_aucune: "non",
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -791,17 +759,14 @@ export const SEEDS: readonly Seed[] = [
     outil: "secretariat",
     entrees: {
       p1_autonomie: PROCHE_ACCOMPAGNANT,
-      ...CONTEXTE_HOSPITALISATION,
+      ...RAISON_HOSPITALISATION,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -815,18 +780,17 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       p2_transport_urgence: URGENCE_SAMU,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "prescription médicale de transport",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -842,18 +806,20 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
       p2_transport_urgence: URGENCE_SAMU,
     },
     attendu: {
-      cible_resultat_medical: "décision établie",
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",
-      cible_document_a_remettre_au_patient: "DAP (Demande d’Accord Préalable)",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
     },
   },
   {
@@ -869,7 +835,8 @@ export const SEEDS: readonly Seed[] = [
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
-      ...CONTEXTE_HOSPITALISATION,
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
       // Hors domicile aux deux bouts : c'est ce qui rend applicables D1 et D7.
       p2_trajet_depart: "'Structure de soins'",
       ...SANS_ADRESSES,

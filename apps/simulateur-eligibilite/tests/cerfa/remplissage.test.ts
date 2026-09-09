@@ -82,9 +82,7 @@ describe("remplirCerfa", () => {
       { champ: "adresse", texte: "12 rue des Lilas\n35000 RENNES" },
     ]);
     // Un `\n` ici rognerait silencieusement la seconde ligne à l'impression.
-    expect((await relire(pdf))["adresse"]).toBe(
-      "12 rue des Lilas - 35000 RENNES",
-    );
+    expect((await relire(pdf)).adresse).toBe("12 rue des Lilas - 35000 RENNES");
   });
 });
 
@@ -116,14 +114,44 @@ describe("les tableaux de remplissage et leurs gabarits", () => {
     // réponses. Une reformulation livrée avec les règles laisserait sinon une case
     // durablement décochée, sans que rien ne le signale.
     const règles = moteurDeTest().getParsedRules();
-    for (const [règle, comparées] of VALEURS_COMPAREES) {
-      const brut = règles[règle]?.rawNode as
-        | { "une possibilité"?: string[] }
+    const brutDe = (nom: string) =>
+      règles[nom]?.rawNode as
+        | { "une possibilité"?: string[]; valeur?: unknown }
         | undefined;
+
+    // Deux façons de déclarer ce qu'une règle peut rendre, et le modèle emploie
+    // les deux. Une question énumère ses `une possibilité` ; une sortie calculée
+    // les produit une par une, au fil de ses `variations`. La v9.7 calcule le
+    // mode prescrit, là où la v9.5.1 l'énumérait.
+    const litteraux = (valeur: unknown, vues = new Set<string>()): string[] => {
+      if (typeof valeur === "string") {
+        if (valeur.startsWith("'") && valeur.endsWith("'"))
+          return [valeur.slice(1, -1)];
+        if (!brutDe(valeur) || vues.has(valeur)) return [];
+        vues.add(valeur);
+        return [
+          ...(brutDe(valeur)?.["une possibilité"] ?? []).map((v) =>
+            v.slice(1, -1),
+          ),
+          ...litteraux(brutDe(valeur)?.valeur, vues),
+        ];
+      }
+      if (Array.isArray(valeur))
+        return valeur.flatMap((sous) => litteraux(sous, vues));
+      if (valeur !== null && typeof valeur === "object")
+        return Object.entries(valeur).flatMap(([cle, sous]) =>
+          cle === "si" ? [] : litteraux(sous, vues),
+        );
+      return [];
+    };
+
+    for (const [règle, comparées] of VALEURS_COMPAREES) {
+      const brut = brutDe(règle);
       // Les possibilités sont écrites entre quotes dans le YAML : on les ôte.
-      const déclarées = new Set(
-        (brut?.["une possibilité"] ?? []).map((v) => v.slice(1, -1)),
-      );
+      const déclarées = new Set([
+        ...(brut?.["une possibilité"] ?? []).map((v) => v.slice(1, -1)),
+        ...litteraux(brut?.valeur),
+      ]);
       for (const valeur of comparées)
         expect(déclarées, `${règle} — « ${valeur} »`).toContain(valeur);
     }

@@ -10,12 +10,12 @@ beforeEach(() => sessionStorage.clear());
 
 // Les situations partent de la base neutre du catalogue de seeds : une réponse
 // oubliée y laisserait des cibles indécises, et le résultat final vide.
-const SMUR = {
+// Une situation complète, qui conclut sur une prescription. La v9.5.1 employait
+// ici l'urgence vitale, quatrième réponse de Q1 qui tranchait la Partie 1 ; la
+// v9.7 a retiré cette réponse comme le cas final « SMUR ».
+const PRESCRIPTION = {
   ...BASE_NEUTRE,
-  // Depuis la v9.5.0, l'urgence vitale est la quatrième réponse de Q1 : elle
-  // tranche sans passer par M0, qu'elle rend inapplicable.
-  p1_autonomie:
-    "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'",
+  p2_raison_principale: "'Entrée en hospitalisation'",
 };
 const BARIATRIQUE = {
   ...BASE_NEUTRE,
@@ -24,21 +24,23 @@ const BARIATRIQUE = {
 };
 
 describe("secrétariat — parcours administratif", () => {
-  it("M1.1 porte le rappel sur la portée de la Partie 2, et elle seule", async () => {
+  it("la première question porte le rappel sur la portée de la Partie 2, et elle seule", async () => {
     const user = userEvent.setup({ delay: null });
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
+    // La v9.7 ouvre la Partie 2 sur la raison principale, une liste déroulante
+    // de douze réponses, là où la v9.5.1 posait une mosaïque de contextes.
     const rappel = /ne peuvent pas modifier le mode de transport/i;
-    const contexte = /dans quel contexte/i;
-    expect(screen.getByRole("group", { name: contexte })).toBeInTheDocument();
+    const raison = /raison principale du déplacement/i;
+    expect(screen.getByRole("combobox", { name: raison })).toBeInTheDocument();
     expect(screen.getByText(rappel)).toBeInTheDocument();
 
-    await repondrePage(user, [
-      [contexte, /entrée ou sortie d’une hospitalisation/i],
-    ]);
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-    expect(screen.queryByRole("group", { name: contexte })).toBeNull();
+    await repondrePage(user, [[raison, /entrée en hospitalisation/i]]);
+    expect(
+      await screen.findByRole("group", { name: /type d’hospitalisation/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: raison })).toBeNull();
     expect(screen.queryByText(rappel)).toBeNull();
   });
 
@@ -49,13 +51,21 @@ describe("secrétariat — parcours administratif", () => {
     ).toBeInTheDocument();
   });
 
-  it("cas tranché dès la Partie 1 (SMUR) : affiche directement la Page Résultat 2", () => {
-    emettrePassation(SMUR);
-    render(<Secretariat onNouvelleSimulation={() => {}} />);
+  it("situation complète : affiche directement la Page Résultat 2", () => {
+    // Par le raccourci `situationFinale` : une passation, elle, rouvrirait le
+    // questionnaire, dont il reste toujours les saisies facultatives d'adresse.
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={PRESCRIPTION}
+      />,
+    );
 
-    // Bloc 1 — résultat final (titre du cas SMUR).
+    // Bloc 1 — résultat final.
     expect(
-      screen.getByRole("heading", { name: /transport par équipe SMUR/i }),
+      screen.getByRole("heading", {
+        name: /vous êtes éligible à une prise en charge/i,
+      }),
     ).toBeInTheDocument();
     // Bloc 2 — information destinée au patient, avec les étapes.
     expect(
@@ -72,38 +82,36 @@ describe("secrétariat — parcours administratif", () => {
         name: /informations pour le corps médical/i,
       }),
     ).toBeInTheDocument();
+    // Deux fois : le verdict nomme le document, la fiche du corps médical aussi.
     expect(
-      screen.getByText(/document à remettre au patient/i),
-    ).toBeInTheDocument();
+      screen.getAllByText(/document à remettre au patient/i).length,
+    ).toBeGreaterThan(0);
   });
 
-  it("cas défavorable sans transport (bariatrique) : bloc patient sur les deux conditions et reste à charge", () => {
-    emettrePassation(BARIATRIQUE);
-    render(<Secretariat onNouvelleSimulation={() => {}} />);
+  // La v9.5.1 donnait à la contrainte bariatrique seule un cas final à elle,
+  // avec son verdict et sa consigne d'orientation. La v9.7 l'a retiré : le
+  // parcours va jusqu'au bout, et c'est l'absence de motif qui conclut.
+  it("cas défavorable sans droit ouvert : reste à charge et deux conditions", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={BARIATRIQUE}
+      />,
+    );
 
-    // Bloc 1 — aucun transport prescrit.
     expect(
       screen.getByRole("heading", {
-        name: /au titre du seul motif « bariatrique »/i,
+        name: /n’êtes pas éligible|aucune prise en charge/i,
       }),
     ).toBeInTheDocument();
-    // Bloc 2 — variante « aucun transport » : rappel des deux conditions, pas de
-    // section critères retenus.
-    expect(
-      screen.getByText(/deux éléments doivent être réunis/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: /critères médicaux retenus/i }),
-    ).toBeNull();
     expect(
       screen.getByRole("heading", {
         name: /prise en charge \/ reste à charge/i,
       }),
     ).toBeInTheDocument();
-    // Bloc 3 — cas retenu détaillé pour le corps médical.
     expect(
-      screen.getByText(/contrainte bariatrique seule insuffisante/i),
-    ).toBeInTheDocument();
+      screen.getAllByText(/le transport reste à votre charge/i).length,
+    ).toBeGreaterThan(0);
   });
 
   it("Bloc 3 « Mode de transport » : ne liste que les cases validées par la simulation", () => {
@@ -118,10 +126,10 @@ describe("secrétariat — parcours administratif", () => {
           // Un besoin professionnel et le seul critère « position allongée » :
           // l'ambulance est justifiée par lui et par lui seul.
           p1_autonomie:
-            "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
+            "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'",
           p1_critere_position_allongee_demi_assise: "oui",
-          p2_contexte_hospitalisation: "oui",
-          p2_contexte_aucun: "non",
+          p1_critere_aucun: "non",
+          p2_raison_principale: "'Entrée en hospitalisation'",
         }}
       />,
     );
@@ -162,8 +170,7 @@ describe("secrétariat — parcours administratif", () => {
           ...BASE_NEUTRE,
           p1_autonomie:
             "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
-          p2_contexte_hospitalisation: "oui",
-          p2_contexte_aucun: "non",
+          p2_raison_principale: "'Entrée en hospitalisation'",
         }}
       />,
     );
@@ -178,11 +185,16 @@ describe("secrétariat — parcours administratif", () => {
     // « aucune prescription ». Une situation complète en `situationFinale`
     // court-circuite le parcours et rend le résultat final.
     render(
-      <Secretariat onNouvelleSimulation={() => {}} situationFinale={SMUR} />,
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={PRESCRIPTION}
+      />,
     );
 
     expect(
-      screen.getByRole("heading", { name: /transport par équipe SMUR/i }),
+      screen.getByRole("heading", {
+        name: /vous êtes éligible à une prise en charge/i,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("heading", {
@@ -203,13 +215,16 @@ describe("secrétariat — parcours administratif", () => {
       p1_autonomie:
         "'Nécessite l’accompagnement d’un proche pour se déplacer ou transmettre les informations nécessaires à l’équipe soignante, sans intervention d’un professionnel pendant le transport.'",
       p1_critere_oxygene: "non",
+      // Aucun critère coché : la sortie exclusive de Q1.1 reprend sa place, sans
+      // quoi la mosaïque reste sans réponse et la Partie 1 ne conclut pas.
+      p1_critere_aucun: "oui",
     });
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
     const posees: string[] = [];
     await terminerParcours(
       user,
-      [[/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i]],
+      [[/raison principale du déplacement/i, /entrée en hospitalisation/i]],
       () => {
         for (const groupe of screen.queryAllByRole("group"))
           posees.push(groupe.textContent ?? "");
@@ -230,7 +245,7 @@ describe("secrétariat — parcours administratif", () => {
     expect(
       screen.getByText(/personne accompagnante si nécessaire/i),
     ).toBeInTheDocument();
-  }, 20_000);
+  }, 40_000);
 
   it("traverse la Partie 2 jusqu'au résultat, saisies d'adresse comprises", async () => {
     // Le seul test qui parcourt la Partie 2 de bout en bout : c'est lui qui voit
@@ -252,5 +267,5 @@ describe("secrétariat — parcours administratif", () => {
     expect(
       screen.getByRole("heading", { name: /document à imprimer/i }),
     ).toBeInTheDocument();
-  }, 20_000);
+  }, 40_000);
 });

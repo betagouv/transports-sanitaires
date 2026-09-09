@@ -165,16 +165,26 @@ front/                   le front, bundlé par Vite
 ## Le modèle de règles
 
 `regles/regles.publicodes` est livré de l'extérieur et intégré par recopie. C'est
-aujourd'hui la v9.5.1, qui compte 188 règles et 42 cibles. Le fichier livré ne porte pas
+aujourd'hui la v9.7.0, qui compte 294 règles et 74 cibles. Le fichier livré ne porte pas
 sa version : c'est `regles/VERSION` qui la porte à côté de lui, et c'est elle que le pied
 de page affiche. Une recopie met les deux à jour, sans quoi l'application annonce une
 version qu'elle n'exécute pas.
 
-Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 2.1.0) et une matrice
-de tests. Tous deux sont réencodés ici plutôt que chargés : le contrat se lit dans les
-composants, la matrice dans quatre fichiers de `tests/simulateur/`, un par sujet. Ces
-tests gardent les identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-003` et les
-autres) pour qu'un désaccord remonte au fournisseur sous son nom.
+Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.0.0), une matrice de
+tests et, depuis la v9.7, une correspondance documentaire. Tous sont réencodés ici plutôt
+que chargés : le contrat se lit dans les composants et dans `questionnaire/etapes.ts`, la
+matrice dans quatre fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
+identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001` et les autres) pour
+qu'un désaccord remonte au fournisseur sous son nom.
+
+Trois choses ont quitté le modèle en v9.7, et vivent désormais dans le code parce que le
+contrat d'interface les y met :
+
+| Ce que le modèle ne porte plus | Où c'est recopié |
+| --- | --- |
+| L'ordre du parcours et le rattachement d'une question à son étape (`spec_id`) | `questionnaire/etapes.ts` |
+| Les bornes d'une saisie chiffrée (minimum, maximum, entier) | `questionnaire/bornes-de-saisie.ts` |
+| Onze entrées que l'application calcule, jamais posées (`owner: application`) | `entrees-calculees.ts` |
 
 Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
 
@@ -187,7 +197,7 @@ Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
 ### Deux comportements que le modèle ne porte pas
 
 Le moteur calcule les cibles, mais ne pilote ni les écrans ni ce qui reste modifiable. Le
-contrat d'interface 2.0.0 décrit deux règles qu'il ne peut donc pas appliquer seul.
+contrat d'interface décrit deux règles qu'il ne peut donc pas appliquer seul.
 
 - **L'avancement automatique.** Une page qui n'est faite que de choix uniques avance seule
   200 ms après avoir été répondue, sans bouton « Suivant ». Au retour sur une page déjà

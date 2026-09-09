@@ -27,19 +27,21 @@ export type Reponses = {
 };
 
 /**
- * Les six valeurs de `cible_transport_sanitaire_prescrit`, recopiées mot pour mot
+ * Les cinq valeurs de `cible_transport_sanitaire_prescrit`, recopiées mot pour mot
  * du modèle. Nommées plutôt qu'écrites au point d'appel : depuis la v9.1 chaque
  * abréviation traîne sa définition, et la variante TPMR pèse à elle seule 150
  * caractères.
  */
 export const MODE = {
-  aucun: "aucun",
-  véhiculePersonnel: "véhicule personnel ou transport en commun",
+  // La v9.7 a scindé le mode non professionnalisé en deux, et retiré les deux
+  // sorties qui n'en étaient pas : « aucun », que la Partie 1 ne rend plus — elle
+  // conclut toujours sur un mode —, et le SMUR, dont la réponse a disparu de Q1.
+  véhiculePersonnel: "véhicule personnel",
+  transportEnCommun: "transport en commun terrestre",
   assis: "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
   assisTPMR:
     "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)",
   ambulance: "ambulance",
-  smur: "transport par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation)",
 } as const;
 
 type ModePrescrit = (typeof MODE)[keyof typeof MODE];
@@ -61,24 +63,21 @@ export function reponsesDe(
   };
 }
 
-/** Les possibilités de `p2_trajet_depart` (A4.2), mot pour mot. */
-export const DEPART = {
+/**
+ * Les possibilités des deux types de lieu, mot pour mot.
+ *
+ * La v9.5.1 les libellait différemment aux deux bouts — l'arrivée disait « un
+ * domicile différent du lieu de départ ». La v9.7 leur donne la même liste, plus
+ * longue de trois entrées : EHPAD, USLD et établissement pénitentiaire, que le
+ * modèle distinguait jusque-là par des exceptions.
+ */
+export const LIEU = {
   domicile: "Domicile",
+  ehpad: "EHPAD",
+  usld: "USLD",
   structure: "Structure de soins",
   autre: "Autre lieu",
-} as const;
-
-/** Les possibilités de `p2_trajet_arrivee` (A4.3), mot pour mot. */
-export const ARRIVEE = {
-  domicile: "Un domicile différent du lieu de départ.",
-  structure: "Une structure de soins différente du lieu de départ.",
-  autre: "Un autre lieu différent du lieu de départ.",
-} as const;
-
-/** Les possibilités de `p2_trajet_aller_retour` (A4.1), mot pour mot. */
-export const ALLER_RETOUR = {
-  identique: "aller-retour identique",
-  différent: "aller-retour différent",
+  penitentiaire: "Établissement pénitentiaire",
 } as const;
 
 /**
@@ -103,8 +102,7 @@ export const VALEURS_COMPAREES: ReadonlyArray<
   readonly [CleDeRegle, readonly string[]]
 > = [
   ["cible_transport_sanitaire_prescrit", Object.values(MODE)],
-  ["p2_trajet_depart", Object.values(DEPART)],
-  ["p2_trajet_arrivee", Object.values(ARRIVEE)],
-  ["p2_trajet_aller_retour", Object.values(ALLER_RETOUR)],
+  ["p2_trajet_depart", Object.values(LIEU)],
+  ["p2_trajet_arrivee", Object.values(LIEU)],
   ["cible_type_urgence", Object.values(URGENCE)],
 ];

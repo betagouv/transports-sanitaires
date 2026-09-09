@@ -72,6 +72,24 @@ function prescriptionMedicale({ transport }: Contexte): Verdict {
   };
 }
 
+// La permission temporaire de sortie admissible a son formulaire à elle depuis
+// la v9.7 : le S3141, que la circulaire CIR-16/2020 accompagne. Le contrat range
+// sa page de résultat en vert, comme la PMT — le droit est ouvert, sans réserve.
+function prescriptionS3141({ transport }: Contexte): Verdict {
+  return {
+    titre: "Vous êtes éligible à une prise en charge par l’Assurance Maladie",
+    corps: (
+      <>
+        <TransportPrescrit transport={transport} />
+        <p>
+          Document à remettre au patient : <strong>formulaire S3141</strong>,
+          pour un transport lié à une permission temporaire de sortie.
+        </p>
+      </>
+    ),
+  };
+}
+
 // Deux variantes exclusives depuis la v9.5.1 : l'accord se réserve, ou l'urgence
 // attestée dispense de l'attendre. C'est le modèle qui tranche
 // (`cible_attente_accord_prealable_requise`) ; le document, lui, reste une DAP
@@ -186,47 +204,6 @@ function prestationNonPriseEnCharge({ transport }: Contexte): Verdict {
   };
 }
 
-function smur(): Verdict {
-  return {
-    titre:
-      "Transport par équipe SMUR — Structure Mobile d’Urgence et de Réanimation",
-    corps: (
-      <>
-        <p>
-          Transport sanitaire prescrit :{" "}
-          <strong>transport par équipe SMUR</strong>.
-        </p>
-        <p>
-          Le transport est organisé dans le cadre de l’urgence médicale, par
-          l’équipe médicale ou l’établissement concerné.
-        </p>
-      </>
-    ),
-  };
-}
-
-// Le seul cas final qui, faute de prise en charge, oriente vers quelqu'un : la
-// contrainte bariatrique n'ouvre aucun droit mais laisse un besoin de véhicule
-// entier. Le modèle nomme l'interlocuteur ; sans cette phrase, le patient
-// repartirait avec un refus et rien d'autre.
-function bariatriqueSeul(): Verdict {
-  return {
-    titre:
-      "Aucun mode de transport n’est éligible à une prise en charge par l’Assurance Maladie au titre du seul motif « bariatrique ».",
-    corps: (
-      <>
-        <p>
-          Aucun transport sanitaire ne peut être prescrit par votre médecin.
-        </p>
-        <p>
-          Contactez l’établissement ou la coordination territoriale compétente
-          afin d’organiser un véhicule disposant de l’équipement adapté.
-        </p>
-      </>
-    ),
-  };
-}
-
 function permissionSortie(): Verdict {
   return {
     titre:
@@ -271,13 +248,11 @@ function TransportPrescrit({ transport }: { transport: string }) {
 
 const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
   "prescription médicale de transport": prescriptionMedicale,
+  "prescription S3141": prescriptionS3141,
   "demande d’accord préalable": accordPrealable,
   "convocation ou avis d’audience": convocation,
   "transport à la charge de l’établissement": chargeEtablissement,
-  "prestation non prise en charge par l’Assurance Maladie":
-    prestationNonPriseEnCharge,
-  SMUR: smur,
-  "bariatrique seul": bariatriqueSeul,
+  prestationNonPriseEnCharge,
   "permission de sortie sans motif médical": permissionSortie,
   "non éligible à une prise en charge par l’Assurance Maladie": nonEligible,
 };
@@ -285,12 +260,10 @@ const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
 // Teinte DSFR de l'alerte selon le cas final déterminé par le moteur.
 const TEINTE: Record<string, "success" | "info" | "warning" | "error"> = {
   "prescription médicale de transport": "success",
+  "prescription S3141": "success",
   "demande d’accord préalable": "info",
   "convocation ou avis d’audience": "success",
   "transport à la charge de l’établissement": "warning",
-  "prestation non prise en charge par l’Assurance Maladie": "error",
-  SMUR: "warning",
-  "bariatrique seul": "error",
   "permission de sortie sans motif médical": "error",
   "non éligible à une prise en charge par l’Assurance Maladie": "error",
 };

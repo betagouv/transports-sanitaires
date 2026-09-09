@@ -19,16 +19,12 @@
 // ce que font les seeds et le pré-remplissage du CERFA.
 
 import { describe, expect, it } from "vitest";
-import {
-  estApplicable,
-  evalue,
-  HOSPITALISATION,
-  PRO,
-} from "./situations-v9-5-1";
+import { estApplicable, evalue, HOSPITALISATION, PRO } from "./situations-v9-7";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,
   p1_critere_hygiene_desinfection: "oui",
+  p1_critere_aucun: "non",
   ...HOSPITALISATION,
 };
 
@@ -53,10 +49,13 @@ describe("saisies d'adresse — ce qu'une adresse obligatoire garantit", () => {
     // L'assertion qui aurait suffi à voir le défaut de la v9.1 : ces trois
     // règles y rendaient la dernière chaîne de leur conjonction.
     const moteur = evalue(PARCOURS_ADMINISTRATIF);
+    // La v9.5.1 portait deux règles de nom (`p2_*_nom_complete`) ; la v9.7 les a
+    // repliées dans la complétude de chaque page d'adresse, celle que le contrat
+    // d'interface attache à l'étape.
     for (const regle of [
       "p2_adresses_obligatoires_completes",
-      "p2_depart_nom_complete",
-      "p2_arrivee_nom_complete",
+      "p2_adresse_depart_obligatoire_complete",
+      "p2_adresse_arrivee_obligatoire_complete",
     ])
       expect(moteur.evaluate(regle).nodeValue, regle).toBeTypeOf("boolean");
   });
@@ -101,7 +100,7 @@ describe("saisies d'adresse — ce qu'une adresse obligatoire garantit", () => {
     for (const nom of [null, "''"]) {
       const moteur = evalue({ ...depuisUneStructure, p2_depart_nom_lieu: nom });
       expect(
-        moteur.evaluate("p2_depart_nom_complete").nodeValue,
+        moteur.evaluate("p2_adresse_depart_obligatoire_complete").nodeValue,
         `nom du lieu de départ = ${JSON.stringify(nom)}`,
       ).toBe(false);
     }
@@ -109,7 +108,9 @@ describe("saisies d'adresse — ce qu'une adresse obligatoire garantit", () => {
       ...depuisUneStructure,
       p2_depart_nom_lieu: "'CH de Vannes'",
     });
-    expect(renseigne.evaluate("p2_depart_nom_complete").nodeValue).toBe(true);
+    expect(
+      renseigne.evaluate("p2_adresse_depart_obligatoire_complete").nodeValue,
+    ).toBe(true);
   });
 });
 
@@ -131,42 +132,56 @@ const ARRIVEE = [
   "p2_arrivee_pays",
 ];
 
-// ADDRESS-005 du livrable v9.4.1 : quand chaque saisie a le droit d'être posée.
+// ADDRESS-005, revu par la v9.7 : quand le modèle ouvre chaque saisie.
 //
-// La v9.4.0 ouvrait D1 — le nom du lieu de départ — sur `p2_trajet_depart_repondu`
-// quand ses cinq voisines attendaient `p2_trajet_arrivee_repondu` : le nom du
-// lieu était applicable une question trop tôt, et D7 à D12 dès A4.3, sans
-// attendre la page de départ. Rien ne l'a jamais montré à l'écran — la
-// bibliothèque de formulaires ne dévoile qu'un pas à la fois —, d'où ce test au
-// ras du modèle : c'est le seul endroit d'où la correction se voit.
+// La v9.4.1 faisait attendre les douze saisies jusqu'à A4.3, le type du lieu
+// d'arrivée : on choisissait les deux types, puis on saisissait les deux
+// adresses. Le contrat d'interface de la v9.7 entrelace les deux — type de
+// départ, adresse de départ, type d'arrivée, adresse d'arrivée —, et c'est cet
+// ordre que `front/simulateur/questionnaire/etapes.ts` recopie.
+//
+// Rien ne le montre à l'écran, la bibliothèque de formulaires ne dévoilant qu'un
+// pas à la fois : d'où ce test au ras du modèle.
 describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () => {
-  const AVANT_A4_3 = {
+  const SANS_TYPE_DE_DEPART = {
     ...PARCOURS_ADMINISTRATIF,
-    p2_trajet_depart: "'Structure de soins'",
-    p2_trajet_arrivee: null,
+    p2_trajet_depart: null,
+    ...Object.fromEntries(DEPART.map((champ) => [champ, null])),
   };
 
-  it.each(DEPART)("%s attend la réponse à A4.3", (regle) => {
-    expect(estApplicable(evalue(AVANT_A4_3), regle)).not.toBe(true);
+  it.each(DEPART)("%s attend le type du lieu de départ", (regle) => {
+    expect(estApplicable(evalue(SANS_TYPE_DE_DEPART), regle)).not.toBe(true);
   });
 
-  it.each(DEPART)("%s s'ouvre une fois A4.3 répondue", (regle) => {
+  it.each(DEPART)("%s s'ouvre une fois le type de départ répondu", (regle) => {
     const apres = evalue({
-      ...AVANT_A4_3,
-      p2_trajet_arrivee:
-        "'Une structure de soins différente du lieu de départ.'",
-      ...Object.fromEntries(DEPART.map((champ) => [champ, null])),
+      ...SANS_TYPE_DE_DEPART,
+      p2_trajet_depart: "'Structure de soins'",
     });
     expect(estApplicable(apres, regle)).toBe(true);
   });
 
-  it.each(ARRIVEE)("%s attend la complétude de la page de départ", (regle) => {
+  it.each(ARRIVEE)("%s attend le type du lieu d’arrivée", (regle) => {
+    const sansType = evalue({
+      ...PARCOURS_ADMINISTRATIF,
+      p2_trajet_arrivee: null,
+      ...Object.fromEntries(ARRIVEE.map((champ) => [champ, null])),
+    });
+    expect(estApplicable(sansType, regle)).not.toBe(true);
+    // La base neutre répond au type et remplit les deux adresses.
+    expect(estApplicable(evalue(PARCOURS_ADMINISTRATIF), regle)).toBe(true);
+  });
+
+  it("ne pose le type du lieu d’arrivée qu’une fois le départ complet", () => {
+    // Le maillon qui tient la séquence : c'est lui, et non les six saisies
+    // d'arrivée, qui attend la complétude de la page de départ.
     const departIncomplet = evalue({
       ...PARCOURS_ADMINISTRATIF,
       p2_depart_commune: null,
     });
-    expect(estApplicable(departIncomplet, regle)).not.toBe(true);
-    // La base neutre remplit les deux adresses : le départ complet les ouvre.
-    expect(estApplicable(evalue(PARCOURS_ADMINISTRATIF), regle)).toBe(true);
+    expect(estApplicable(departIncomplet, "p2_trajet_arrivee")).not.toBe(true);
+    expect(
+      estApplicable(evalue(PARCOURS_ADMINISTRATIF), "p2_trajet_arrivee"),
+    ).toBe(true);
   });
 });

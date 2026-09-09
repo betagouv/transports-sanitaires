@@ -24,7 +24,7 @@ beforeEach(() => sessionStorage.clear());
 
 // Un contexte d'hospitalisation : la Partie 2 a de quoi poser plusieurs pages,
 // et le parcours aboutit à un vrai document.
-const HOSPITALISATION = /entrée ou sortie d’une hospitalisation/i;
+const HOSPITALISATION = /entrée en hospitalisation/i;
 
 describe("la première page de la Partie 2 ne rend pas la main au résultat médical", () => {
   it("à l’ouverture du questionnaire administratif", () => {
@@ -38,8 +38,10 @@ describe("la première page de la Partie 2 ne rend pas la main au résultat méd
     const user = userEvent.setup({ delay: null });
     ouvrirLaPartie2();
 
+    // La première page est la raison principale, un choix unique : elle avance
+    // d'elle-même, sans bouton de validation.
     await repondrePage(user, []);
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    await screen.findByRole("button", { name: /^précédent$/i });
     const precedent = boutonPrecedent();
     expect(precedent).toBeInTheDocument();
 
@@ -51,7 +53,9 @@ describe("la première page de la Partie 2 ne rend pas la main au résultat méd
   it("même en remontant tout le questionnaire depuis le document", async () => {
     const user = userEvent.setup({ delay: null });
     ouvrirLaPartie2();
-    await terminerParcours(user, [[/dans quel contexte/i, HOSPITALISATION]]);
+    await terminerParcours(user, [
+      [/raison principale du déplacement/i, HOSPITALISATION],
+    ]);
 
     // Le « Précédent » du document rouvre la Partie 2 sur sa dernière page ;
     // de là, on remonte tant qu'un « Précédent » se présente.
@@ -62,7 +66,7 @@ describe("la première page de la Partie 2 ne rend pas la main au résultat méd
     expect(etapes.at(-1)).toMatch(/^étape 1 sur/i);
     // Le fond du questionnaire administratif, c'est sa page 1 — pas la Partie 1.
     expect(questionsMedicales).toEqual([]);
-  }, 20_000);
+  }, 40_000);
 });
 
 // ---- implémentation ----

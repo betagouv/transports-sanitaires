@@ -14,7 +14,6 @@ import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { casesRetenues } from "../../front/simulateur/secretariat/cases-documentaires";
 import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
 import { moteurDeTest } from "./moteur";
-import { SMUR } from "./situations-v9-5-1";
 
 describe("nombre de transports", () => {
   it.each([
@@ -28,12 +27,13 @@ describe("nombre de transports", () => {
     ).toBeNull();
   });
 
-  // Sur une PMT comme sur une DAP, le parcours a toujours posé A3.2 : la valeur
-  // y est. Le repli se lit donc sur la table elle-même, à laquelle on présente
-  // une situation qui n'a jamais atteint la question — ici une urgence vitale,
-  // tranchée dès la Partie 1.
-  it("reste un rappel quand A3.2 n’a pas été posée", () => {
-    const moteur = moteurDeTest({ p1_autonomie: SMUR });
+  // Sur une PMT comme sur une DAP, le parcours a toujours posé le nombre de
+  // transports : la valeur y est. Le repli se lit donc sur la table elle-même,
+  // à laquelle on présente une situation qui n'a jamais atteint la question.
+  // La v9.5.1 y employait l'urgence vitale, tranchée dès la Partie 1 ; la v9.7
+  // a retiré cette sortie, et une situation vide fait le même office.
+  it("reste un rappel quand le nombre de transports n’a pas été posé", () => {
+    const moteur = moteurDeTest({});
     const trajet = casesRetenues(
       "prescription médicale de transport",
       moteur,

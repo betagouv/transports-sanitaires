@@ -24,12 +24,16 @@ beforeEach(() => sessionStorage.clear());
 
 const Q1 = /^concernant son déplacement, le patient/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
-const A4_1 = /Quel est le sens du déplacement concerné par cette évaluation \?/;
+// La v9.7 a remplacé le sens du déplacement par l'organisation des transports,
+// et sa première réponse — « trajets simples » — a pris le pluriel.
+const ORGANISATION = /Comment les transports sont-ils organisés \?/;
 
 // Une prestation prise en charge par l'Assurance Maladie : sans elle, le
 // parcours administratif se clôt avant les questions de trajet, et A4.1 —
 // la seule question à réponses en minuscule — ne serait jamais rencontrée.
-const PRISE_EN_CHARGE: Reponse[] = [[/à l’origine du déplacement/i, /^oui$/i]];
+// L'organisation ne se pose qu'à partir de deux transports prévus : la base
+// neutre en prévoit un, et la question resterait fermée.
+const PLUSIEURS_TRANSPORTS: Reponse[] = [[/combien de transports/i, "2"]];
 
 describe("toute réponse affichée commence par une majuscule", () => {
   it("dans le parcours médical, du premier écran au résultat", async () => {
@@ -52,12 +56,12 @@ describe("toute réponse affichée commence par une majuscule", () => {
     const user = userEvent.setup({ delay: null });
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
-    const vues = await parcourir(user, PRISE_EN_CHARGE);
+    const vues = await parcourir(user, PLUSIEURS_TRANSPORTS);
     expect(vues.filter(enMinuscule)).toEqual([]);
     // Le parcours a bien traversé A4.1 : sans cela, l'assertion ci-dessus
     // passerait sans avoir rien vérifié.
-    expect(vues).toContain("Aller simple");
-  }, 20_000);
+    expect(vues).toContain("Trajets simples");
+  }, 40_000);
 });
 
 // Même parcours administratif que ci-dessus, arrêté à A4.1 : il tient au budget
@@ -66,23 +70,23 @@ it("A4.1 — la valeur envoyée au moteur reste celle du modèle", async () => {
   const user = userEvent.setup({ delay: null });
   emettrePassation(PARTIE_1_AMBULANCE);
   render(<Secretariat onNouvelleSimulation={() => {}} />);
-  await allerAuGroupe(user, A4_1, PRISE_EN_CHARGE);
+  await allerAuGroupe(user, ORGANISATION, PLUSIEURS_TRANSPORTS);
 
-  const sens = within(screen.getByRole("group", { name: A4_1 }));
+  const sens = within(screen.getByRole("group", { name: ORGANISATION }));
   expect(valeurs(sens.getAllByRole("radio"))).toEqual([
-    "aller simple",
+    "trajets simples",
     "aller-retour identique",
     "aller-retour différent",
   ]);
 
-  // La preuve que le moteur l'a bien reçue telle quelle : A4.2 n'est posée que
-  // si `p2_trajet_aller_retour` égale l'une des trois valeurs du modèle. Une
-  // capitalisation en amont refermerait la branche.
-  await user.click(sens.getByRole("radio", { name: "Aller simple" }));
+  // La preuve que le moteur l'a bien reçue telle quelle : le type du lieu de
+  // départ n'est posé que si `p2_organisation_transports` égale l'une des trois
+  // valeurs du modèle. Une capitalisation en amont refermerait la branche.
+  await user.click(sens.getByRole("radio", { name: "Trajets simples" }));
   expect(
-    await screen.findByRole("group", { name: /lieu de départ du trajet/i }),
+    await screen.findByRole("group", { name: /type de lieu de départ/i }),
   ).toBeInTheDocument();
-}, 20_000);
+}, 40_000);
 
 // ---- implémentation ----
 

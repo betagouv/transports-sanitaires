@@ -1,72 +1,57 @@
-// A2.4 — la qualification précoce du dispositif Engagement maternité.
+// Le dispositif Engagement maternité, et la place qu'il occupe dans le parcours.
 //
-// La v9.4.0 ajoute une porte d'entrée au dispositif : quand aucun autre motif
-// n'ouvre le droit, le questionnaire administratif demande directement si le
-// déplacement en relève, au lieu de conclure à la non-éligibilité. Deux choses
-// doivent tenir. Le dispositif ne doit pas être reproposé ensuite dans A3.4, où
-// il figure aussi — le modèle y pourvoit en rendant A3.4 inapplicable, et c'est
-// ce qu'on vérifie ici de bout en bout. Et le mode médical, arrêté en Partie 1,
-// ne doit pas bouger : une question administrative n'a jamais ce pouvoir.
+// La v9.4.0 lui donnait une question à lui — A2.4 —, posée quand aucun autre
+// motif n'ouvrait le droit, et le reproposait dans la mosaïque des situations
+// particulières (A3.4). Deux endroits pour une même chose, que le modèle
+// s'employait à ne pas cumuler.
+//
+// La v9.7 a tranché : c'est un **contexte réglementaire**, coché dans la mosaïque
+// des contextes complémentaires, à côté de l'AT/MP et du retour pénitentiaire. Il
+// ne figure plus parmi les situations particulières, et n'a plus de question à
+// lui. Restent les deux choses qui comptaient déjà : il ouvre le droit sous
+// accord préalable, et le mode arrêté en Partie 1 ne bouge pas — une question
+// administrative n'a jamais ce pouvoir.
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import {
-  PARTIE_1_SANS_MOTIF,
-  type Reponse,
-  terminerParcours,
-} from "./parcours";
+import { PARTIE_1_SANS_MOTIF, terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-const MATERNITE = /dispositif Engagement maternité/i;
-const SITUATIONS_PARTICULIERES = /une ou plusieurs des situations suivantes/i;
+const MATERNITE = /engagement maternité/i;
+const SITUATIONS_PARTICULIERES = /une des situations suivantes/i;
 const VSL = "VSL (Véhicule Sanitaire Léger) ou taxi conventionné";
 
-// A2.3 : sans prestation prise en charge, le parcours conclut avant d'atteindre
-// A2.4. Le reste des questions est réglé par défaut.
-const PRESTATION_PRISE_EN_CHARGE: Reponse = [
-  /à l’origine du déplacement/i,
-  /^oui$/i,
-];
-
-describe("Engagement maternité — qualification précoce (A2.4)", () => {
-  it("est posée, et n’est jamais reproposée dans A3.4", async () => {
+describe("Engagement maternité — un contexte réglementaire", () => {
+  it("est coché parmi les contextes, et non parmi les situations particulières", async () => {
     const user = userEvent.setup({ delay: null });
     const groupesVus: string[] = [];
     emettrePassation(PARTIE_1_SANS_MOTIF);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
-    await terminerParcours(
-      user,
-      [PRESTATION_PRISE_EN_CHARGE, [MATERNITE, /^oui$/i]],
-      () => {
-        for (const groupe of screen.queryAllByRole("group"))
-          groupesVus.push(groupe.textContent ?? "");
-      },
-    );
+    await terminerParcours(user, [[MATERNITE]], () => {
+      for (const groupe of screen.queryAllByRole("group"))
+        groupesVus.push(groupe.textContent ?? "");
+    });
 
-    // Le dispositif est demandé une fois, et A3.4 — où il figure aussi — n'est
-    // jamais posée : le modèle la rend inapplicable dès qu'A2.4 a répondu.
-    // (`surLaPage` voit deux fois chaque page à avancement automatique ; c'est
-    // la présence qui compte ici, pas le compte.)
-    expect(groupesVus.some((vu) => MATERNITE.test(vu))).toBe(true);
-    expect(groupesVus.some((vu) => SITUATIONS_PARTICULIERES.test(vu))).toBe(
-      false,
+    // Les situations particulières restent posées — elles portent l'avion, le
+    // CAMSP et le SAMSAH —, mais le dispositif n'y figure plus.
+    const situations = groupesVus.filter((vu) =>
+      SITUATIONS_PARTICULIERES.test(vu),
     );
-  }, 20_000);
+    expect(situations.length).toBeGreaterThan(0);
+    expect(situations.some((vu) => MATERNITE.test(vu))).toBe(false);
+  }, 40_000);
 
   it("ouvre le droit sous accord préalable, sans toucher au mode médical", async () => {
     const user = userEvent.setup({ delay: null });
     emettrePassation(PARTIE_1_SANS_MOTIF);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
-    await terminerParcours(user, [
-      PRESTATION_PRISE_EN_CHARGE,
-      [MATERNITE, /^oui$/i],
-    ]);
+    await terminerParcours(user, [[MATERNITE]]);
 
     expect(
       screen.getByRole("heading", {
@@ -82,22 +67,5 @@ describe("Engagement maternité — qualification précoce (A2.4)", () => {
 
     // Le mode arrêté en Partie 1 est celui qu'affiche le document.
     expect(screen.getAllByText(VSL).length).toBeGreaterThan(0);
-  }, 20_000);
-
-  it("répondre « Non » referme le droit", async () => {
-    const user = userEvent.setup({ delay: null });
-    emettrePassation(PARTIE_1_SANS_MOTIF);
-    render(<Secretariat onNouvelleSimulation={() => {}} />);
-
-    await terminerParcours(user, [
-      PRESTATION_PRISE_EN_CHARGE,
-      [MATERNITE, /^non$/i],
-    ]);
-
-    expect(
-      screen.getByRole("heading", {
-        name: /n’êtes pas éligible|aucun transport sanitaire/i,
-      }),
-    ).toBeInTheDocument();
-  }, 20_000);
+  }, 40_000);
 });

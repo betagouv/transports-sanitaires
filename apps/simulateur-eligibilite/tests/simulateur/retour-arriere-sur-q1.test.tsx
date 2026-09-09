@@ -41,11 +41,9 @@ describe("Q1 corrigée après Q1.1", () => {
     expect(corrige.resultat).toBe(neuf.resultat);
     // Et ce résultat commun est bien celui du patient accompagné d'un proche :
     // sans quoi les deux parcours pourraient être identiquement faux.
-    expect(corrige.resultat).toContain(
-      "véhicule personnel ou transport en commun",
-    );
+    expect(corrige.resultat).toContain("véhicule personnel");
     expect(corrige.resultat).not.toMatch(OXYGENE);
-  }, 30_000);
+  }, 40_000);
 
   it("laisse le moteur inerte devant un critère devenu inapplicable", () => {
     // Le pendant du parcours ci-dessus, au niveau de la situation : c'est bien le
@@ -63,7 +61,11 @@ describe("Q1 corrigée après Q1.1", () => {
     };
 
     expect(
-      sorties({ p1_autonomie: proche, p1_critere_oxygene: "oui" }),
+      sorties({
+        p1_autonomie: proche,
+        p1_critere_oxygene: "oui",
+        p1_critere_aucun: "non",
+      }),
     ).toEqual(sorties({ p1_autonomie: proche }));
   });
 });

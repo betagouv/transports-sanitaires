@@ -32,8 +32,6 @@ const CIBLES_SEED = [
   // transport dont le régime n'est pas « assurance maladie » ne doit pas lui être
   // facturé.
   "cible_regime_financement",
-  // Article 80 : ce qui distingue deux transports à la charge de l'établissement.
-  "cible_article_80_situation_specifique",
 ] as const satisfies readonly Cible[];
 
 export type CibleSeed = (typeof CIBLES_SEED)[number];

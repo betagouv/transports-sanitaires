@@ -37,19 +37,22 @@ const documentTelechargeable = (situation: Situation<string>) => (
 const PRESCRIPTION: Situation<string> = {
   ...BASE_NEUTRE,
   p1_autonomie:
-    "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
+    "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'",
   p1_critere_position_allongee_demi_assise: "oui",
   p1_critere_brancardage_portage: "oui",
-  p2_contexte_hospitalisation: "oui",
-  p2_contexte_aucun: "non",
-  p2_trajet_aller_retour: "'aller-retour identique'",
+  p1_critere_aucun: "non",
+  p2_raison_principale: "'Entrée en hospitalisation'",
+  p2_organisation_transports: "'aller-retour identique'",
   p2_nombre_transports_prevus: "2",
 };
 
 /** Même situation, mais > 150 km : bascule sur une demande d'accord préalable. */
 const ACCORD_PREALABLE: Situation<string> = {
   ...PRESCRIPTION,
-  p2_distance_aller_superieure_150km: "oui",
+  p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+  p2_justification_longue_distance:
+    "'Plateau technique spécialisé indisponible à moins de 150 km.'",
 };
 
 /** Un cas final qui nomme un document, mais dont nous ne produisons aucun CERFA. */

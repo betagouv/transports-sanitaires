@@ -29,6 +29,7 @@ import {
   QUESTIONS,
   REGLES_LUES,
 } from "../front/simulateur/contrat-regles-publicodes.ts";
+import { ETAPES } from "../front/simulateur/questionnaire/etapes.ts";
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -39,12 +40,50 @@ const sourceDesRegles = readFileSync(
 
 const regles = yaml.load(sourceDesRegles) as Record<
   string,
-  { "une possibilité"?: string[]; question?: string } | null
+  { "une possibilité"?: string[]; question?: string; valeur?: unknown } | null
 >;
 
-/** Les valeurs d'une règle `une possibilité`, débarrassées de leurs quotes. */
+/**
+ * Les valeurs qu'une règle peut rendre, débarrassées de leurs quotes.
+ *
+ * Deux façons de les déclarer, et le modèle emploie les deux. Une question les
+ * énumère en `une possibilité` ; une sortie calculée les produit une par une, au
+ * fil des `variations`. Jusqu'en v9.5.1 les cibles comparées ici portaient une
+ * énumération ; la v9.7 les calcule toutes, d'où la seconde lecture.
+ */
 function possibilites(cle: string): string[] {
-  return (regles[cle]?.["une possibilité"] ?? []).map((v) => v.slice(1, -1));
+  const corps = regles[cle];
+  const enumerees = (corps?.["une possibilité"] ?? []).map((v) =>
+    v.slice(1, -1),
+  );
+  return [...enumerees, ...calculees(corps?.valeur)];
+}
+
+// Les littéraux texte que produisent les branches d'une `valeur` : `'…'` en
+// publicodes, c'est-à-dire une chaîne entre quotes simples à l'intérieur du YAML.
+//
+// Une branche peut aussi déléguer à une autre règle plutôt que de rendre un
+// littéral — le transport prescrit finit par `sinon: p1_mode_transport_medical`,
+// qui porte les trois modes sanitaires. On la suit donc, sans jamais repasser
+// deux fois par la même : le modèle n'a pas de cycle, mais rien ne l'interdit.
+function calculees(valeur: unknown, vues = new Set<string>()): string[] {
+  if (typeof valeur === "string") {
+    if (valeur.startsWith("'") && valeur.endsWith("'"))
+      return [valeur.slice(1, -1)];
+    if (!(valeur in regles) || vues.has(valeur)) return [];
+    vues.add(valeur);
+    return [
+      ...(regles[valeur]?.["une possibilité"] ?? []).map((v) => v.slice(1, -1)),
+      ...calculees(regles[valeur]?.valeur, vues),
+    ];
+  }
+  if (Array.isArray(valeur))
+    return valeur.flatMap((sous) => calculees(sous, vues));
+  if (valeur !== null && typeof valeur === "object")
+    return Object.entries(valeur).flatMap(([cle, sous]) =>
+      cle === "si" ? [] : calculees(sous, vues),
+    );
+  return [];
 }
 
 /** Tous les fichiers TypeScript des racines données, ce fichier-ci excepté. */
@@ -115,11 +154,23 @@ describe("modèle sans redondance", () => {
     expect(declarees.length).toBe(Object.keys(regles).length);
   });
 
-  it("ne pose jamais deux fois le même énoncé", () => {
-    const poses = Object.values(regles)
-      .map((corps) => corps?.question)
-      .filter((question) => question !== undefined);
-    expect(poses.length).toBe(new Set(poses).size);
+  // Le même énoncé peut se retrouver d'une étape à l'autre, et c'est voulu :
+  // « Aucune de ces situations » clôt les huit mosaïques, « Code postal » se pose
+  // au départ comme à l'arrivée, et les trois listes d'exonération du ticket
+  // modérateur reprennent les mêmes cas, une par document — le contrat interdit
+  // justement de reporter les réponses de l'une sur l'autre.
+  //
+  // Ce qui reste interdit, c'est de le poser deux fois **sur le même écran** :
+  // là, le prescripteur verrait deux cases identiques sans pouvoir les
+  // distinguer, et un test d'interface qui vise l'une trouverait l'autre.
+  it("ne pose jamais deux fois le même énoncé sur une même étape", () => {
+    const doublons = ETAPES.flatMap((etape) => {
+      const poses = etape.champs
+        .map((champ) => regles[champ]?.question)
+        .filter((question) => question !== undefined);
+      return poses.length === new Set(poses).size ? [] : [etape.id];
+    });
+    expect(doublons).toEqual([]);
   });
 });
 
@@ -133,7 +184,9 @@ describe("valeurs comparées aux sorties du moteur", () => {
     ["transport", "cible_transport_sanitaire_prescrit"],
     ["doc", "cible_document_a_remettre_au_patient"],
     ["resultatMedical", "cible_resultat_medical"],
-    ["article80.mode", "cible_article_80_mode"],
+    // L'Article 80 n'a plus de cible de mode à lui depuis la v9.7 : il lit le
+    // transport prescrit, comme le reste du produit.
+    ["article80.mode", "cible_transport_sanitaire_prescrit"],
   ];
 
   it.each(SORTIES)("%s ne se compare qu'à des valeurs de %s", (nom, regle) => {

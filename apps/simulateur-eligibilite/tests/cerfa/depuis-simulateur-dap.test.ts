@@ -51,7 +51,7 @@ describe("le motif de la demande", () => {
     ["secretariat-engagement-maternite-entree", "/engag"],
     ["secretariat-maternite-eloignee", "/engag"],
   ])("%s coche « km » en %s", async (seed, état) => {
-    expect((await depuisLaSeed(seed))["km"]).toBe(état);
+    expect((await depuisLaSeed(seed)).km).toBe(état);
   });
 
   it("l’avion ou le bateau a son propre champ, et sa situation liée", async () => {
@@ -59,7 +59,7 @@ describe("le motif de la demande", () => {
     expect(lu["bat ou av"]).toBe("/Oui");
     // La notice réserve le bloc « à quelle situation est liée le transport » au
     // seul avion ou bateau, et n'en admet qu'une : ici l'hospitalisation.
-    expect(lu["sit"]).toBe("/Oui");
+    expect(lu.sit).toBe("/Oui");
     expect(lu).not.toHaveProperty("km");
   });
 
@@ -94,10 +94,15 @@ describe("le motif de la demande", () => {
     const lesDeux = {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_hygiene_desinfection: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
+      // Deux mosaïques distinctes depuis la v9.7 : le CAMSP est une situation
+      // spéciale, l'engagement maternité un contexte réglementaire. Chacune
+      // demande donc qu'on décoche sa propre sortie exclusive.
       p2_special_camsp_cmpp: "oui",
-      p2_special_engagement_maternite: "oui",
       p2_special_aucune: "non",
+      p2_contexte_engagement_maternite: "oui",
+      p2_contexte_aucun: "non",
     };
     const moteur = moteurDeTest().setSituation(situation(lesDeux) as never);
     expect(moteur.evaluate("cible_dap_motif_camsp_cmpp").nodeValue).toBe(true);
@@ -107,7 +112,7 @@ describe("le motif de la demande", () => {
 
     // C'est le premier de l'ordre de la notice qui l'emporte : cocher un motif
     // vrai vaut mieux que n'en cocher aucun, ce qui laisserait la demande muette.
-    expect((await depuisLaSituation(lesDeux))["km"]).toBe("/camsp");
+    expect((await depuisLaSituation(lesDeux)).km).toBe("/camsp");
   });
 });
 
@@ -118,8 +123,12 @@ describe("le reste du formulaire", () => {
       p1_autonomie: AIDE_PROFESSIONNEL,
       p1_critere_oxygene: "oui",
       p1_critere_brancardage_portage: "oui",
+      p1_critere_aucun: "non",
       ...HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     });
 
     expect(lu).toMatchObject({ oxy: "/Oui", branc: "/Oui" });

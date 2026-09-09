@@ -10,7 +10,7 @@
 // document (`Secretariat.tsx`), et la pagination réunit leurs pages par lieu
 // (`questionnaire/pagination.ts`).
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
@@ -27,29 +27,22 @@ import {
 beforeEach(() => sessionStorage.clear());
 
 // Le trajet le plus complet : ni le départ ni l'arrivée ne sont un domicile,
-// donc les deux noms de lieu (D1, D7) sont demandés en plus des dix autres.
+// donc les deux noms de lieu sont demandés en plus des dix autres.
 const ENTRE_STRUCTURES: Reponse[] = [
-  [/à l’origine du déplacement/i, /^oui$/i],
-  [/lieu de départ du trajet/i, /^structure de soins$/i],
-  [/lieu d’arrivée du trajet/i, /une structure de soins différente/i],
+  [/type de lieu de départ/i, /^structure de soins$/i],
+  [/type de lieu d’arrivée/i, /^structure de soins$/i],
 ];
 
-const SAISIES_DEPART = [
-  "Quel est le nom de la structure ou du lieu de départ ?",
-  "Quelle est l’adresse du lieu de départ ?",
-  "Quel est le complément d’adresse du lieu de départ ?",
-  "Quel est le code postal du lieu de départ ?",
-  "Quelle est la commune du lieu de départ ?",
-  "Quel est le pays du lieu de départ si celui-ci se situe hors de France ?",
-];
-
-const SAISIES_ARRIVEE = [
-  "Quel est le nom de la structure ou du lieu d’arrivée ?",
-  "Quelle est l’adresse du lieu d’arrivée ?",
-  "Quel est le complément d’adresse du lieu d’arrivée ?",
-  "Quel est le code postal du lieu d’arrivée ?",
-  "Quelle est la commune du lieu d’arrivée ?",
-  "Quel est le pays du lieu d’arrivée si celui-ci se situe hors de France ?",
+// La v9.7 a raccourci les six intitulés, et les donne identiques aux deux lieux :
+// c'est la page qui dit lequel on saisit, plus l'énoncé de chaque champ. Les deux
+// écrans ne se distinguent donc plus que par leur rang dans le parcours.
+const SAISIES_DU_LIEU = [
+  "Nom du lieu",
+  "Numéro et libellé de la voie",
+  "Complément d’adresse (optionnel)",
+  "Code postal",
+  "Ville",
+  "Pays - à renseigner uniquement si le lieu se situe hors de France",
 ];
 
 describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
@@ -58,8 +51,8 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
 
     // Les six sont là, ensemble, dans l'ordre du formulaire papier — et rien de
     // l'arrivée ne s'y mêle : c'est l'autre page.
-    expect(intitulés()).toEqual(SAISIES_DEPART);
-  }, 30_000);
+    expect(intitulés()).toEqual(SAISIES_DU_LIEU);
+  }, 40_000);
 
   it("ne passe au lieu d'arrivée qu'une fois le départ renseigné", async () => {
     const user = await ouvrirLesAdresses(ENTRE_STRUCTURES);
@@ -68,21 +61,32 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
 
     // Le complément est offert, pas exigé : le remplir ne libère rien, et ne pas
     // le remplir ne retient rien non plus.
-    await user.type(champ(/complément d’adresse du lieu de départ/i), "B");
+    await user.type(champ(/^Complément d’adresse \(optionnel\)$/i), "B");
     expect(suivant()).toBeDisabled();
 
-    for (const [libellé, valeur] of DEPART_COMPLET)
+    for (const [libellé, valeur] of LIEU_COMPLET)
       await user.type(champ(libellé), valeur);
-    expect(champ(/^Quelle est l’adresse du lieu de départ/i)).toHaveValue(
-      "1 rue A",
-    );
+    expect(champ(/^Numéro et libellé de la voie$/i)).toHaveValue("1 rue A");
     expect(suivant()).toBeEnabled();
 
+    // La v9.7 entrelace type et adresse : c'est le type du lieu d'arrivée qui
+    // suit la page du départ, et l'adresse d'arrivée vient derrière lui.
     await user.click(suivant());
-    expect(intitulés()).toEqual(SAISIES_ARRIVEE);
-  }, 30_000);
+    const typeArrivee = screen.getByRole("group", {
+      name: /type de lieu d’arrivée/i,
+    });
+    expect(typeArrivee).toBeInTheDocument();
 
-  it("suit la séquence du contrat : A4.2, A4.3, départ, arrivée, A4.6", async () => {
+    // Et l'adresse d'arrivée vient derrière lui, ses six saisies d'un bloc.
+    await user.click(
+      within(typeArrivee).getByRole("radio", {
+        name: /^structure de soins$/i,
+      }),
+    );
+    expect(await screen.findAllByRole("textbox")).toHaveLength(6);
+  }, 40_000);
+
+  it("suit la séquence du contrat : départ, son adresse, arrivée, son adresse, distance", async () => {
     // ADDRESS-SEQUENCE-001 et 002 du livrable v9.4.1 : l'ordre du trajet, vu de
     // l'écran. C'est ce test qui le tient depuis que la pagination a cessé de
     // renvoyer les deux pages d'adresse en queue de parcours — le désordre
@@ -103,12 +107,12 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
     const début = rencontrées.findIndex((page) => SEQUENCE[0].test(page.titre));
     expect(début, "A4.2 jamais posée").toBeGreaterThanOrEqual(0);
     const suite = rencontrées.slice(début, début + SEQUENCE.length);
-    // A4.2 et A4.3 ne portent aucune saisie — aucune adresse ne part devant —,
-    // et chaque lieu arrive d'un bloc, ses six saisies ensemble.
-    expect(suite.map((page) => page.saisies)).toEqual([0, 0, 6, 6, 0]);
+    // Les questions de type ne portent aucune saisie, et chaque lieu arrive d'un
+    // bloc, ses six saisies ensemble.
+    expect(suite.map((page) => page.saisies)).toEqual([0, 6, 0, 6, 0]);
     for (const [rang, attendu] of SEQUENCE.entries())
       expect(suite[rang]?.titre ?? "", `page ${rang + 1}`).toMatch(attendu);
-  }, 30_000);
+  }, 40_000);
 
   it("s'atteint d'un clic depuis la galerie de seeds", () => {
     // `secretariat-saisie-adresses` existe pour cet écran : elle répond à tout
@@ -117,7 +121,7 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
     emettrePassation(situationDe(seedParId("secretariat-saisie-adresses")));
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
-    expect(intitulés()).toEqual(SAISIES_DEPART);
+    expect(intitulés()).toEqual(SAISIES_DU_LIEU);
     for (const champ of screen.getAllByRole("textbox"))
       expect(champ).toHaveValue("");
   });
@@ -132,18 +136,19 @@ describe("saisies d'adresse — ce que l'utilisateur rencontre", () => {
     ]);
 
     expect(intitulés()).toEqual(
-      SAISIES_DEPART.filter((libellé) => !libellé.includes("nom de la")),
+      SAISIES_DU_LIEU.filter((libellé) => !libellé.includes("nom de la")),
     );
-  }, 30_000);
+  }, 40_000);
 });
 
 // ---- implémentation ----
 
-const DEPART_COMPLET: Array<[RegExp, string]> = [
-  [/nom de la structure ou du lieu de départ/i, "CHBA"],
-  [/^Quelle est l’adresse du lieu de départ/i, "1 rue A"],
-  [/code postal du lieu de départ/i, "56000"],
-  [/commune du lieu de départ/i, "Vannes"],
+// Les quatre saisies obligatoires d'un lieu, dans l'ordre où la page les pose.
+const LIEU_COMPLET: Array<[RegExp, string]> = [
+  [/^Nom du lieu$/i, "CHBA"],
+  [/^Numéro et libellé de la voie$/i, "1 rue A"],
+  [/^Code postal$/i, "56000"],
+  [/^Ville$/i, "Vannes"],
 ];
 
 /** Ouvre la Partie 2 et la traverse jusqu'à la page du lieu de départ. */
@@ -156,16 +161,19 @@ async function ouvrirLesAdresses(reponses: Reponse[]) {
 }
 
 /**
- * L'ordre que le contrat impose au trajet : le lieu de départ, le lieu
- * d'arrivée, les six saisies du départ, celles de l'arrivée, puis A4.6. Chaque
- * motif nomme la première question de sa page.
+ * L'ordre que le contrat impose au trajet. La v9.5.1 posait les deux types de
+ * lieu puis les deux adresses ; la v9.7 les entrelace — chaque lieu se décrit
+ * derrière son propre type — et referme sur la tranche de distance.
+ *
+ * Chaque motif nomme la première question de sa page. Les deux pages d'adresse
+ * portent le même intitulé de tête : c'est leur rang qui les sépare.
  */
 const SEQUENCE = [
-  /lieu de départ du trajet concerné/,
-  /lieu d’arrivée du trajet concerné/,
-  /nom de la structure ou du lieu de départ/,
-  /nom de la structure ou du lieu d’arrivée/,
-  /accident causé par un tiers/,
+  /type de lieu de départ/,
+  /Nom du lieu/,
+  /type de lieu d’arrivée/,
+  /Nom du lieu/,
+  /distance du trajet aller/,
 ] as const;
 
 /**

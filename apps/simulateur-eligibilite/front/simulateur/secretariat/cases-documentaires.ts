@@ -76,15 +76,15 @@ const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
     texte: "Transport partagé incompatible.",
     visible: (e) => vrai(e, "cible_transport_partage_incompatible"),
   },
+  // La v9.5.1 réunissait les deux sous un seul mode, et cochait donc les deux
+  // cases ensemble. La v9.7 fait choisir le prescripteur : une case chacune.
   {
     texte: "Moyen de transport individuel.",
-    visible: (_e, transport) =>
-      transport === "véhicule personnel ou transport en commun",
+    visible: (_e, transport) => transport === "véhicule personnel",
   },
   {
     texte: "Transport en commun terrestre.",
-    visible: (_e, transport) =>
-      transport === "véhicule personnel ou transport en commun",
+    visible: (_e, transport) => transport === "transport en commun terrestre",
   },
   {
     texte: "Personne accompagnante si nécessaire.",

@@ -59,16 +59,13 @@ export function Bloc3CasRetenu({
 const CAS_RETENU: Record<string, string> = {
   "prescription médicale de transport":
     "PMT (Prescription Médicale de Transport)",
+  "prescription S3141":
+    "S3141 — prescription de transport pour permission temporaire de sortie",
   "demande d’accord préalable": "DAP (Demande d’Accord Préalable)",
   "convocation ou avis d’audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
   "transport à la charge de l’établissement":
     "Transport à charge de l’établissement de santé",
-  "prestation non prise en charge par l’Assurance Maladie":
-    "Prestation à l’origine du déplacement non prise en charge par l’Assurance Maladie",
-  SMUR: "Transport par équipe SMUR",
-  "bariatrique seul":
-    "Contrainte bariatrique seule insuffisante pour une prise en charge Assurance Maladie",
   "permission de sortie sans motif médical":
     "Permission de sortie demandée par le patient, sans motif médical",
   "non éligible à une prise en charge par l’Assurance Maladie":
@@ -84,25 +81,6 @@ function NoteCorpsMedical({
   casFinal: string;
   article80: Article80;
 }) {
-  if (casFinal === "prestation non prise en charge par l’Assurance Maladie") {
-    return (
-      <div className="fr-mt-2w">
-        <p>
-          L’absence de prise en charge de la consultation, du soin, de l’examen
-          ou de la prestation à l’origine du déplacement exclut la prise en
-          charge du transport dans ce parcours.
-        </p>
-        <p>
-          Cette règle est prioritaire sur le mode de transport retenu, y compris
-          lorsqu’une ambulance est médicalement justifiée.
-        </p>
-        <p>
-          Ne pas établir de PMT ou de DAP ouvrant droit à une prise en charge
-          par l’Assurance Maladie pour ce déplacement.
-        </p>
-      </div>
-    );
-  }
   if (casFinal === "transport à la charge de l’établissement") {
     return (
       <div className="fr-mt-2w">
@@ -117,8 +95,7 @@ function NoteCorpsMedical({
 // pas retenu, et surtout borner la portée de cette conclusion — elle ne touche ni
 // le mode verrouillé, ni les autres motifs réglementaires.
 function QualificationDuMotifAld({ e }: Pick<Props, "e">) {
-  if (!vrai(e, "cible_ald_non_retenue_absence_incapacite_deficience"))
-    return null;
+  if (!vrai(e, "p1_m0_ald") || vrai(e, "cible_situation_ald")) return null;
   return (
     <div className="fr-mt-2w">
       <p className="fr-mb-1v">
@@ -144,7 +121,7 @@ function TracabiliteDuMotifAld({ e, casFinal }: Pick<Props, "e" | "casFinal">) {
   const documente =
     casFinal === "prescription médicale de transport" ||
     casFinal === "demande d’accord préalable";
-  if (!documente || !vrai(e, "cible_ald_reconnue_liee_aux_soins")) return null;
+  if (!documente || !vrai(e, "cible_situation_ald")) return null;
   return (
     <div className="fr-mt-2w">
       <p className="fr-mb-1v">

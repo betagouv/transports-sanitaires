@@ -84,22 +84,19 @@ export const CRITERES: EntreeVulgarisee[] = [
   },
 ];
 
-// Cas particuliers médicaux — mosaïque `p1_cas_particuliers_medicaux` (M0). Ils
-// ne changent pas le mode retenu, sauf la contrainte bariatrique seule et la
-// permission de sortie, qui tranchent le parcours dès la Partie 1. Le SMUR
-// tranchait de même ; depuis la v9.5.0, il se qualifie en Q1 et n'est plus ici.
+// Cas particuliers médicaux — mosaïque `p1_cas_particuliers_medicaux` (M0).
+//
+// Aucun ne tranche plus le parcours : la v9.7 a retiré les sorties directes de la
+// Partie 1, et déplacé la permission de sortie en Partie 2, où elle se qualifie
+// par la raison principale. Elle a aussi défait la case unique « séance », que
+// trois cases remplacent — chimiothérapie, radiothérapie et dialyse en centre —,
+// détachées de l'ALD.
 export const CAS_PARTICULIERS: EntreeVulgarisee[] = [
   {
     id: "p1_m0_bariatrique",
     libelle: "Équipement bariatrique adapté requis",
     description:
       "Le véhicule utilisé doit disposer d’un équipement adapté à votre morphologie ou à votre poids.",
-  },
-  {
-    id: "p1_m0_permission_sans_motif_medical",
-    libelle: "Permission de sortie demandée sans motif médical",
-    description:
-      "Le déplacement correspond à une permission de sortie que vous avez demandée, sans motif médical.",
   },
   {
     id: "p1_m0_ald",
@@ -109,10 +106,22 @@ export const CAS_PARTICULIERS: EntreeVulgarisee[] = [
       "Le transport est lié à une maladie reconnue comme affection de longue durée par l’Assurance Maladie.",
   },
   {
-    id: "p1_m0_seance",
-    libelle: "Séance de dialyse, de radiothérapie ou de chimiothérapie",
+    id: "p1_m0_seance_chimiotherapie",
+    libelle: "Séance de chimiothérapie",
     description:
-      "Le transport est lié à une séance de soins répétée ou spécialisée, hémodialyse comprise.",
+      "Le transport est lié à une séance de chimiothérapie, un soin répété et spécialisé.",
+  },
+  {
+    id: "p1_m0_seance_radiotherapie",
+    libelle: "Séance de radiothérapie",
+    description:
+      "Le transport est lié à une séance de radiothérapie, un soin répété et spécialisé.",
+  },
+  {
+    id: "p1_m0_seance_dialyse_centre",
+    libelle: "Séance de dialyse en centre",
+    description:
+      "Le transport est lié à une séance de dialyse en centre, hémodialyse comprise.",
   },
   {
     id: "p1_m0_aucun",

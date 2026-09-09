@@ -12,8 +12,9 @@
 // verrouillage, contenus interdits) ne sont nulle part ici : elles relèvent des
 // tests d'interface.
 
-import { describe } from "vitest";
+import { describe, expect, it } from "vitest";
 import { type Cas, rejouerLaMatrice } from "./matrice";
+import { moteurDeTest } from "./moteur";
 import {
   ALD,
   AUTONOME,
@@ -23,15 +24,10 @@ import {
   PMT,
   PRO,
   PROCHE,
-  SMUR,
-  TPMR,
   VSL,
-} from "./situations-v9-5-1";
+} from "./situations-v9-7";
 
-const PRESTATION_NON_PRISE_EN_CHARGE =
-  "prestation non prise en charge par l’Assurance Maladie";
-
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-5-1`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7`.
 const matrice: Cas[] = [
   {
     id: "ALD-001",
@@ -48,8 +44,7 @@ const matrice: Cas[] = [
     expect: {
       p1_ald_incapacite_ou_deficience: true,
       p1_ald_validee: true,
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
+      cible_transport_sanitaire_prescrit: "véhicule personnel",
       cible_cas_final: PMT,
     },
   },
@@ -58,7 +53,11 @@ const matrice: Cas[] = [
     // une déficience, et rien d'autre. Elle ouvre droit de son côté, en motif
     // indépendant — d'où une PMT alors que l'ALD n'est pas retenue.
     id: "ALD-003",
-    given: { p1_autonomie: AUTONOME, ...ALD, p1_m0_seance: "oui" },
+    given: {
+      p1_autonomie: AUTONOME,
+      ...ALD,
+      p1_m0_seance_chimiotherapie: "oui",
+    },
     expect: {
       p1_ald_incapacite_ou_deficience: false,
       p1_ald_validee: false,
@@ -66,63 +65,12 @@ const matrice: Cas[] = [
     },
   },
   {
-    id: "PRESTA-001",
-    given: {
-      p1_autonomie: PRO,
-      p1_critere_oxygene: "oui",
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
-    },
-    expect: {
-      cible_transport_sanitaire_prescrit: "ambulance",
-      cible_cas_final: "prestation non prise en charge par l’Assurance Maladie",
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-  // ACTES-TARIFES-001 : un acte non tarifé ferme la prise en charge du
-  // transport, quel que soit le mode que la Partie 1 a verrouillé. PRESTA-001
-  // couvre l'ambulance ; les trois autres modes valent d'être vus aussi.
-  {
-    id: "ACTES-TARIFES-001 · TPMR",
-    given: {
-      p1_autonomie: PRO,
-      p1_critere_fauteuil_sans_transfert: "oui",
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
-    },
-    expect: {
-      cible_transport_sanitaire_prescrit: TPMR,
-      cible_cas_final: PRESTATION_NON_PRISE_EN_CHARGE,
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-  {
-    id: "ACTES-TARIFES-001 · VSL ou taxi conventionné",
-    given: {
-      p1_autonomie: PRO,
-      p1_critere_hygiene_desinfection: "oui",
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
-    },
-    expect: {
-      cible_transport_sanitaire_prescrit: VSL,
-      cible_cas_final: PRESTATION_NON_PRISE_EN_CHARGE,
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-  {
-    id: "ACTES-TARIFES-001 · véhicule personnel",
-    given: {
-      p1_autonomie: AUTONOME,
-      p2_prestation_prise_en_charge_assurance_maladie: "non",
-    },
-    expect: {
-      cible_transport_sanitaire_prescrit:
-        "véhicule personnel ou transport en commun",
-      cible_cas_final: PRESTATION_NON_PRISE_EN_CHARGE,
-      cible_document_a_remettre_au_patient: "aucun document",
-    },
-  },
-  {
     id: "MOTIF-001",
-    given: { p1_autonomie: PRO, p1_critere_aide_professionnel: "oui" },
+    given: {
+      p1_autonomie: PRO,
+      p1_critere_aide_professionnel: "oui",
+      p1_critere_aucun: "non",
+    },
     expect: {
       cible_transport_sanitaire_prescrit: VSL,
       p2_motif_ouvrant_droit: false,
@@ -131,7 +79,12 @@ const matrice: Cas[] = [
   },
   {
     id: "AMBULANCE-001",
-    given: { p1_autonomie: PRO, p1_critere_oxygene: "oui", ...HOSPITALISATION },
+    given: {
+      p1_autonomie: PRO,
+      p1_critere_oxygene: "oui",
+      p1_critere_aucun: "non",
+      ...HOSPITALISATION,
+    },
     expect: {
       cible_transport_sanitaire_prescrit: "ambulance",
       p2_accord_prealable_requis: false,
@@ -159,11 +112,6 @@ const matrice: Cas[] = [
     expect: { cible_accompagnant_necessaire: false },
   },
   {
-    id: "ACCOMPAGNANT-001 · urgence vitale SMUR",
-    given: { p1_autonomie: SMUR },
-    expect: { cible_accompagnant_necessaire: false },
-  },
-  {
     id: "ACCOMPAGNANT-001 · Q1 sans réponse",
     given: { p1_autonomie: null, ...HOSPITALISATION },
     expect: { cible_accompagnant_necessaire: undefined },
@@ -178,8 +126,7 @@ const matrice: Cas[] = [
       cible_accompagnant_necessaire: true,
       p2_accord_prealable_requis: false,
       cible_cas_final: PMT,
-      cible_document_a_remettre_au_patient:
-        "PMT (Prescription Médicale de Transport)",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
     },
   },
   {
@@ -187,7 +134,10 @@ const matrice: Cas[] = [
     given: {
       p1_autonomie: PROCHE,
       ...HOSPITALISATION,
-      p2_distance_aller_superieure_150km: "oui",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
     },
     expect: {
       cible_accompagnant_necessaire: true,
@@ -200,4 +150,33 @@ const matrice: Cas[] = [
 
 describe("modèle v9.5.1 — le droit ouvert et le mode médical", () => {
   rejouerLaMatrice(matrice);
+});
+
+// PRESTA-001 et ACTES-TARIFES-001 constataient qu'un acte non tarifé fermait la
+// prise en charge du transport, quel que soit le mode verrouillé en Partie 1.
+// La v9.7 a retiré la question qui les portait comme le cas final qu'ils
+// attendaient : le prescripteur n'est plus interrogé sur la prise en charge de
+// la prestation à l'origine du déplacement.
+//
+// Ces quatre cas n'ont donc plus de situation à décrire. Ce test constate leur
+// disparition, et redeviendra rouge le jour où l'éditeur les rouvre — avec, dans
+// son message, ce qu'il faut alors rétablir.
+describe("PRESTA-001 — la prestation n’est plus interrogée", () => {
+  it("ne pose plus la prise en charge de la prestation", () => {
+    expect(
+      "p2_prestation_prise_en_charge_assurance_maladie" in
+        moteurDeTest({}).getParsedRules(),
+      "Le modèle a retrouvé la question de la prestation à l'origine du " +
+        "déplacement. Rétablis les quatre cas PRESTA-001 et ACTES-TARIFES-001 " +
+        "qu'elle portait : un acte non tarifé ferme la prise en charge du " +
+        "transport, quel que soit le mode verrouillé en Partie 1.",
+    ).toBe(false);
+  });
+
+  it("n’a plus « prestation non prise en charge » parmi ses issues", () => {
+    const issues = JSON.stringify(
+      moteurDeTest({}).getRule("cible_cas_final").rawNode,
+    );
+    expect(issues).not.toMatch(/prestation non prise en charge/);
+  });
 });

@@ -11,6 +11,7 @@ import type {
 import { FormBuilder } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type RefObject, useEffect, useState } from "react";
+import { avecEntreesCalculees } from "../entrees-calculees";
 import { moteur } from "../moteur";
 import type { AvancementAutomatique } from "./avancement-automatique";
 import {
@@ -21,6 +22,7 @@ import { formBuilder } from "./constructeur-de-formulaire";
 import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
 import { regleDeComplétude } from "./pagination";
+import { avecCalculs } from "./recalcul";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
@@ -137,7 +139,9 @@ function etatDeDepart(options: Options): FormState<string> {
   return (
     options.etatInitial ??
     formBuilder.start(
-      FormBuilder.newState(options.situationInitiale),
+      FormBuilder.newState(
+        avecEntreesCalculees(options.situationInitiale ?? {}),
+      ),
       ...options.cibles,
     )
   );
@@ -153,10 +157,12 @@ function actions({
   return {
     repondre: (id, valeur) =>
       setFormState(
-        formBuilder.handleInputChange(formState, id, valeur as ValeurSaisie),
+        avecCalculs(
+          formBuilder.handleInputChange(formState, id, valeur as ValeurSaisie),
+        ),
       ),
     repondrePlusieurs: (reponses) =>
-      setFormState(avecReponses(formState, reponses)),
+      setFormState(avecCalculs(avecReponses(formState, reponses))),
     avancer: () => {
       // Sécurité : ne jamais avancer (ni conclure le parcours) tant qu'une
       // question posée reste sans réponse — le bouton est déjà désactivé, ceci

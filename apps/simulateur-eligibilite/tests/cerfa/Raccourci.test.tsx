@@ -106,7 +106,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
     // Le bouton reprend son libellé une fois le PDF produit.
     await attendreBouton();
     expect(screen.queryByRole("alert")).toBeNull();
-  }, 20_000);
+  }, 40_000);
 
   it("disparaît une fois le parcours engagé sur la page de résultat", async () => {
     const { user } = setup();

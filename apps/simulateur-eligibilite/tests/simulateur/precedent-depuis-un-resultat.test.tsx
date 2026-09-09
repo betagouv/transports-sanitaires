@@ -21,34 +21,68 @@ import { PARTIE_1_AMBULANCE, terminerParcours } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
-const SMUR = {
-  ...BASE_NEUTRE,
-  // Depuis la v9.5.0, l'urgence vitale est la quatrième réponse de Q1 : elle
-  // tranche sans passer par M0, qu'elle rend inapplicable.
-  p1_autonomie:
-    "'Est en situation d’urgence vitale nécessitant un transport médicalisé par une équipe SMUR (Structure Mobile d’Urgence et de Réanimation).'",
-};
+// Une situation dont le questionnaire administratif n'a rien à poser : la base
+// neutre répond à tout. La v9.5.1 y arrivait par l'urgence vitale, quatrième
+// réponse de Q1 qui tranchait la Partie 1 ; la v9.7 a retiré cette réponse, et
+// aucune n'écourte plus le parcours — c'est donc une situation complète, et non
+// un cas tranché, qui laisse la Partie 2 sans question.
+const RIEN_A_POSER = { ...BASE_NEUTRE };
 // Un cas qui, lui, traverse la Partie 2 : le transport est prescrit, donc le
 // questionnaire administratif a des questions à poser.
 const PMT_AMBULANCE = {
   ...BASE_NEUTRE,
   p1_autonomie:
-    "'Nécessite une prise en charge spécifique pendant le trajet ou l’aide d’un professionnel pour se déplacer ou accomplir les formalités liées au transport.'",
+    "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'",
   p1_critere_position_allongee_demi_assise: "oui",
-  p2_contexte_hospitalisation: "oui",
-  p2_contexte_aucun: "non",
+  p1_critere_aucun: "non",
+  p2_raison_principale: "'Entrée en hospitalisation'",
 };
 
 const voirResultat = () =>
   screen.getByRole("button", { name: /voir le résultat médical/i });
 
+/** Les champs de la page qui portent déjà une réponse, quelle que soit leur forme. */
+const champsRenseignes = () =>
+  [...screen.queryAllByRole("radio"), ...screen.queryAllByRole("checkbox")]
+    .filter((champ) => (champ as HTMLInputElement).checked)
+    .concat(
+      screen
+        .queryAllByRole("textbox")
+        .filter((champ) => (champ as HTMLInputElement).value !== ""),
+    );
+
 describe("retour depuis une page de résultat", () => {
+  // La v9.5.1 avait un second cas : le questionnaire administratif sans aucune
+  // question, dont « Précédent » remontait au résultat médical. Il tenait aux
+  // sorties directes de la Partie 1, que la v9.7 a retirées — et, même sur une
+  // situation complète, le parcours garde ses saisies facultatives d'adresse à
+  // offrir. Le chemin n'est plus atteignable ; `onRetourAuResultatMedical` reste
+  // câblé pour le jour où il le redeviendra.
+  it("aucune situation ne laisse le questionnaire administratif sans question", async () => {
+    const retours: unknown[] = [];
+    emettrePassation(RIEN_A_POSER);
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        onRetourAuResultatMedical={(situationP1) => retours.push(situationP1)}
+      />,
+    );
+
+    // Le questionnaire s'ouvre sur une question, et non sur un résultat : il n'y
+    // a donc rien derrière lui, et l'appelant n'est pas rappelé.
+    expect(
+      screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^précédent$/i })).toBeNull();
+    expect(retours).toEqual([]);
+  });
+
   it("« Précédent » depuis le document rouvre la Partie 2, réponses intactes", async () => {
     const user = userEvent.setup({ delay: null });
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
     await terminerParcours(user, [
-      [/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i],
+      [/raison principale du déplacement/i, /entrée en hospitalisation/i],
     ]);
 
     await user.click(screen.getByRole("button", { name: /^précédent$/i }));
@@ -58,7 +92,7 @@ describe("retour depuis une page de résultat", () => {
     expect(
       screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("radio", { checked: true })).not.toHaveLength(0);
+    expect(champsRenseignes()).not.toHaveLength(0);
 
     // Et l'on ressort du questionnaire sur le même document.
     await user.click(
@@ -67,42 +101,7 @@ describe("retour depuis une page de résultat", () => {
     expect(
       screen.getByRole("heading", { name: /document à imprimer/i }),
     ).toBeInTheDocument();
-  }, 20_000);
-
-  it("cas tranché dès la Partie 1 : « Précédent » ramène au résultat médical", async () => {
-    // Le questionnaire administratif n'a rien eu à poser : l'écran d'avant n'est
-    // pas une de ses pages, c'est le résultat médical. Changer d'outil
-    // n'appartient pas au secrétariat, d'où la remontée à l'appelant.
-    const user = userEvent.setup({ delay: null });
-    const retours: unknown[] = [];
-    emettrePassation(SMUR);
-    render(
-      <Secretariat
-        onNouvelleSimulation={() => {}}
-        onRetourAuResultatMedical={(situationP1) => retours.push(situationP1)}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
-    expect(retours).toEqual([SMUR]);
-  });
-
-  it("seed d'un cas tranché dès la Partie 1 : même retour", async () => {
-    // À réponses égales, la seed se comporte comme la saisie — c'est tout le
-    // propos : la Partie 1 est rejouée, et c'est sa situation qui remonte.
-    const user = userEvent.setup({ delay: null });
-    const retours: unknown[] = [];
-    render(
-      <Secretariat
-        onNouvelleSimulation={() => {}}
-        situationFinale={SMUR}
-        onRetourAuResultatMedical={(situationP1) => retours.push(situationP1)}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
-    expect(retours).toHaveLength(1);
-  });
+  }, 40_000);
 
   it("seed : le parcours est rejoué, « Précédent » rouvre la Partie 2 renseignée", async () => {
     // Une seed n'a traversé aucun questionnaire — ses réponses sont posées d'un
@@ -121,7 +120,7 @@ describe("retour depuis une page de résultat", () => {
     expect(
       screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("radio", { checked: true })).not.toHaveLength(0);
+    expect(champsRenseignes()).not.toHaveLength(0);
 
     await user.click(
       screen.getByRole("button", { name: /^voir le document/i }),
@@ -129,7 +128,7 @@ describe("retour depuis une page de résultat", () => {
     expect(
       screen.getByRole("heading", { name: /document à imprimer/i }),
     ).toBeInTheDocument();
-  }, 20_000);
+  }, 40_000);
 
   it("seed : le parcours est rejoué, « Précédent » rouvre le questionnaire", async () => {
     // Une seed ouvre le résultat sans passer par les questions ; ses réponses
@@ -150,15 +149,13 @@ describe("retour depuis une page de résultat", () => {
     expect(
       screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("checkbox", { checked: true })).not.toHaveLength(
-      0,
-    );
+    expect(screen.getAllByRole("radio", { checked: true })).not.toHaveLength(0);
 
     await user.click(voirResultat());
     expect(
       screen.getByText(/la décision ci-dessous est établie/i),
     ).toBeInTheDocument();
-  }, 20_000);
+  }, 40_000);
 
   it("modifier une réponse en arrière ne raccourcit pas le parcours", async () => {
     // Revenir en arrière ne retire aucune réponse : les pages déjà traversées
@@ -169,22 +166,32 @@ describe("retour depuis une page de résultat", () => {
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
     await terminerParcours(user, [
-      [/dans quel contexte/i, /entrée ou sortie d’une hospitalisation/i],
+      [/raison principale du déplacement/i, /entrée en hospitalisation/i],
     ]);
 
-    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
-    const accident = /accident causé par un tiers/i;
-    expect(screen.getByRole("group", { name: accident })).toBeInTheDocument();
-
-    // Une page plus tôt : les adresses. On y change une réponse déjà donnée.
-    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    // On remonte jusqu'à la page de l'adresse d'arrivée pour y changer une
+    // réponse déjà donnée. Sa position varie avec les réponses — la v9.7 ajoute
+    // des étapes en aval, dont la distance et les données documentaires.
+    for (let pas = 0; pas < 6; pas++) {
+      if (screen.queryByRole("textbox", { name: /code postal/i })) break;
+      await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    }
     const codePostal = screen.getByRole("textbox", { name: /code postal/i });
     await user.clear(codePostal);
     await user.type(codePostal, "75004");
 
-    // La question suivante est toujours au programme : c'est « Suivant » qui
-    // s'offre, pas le bouton de fin, et elle se repose telle qu'on l'a laissée.
+    // Une page plus tôt : le type du lieu d'arrivée, qui doit rester au
+    // programme — elle ne « manque » plus au moteur, ce n'est pas une raison
+    // pour la retirer du parcours.
+    await user.click(screen.getByRole("button", { name: /^précédent$/i }));
+    expect(
+      screen.getByRole("group", { name: /type de lieu d’arrivée/i }),
+    ).toBeInTheDocument();
+
+    // Et l'on ressort par le même chemin : « Suivant », pas le bouton de fin.
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));
-    expect(screen.getByRole("group", { name: accident })).toBeInTheDocument();
-  }, 20_000);
+    expect(screen.getByRole("textbox", { name: /code postal/i })).toHaveValue(
+      "75004",
+    );
+  }, 40_000);
 });

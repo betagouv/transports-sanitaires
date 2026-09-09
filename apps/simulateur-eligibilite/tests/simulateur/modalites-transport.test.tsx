@@ -99,6 +99,35 @@ const regles = yaml.load(
 ) as Record<string, { "une possibilité"?: string[] } | undefined>;
 
 /** Les possibilités d'une règle, débarrassées des quotes que le YAML leur met. */
+// La v9.7 calcule le mode prescrit plutôt que de l'énumérer : ses valeurs sont
+// les littéraux que rendent ses `variations`, et celles de la règle à laquelle sa
+// dernière branche délègue.
 function possibilites(regle: string): string[] {
-  return (regles[regle]?.["une possibilité"] ?? []).map((v) => v.slice(1, -1));
+  const brut = regles[regle] as
+    | { "une possibilité"?: string[]; valeur?: unknown }
+    | undefined;
+  return [
+    ...(brut?.["une possibilité"] ?? []).map((v) => v.slice(1, -1)),
+    ...litteraux(brut?.valeur),
+  ];
+}
+
+function litteraux(valeur: unknown, vues = new Set<string>()): string[] {
+  if (typeof valeur === "string") {
+    if (valeur.startsWith("'") && valeur.endsWith("'"))
+      return [valeur.slice(1, -1)];
+    if (!regles[valeur] || vues.has(valeur)) return [];
+    vues.add(valeur);
+    return litteraux(
+      (regles[valeur] as { valeur?: unknown } | undefined)?.valeur,
+      vues,
+    );
+  }
+  if (Array.isArray(valeur))
+    return valeur.flatMap((sous) => litteraux(sous, vues));
+  if (valeur !== null && typeof valeur === "object")
+    return Object.entries(valeur).flatMap(([cle, sous]) =>
+      cle === "si" ? [] : litteraux(sous, vues),
+    );
+  return [];
 }

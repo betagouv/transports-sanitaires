@@ -34,14 +34,7 @@ import {
   type Tableau,
   écrit,
 } from "../remplissage.ts";
-import {
-  ALLER_RETOUR,
-  ARRIVEE,
-  DEPART,
-  MODE,
-  type Reponses,
-  URGENCE,
-} from "../reponses.ts";
+import { LIEU, MODE, type Reponses, URGENCE } from "../reponses.ts";
 
 export const REMPLISSAGE_PMT: Tableau = {
   // ---- En-tête des deux volets : bénéficiaire, assuré, organisme ----------
@@ -71,9 +64,10 @@ export const REMPLISSAGE_PMT: Tableau = {
   ),
 
   // Le CERFA réunit sur une seule case l'hospitalisation et les séances (dialyse,
-  // radiothérapie, chimiothérapie) que le simulateur distingue.
+  // radiothérapie, chimiothérapie) que le simulateur distingue. Depuis la v9.7,
+  // le modèle fait lui-même cette réunion : la cible vaut pour les deux.
   "entré sortie hosp": coche(
-    (r) => r.vrai("p2_contexte_hospitalisation") || r.vrai("p1_m0_seance"),
+    (r) => r.vrai("cible_situation_hospitalisation"),
     "NON", // piège n° 2 : cocher s'écrit `/NON` sur ce champ
   ),
 
@@ -81,7 +75,7 @@ export const REMPLISSAGE_PMT: Tableau = {
   // toujours à une demande d'accord préalable, donc à l'autre formulaire. La règle
   // est écrite quand même — si le modèle change, la case suivra.
   "transport Engagement maternité du lieu de résidence vers la maternité ou lhébergement temporaire non médicalisé":
-    coche((r) => r.vrai("p2_engagement_maternite_entree")),
+    coche((r) => r.vrai("p2_contexte_engagement_maternite")),
 
   "transport lié à un accident du travail ou une maladie professionnelle":
     coche((r) => r.vrai("p2_contexte_at_mp")),
@@ -139,7 +133,8 @@ export const REMPLISSAGE_PMT: Tableau = {
   "dans ce cas si létat du patient nécessite une personne accompagnante cochez la case":
     coche(
       (r) =>
-        r.transport === MODE.véhiculePersonnel &&
+        (r.transport === MODE.véhiculePersonnel ||
+          r.transport === MODE.transportEnCommun) &&
         r.vrai("cible_accompagnant_necessaire"),
     ),
 
@@ -147,25 +142,24 @@ export const REMPLISSAGE_PMT: Tableau = {
   //
   // Un domicile se coche ; une structure de soins ou un autre lieu se nomment, sur
   // l'unique ligne que le formulaire leur donne (cf. `lieux-du-trajet.ts`).
-  domicile: coche((r) => r.texte("p2_trajet_depart") === DEPART.domicile),
+  domicile: coche((r) => r.texte("p2_trajet_depart") === LIEU.domicile),
   "départ struct soins": écrit((r) =>
-    r.texte("p2_trajet_depart") === DEPART.structure ? adresseDépart(r) : "",
+    r.texte("p2_trajet_depart") === LIEU.structure ? adresseDépart(r) : "",
   ),
   "départ autre lieu": écrit((r) =>
-    r.texte("p2_trajet_depart") === DEPART.autre ? adresseDépart(r) : "",
+    r.texte("p2_trajet_depart") === LIEU.autre ? adresseDépart(r) : "",
   ),
-  domicile_2: coche((r) => r.texte("p2_trajet_arrivee") === ARRIVEE.domicile),
+  domicile_2: coche((r) => r.texte("p2_trajet_arrivee") === LIEU.domicile),
   "arrivée struct soins": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === ARRIVEE.structure ? adresseArrivée(r) : "",
+    r.texte("p2_trajet_arrivee") === LIEU.structure ? adresseArrivée(r) : "",
   ),
   "arrivée autre lieu": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === ARRIVEE.autre ? adresseArrivée(r) : "",
+    r.texte("p2_trajet_arrivee") === LIEU.autre ? adresseArrivée(r) : "",
   ),
 
-  "transp aller-retour": coche((r) => {
-    const sens = r.texte("p2_trajet_aller_retour");
-    return sens === ALLER_RETOUR.identique || sens === ALLER_RETOUR.différent;
-  }),
+  // La v9.7 calcule la case elle-même, là où il fallait lire l'organisation des
+  // transports et en déduire les deux sens qui la cochent.
+  "transp aller-retour": coche((r) => r.vrai("cible_case_aller_retour")),
   "nbr transp": écrit(transportsItératifs),
 
   // ---- ❹ Urgence, ❺ éléments médicaux, ❻ exonérations --------------------
@@ -225,7 +219,7 @@ export const REMPLISSAGE_PMT: Tableau = {
  * validée reste une prescription — et arrive ici.
  */
 function transportsItératifs(réponses: Reponses): string {
-  const nombre = réponses.valeur("p2_nombre_transports_prevus");
+  const nombre = réponses.valeur("cible_nombre_transports_document");
   if (typeof nombre !== "number" || nombre <= 1) return "";
   return réponses.vrai("p2_transport_en_serie") ? "" : String(nombre);
 }

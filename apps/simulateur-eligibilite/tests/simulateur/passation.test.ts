@@ -12,6 +12,7 @@ describe("passation P1 (prescripteur → secrétariat)", () => {
     const situationP1 = {
       p1_motif_hospitalisation: "oui",
       p1_critere_oxygene: "oui",
+      p1_critere_aucun: "non",
     };
     emettrePassation(situationP1);
     expect(reprendrePassation()).toEqual(situationP1);
