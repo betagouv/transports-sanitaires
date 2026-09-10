@@ -5,6 +5,12 @@
 // endroit du CERFA où une valeur écrite vient d'un texte tapé par l'utilisateur ;
 // *quel* champ la reçoit — structure de soins ou autre lieu — se décide dans
 // `remplissage-pmt.ts`, à côté du nom du champ.
+//
+// Les six saisies se lisent par leurs **cibles documentaires** —
+// `cible_document_depart_nom` et ses sœurs — plutôt que par les questions
+// `p2_depart_*` qu'elles aliasent. C'est le vocabulaire du mapping documentaire
+// de la v9.7 (`front/simulateur/secretariat/rubriques-trajet.ts`), et l'alias
+// peut cesser d'en être un sans que ce module bouge.
 
 import type { CleDeRegle } from "../../../simulateur/contrat-regles-publicodes.ts";
 import type { Reponses } from "./reponses.ts";
@@ -12,24 +18,24 @@ import type { Reponses } from "./reponses.ts";
 /** L'adresse du lieu de départ, sur une ligne. Vide si rien n'est renseigné. */
 export function adresseDépart(réponses: Reponses): string {
   return surUneLigne(réponses, [
-    "p2_depart_nom_lieu",
-    "p2_depart_adresse",
-    "p2_depart_complement_adresse",
-    "p2_depart_code_postal",
-    "p2_depart_commune",
-    "p2_depart_pays",
+    "cible_document_depart_nom",
+    "cible_document_depart_adresse",
+    "cible_document_depart_complement",
+    "cible_document_depart_code_postal",
+    "cible_document_depart_commune",
+    "cible_document_depart_pays",
   ]);
 }
 
 /** L'adresse du lieu d'arrivée, sur une ligne. Vide si rien n'est renseigné. */
 export function adresseArrivée(réponses: Reponses): string {
   return surUneLigne(réponses, [
-    "p2_arrivee_nom_lieu",
-    "p2_arrivee_adresse",
-    "p2_arrivee_complement_adresse",
-    "p2_arrivee_code_postal",
-    "p2_arrivee_commune",
-    "p2_arrivee_pays",
+    "cible_document_arrivee_nom",
+    "cible_document_arrivee_adresse",
+    "cible_document_arrivee_complement",
+    "cible_document_arrivee_code_postal",
+    "cible_document_arrivee_commune",
+    "cible_document_arrivee_pays",
   ]);
 }
 
