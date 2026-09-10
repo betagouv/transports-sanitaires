@@ -20,7 +20,7 @@ import {
   origineDe,
   quandSatisfaite,
   type Rubrique,
-} from "../../../simulateur/secretariat/case-de-formulaire";
+} from "../../../simulateur/secretariat/case-de-formulaire.ts";
 import type { ÉtatCoché } from "./remplir-cerfa.ts";
 import {
   auPrescripteur,

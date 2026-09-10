@@ -3,210 +3,166 @@
 //
 // **Un champ, une ligne.** La clé est le nom brut du champ AcroForm — avec ses
 // fautes et ses abréviations d'origine (« aseptie », « dadministration doxygène »,
-// « entré sortie hosp ») : ce sont des clés, pas de la prose, et les recopier
-// permet de chercher un champ du PDF et de tomber sur la règle qui le remplit. La
-// valeur est une fonction des réponses de la simulation, et rien d'autre : pour
-// savoir d'où sort une case, il suffit de lire sa ligne.
-//
-// C'est délibérément coûteux — le moteur est réinterrogé pour chaque champ, une
-// cinquantaine de fois par document — et délibérément lisible. Un formulaire se
-// remplit une fois, au clic ; sa correction, elle, se relit à chaque livraison du
-// modèle.
+// « entré sortie hosp ») : ce sont des clés, pas de la prose. La valeur nomme un
+// id de la feuille de mapping documentaire (`front/simulateur/secretariat/`), lu
+// par `depuisLeMapping` : c'est elle qui porte la condition, la cible et la
+// raison d'un champ vierge. Ce tableau n'est plus qu'une table de
+// correspondance entre le PDF et la feuille — cf. spec 0007.
 //
 // Les 53 champs y figurent tous, y compris ceux que le simulateur ne sait pas
-// déduire : le tableau dit alors qui les remplira, et pourquoi. C'est le cahier
-// des charges du module, et `tests/cerfa/remplissage.test.ts` le confronte au
+// déduire : le tableau dit alors qui les remplira, et pourquoi — la feuille le
+// dit désormais, plutôt qu'une raison écrite à la main ici. C'est le cahier des
+// charges du module, et `tests/cerfa/remplissage.test.ts` le confronte au
 // gabarit — aucun champ ne peut être oublié ni inventé.
 //
-// Deux pièges du gabarit, sans lesquels le remplissage est silencieusement faux :
+// Trois pièges du gabarit, sans lesquels le remplissage est silencieusement
+// faux — aucune feuille ne les porte, ils restent donc écrits ici :
 //
 //  1. `ALD exo`, `oui1` et `oui2` sont des **boutons radio déguisés** en case à
-//     cocher (cf. `ÉtatCoché` dans `remplir-cerfa.ts`).
+//     cocher (cf. `ÉtatCoché` dans `remplir-cerfa.ts`) : chacun vise deux ids de
+//     la feuille, et le premier vrai l'emporte (`premierVrai`).
 //  2. `entré sortie hosp` a pour état d'export `/NON` alors que la cocher signifie
 //     « oui, entrée ou sortie d'hospitalisation ». L'état d'export n'est pas la
 //     sémantique : ne jamais l'inférer du nom.
+//  3. Rubrique ④ : la précision de l'urgence (`urgence_precision` sur la feuille)
+//     n'a pas de champ AcroForm sur ce gabarit — elle s'écrit sur un trait
+//     imprimé, à la main. `autres` reste la seule case de la rubrique.
 
-import { adresseArrivée, adresseDépart } from "../lieux-du-trajet.ts";
-import {
-  auPrescripteur,
-  auTransporteur,
-  coche,
-  type Tableau,
-  écrit,
-} from "../remplissage.ts";
-import { LIEU, MODE, type Reponses, URGENCE } from "../reponses.ts";
+import { dateDePrescription } from "../../../../simulateur/secretariat/date-de-prescription.ts";
+import { RUBRIQUES_PMT } from "../../../../simulateur/secretariat/rubriques-du-pmt.ts";
+import { dateSurLeChamp } from "../dates.ts";
+import { depuisLeMapping } from "../mapping.ts";
+import type { ÉtatCoché } from "../remplir-cerfa.ts";
+import { type Remplissage, type Tableau, écrit } from "../remplissage.ts";
+import type { Reponses } from "../reponses.ts";
 
 export const REMPLISSAGE_PMT: Tableau = {
   // ---- En-tête des deux volets : bénéficiaire, assuré, organisme ----------
-  //
-  // Le simulateur est anonyme par construction : il ne connaît aucune de ces
-  // données, et c'est ce qui interdit au remplissage de quitter le navigateur.
-  "N et P bénéficiaire": auPrescripteur(
-    "donnée nominative, hors du simulateur",
-  ),
-  "N° immat bénéf": auPrescripteur("donnée nominative, hors du simulateur"),
-  clé: auPrescripteur("clé du NIR du bénéficiaire"),
-  "Date Nais": auPrescripteur("donnée nominative, hors du simulateur"),
-  adresse: auPrescripteur("adresse du bénéficiaire, donnée nominative"),
-  "Nom et num centre paiement": auPrescripteur("organisme de rattachement"),
-  "N et P assuré": auPrescripteur("donnée nominative, hors du simulateur"),
-  "N° immat assuré": auPrescripteur("donnée nominative, hors du simulateur"),
-  "clé 1": auPrescripteur("clé du NIR de l’assuré"),
+  "N et P bénéficiaire": mapping("beneficiaire_nom_prenom"),
+  "N° immat bénéf": mapping("beneficiaire_nir"),
+  clé: mapping("beneficiaire_nir"), // même id que ci-dessus : le PDF sépare le NIR de sa clé
+  "Date Nais": mapping("beneficiaire_naissance"),
+  adresse: mapping("beneficiaire_adresse"),
+  "Nom et num centre paiement": mapping("organisme"),
+  "N et P assuré": mapping("assure_nom_prenom"),
+  "N° immat assuré": mapping("assure_nir"),
+  "clé 1": mapping("assure_nir"),
 
   // ---- ❶ Situation permettant la prise en charge -------------------------
-  //
-  // Plusieurs choix possibles, sauf les deux cases d'accident causé par un tiers,
-  // mutuellement exclusives : A4.6 étant un oui/non, elles suivent le booléen.
-  oui: coche((r) => r.valeur("p2_accident_cause_par_tiers") === true, "OUI"),
-  non: coche((r) => r.valeur("p2_accident_cause_par_tiers") === false, "NON"),
-  "date accident": auPrescripteur(
-    "date de l’accident : le modèle ne la demande pas",
-  ),
-
-  // Le CERFA réunit sur une seule case l'hospitalisation et les séances (dialyse,
-  // radiothérapie, chimiothérapie) que le simulateur distingue. Depuis la v9.7,
-  // le modèle fait lui-même cette réunion : la cible vaut pour les deux.
-  "entré sortie hosp": coche(
-    (r) => r.vrai("cible_situation_hospitalisation"),
-    "NON", // piège n° 2 : cocher s'écrit `/NON` sur ce champ
-  ),
-
-  // Jamais cochée en pratique : le dispositif Engagement maternité (A2.4) conduit
-  // toujours à une demande d'accord préalable, donc à l'autre formulaire. La règle
-  // est écrite quand même — si le modèle change, la case suivra.
-  "transport Engagement maternité du lieu de résidence vers la maternité ou lhébergement temporaire non médicalisé":
-    coche((r) => r.vrai("p2_contexte_engagement_maternite")),
-
+  oui: mapping("tiers_oui", "OUI"),
+  non: mapping("tiers_non", "NON"),
+  "date accident": dateDeLaFeuille("tiers_date"),
+  "entré sortie hosp": mapping("hospitalisation", "NON"), // piège n° 2
+  "ALD exo": premierVrai(["ald_exo", "OUI"], ["ald_non_exo", "NON"]),
   "transport lié à un accident du travail ou une maladie professionnelle":
-    coche((r) => r.vrai("p2_contexte_at_mp")),
-  "date accid ATMP": auPrescripteur(
-    "date de l’AT/MP : le modèle ne la demande pas",
-  ),
+    mapping("atmp"),
+  "date accid ATMP": dateDeLaFeuille("atmp_date"),
+  "transport Engagement maternité du lieu de résidence vers la maternité ou lhébergement temporaire non médicalisé":
+    mapping("maternite"),
 
   // ---- ❷ Mode de transport prescrit --------------------------------------
-  //
-  // Une ambulance ne se prescrit pas sans dire pourquoi : le CERFA exige au moins
-  // une des cinq justifications, et ce sont les critères cochés en Q1.1. Chacune
-  // vérifie le mode retenu, quoique le modèle le garantisse déjà — n'importe
-  // lequel de ces critères conclut à l'ambulance (`p1_critere_ambulance`).
-  "position allongée ou demiassise": coche(
-    (r) =>
-      r.transport === MODE.ambulance &&
-      r.vrai("p1_critere_position_allongee_demi_assise"),
+  "position allongée ou demiassise": mapping(
+    "ambulance_position_allongee_demi_assise",
   ),
-  "surveillance par une personne qualifiée": coche(
-    (r) =>
-      r.transport === MODE.ambulance &&
-      r.vrai("p1_critere_surveillance_constante"),
+  "surveillance par une personne qualifiée": mapping(
+    "ambulance_surveillance_constante",
   ),
-  "dadministration doxygène": coche(
-    (r) => r.transport === MODE.ambulance && r.vrai("p1_critere_oxygene"),
-  ),
-  "brancardage ou dun portage": coche(
-    (r) =>
-      r.transport === MODE.ambulance &&
-      r.vrai("p1_critere_brancardage_portage"),
-  ),
-  "aseptie rigoureuse": coche(
-    (r) =>
-      r.transport === MODE.ambulance && r.vrai("p1_critere_isolement_asepsie"),
-  ),
-
-  "transport assis professionnalisé VSL taxi conventionné": coche(
-    (r) => r.transport === MODE.assis || r.transport === MODE.assisTPMR,
-  ),
-  // La cible ne vaut vrai que sur les deux modes assis : le modèle porte déjà la
-  // restriction, la répéter ici serait la réimplémenter.
+  "dadministration doxygène": mapping("ambulance_oxygene"),
+  "brancardage ou dun portage": mapping("ambulance_brancardage_portage"),
+  "aseptie rigoureuse": mapping("ambulance_isolement_asepsie"),
+  "transport assis professionnalisé VSL taxi conventionné":
+    mapping("mode_tap_ou_tpmr"),
   "létat de santé du patient nest pas compatible avec un transport partagé cochez la case":
-    coche((r) => r.vrai("cible_transport_partage_incompatible")),
+    mapping("partage_incompatible"),
   "un transport pour patient à mobilité réduite dans son fauteuil roulant est adapté cochez la case":
-    coche((r) => r.transport === MODE.assisTPMR),
-
-  // Le CERFA sépare deux cases là où le simulateur n'en a qu'une (« véhicule
-  // personnel ou transport en commun ») : on ne peut pas trancher à sa place.
-  "transp indiv": auPrescripteur(
-    "le modèle ne sépare pas individuel et commun",
-  ),
-  "transp terres": auPrescripteur(
-    "le modèle ne sépare pas individuel et commun",
-  ),
+    mapping("fauteuil"),
+  "transp indiv": mapping("mode_individual"),
+  "transp terres": mapping("mode_public"),
   "dans ce cas si létat du patient nécessite une personne accompagnante cochez la case":
-    coche(
-      (r) =>
-        (r.transport === MODE.véhiculePersonnel ||
-          r.transport === MODE.transportEnCommun) &&
-        r.vrai("cible_accompagnant_necessaire"),
-    ),
+    mapping("accompagnant"),
 
   // ---- ❸ Trajet -----------------------------------------------------------
-  //
-  // Un domicile se coche ; une structure de soins ou un autre lieu se nomment, sur
-  // l'unique ligne que le formulaire leur donne (cf. `lieux-du-trajet.ts`).
-  domicile: coche((r) => r.texte("p2_trajet_depart") === LIEU.domicile),
-  "départ struct soins": écrit((r) =>
-    r.texte("p2_trajet_depart") === LIEU.structure ? adresseDépart(r) : "",
-  ),
-  "départ autre lieu": écrit((r) =>
-    r.texte("p2_trajet_depart") === LIEU.autre ? adresseDépart(r) : "",
-  ),
-  domicile_2: coche((r) => r.texte("p2_trajet_arrivee") === LIEU.domicile),
-  "arrivée struct soins": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === LIEU.structure ? adresseArrivée(r) : "",
-  ),
-  "arrivée autre lieu": écrit((r) =>
-    r.texte("p2_trajet_arrivee") === LIEU.autre ? adresseArrivée(r) : "",
-  ),
-
-  // La v9.7 calcule la case elle-même, là où il fallait lire l'organisation des
-  // transports et en déduire les deux sens qui la cochent.
-  "transp aller-retour": coche((r) => r.vrai("cible_case_aller_retour")),
-  "nbr transp": écrit(transportsItératifs),
+  domicile: mapping("depart_domicile"),
+  "départ struct soins": mapping("depart_structure"),
+  "départ autre lieu": mapping("depart_autre"),
+  domicile_2: mapping("arrivee_domicile"),
+  "arrivée struct soins": mapping("arrivee_structure"),
+  "arrivée autre lieu": mapping("arrivee_autre"),
+  "transp aller-retour": mapping("aller_retour"),
+  "nbr transp": écrit(transportsItératifs), // décision 5 : dérivation conservée
 
   // ---- ❹ Urgence, ❺ éléments médicaux, ❻ exonérations --------------------
-  //
-  // Les deux cases d'urgence sont mutuellement exclusives.
-  "Urg SAMU centre 15": coche(
-    (r) => r.texte("cible_type_urgence") === URGENCE.samu,
+  "Urg SAMU centre 15": mapping("urgence_appel15"),
+  autres: mapping("urgence_autre"), // pas de champ pour la précision, cf. piège n° 3
+  "comm évent": mapping("elements_medicaux"),
+  "transp autre cent": mapping("centre_rare"),
+  oui1: premierVrai(["exoneration_oui", "OUI"], ["exoneration_non", "NON"]),
+  oui2: premierVrai(
+    ["pension_militaire_oui", "OUI"],
+    ["pension_militaire_non", "NON"],
   ),
-  autres: coche((r) => r.texte("cible_type_urgence") === URGENCE.autre),
-
-  /** ❺ Volet 1 **uniquement** — donnée médicale, absente du Volet 2. */
-  "comm évent": auPrescripteur("éléments d’ordre médical : rédaction libre"),
-  "transp autre cent": auPrescripteur(
-    "orientation en centre de référence maladies rares : hors modèle",
-  ),
-  "ALD exo": auPrescripteur(
-    "le modèle ne dit pas l’ALD exonérante ou non, seule distinction demandée ici",
-  ),
-  oui1: auPrescripteur("exonération du ticket modérateur : hors modèle"),
-  oui2: auPrescripteur("pension militaire d’invalidité : hors modèle"),
 
   // ---- Prescripteur -------------------------------------------------------
-  //
-  // Le référentiel d'identification ne porte aujourd'hui que des libellés
-  // (`{ id, libelle }`) : ni RPPS, ni FINESS/SIRET, ni adresse de structure.
-  // Pré-remplir ce bloc suppose de l'étendre.
-  "N et P prescript": auPrescripteur(
-    "le référentiel ne porte que des libellés",
-  ),
-  "raison sociale prescript": auPrescripteur("hors référentiel"),
-  identifiant: auPrescripteur("RPPS : hors référentiel"),
-  "adresse precript": auPrescripteur("adresse de structure : hors référentiel"),
-  date: auPrescripteur("date de signature : au moment de prescrire"),
-  "AM FINESS ou SIRET": auPrescripteur("FINESS/SIRET : hors référentiel"),
+  "N et P prescript": mapping("prescripteur_nom_prenom"),
+  identifiant: mapping("prescripteur_rpps"),
+  "raison sociale prescript": mapping("structure_nom"),
+  "adresse precript": mapping("structure_adresse"),
+  "AM FINESS ou SIRET": mapping("structure_identifiant"),
+  // La feuille n'a pas de source pour `date_prescription` : le moteur ne pose
+  // jamais de date système (`date-de-prescription.ts`). L'application la
+  // calcule donc elle-même, hors mapping, au moment de générer le document.
+  date: écrit(() => dateDePrescription().replaceAll("/", "")),
 
   // ---- Bloc transporteur, Volet 2 uniquement -----------------------------
-  //
-  // Rempli à la main par le transporteur, après le transport. Le simulateur n'a
-  // rien à y écrire — il est listé pour qu'on sache que c'est délibéré.
-  "raison sociale VSL": auTransporteur("bloc réservé au transporteur"),
-  "adresse VSL": auTransporteur("bloc réservé au transporteur"),
-  "fait à": auTransporteur("bloc réservé au transporteur"),
-  date1: auTransporteur("bloc réservé au transporteur"),
-  "n° ident": auTransporteur("bloc réservé au transporteur"),
+  "raison sociale VSL": mapping("cadre_transporteur"),
+  "adresse VSL": mapping("cadre_transporteur"),
+  "fait à": mapping("cadre_transporteur"),
+  date1: mapping("cadre_transporteur"),
+  "n° ident": mapping("cadre_transporteur"),
 };
 
 // ---- implémentation ----
+
+// Raccourci sur `depuisLeMapping`, toujours contre `RUBRIQUES_PMT` : ce tableau
+// ne lit qu'une feuille.
+function mapping(id: string, état: ÉtatCoché = "On"): Remplissage {
+  return depuisLeMapping(RUBRIQUES_PMT, id, état);
+}
+
+/**
+ * Un champ qui n'est en réalité qu'un bouton radio déguisé — décision 2 de la
+ * spec 0007. Chaque paire nomme l'id de la feuille et l'état à écrire s'il est
+ * vrai ; la première ligne vraie l'emporte. Les deux cibles visées étant
+ * exclusives dans le modèle, l'ordre ne tranche rien en pratique : il est écrit
+ * pour que le comportement reste défini si elles cessaient de l'être.
+ */
+function premierVrai(
+  ...paires: ReadonlyArray<readonly [id: string, état: ÉtatCoché]>
+): Remplissage {
+  return (réponses) => {
+    for (const [id, état] of paires) {
+      const valeur = mapping(id, état)(réponses);
+      if (valeur !== undefined) return valeur;
+    }
+    return undefined;
+  };
+}
+
+/**
+ * Une date de la feuille, reformatée pour le champ peigné du gabarit qui la
+ * reçoit. `depuisLeMapping` rend l'ISO brut du modèle ; `dateSurLeChamp` sait
+ * seule combien de cases le champ propose — ici toujours huit, relevé sur le
+ * gabarit PMT (`tiers_date` pour « date accident », `atmp_date` pour
+ * « date accid ATMP »).
+ */
+function dateDeLaFeuille(id: string): Remplissage {
+  return (réponses) => {
+    const valeur = mapping(id)(réponses);
+    return valeur && "texte" in valeur
+      ? { texte: dateSurLeChamp(valeur.texte, 8) }
+      : valeur;
+  };
+}
 
 /**
  * La notice réserve « nombre de transports itératifs » aux transports répétés **ne
@@ -216,7 +172,8 @@ export const REMPLISSAGE_PMT: Tableau = {
  *
  * Le garde `CerfaNonApplicable` ne suffit pas à l'écarter : une série n'exige un
  * accord préalable que si l'ALD n'est pas validée, si bien qu'une série sous ALD
- * validée reste une prescription — et arrive ici.
+ * validée reste une prescription — et arrive ici. C'est une règle de la notice
+ * papier, absente de la feuille, et la seule dérivation que ce tableau conserve.
  */
 function transportsItératifs(réponses: Reponses): string {
   const nombre = réponses.valeur("cible_nombre_transports_document");
