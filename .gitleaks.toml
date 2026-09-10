@@ -36,16 +36,25 @@ tags = ["matomo", "analytics"]
 description = "Gabarits et documentation : ces fichiers ne portent que des exemples vides."
 paths = ['''\.env\.example$''', '''(^|/)README\.md$''', '''(^|/)AGENTS\.md$''']
 
-# Le contrat publicodes est une liste de noms de règles, un par ligne. La règle
-# par défaut `generic-api-key` prend les plus longs pour des clés : à trente-six
-# caractères, `p2_exception_radiotherapie_moins_48h` a l'entropie d'un secret.
-# Aucun ne peut vivre là : le fichier ne contient que des chaînes que
-# `tests/regles-front.test.ts` confronte au modèle, et TypeScript à ses appelants.
+# Deux fichiers listent des noms de règles publicodes, un par ligne : le contrat
+# du front, et la recopie du livrable de l'éditeur que porte chaque version du
+# modèle. La règle par défaut `generic-api-key` prend les plus longs pour des
+# clés : à trente-six caractères, `p2_exception_radiotherapie_moins_48h` a
+# l'entropie d'un secret. Aucun secret ne peut vivre là. Ces fichiers ne
+# contiennent que des chaînes que le modèle et TypeScript confrontent à leurs
+# appelants.
+#
+# Le second chemin est écrit pour la famille `livrable-v<majeure>-<mineure>.ts`,
+# et pas pour la seule v9.7 : le fichier est recopié à l'identique à chaque
+# version, et le faux positif reviendrait tel quel à la suivante.
 #
 # L'exception est **cantonnée à cette règle** par `targetRules` : les trois règles
-# du projet continuent de s'appliquer à ce fichier comme aux autres. Vérifié en y
-# posant une fausse clé Grist, toujours détectée.
+# du projet continuent de s'appliquer à ces fichiers comme aux autres. Vérifié en
+# y posant une fausse clé Grist, toujours détectée.
 [[allowlists]]
-description = "Noms de règles du contrat publicodes, pris pour des clés par generic-api-key"
+description = "Noms de règles publicodes, pris pour des clés par generic-api-key"
 targetRules = ["generic-api-key"]
-paths = ['''apps/simulateur-eligibilite/front/simulateur/contrat-regles-publicodes\.ts$''']
+paths = [
+  '''apps/simulateur-eligibilite/front/simulateur/contrat-regles-publicodes\.ts$''',
+  '''apps/simulateur-eligibilite/tests/simulateur/livrable-v[0-9]+-[0-9]+\.ts$''',
+]
