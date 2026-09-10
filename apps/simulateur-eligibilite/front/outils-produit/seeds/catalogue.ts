@@ -602,6 +602,39 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-ehpad-vers-usld",
+    libelle: "Secrétariat — départ d’EHPAD, arrivée en USLD",
+    description:
+      "Deux des trois types de lieu que la v9.7 a ajoutés aux trois familles " +
+      "du formulaire : un EHPAD au départ écrit sur la ligne « autre lieu », " +
+      "une USLD à l'arrivée sur la ligne « structure de soins ». Avant la " +
+      "0006, ni l'un ni l'autre n'avait de ligne où s'écrire.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_trajet_depart: "'EHPAD'",
+      p2_depart_nom_lieu: "'EHPAD Les Tilleuls'",
+      p2_depart_adresse: "'3 rue des Tilleuls'",
+      p2_depart_code_postal: "'35000'",
+      p2_depart_commune: "'Rennes'",
+      p2_trajet_arrivee: "'USLD'",
+      p2_arrivee_nom_lieu: "'USLD du CH'",
+      p2_arrivee_adresse: "'2 rue de l’Arrivée'",
+      p2_arrivee_code_postal: "'75002'",
+      p2_arrivee_commune: "'Paris'",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit: "ambulance",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
     id: "secretariat-avion-bateau",
     libelle: "Secrétariat — avion ou bateau de ligne régulière",
     description:
