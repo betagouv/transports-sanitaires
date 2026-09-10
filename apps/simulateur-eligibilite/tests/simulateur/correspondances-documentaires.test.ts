@@ -59,11 +59,14 @@ describe.each(FORMULAIRES)("%s", (_nom, rubriques) => {
 
 // ---- implémentation ----
 
+// Les origines `externe`, `manuel` et `application` (sans règle qui les
+// tranche, cf. `case-de-formulaire.ts`) n'ont rien à confronter au moteur : ce
+// fichier ne couvre que les cases d'origine `publicodes`, seules à porter une
+// `source` évaluable.
 function reglesDe(rubrique: Rubrique): string[] {
-  return rubrique.cases.flatMap((laCase) => [
-    laCase.source,
-    ...conditionsDe(laCase),
-  ]);
+  return rubrique.cases.flatMap((laCase) =>
+    laCase.source ? [laCase.source, ...conditionsDe(laCase)] : [],
+  );
 }
 
 function conditionsDe(laCase: CaseDeFormulaire): string[] {
