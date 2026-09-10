@@ -13,8 +13,8 @@
 // cocher, seulement des éléments à vérifier avant de remettre le document — ou
 // rien du tout.
 
-import type { moteur } from "../moteur";
-import type { GroupeRetenu, Rubrique } from "./case-de-formulaire";
+import { faux, type moteur, texte, vrai } from "../moteur";
+import type { GroupeRetenu, Lecteur, Rubrique } from "./case-de-formulaire";
 import { rubriquesRetenues } from "./case-de-formulaire";
 import { RUBRIQUES_DAP } from "./rubriques-de-la-dap";
 import { RUBRIQUES_PMT } from "./rubriques-du-pmt";
@@ -30,11 +30,23 @@ export function casesRetenues(
   e: typeof moteur,
 ): GroupeRetenu[] {
   const cerfa = CERFA[casFinal];
-  if (cerfa) return rubriquesRetenues(cerfa, e);
+  if (cerfa) return rubriquesRetenues(cerfa, lecteurDuMoteur(e));
   return [...(A_VERIFIER[casFinal] ?? [])];
 }
 
 // ---- implémentation ----
+
+// Le secrétariat évalue contre le singleton de `front/simulateur/moteur.ts` ;
+// `rubriquesRetenues` ne connaît, elle, que le `Lecteur` de
+// `case-de-formulaire.ts` — c'est ce qui lui permet d'être partagée avec le
+// Cerfa, dont l'`Engine` est un autre.
+function lecteurDuMoteur(e: typeof moteur): Lecteur {
+  return {
+    texte: (cle) => texte(e, cle),
+    vrai: (cle) => vrai(e, cle),
+    faux: (cle) => faux(e, cle),
+  };
+}
 
 // Les trois formulaires, et le cas final qui les ouvre. Le livrable choisit de
 // la même façon : S3141, puis DAP, puis PMT.
