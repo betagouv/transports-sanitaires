@@ -2,15 +2,15 @@
 // formulaire S3139h, et ce qu'il se garde d'inventer. Chaque cas part d'une
 // situation complète et relit le PDF produit, plutôt que d'inspecter les saisies
 // intermédiaires.
+//
+// Les cas propres à la spec 0008 — le pré-remplissage branché sur le mapping
+// documentaire — vont dans `depuis-simulateur-dap-mapping.test.ts`, séparé pour
+// rester sous 300 lignes : ce fichier-ci garde les cas déjà couverts avant ce
+// lot.
 
 import { describe, expect, it } from "vitest";
 import { CerfaNonApplicable } from "../../front/outils-produit/beta/cerfa/cerfa-non-applicable.ts";
 import { saisiesDepuisSituation } from "../../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
-import {
-  MOTIF_DU_CHAMP_BATEAU,
-  MOTIFS_DU_CHAMP_KM,
-  MOTIFS_SANS_CASE,
-} from "../../front/outils-produit/beta/cerfa/dap/remplissage-dap.ts";
 import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
@@ -74,15 +74,24 @@ describe("le motif de la demande", () => {
 
   it("traite tous les motifs de DAP que le modèle porte", () => {
     // Un septième motif livré par une version ultérieure doit échouer ici plutôt
-    // que de disparaître du formulaire sans bruit.
+    // que de disparaître du formulaire sans bruit. `MOTIFS_DU_CHAMP_KM` et
+    // consorts ont cédé la place à la forme générale de la décision 1
+    // (spec 0008) : la garantie reste, portée directement ici plutôt que par des
+    // constantes exportées du tableau de remplissage.
     const duModèle = Object.keys(moteurDeTest().getParsedRules()).filter(
       (règle) => règle.startsWith("cible_dap_motif_"),
     );
-    const traités = [
-      ...MOTIFS_DU_CHAMP_KM.map(([motif]) => motif),
-      MOTIF_DU_CHAMP_BATEAU,
-      ...MOTIFS_SANS_CASE,
+    const motifsDuChampKm = [
+      "cible_dap_motif_longue_distance",
+      "cible_dap_motif_serie",
+      "cible_dap_motif_camsp_cmpp",
+      "cible_dap_motif_engagement_maternite",
     ];
+    const motifAvionBateau = "cible_dap_motif_avion_bateau";
+    // Le SAMSAH n'a pas de case à lui sur ce gabarit — décision 2 de la spec
+    // 0008 — et c'est nommé ici plutôt que déduit en creux.
+    const motifsSansCase = ["cible_dap_motif_samsah"];
+    const traités = [...motifsDuChampKm, motifAvionBateau, ...motifsSansCase];
     expect([...traités].sort()).toEqual([...duModèle].sort());
   });
 
