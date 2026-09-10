@@ -284,9 +284,11 @@ export const SEEDS: readonly Seed[] = [
     description:
       "Un besoin de brancardage, et une raison qui n'ouvre rien — un examen sans " +
       "lien avec une ALD : le droit est pourtant ouvert, et le document une PMT. " +
-      "En v9.5.1, cette même situation se refermait faute de motif ; en v9.7, un " +
-      "critère clinique d'ambulance vaut motif à lui seul. La question est posée " +
-      "à l'éditeur (`tmp/9.7/anomalie-v9-7-critere-ambulance-motif.md`) : cette seed " +
+      "Un critère clinique d'ambulance vaut motif à lui seul, là où un besoin " +
+      "d'aide d'un professionnel ne le fait pas. Ce n'est pas une nouveauté de " +
+      "la v9.7 : `p1_critere_ambulance` figure déjà parmi les motifs en v9.5.1. " +
+      "La question est posée à l'éditeur " +
+      "(`tmp/9.7/anomalie-v9-7-critere-ambulance-motif.md`) : cette seed " +
       "constate le comportement observé, elle ne l'approuve pas.",
     outil: "secretariat",
     entrees: {

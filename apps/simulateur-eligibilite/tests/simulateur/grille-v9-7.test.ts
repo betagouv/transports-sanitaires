@@ -61,14 +61,19 @@ const NOMBRES = [1, 3, 4] as const;
  * éligible, là où celui qui réclame un professionnel l'est. C'est la règle de
  * toujours, exprimée ici par le mode plutôt que par une case.
  *
- * **Un critère d'ambulance ouvre le droit à lui seul**, sans aucun motif. C'est
- * nouveau en v9.7, et nous l'avons remonté à l'éditeur
+ * **Un critère d'ambulance ouvre le droit à lui seul**, sans aucun motif. La
+ * règle ne date pas de la v9.7 — `p1_critere_ambulance` figure déjà parmi les
+ * motifs en v9.5.1 — mais nous l'avons remontée à l'éditeur
  * (`tmp/9.7/anomalie-v9-7-critere-ambulance-motif.md`) : cette grille constate le
  * comportement observé, elle ne l'approuve pas.
  *
- * Restent les deux règles de forme : au-delà de 150 km l'accord préalable est
- * toujours requis, et quatre transports ou plus dont chacun dépasse 50 km font
- * une série, qui l'appelle aussi — sauf sous ALD validée, qui en dispense.
+ * **Au-delà de 150 km, et sur une série, le cas final est une DAP même sans
+ * droit ouvert** : `distance === 2` et la série court-circuitent `droitOuvert`.
+ * Vingt-quatre des 225 cas sont dans ce cas, et c'est la seconde chose que nous
+ * avons remontée (`tmp/9.7/anomalie-v9-7-motifs-dap-ouvrent-le-droit.md`) — la
+ * v9.7 a fait entrer quatre conditions d'accord préalable dans la liste des
+ * motifs ouvrant droit. Une série se compte à quatre transports ou plus dont
+ * chacun dépasse 50 km, sauf sous ALD validée, qui en dispense.
  */
 function casFinalAttendu(
   mode: string,
