@@ -9,7 +9,13 @@ import { describe, expect, it } from "vitest";
 import { REMPLISSAGE_DAP } from "../../front/outils-produit/beta/cerfa/dap/remplissage-dap.ts";
 import { REMPLISSAGE_PMT } from "../../front/outils-produit/beta/cerfa/pmt/remplissage-pmt.ts";
 import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
-import { VALEURS_COMPAREES } from "../../front/outils-produit/beta/cerfa/reponses.ts";
+import { saisiesDuTableau } from "../../front/outils-produit/beta/cerfa/remplissage.ts";
+import {
+  reponsesDe,
+  VALEURS_COMPAREES,
+} from "../../front/outils-produit/beta/cerfa/reponses.ts";
+import { SEEDS } from "../../front/outils-produit/seeds/catalogue.ts";
+import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
 import { GABARIT, GABARIT_DAP, relire, étatsDe } from "./gabarit.ts";
 
@@ -188,6 +194,42 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
         "OUI",
       ]);
   });
+
+  it("tout état qu'un tableau écrit, sur les seeds du catalogue, est connu de son champ", async () => {
+    // Généralise le test précédent à l'ensemble des deux tableaux plutôt
+    // qu'à leurs seuls faux-radios déjà connus : un champ dont l'état visé
+    // n'existe pas sur le gabarit laisserait la case vide sans que rien ne
+    // le signale avant le clic d'un prescripteur (`remplir-cerfa.ts` lève,
+    // mais seulement à l'écriture).
+    //
+    // Un seul moteur, réinterrogé à chaque seed : le reconstruire à chaque
+    // fois relit et recompile les règles depuis le disque, ce que 28 seeds
+    // sur deux tableaux rend coûteux pour rien. Le tout reste plus lourd que
+    // le reste du fichier : délai explicite plutôt que le défaut de 5 s.
+    const moteur = moteurDeTest();
+    const TABLEAUX = [
+      ["PMT", REMPLISSAGE_PMT, GABARIT],
+      ["DAP", REMPLISSAGE_DAP, GABARIT_DAP],
+    ] as const;
+
+    for (const [nom, tableau, gabarit] of TABLEAUX) {
+      const étatsParChamp = new Map<string, Set<string>>();
+      for (const seed of SEEDS) {
+        const réponses = reponsesDe(moteur, situationDe(seed));
+        for (const saisie of saisiesDuTableau(tableau, réponses)) {
+          if (!("coché" in saisie)) continue;
+          const états = étatsParChamp.get(saisie.champ) ?? new Set<string>();
+          états.add(saisie.coché);
+          étatsParChamp.set(saisie.champ, états);
+        }
+      }
+      for (const [champ, états] of étatsParChamp) {
+        const connus = await étatsDe(gabarit, champ);
+        for (const état of états)
+          expect(connus, `${nom} — « ${champ} » — /${état}`).toContain(état);
+      }
+    }
+  }, 20_000);
 });
 
 describe("la taille des valeurs écrites", () => {

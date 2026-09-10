@@ -8,6 +8,7 @@ import { saisiesDepuisSituation } from "../../front/outils-produit/beta/cerfa/pm
 import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
+import { dateDePrescription } from "../../front/simulateur/secretariat/date-de-prescription.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
 import {
   AIDE_PROFESSIONNEL,
@@ -219,10 +220,11 @@ describe("saisiesDepuisSituation", () => {
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     expect(lu).toMatchObject({
-      // Deux contextes administratifs cumulés.
+      // Deux contextes administratifs cumulés, chacun avec sa date.
       "entré sortie hosp": "/NON", // état d'export
       "transport lié à un accident du travail ou une maladie professionnelle":
         "/On",
+      "date accid ATMP": "12012026",
       // Les cinq justifications d'ambulance.
       "position allongée ou demiassise": "/On",
       "brancardage ou dun portage": "/On",
@@ -235,8 +237,15 @@ describe("saisiesDepuisSituation", () => {
       "nbr transp": "3",
       "Urg SAMU centre 15": "/On",
       oui: "/OUI",
+      "date accident": "12012026",
+      // Ni l'exonération du ticket modérateur ni la pension militaire ne sont
+      // demandées par cette seed : les deux mosaïques par défaut valent non.
+      oui1: "/NON",
+      oui2: "/NON",
+      // Posée par l'application, hors mapping (`date-de-prescription.ts`).
+      date: dateDePrescription().replaceAll("/", ""),
     });
-    expect(saisies).toHaveLength(13);
+    expect(saisies).toHaveLength(18);
   });
 
   it("refuse de produire ce CERFA quand le cas final relève d'un autre document", () => {
