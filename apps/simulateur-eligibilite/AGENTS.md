@@ -43,6 +43,16 @@ inventé. C'est volontairement coûteux : le moteur est relu champ par champ. C'
 aussi volontairement lisible : une case du formulaire se comprend en lisant sa
 ligne.
 
+Les tableaux de remplissage nomment des **ids du mapping documentaire** : le
+référentiel du porteur. Pour chaque case des trois Cerfa, il nomme la règle qui
+la décide. La correspondance id vers règle vit dans
+`front/simulateur/secretariat/` (`case-de-formulaire.ts`, `rubriques-*.ts`), pas
+dans `cerfa/`.
+
+C'est la même transcription que lit la checklist du Bloc 3. `mapping.ts` la relit
+pour le pré-remplissage. Voir la
+[spec 0006](../../spec/4.%20done/0006-socle-du-mapping-documentaire.md).
+
 Le dossier est sous `beta/` à cause de son bouton de téléchargement, pas de sa
 nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est pas
 éprouvé.

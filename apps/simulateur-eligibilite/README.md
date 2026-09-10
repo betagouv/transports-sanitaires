@@ -184,11 +184,21 @@ en est la recopie, et c'est par lui que tous ces cas se rejouent.
 
 La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois
 Cerfa — PMT S3138g, DAP S3139h, S3141 — elle nomme la règle qui la décide, la condition
-qui la fait exister et la façon de la rendre. Le paquet ne fournit pas de moteur de rendu
-PDF ; ce qu'elle apporte déjà, c'est que l'application cesse de **déduire** ce qui se
-coche. Elle est recopiée dans `secretariat/rubriques-communes.ts` pour ce que les trois
-formulaires partagent, et dans un fichier par formulaire pour le reste — les numéros de
-rubrique diffèrent de l'un à l'autre.
+qui la fait exister, la façon de la rendre et l'origine de la valeur (`publicodes`,
+`application`, `externe`, `manuel`). Le porteur la tient à jour dans un
+[Google Sheet](https://docs.google.com/spreadsheets/d/1NXQzQUwJdK7dfTg3GYctjIwmkk2Y21tImo0-DwaGzc4/edit?gid=2040210112),
+à côté du paquet de l'éditeur — c'est le contrat de correspondance entre le simulateur et
+le document remis au patient, et le code ne doit pas reconstruire une règle réglementaire
+à partir de l'interface. Le paquet ne fournit pas de moteur de rendu PDF ; ce qu'elle
+apporte déjà, c'est que l'application cesse de **déduire** ce qui se coche.
+
+Elle est recopiée en entier dans `secretariat/` : `case-de-formulaire.ts` porte la forme
+d'une case, `rubriques-en-tete.ts`, `rubriques-mode-de-transport.ts`, `rubriques-trajet.ts`,
+`rubriques-situation-medicale.ts` et `rubriques-prescripteur.ts` portent ce que les trois
+formulaires partagent, et un fichier par formulaire (`rubriques-du-pmt.ts`,
+`rubriques-de-la-dap.ts`, `rubriques-du-s3141.ts`) porte le reste — les numéros de rubrique
+diffèrent de l'un à l'autre. Le pré-remplissage du CERFA
+(`outils-produit/beta/cerfa/mapping.ts`) la relit pour ce que la checklist n'affiche pas.
 
 Trois choses ont quitté le modèle en v9.7, et vivent désormais dans le code parce que le
 contrat d'interface les y met :
