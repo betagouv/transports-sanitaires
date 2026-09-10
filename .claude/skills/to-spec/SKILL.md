@@ -95,7 +95,8 @@ et que c'est assumé.
 Pas de chemin de fichier ni de code dans une décision : ils vieillissent plus vite
 que la prose, et ils ont déjà leur tableau dans `Ce qu'il faut implémenter`. La
 seule exception est l'extrait issu d'un prototype qui encode la décision mieux
-qu'une phrase, un schéma ou une forme de type par exemple, réduit à ce qui décide.
+qu'une phrase. Un schéma ou une forme de type, par exemple, réduits à ce qui
+décide.
 
 ```markdown
 ✅ OK
