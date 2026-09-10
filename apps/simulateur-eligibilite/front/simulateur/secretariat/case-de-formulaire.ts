@@ -19,7 +19,7 @@
 //  - le **pré-remplissage** lit tout, et tire de l'origine ce qu'il laisse
 //    vierge et à qui.
 
-import type { CleDeRegle } from "../contrat-regles-publicodes";
+import type { CleDeRegle } from "../contrat-regles-publicodes.ts";
 
 /**
  * Le `when` du livrable, dans les quatre formes qu'il emploie : une conjonction,
