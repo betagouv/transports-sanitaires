@@ -20,7 +20,8 @@
 //
 //  1. `ALD exo`, `oui1` et `oui2` sont des **boutons radio déguisés** en case à
 //     cocher (cf. `ÉtatCoché` dans `remplir-cerfa.ts`) : chacun vise deux ids de
-//     la feuille, et le premier vrai l'emporte (`premierVrai`).
+//     la feuille, et le premier vrai l'emporte (`premierVrai`, dans
+//     `mapping.ts` — la DAP en a besoin aussi, pour ses champs à quatre cases).
 //  2. `entré sortie hosp` a pour état d'export `/NON` alors que la cocher signifie
 //     « oui, entrée ou sortie d'hospitalisation ». L'état d'export n'est pas la
 //     sémantique : ne jamais l'inférer du nom.
@@ -31,7 +32,7 @@
 import { dateDePrescription } from "../../../../simulateur/secretariat/date-de-prescription.ts";
 import { RUBRIQUES_PMT } from "../../../../simulateur/secretariat/rubriques-du-pmt.ts";
 import { dateSurLeChamp } from "../dates.ts";
-import { depuisLeMapping } from "../mapping.ts";
+import { depuisLeMapping, premierVrai as premierVraiSur } from "../mapping.ts";
 import type { ÉtatCoché } from "../remplir-cerfa.ts";
 import { type Remplissage, type Tableau, écrit } from "../remplissage.ts";
 import type { Reponses } from "../reponses.ts";
@@ -129,23 +130,13 @@ function mapping(id: string, état: ÉtatCoché = "On"): Remplissage {
   return depuisLeMapping(RUBRIQUES_PMT, id, état);
 }
 
-/**
- * Un champ qui n'est en réalité qu'un bouton radio déguisé — décision 2 de la
- * spec 0007. Chaque paire nomme l'id de la feuille et l'état à écrire s'il est
- * vrai ; la première ligne vraie l'emporte. Les deux cibles visées étant
- * exclusives dans le modèle, l'ordre ne tranche rien en pratique : il est écrit
- * pour que le comportement reste défini si elles cessaient de l'être.
- */
+// Raccourci sur `premierVrai` de `mapping.ts`, toujours contre `RUBRIQUES_PMT` —
+// décision 2 de la spec 0007, généralisée par la 0008 dans `mapping.ts` pour
+// que la DAP la partage plutôt que d'en garder une copie.
 function premierVrai(
   ...paires: ReadonlyArray<readonly [id: string, état: ÉtatCoché]>
 ): Remplissage {
-  return (réponses) => {
-    for (const [id, état] of paires) {
-      const valeur = mapping(id, état)(réponses);
-      if (valeur !== undefined) return valeur;
-    }
-    return undefined;
-  };
+  return premierVraiSur(RUBRIQUES_PMT, ...paires);
 }
 
 /**

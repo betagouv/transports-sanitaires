@@ -7,22 +7,22 @@
 // ou bateau, dans la même rubrique. Le livrable prévient : « ne pas renseigner
 // une sous-situation aérienne sans transport aérien ».
 
-import type { Rubrique } from "./case-de-formulaire";
-import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete";
-import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport";
+import type { Rubrique } from "./case-de-formulaire.ts";
+import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete.ts";
+import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport.ts";
 import {
   AVIS_CAISSE,
   CADRE_TRANSPORTEUR,
   DATE_PRESCRIPTION,
   IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
   SIGNATURE_PRESCRIPTEUR,
-} from "./rubriques-prescripteur";
+} from "./rubriques-prescripteur.ts";
 import {
   EXONERATION_DU_TICKET_MODERATEUR,
   URGENCE,
   VOLET_MEDICAL,
-} from "./rubriques-situation-medicale";
-import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet";
+} from "./rubriques-situation-medicale.ts";
+import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet.ts";
 
 export const RUBRIQUES_DAP: readonly Rubrique[] = [
   {

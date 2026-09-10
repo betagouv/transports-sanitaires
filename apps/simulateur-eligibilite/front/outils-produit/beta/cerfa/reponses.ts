@@ -28,11 +28,13 @@ export type Reponses = {
 
 /**
  * Les cinq valeurs de `cible_transport_sanitaire_prescrit`, recopiées mot pour mot
- * du modèle. Nommées plutôt qu'écrites au point d'appel : depuis la v9.1 chaque
- * abréviation traîne sa définition, et la variante TPMR pèse à elle seule 150
- * caractères.
+ * du modèle. Ni le PMT ni la DAP ne branchent plus dessus depuis les specs 0007
+ * et 0008 — les deux lisent les cibles du mapping documentaire plutôt que ce
+ * libellé —, mais `VALEURS_COMPAREES` continue de la comparer au modèle : un
+ * champ recommencerait à en dépendre sans prévenir si le mapping venait à
+ * manquer une valeur.
  */
-export const MODE = {
+const MODE = {
   // La v9.7 a scindé le mode non professionnalisé en deux, et retiré les deux
   // sorties qui n'en étaient pas : « aucun », que la Partie 1 ne rend plus — elle
   // conclut toujours sur un mode —, et le SMUR, dont la réponse a disparu de Q1.
@@ -69,9 +71,11 @@ export function reponsesDe(
  * La v9.5.1 les libellait différemment aux deux bouts — l'arrivée disait « un
  * domicile différent du lieu de départ ». La v9.7 leur donne la même liste, plus
  * longue de trois entrées : EHPAD, USLD et établissement pénitentiaire, que le
- * modèle distinguait jusque-là par des exceptions.
+ * modèle distinguait jusque-là par des exceptions. Comme `MODE`, plus lue
+ * directement par aucun tableau de remplissage depuis que le trajet passe par
+ * `rubriques-trajet.ts` — gardée pour `VALEURS_COMPAREES`.
  */
-export const LIEU = {
+const LIEU = {
   domicile: "Domicile",
   ehpad: "EHPAD",
   usld: "USLD",
@@ -84,9 +88,10 @@ export const LIEU = {
  * Les possibilités de `cible_type_urgence`, la cible que la v9.5.1 expose. C'est
  * elle qu'on lit plutôt que la réponse brute d'A4.5 : le modèle y range aussi
  * l'exception d'aide médicale urgente, qu'aucune réponse d'A4.5 ne porte, et
- * c'est à lui de dire ce qui vaut urgence attestée.
+ * c'est à lui de dire ce qui vaut urgence attestée. Même sort que `MODE` et
+ * `LIEU`.
  */
-export const URGENCE = {
+const URGENCE = {
   samu: "appel SAMU - Centre 15",
   autre: "autre urgence médicale attestée",
   aucune: "aucune",
