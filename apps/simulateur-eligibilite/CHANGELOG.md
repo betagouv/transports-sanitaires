@@ -7,6 +7,43 @@ commit lui-même.
 Le simulateur affiche en bas de page la version qu'il exécute, le commit déployé
 et la version du modèle de règles.
 
+## [0.3.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.3.0) — 10 septembre 2026
+
+La montée du modèle d'éligibilité de la v9.5.1 à la v9.7.0, et le passage du
+contrat d'interface au rang de source de ce que l'application déduisait
+elle-même. Huit commits depuis la 0.2.0.
+
+### TL;DR
+
+- Le modèle passe de la v9.5.1 à la v9.7.0 : 294 règles contre 188, 74 cibles contre 42, 115 questions contre 69. La v9.6 n'a jamais été intégrée.
+- Le contexte administratif devient une raison principale à choix unique, la case « séance » éclate en trois, et la branche « patient détenu » disparaît.
+- Trois sorties directes de la Partie 1 sont retirées, le SMUR, le seul motif bariatrique et la prestation non prise en charge, au profit d'un septième cas final : la prescription S3141.
+- Quatre conditions d'accord préalable entrent dans les motifs ouvrant droit : la distance de plus de 150 km, la série, le CAMSP/CMPP et le SAMSAH.
+- L'ordre du parcours, les bornes de saisie, les formes de saisie et les cases des trois Cerfa se déclarent désormais d'après le contrat d'interface, au lieu d'être déduits.
+- Six dates se saisissent en champ de date ou d'heure, là où le questionnaire offrait du texte libre.
+- Le Résultat 2 s'imprime quel que soit le cas final, et porte sa date de prescription.
+- La suite de tests passe de 473 à 792 tests, la recette du livrable comptant à elle seule 275 cas.
+
+### ✨ Nouveautés
+
+- [65cc893](https://github.com/betagouv/transports-sanitaires/commit/65cc893) : lit du modèle les cases des trois Cerfa. La v9.7 livre une correspondance documentaire qui nomme, pour chaque zone du PMT S3138g, de la DAP S3139h et du S3141, la règle qui la décide et la condition qui la fait exister. L'application les déduisait jusqu'ici des critères médicaux et du libellé du mode, et se trompait de plusieurs façons : une position allongée se listait sans ambulance, un TPMR ne cochait pas le transport assis professionnalisé dont il relève, le SAMSAH réclamait une case qui n'existe sur aucun formulaire, et le nombre affiché était celui qui est prévu plutôt que celui que le document couvre. Le S3141, que le contrat d'interface ne décrit pas, gagne ses six rubriques.
+- [2633a0b](https://github.com/betagouv/transports-sanitaires/commit/2633a0b) : ouvre l'impression du Résultat 2 quel que soit le cas final, et le date. Quand aucun Cerfa n'est dû, c'est cette page qui part au patient, en synthèse et jamais en prescription factice ; les commandes et le pied de page se retirent du papier. La date de prescription vient de l'application et non du modèle, se pose à l'arrivée sur la page et s'y tient : revenir au questionnaire puis en ressortir ne redate pas la prescription, et une simulation menée à 23 h 30 à Paris ne date pas du lendemain.
+- [8ce19db](https://github.com/betagouv/transports-sanitaires/commit/8ce19db) : rend les contenus et les couleurs de la v9.7, désormais fixés par le contrat d'interface et par les cibles du modèle. Le Résultat 1 nomme le mode dans son titre et reste toujours bleu, puisqu'il ne tranche que le médical : une teinte verte ou rouge y faisait lire un accord ou un refus qui n'y sont pas. Le Résultat 2 titre ce que la prise en charge permet plutôt que ce qu'elle garantit, dit au patient ce qu'il engage s'il organise quand même son déplacement, et prend sa couleur du modèle, là où la table tenue à la main rendait en orange un transport à la charge de l'établissement que le contrat veut vert.
+- [e346684](https://github.com/betagouv/transports-sanitaires/commit/e346684) : pose les saisies de date et d'heure du questionnaire. Les six dates que la v9.7 recueille, début d'une hospitalisation, deux bornes et fin d'une permission, AT/MP et accident causé par un tiers, se rendaient en champ libre : publicodes ne connaît pas la date, et l'application aurait eu à deviner le format dont dépend l'admissibilité au S3141. Quatre dates et deux instants se distinguent désormais, la limite de quarante-huit heures se comptant à l'heure près.
+- [a79c187](https://github.com/betagouv/transports-sanitaires/commit/a79c187) : passe le modèle en v9.7, soit 294 règles et 74 cibles. Le saut se fait depuis la v9.5.1, la v9.6 n'ayant jamais été intégrée, et aucune des 118 règles communes n'est restée identique. Trois choses ont quitté le modèle et se déclarent maintenant dans l'application : l'ordre du parcours, les bornes d'une saisie chiffrée, et onze entrées qu'il faut calculer sans jamais les poser, faute de quoi le questionnaire les réclamait comme des questions et s'ouvrait sur une saisie sans énoncé. Deux défauts sont corrigés en passant : le Résultat 2 affichait « false » en guise de titre, et les entrées calculées n'atteignaient ni le raccourci de seed ni la conclusion du parcours.
+
+### ♻️ Sous le capot
+
+- [5dfac7a](https://github.com/betagouv/transports-sanitaires/commit/5dfac7a) : déclare l'ordre des étapes du parcours, que le classement des variables manquantes de publicodes fixait jusqu'ici. Personne ne l'avait choisi, et une règle citée une fois de plus pouvait déplacer sa question. L'ordre déclaré est celui que le parcours suivait déjà, relevé sur les trente-deux situations de référence qui s'accordent sans exception : rien ne change pour le prescripteur.
+
+### ✅ Tests
+
+- [618b07d](https://github.com/betagouv/transports-sanitaires/commit/618b07d) : porte la recette v9.7, 275 cas contre une trentaine en v9.5.1. Le livrable ne donne pas des situations mais des options, qu'un adaptateur de référence traduit en réponses ; sans cette traduction, aucun de ses cas n'est rejouable ici. Les 225 cas engendrés reproduisent le produit croisé de cinq modes, cinq motifs, trois tranches de distance et trois nombres de transports, et les cinquante cas nommés se répartissent par sujet. La grille rend lisible une règle que le journal des évolutions ne dit pas : un critère clinique d'ambulance ouvre le droit à lui seul, là où un besoin d'aide professionnelle ne le fait pas.
+
+### 📝 Documentation
+
+- [065f299](https://github.com/betagouv/transports-sanitaires/commit/065f299) : remonte à l'éditeur la fusion des motifs ouvrant droit et des conditions d'accord préalable. Vingt-quatre des 225 cas de la grille rendent remboursable un déplacement qu'aucun motif ne couvre dès qu'il dépasse 150 km, là où la v9.5.1 et la v9.6.0 tenaient les deux jugements séparés ; c'est bien ce que la matrice livrée attend, d'où une question posée plutôt qu'un défaut signalé. Une erreur de notre premier constat est corrigée au passage : un critère d'ambulance ouvrant le droit à lui seul n'est pas nouveau en v9.7, il figurait déjà parmi les motifs en v9.5.1.
+
 ## [0.2.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.2.0) — 27 août 2026
 
 Deux montées du modèle d'éligibilité, de la v9.4.1 à la v9.5.1, et le passage du
