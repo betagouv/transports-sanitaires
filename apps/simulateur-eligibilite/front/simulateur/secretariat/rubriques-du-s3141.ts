@@ -1,6 +1,6 @@
 // S3141, Cerfa 16184*01 — page 2 du PDF. Le formulaire des permissions
 // temporaires de sortie, apparu avec la v9.7 en même temps que le septième cas
-// final.
+// final. 55 lignes du mapping, comptées par `tests/cerfa/mapping.test.ts`.
 //
 // Il ne porte ni rubrique médicale, ni urgence, ni centre de référence, et le
 // livrable le répète deux fois : « aucune rubrique éléments médicaux, urgence ou
@@ -8,12 +8,16 @@
 // cadre organisme, contrairement au PMT et à la DAP.
 
 import type { Rubrique } from "./case-de-formulaire";
+import { ACCIDENT_CAUSE_PAR_UN_TIERS } from "./rubriques-en-tete";
+import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport";
 import {
-  ACCIDENT_CAUSE_PAR_UN_TIERS,
-  EXONERATION_DU_TICKET_MODERATEUR,
-  MODE_DE_TRANSPORT,
-  TRAJET,
-} from "./rubriques-communes";
+  CADRE_TRANSPORTEUR,
+  DATE_PRESCRIPTION,
+  IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+  SIGNATURE_PRESCRIPTEUR,
+} from "./rubriques-prescripteur";
+import { EXONERATION_DU_TICKET_MODERATEUR } from "./rubriques-situation-medicale";
+import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet";
 
 export const RUBRIQUES_S3141: readonly Rubrique[] = [
   ACCIDENT_CAUSE_PAR_UN_TIERS,
@@ -37,7 +41,7 @@ export const RUBRIQUES_S3141: readonly Rubrique[] = [
   {
     titre: "Rubrique ③ — trajet",
     icone: "fr-icon-road-map-line",
-    cases: TRAJET,
+    cases: [...TRAJET, ...ADRESSES_DU_TRAJET],
   },
   {
     titre: "Rubrique ④ — périodicité des permissions",
@@ -90,5 +94,15 @@ export const RUBRIQUES_S3141: readonly Rubrique[] = [
     titre: "Rubrique ⑥ — exonération du ticket modérateur",
     icone: "fr-icon-money-euro-circle-line",
     cases: EXONERATION_DU_TICKET_MODERATEUR,
+  },
+  {
+    titre: "Bloc prescripteur et structure",
+    icone: "fr-icon-user-line",
+    cases: [
+      ...IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+      ...DATE_PRESCRIPTION,
+      ...SIGNATURE_PRESCRIPTEUR,
+      ...CADRE_TRANSPORTEUR,
+    ],
   },
 ];

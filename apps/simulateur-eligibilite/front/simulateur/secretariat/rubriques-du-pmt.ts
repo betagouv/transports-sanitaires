@@ -1,6 +1,7 @@
 // PMT S3138g, Cerfa 11574*07 — pages 3 et 4 du PDF, volets 1 et 2. Les rubriques
 // telles que le YAML documentaire de la v9.7 les décrit, dans l'ordre où le
-// prescripteur les rencontre sur le papier.
+// prescripteur les rencontre sur le papier. 64 lignes du mapping, comptées par
+// `tests/cerfa/mapping.test.ts`.
 //
 // Les numéros de rubrique sont ceux de **ce** formulaire : l'urgence est en ④
 // ici et en ② sur la DAP, l'exonération en ⑥ ici et en ④ là-bas. C'est la raison
@@ -8,17 +9,26 @@
 // elles.
 
 import type { Rubrique } from "./case-de-formulaire";
+import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete";
+import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport";
 import {
-  ACCIDENT_CAUSE_PAR_UN_TIERS,
+  CADRE_TRANSPORTEUR,
+  DATE_PRESCRIPTION,
+  IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+  SIGNATURE_PRESCRIPTEUR,
+} from "./rubriques-prescripteur";
+import {
   EXONERATION_DU_TICKET_MODERATEUR,
-  MODE_DE_TRANSPORT,
-  TRAJET,
   URGENCE,
   VOLET_MEDICAL,
-} from "./rubriques-communes";
+} from "./rubriques-situation-medicale";
+import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet";
 
 export const RUBRIQUES_PMT: readonly Rubrique[] = [
-  ACCIDENT_CAUSE_PAR_UN_TIERS,
+  {
+    ...ACCIDENT_CAUSE_PAR_UN_TIERS,
+    cases: [...ACCIDENT_CAUSE_PAR_UN_TIERS.cases, ...ORGANISME],
+  },
   {
     titre: "Rubrique ① — situation permettant la prise en charge",
     icone: "fr-icon-health-book-line",
@@ -83,6 +93,7 @@ export const RUBRIQUES_PMT: readonly Rubrique[] = [
         source: "cible_nombre_transports_document",
         rendu: "nombre",
       },
+      ...ADRESSES_DU_TRAJET,
     ],
   },
   {
@@ -116,6 +127,16 @@ export const RUBRIQUES_PMT: readonly Rubrique[] = [
         source: "cible_situation_pension_militaire",
         rendu: "case Non",
       },
+    ],
+  },
+  {
+    titre: "Bloc prescripteur et structure",
+    icone: "fr-icon-user-line",
+    cases: [
+      ...IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+      ...DATE_PRESCRIPTION,
+      ...SIGNATURE_PRESCRIPTEUR,
+      ...CADRE_TRANSPORTEUR,
     ],
   },
 ];

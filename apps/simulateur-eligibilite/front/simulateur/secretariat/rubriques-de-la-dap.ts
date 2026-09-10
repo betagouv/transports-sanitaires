@@ -1,5 +1,6 @@
 // DAP S3139h, Cerfa 11575*08 — pages 2 à 4 du PDF, volets 1 à 3. Les rubriques
-// telles que le YAML documentaire de la v9.7 les décrit.
+// telles que le YAML documentaire de la v9.7 les décrit. 71 lignes du mapping,
+// comptées par `tests/cerfa/mapping.test.ts`.
 //
 // La DAP porte deux choses que le PMT n'a pas : les motifs qui la rendent
 // nécessaire, en ①, et la sous-situation qui accompagne un transport par avion
@@ -7,17 +8,27 @@
 // une sous-situation aérienne sans transport aérien ».
 
 import type { Rubrique } from "./case-de-formulaire";
+import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete";
+import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport";
 import {
-  ACCIDENT_CAUSE_PAR_UN_TIERS,
+  AVIS_CAISSE,
+  CADRE_TRANSPORTEUR,
+  DATE_PRESCRIPTION,
+  IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+  SIGNATURE_PRESCRIPTEUR,
+} from "./rubriques-prescripteur";
+import {
   EXONERATION_DU_TICKET_MODERATEUR,
-  MODE_DE_TRANSPORT,
-  TRAJET,
   URGENCE,
   VOLET_MEDICAL,
-} from "./rubriques-communes";
+} from "./rubriques-situation-medicale";
+import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet";
 
 export const RUBRIQUES_DAP: readonly Rubrique[] = [
-  ACCIDENT_CAUSE_PAR_UN_TIERS,
+  {
+    ...ACCIDENT_CAUSE_PAR_UN_TIERS,
+    cases: [...ACCIDENT_CAUSE_PAR_UN_TIERS.cases, ...ORGANISME],
+  },
   {
     titre: "Rubrique ① — situation nécessitant un accord préalable",
     icone: "fr-icon-health-book-line",
@@ -137,6 +148,7 @@ export const RUBRIQUES_DAP: readonly Rubrique[] = [
         source: "cible_nombre_transports_document",
         rendu: "nombre",
       },
+      ...ADRESSES_DU_TRAJET,
       ...URGENCE,
     ],
   },
@@ -149,5 +161,16 @@ export const RUBRIQUES_DAP: readonly Rubrique[] = [
     titre: "Rubrique ④ — exonération du ticket modérateur",
     icone: "fr-icon-money-euro-circle-line",
     cases: EXONERATION_DU_TICKET_MODERATEUR,
+  },
+  {
+    titre: "Bloc prescripteur et structure",
+    icone: "fr-icon-user-line",
+    cases: [
+      ...IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
+      ...DATE_PRESCRIPTION,
+      ...SIGNATURE_PRESCRIPTEUR,
+      ...CADRE_TRANSPORTEUR,
+      ...AVIS_CAISSE,
+    ],
   },
 ];
