@@ -4,7 +4,7 @@
 
 import { type moteur, vrai } from "../moteur";
 import { type Article80, Article80CorpsMedical } from "./Article80";
-import type { GroupeRetenu } from "./cases-documentaires";
+import type { GroupeRetenu } from "./case-de-formulaire";
 import { casesRetenues } from "./cases-documentaires";
 import { NoteUrgenceCorpsMedical } from "./urgence-attestee";
 
@@ -46,7 +46,7 @@ export function Bloc3CasRetenu({
         )}
         <QualificationDuMotifAld e={e} />
         <TracabiliteDuMotifAld e={e} casFinal={casFinal} />
-        <CasesACompleter groupes={casesRetenues(casFinal, e, transport)} />
+        <CasesACompleter groupes={casesRetenues(casFinal, e)} />
       </div>
     </div>
   );
@@ -179,14 +179,12 @@ function CasesACompleter({ groupes }: { groupes: GroupeRetenu[] }) {
       <p className="fr-mb-3w">
         <strong>Cases à compléter ou cocher :</strong>
       </p>
-      {/* Une colonne par groupe sur écran large (3 sections PMT ⇒ 3 colonnes),
-          empilées sur mobile. */}
+      {/* Trois colonnes sur grand écran, deux sur tablette, empilées sur mobile.
+          Le nombre de rubriques suit le formulaire — sept pour la DAP — et une
+          colonne par rubrique les rendrait illisibles : elles s'enroulent. */}
       <div className="fr-grid-row fr-grid-row--gutters">
         {groupes.map((groupe) => (
-          <div
-            key={groupe.titre ?? "sans-titre"}
-            className={`fr-col-12 fr-col-md-${Math.floor(12 / groupes.length)}`}
-          >
+          <div key={groupe.titre} className="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <GroupeDeCases groupe={groupe} />
           </div>
         ))}
@@ -198,14 +196,10 @@ function CasesACompleter({ groupes }: { groupes: GroupeRetenu[] }) {
 function GroupeDeCases({ groupe }: { groupe: GroupeRetenu }) {
   return (
     <>
-      {groupe.titre && (
-        <p className="fr-mb-1v">
-          {groupe.icone && (
-            <span className={`${groupe.icone} fr-mr-1w`} aria-hidden="true" />
-          )}
-          <strong>{groupe.titre}</strong>
-        </p>
-      )}
+      <p className="fr-mb-1v">
+        <span className={`${groupe.icone} fr-mr-1w`} aria-hidden="true" />
+        <strong>{groupe.titre}</strong>
+      </p>
       <ul>
         {groupe.cases.map((laCase) => (
           <li key={laCase}>{laCase}</li>

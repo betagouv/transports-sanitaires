@@ -1,191 +1,52 @@
-// Les cases documentaires à reporter sur le formulaire, par cas final.
+// Ce que le Bloc 3 liste au corps médical, par cas final.
 //
-// Chaque case est soit toujours listée (checklist manuelle du praticien), soit
-// conditionnée par une règle du modèle — auquel cas elle n'apparaît que si la
-// simulation l'a établie. C'est pourquoi la sélection demande le moteur.
+// Trois cas finaux ouvrent un Cerfa, et leurs cases viennent désormais du modèle :
+// le YAML documentaire de la v9.7 dit, pour chaque zone des trois formulaires,
+// quelle règle la décide (`rubriques-du-pmt.ts`, `rubriques-de-la-dap.ts`,
+// `rubriques-du-s3141.ts`). Jusqu'ici l'application dérivait ces cases elle-même
+// des critères médicaux et du libellé du mode, et se trompait : une position
+// allongée se listait sans ambulance, un TPMR ne cochait pas le transport assis
+// professionnalisé, et le SAMSAH réclamait une case qui n'existe sur aucun
+// formulaire.
+//
+// Les quatre autres cas finaux n'ouvrent aucun formulaire : il n'y a rien à
+// cocher, seulement des éléments à vérifier avant de remettre le document — ou
+// rien du tout.
 
-import type { CleDeRegle } from "../contrat-regles-publicodes";
 import type { moteur } from "../moteur";
+import type { GroupeRetenu, Rubrique } from "./case-de-formulaire";
+import { rubriquesRetenues } from "./case-de-formulaire";
+import { RUBRIQUES_DAP } from "./rubriques-de-la-dap";
+import { RUBRIQUES_PMT } from "./rubriques-du-pmt";
+import { RUBRIQUES_S3141 } from "./rubriques-du-s3141";
 
-// Une case documentaire : soit un libellé toujours listé (checklist manuelle du
-// praticien), soit un libellé conditionné par une règle du modèle — auquel cas
-// il n'est affiché que si la simulation l'a établi. Le libellé lui-même peut se
-// calculer : la v9.5.0 expose le nombre exact de transports, et une case qui le
-// porte vaut mieux qu'une ligne à recopier.
-type CaseDocumentaire =
-  | string
-  | {
-      texte: string | ((e: typeof moteur) => string);
-      visible?: (e: typeof moteur, transport: string) => boolean;
-    };
+/**
+ * Les cases du cas final, réduites à ce que la simulation a établi. Le mode de
+ * transport n'est plus un paramètre : le modèle expose ses propres cibles de
+ * mode, et c'est à elles que le formulaire se réfère.
+ */
+export function casesRetenues(
+  casFinal: string,
+  e: typeof moteur,
+): GroupeRetenu[] {
+  const cerfa = CERFA[casFinal];
+  if (cerfa) return rubriquesRetenues(cerfa, e);
+  return [...(A_VERIFIER[casFinal] ?? [])];
+}
 
-type Groupe = {
-  titre?: string;
-  icone?: string;
-  cases: CaseDocumentaire[];
+// ---- implémentation ----
+
+// Les trois formulaires, et le cas final qui les ouvre. Le livrable choisit de
+// la même façon : S3141, puis DAP, puis PMT.
+const CERFA: Record<string, readonly Rubrique[]> = {
+  "prescription S3141": RUBRIQUES_S3141,
+  "demande d’accord préalable": RUBRIQUES_DAP,
+  "prescription médicale de transport": RUBRIQUES_PMT,
 };
 
-/** Un groupe dont les cases sont tranchées : plus rien à évaluer pour l'afficher. */
-export type GroupeRetenu = {
-  titre?: string;
-  icone?: string;
-  cases: string[];
-};
-
-// Section « Mode de transport » commune à la PMT et à la DAP. Chaque case n'est
-// affichée que si la simulation l'a validée — conditions reprises du mapping
-// documentaire du contrat d’interface, bloc 3 corps médical → « Mode de
-// transport » → cases.visible_if.
-const CASES_MODE_TRANSPORT: CaseDocumentaire[] = [
-  {
-    texte: "Ambulance.",
-    visible: (_e, transport) => transport === "ambulance",
-  },
-  {
-    texte: "Position allongée ou demi-assise.",
-    visible: (e) => vrai(e, "p1_critere_position_allongee_demi_assise"),
-  },
-  {
-    texte: "Surveillance par une personne qualifiée.",
-    visible: (e) => vrai(e, "p1_critere_surveillance_constante"),
-  },
-  {
-    texte: "Administration d’oxygène.",
-    visible: (e) => vrai(e, "p1_critere_oxygene"),
-  },
-  {
-    texte: "Brancardage ou portage.",
-    visible: (e) => vrai(e, "p1_critere_brancardage_portage"),
-  },
-  {
-    texte: "Conditions d’asepsie.",
-    visible: (e) => vrai(e, "p1_critere_isolement_asepsie"),
-  },
-  {
-    texte: "VSL ou taxi conventionné.",
-    visible: (_e, transport) =>
-      transport === "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
-  },
-  {
-    texte: "Transport à mobilité réduite dans le fauteuil roulant.",
-    visible: (_e, transport) =>
-      transport ===
-      "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)",
-  },
-  {
-    texte: "Transport partagé incompatible.",
-    visible: (e) => vrai(e, "cible_transport_partage_incompatible"),
-  },
-  // La v9.5.1 réunissait les deux sous un seul mode, et cochait donc les deux
-  // cases ensemble. La v9.7 fait choisir le prescripteur : une case chacune.
-  {
-    texte: "Moyen de transport individuel.",
-    visible: (_e, transport) => transport === "véhicule personnel",
-  },
-  {
-    texte: "Transport en commun terrestre.",
-    visible: (_e, transport) => transport === "transport en commun terrestre",
-  },
-  {
-    texte: "Personne accompagnante si nécessaire.",
-    visible: (e) => vrai(e, "cible_accompagnant_necessaire"),
-  },
-];
-
-// Cases à compléter ou cocher / éléments à vérifier, par cas final.
-const CASES_BLOC3: Record<string, Groupe[]> = {
-  "prescription médicale de transport": [
-    {
-      titre: "Situation permettant la prise en charge",
-      icone: "fr-icon-health-book-line",
-      cases: [
-        "Entrée ou sortie d’hospitalisation.",
-        "Séance de chimiothérapie, radiothérapie ou hémodialyse.",
-        "Transport en lien avec une ALD — Affection de Longue Durée — avec déficience ou incapacité.",
-        "Accident du travail ou maladie professionnelle.",
-        "Engagement maternité si applicable.",
-      ],
-    },
-    {
-      titre: "Mode de transport",
-      icone: "fr-icon-car-line",
-      cases: CASES_MODE_TRANSPORT,
-    },
-    {
-      titre: "Trajet",
-      icone: "fr-icon-road-map-line",
-      cases: [
-        "Départ.",
-        "Arrivée.",
-        "Aller-retour.",
-        { texte: nombreDeTransports },
-        "Urgence si applicable.",
-        "Éléments d’ordre médical justifiant le déplacement.",
-      ],
-    },
-  ],
-  "demande d’accord préalable": [
-    {
-      titre: "Situation nécessitant une DAP",
-      icone: "fr-icon-health-book-line",
-      // Les six causes réglementaires d'une DAP sont calculées par le modèle
-      // depuis la v9.4.0 : chaque case ne s'affiche que si la sienne est vraie,
-      // là où le praticien devait auparavant retrouver lui-même celles qui
-      // s'appliquaient.
-      cases: [
-        {
-          texte: "Trajet aller supérieur à 150 km.",
-          visible: (e) => vrai(e, "cible_dap_motif_longue_distance"),
-        },
-        {
-          texte: "Transports en série.",
-          visible: (e) => vrai(e, "cible_dap_motif_serie"),
-        },
-        {
-          texte: "Transport vers un CAMSP ou un CMPP.",
-          visible: (e) => vrai(e, "cible_dap_motif_camsp_cmpp"),
-        },
-        {
-          texte: "Transport vers un SAMSAH.",
-          visible: (e) => vrai(e, "cible_dap_motif_samsah"),
-        },
-        {
-          texte: "Engagement maternité.",
-          visible: (e) => vrai(e, "cible_dap_motif_engagement_maternite"),
-        },
-        {
-          texte: "Transport par avion ou bateau de ligne régulière.",
-          visible: (e) => vrai(e, "cible_dap_motif_avion_bateau"),
-        },
-      ],
-    },
-    {
-      titre: "Situation associée si avion ou bateau",
-      icone: "fr-icon-ship-2-line",
-      cases: [
-        "Hospitalisation ou séances.",
-        "ALD — Affection de Longue Durée.",
-        "Accident du travail ou maladie professionnelle.",
-      ],
-    },
-    {
-      titre: "Mode de transport",
-      icone: "fr-icon-car-line",
-      cases: CASES_MODE_TRANSPORT,
-    },
-    {
-      titre: "Trajet",
-      icone: "fr-icon-road-map-line",
-      cases: [
-        "Départ.",
-        "Arrivée.",
-        "Aller-retour.",
-        { texte: nombreDeTransports },
-        "Urgence si applicable.",
-        "Éléments d’ordre médical.",
-      ],
-    },
-  ],
+// Les cas finaux sans formulaire. Rien ne s'y coche, donc rien ne s'y évalue :
+// ce sont des listes de vérification, tenues à la main.
+const A_VERIFIER: Record<string, readonly GroupeRetenu[]> = {
   "convocation ou avis d’audience": [
     {
       titre: "Éléments à vérifier",
@@ -215,68 +76,6 @@ const CASES_BLOC3: Record<string, Groupe[]> = {
       ],
     },
   ],
-  SMUR: [
-    {
-      titre: "Éléments à vérifier",
-      icone: "fr-icon-checkbox-circle-line",
-      cases: [
-        "Intervention SMUR confirmée.",
-        "Établissement ou service concerné.",
-        "Organisation par l’équipe médicale ou l’établissement concerné.",
-      ],
-    },
-  ],
-  "prestation non prise en charge par l’Assurance Maladie": [],
-  "bariatrique seul": [],
   "permission de sortie sans motif médical": [],
   "non éligible à une prise en charge par l’Assurance Maladie": [],
 };
-
-// Les groupes du cas final, réduits aux cases que la simulation a établies. Un
-// groupe entièrement filtré disparaît.
-export function casesRetenues(
-  casFinal: string,
-  e: typeof moteur,
-  transport: string,
-): GroupeRetenu[] {
-  return (CASES_BLOC3[casFinal] ?? [])
-    .map((groupe) => ({
-      ...groupe,
-      cases: groupe.cases
-        .filter(
-          (laCase) =>
-            typeof laCase === "string" ||
-            (laCase.visible?.(e, transport) ?? true),
-        )
-        .map((laCase) => texteDeCase(laCase, e)),
-    }))
-    .filter((groupe) => groupe.cases.length > 0);
-}
-
-// ---- implémentation ----
-
-// A3.2 n'est pas posée sur tous les parcours. Quand elle l'est, la case porte le
-// chiffre plutôt que de le laisser à recopier ; sinon elle reste le rappel qu'elle
-// a toujours été.
-function nombreDeTransports(e: typeof moteur): string {
-  const nombre = valeur(e, "cible_nombre_transports_prevus");
-  return nombre === ""
-    ? "Nombre de transports si applicable."
-    : `Nombre de transports : ${nombre}.`;
-}
-
-function texteDeCase(laCase: CaseDocumentaire, e: typeof moteur): string {
-  if (typeof laCase === "string") return laCase;
-  return typeof laCase.texte === "string" ? laCase.texte : laCase.texte(e);
-}
-
-// Une règle du modèle s'évalue-t-elle à vrai pour la situation courante ? Le
-// paramètre passe par `CleDeRegle` : une règle renommée en amont ne compile plus.
-function vrai(e: typeof moteur, id: CleDeRegle): boolean {
-  return e.evaluate(id).nodeValue === true;
-}
-
-// La valeur d'une règle, en texte. Vide tant que le parcours ne l'a pas tranchée.
-function valeur(e: typeof moteur, id: CleDeRegle): string {
-  return String(e.evaluate(id).nodeValue ?? "");
-}

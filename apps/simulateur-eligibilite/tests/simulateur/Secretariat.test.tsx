@@ -141,26 +141,30 @@ describe("secrétariat — parcours administratif", () => {
       }),
     ).toBeInTheDocument();
 
-    // Cases validées affichées.
-    expect(screen.getByText("Ambulance.")).toBeInTheDocument();
+    // La case validée, et elle seule. Il n'existe pas de case « Ambulance » sur
+    // les trois Cerfa : le mode se déclare par ses justifications, et la v9.7
+    // ne rend celles-ci vraies que sous une ambulance.
     expect(
-      screen.getByText("Position allongée ou demi-assise."),
+      screen.getByText("Ambulance : position allongée ou demi-assise."),
     ).toBeInTheDocument();
 
     // Cases non établies par la simulation : absentes.
     expect(
-      screen.queryByText("Surveillance par une personne qualifiée."),
+      screen.queryByText(
+        "Ambulance : surveillance par une personne qualifiée.",
+      ),
     ).toBeNull();
-    expect(screen.queryByText("Administration d’oxygène.")).toBeNull();
-    expect(screen.queryByText("VSL ou taxi conventionné.")).toBeNull();
-    expect(screen.queryByText("Moyen de transport individuel.")).toBeNull();
     expect(
-      screen.queryByText("Personne accompagnante si nécessaire."),
+      screen.queryByText("Ambulance : administration d’oxygène."),
     ).toBeNull();
+    expect(screen.queryByText(/transport assis professionnalisé/i)).toBeNull();
+    expect(screen.queryByText("Moyen de transport individuel.")).toBeNull();
+    expect(screen.queryByText("Personne accompagnante.")).toBeNull();
   });
 
   it("Bloc 3 : coche l'accompagnant quand Q1 désigne un proche", () => {
-    // La ligne suit `cible_accompagnant_necessaire`, réintroduite en v9.2.1.
+    // La ligne suit `cible_personne_accompagnante` depuis la v9.7, et le Cerfa
+    // ne l'offre que sous l'accolade « moyen individuel / transport en commun ».
     // Le test précédent la vérifie absente sur un besoin professionnel ; ici
     // c'est la seule réponse de Q1 qui la fait apparaître.
     render(
@@ -175,9 +179,7 @@ describe("secrétariat — parcours administratif", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Personne accompagnante si nécessaire."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Personne accompagnante.")).toBeInTheDocument();
   });
 
   it("raccourci `situationFinale` : ouvre directement la Page Résultat 2, sans passation", () => {
@@ -242,9 +244,7 @@ describe("secrétariat — parcours administratif", () => {
         name: /votre transport peut être pris en charge/i,
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/personne accompagnante si nécessaire/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/^personne accompagnante\.$/i)).toBeInTheDocument();
   }, 40_000);
 
   it("traverse la Partie 2 jusqu'au résultat, saisies d'adresse comprises", async () => {

@@ -29,11 +29,24 @@ export function vrai(moteurPositionne: Engine, cle: CleDeRegle): boolean {
   return moteurPositionne.evaluate(cle).nodeValue === true;
 }
 
+/**
+ * Une règle booléenne **explicitement fausse**. Ce n'est pas la négation de
+ * `vrai` : une sortie que le parcours n'a pas tranchée n'est ni l'une ni l'autre.
+ *
+ * Les Cerfa en font la différence, et le contrat de rendu de la v9.7 la demande
+ * mot pour mot — « case Non uniquement si la cible source est explicitement
+ * false ». Cocher « Non » sur une question sans réponse serait une déclaration
+ * que personne n'a faite.
+ */
+export function faux(moteurPositionne: Engine, cle: CleDeRegle): boolean {
+  return moteurPositionne.evaluate(cle).nodeValue === false;
+}
+
 // ---- implémentation ----
 //
-// `texte` et `vrai` suffisent à tout le produit. Elles passent par `CleDeRegle`,
-// donc une clé absente du contrat ne compile pas — c'est leur seule raison d'être,
-// la brièveté n'est qu'un bonus.
+// `texte`, `vrai` et `faux` suffisent à tout le produit. Elles passent par
+// `CleDeRegle`, donc une clé absente du contrat ne compile pas — c'est leur seule
+// raison d'être, la brièveté n'est qu'un bonus.
 
 // Choisit les règles à charger : celles du **mode labo** (test de règles par le
 // produit, cf. `outils-produit/labo/labo.ts`) si présentes et valides, sinon les

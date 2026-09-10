@@ -20,10 +20,20 @@
 
 /** Les sorties du modèle : ce que le produit affiche ou décide. */
 export const CIBLES = [
+  "cible_accident_cause_par_tiers",
   "cible_accompagnant_necessaire",
   "cible_ald_exonerante",
   "cible_ald_non_exonerante",
+  // Les cinq justifications de l'ambulance. Le modèle les compose lui-même
+  // depuis la v9.7 — critère médical **et** mode ambulance — parce qu'il n'existe
+  // pas de case « Ambulance » sur les trois Cerfa : elle se déclare par elles.
+  "cible_ambulance_brancardage_portage",
+  "cible_ambulance_isolement_asepsie",
+  "cible_ambulance_oxygene",
+  "cible_ambulance_position_allongee_demi_assise",
+  "cible_ambulance_surveillance_constante",
   "cible_attente_accord_prealable_requise",
+  "cible_avion_bateau_accompagnant",
   "cible_case_aller_retour",
   "cible_cas_final",
   "cible_dap_motif_avion_bateau",
@@ -32,6 +42,8 @@ export const CIBLES = [
   "cible_dap_motif_longue_distance",
   "cible_dap_motif_samsah",
   "cible_dap_motif_serie",
+  "cible_date_accident_cause_par_tiers",
+  "cible_date_at_mp",
   "cible_document_a_remettre_au_patient",
   "cible_document_arrivee_adresse",
   "cible_document_arrivee_code_postal",
@@ -46,14 +58,28 @@ export const CIBLES = [
   "cible_document_depart_nom",
   "cible_document_depart_pays",
   "cible_equipement_bariatrique_requis",
+  "cible_exoneration_ticket_moderateur",
+  "cible_fauteuil_roulant",
+  "cible_lieu_arrivee_type",
+  "cible_lieu_depart_type",
+  "cible_mode_individual",
+  "cible_mode_public",
+  "cible_mode_tap_ou_tpmr",
   "cible_nombre_transports_document",
   "cible_nombre_transports_prevus",
   "cible_partie_2_requise",
+  "cible_personne_accompagnante",
   "cible_regime_financement",
   "cible_resultat_1_couleur",
   "cible_resultat_2_affichable",
   "cible_resultat_2_couleur",
   "cible_resultat_medical",
+  // Les trois sorties propres au S3141 : la date qui ouvre la période, la
+  // fréquence mensuelle des trajets et la date jusqu'à laquelle les permissions
+  // sont prescrites.
+  "cible_s3141_debut_hospitalisation",
+  "cible_s3141_nombre_trajets_mois",
+  "cible_s3141_periode_fin",
   "cible_situation_ald",
   "cible_situation_at_mp",
   "cible_situation_centre_reference_maladies_rares",
@@ -63,7 +89,10 @@ export const CIBLES = [
   "cible_transport_partage_incompatible",
   "cible_transport_sanitaire_prescrit",
   "cible_type_urgence",
+  "cible_urgence_appel15",
   "cible_urgence_attestee",
+  "cible_urgence_autre",
+  "cible_urgence_autre_precision",
 ] as const;
 
 /**
@@ -221,6 +250,10 @@ export const ENTREES_CALCULEES = [
  * complète quand elles le disent, et non quand chacun de ses champs a répondu.
  */
 export const REGLES_LUES = [
+  // Une ALD reconnue *et* assortie d'une incapacité ou d'une déficience. Les
+  // trois Cerfa s'y réfèrent : leurs cases ALD ne s'ouvrent qu'à cette
+  // condition, une ALD déclarée seule n'ayant rien à y faire.
+  "p1_ald_validee",
   "p1_cas_particuliers_medicaux_complet",
   "p1_criteres_transport_complet",
   "p2_adresse_arrivee_obligatoire_complete",

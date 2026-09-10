@@ -182,6 +182,14 @@ motifs, trois distances, trois nombres de transports. Elle ne donne pas des situ
 des **options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7.ts`
 en est la recopie, et c'est par lui que tous ces cas se rejouent.
 
+La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois
+Cerfa — PMT S3138g, DAP S3139h, S3141 — elle nomme la règle qui la décide, la condition
+qui la fait exister et la façon de la rendre. Le paquet ne fournit pas de moteur de rendu
+PDF ; ce qu'elle apporte déjà, c'est que l'application cesse de **déduire** ce qui se
+coche. Elle est recopiée dans `secretariat/rubriques-communes.ts` pour ce que les trois
+formulaires partagent, et dans un fichier par formulaire pour le reste — les numéros de
+rubrique diffèrent de l'un à l'autre.
+
 Trois choses ont quitté le modèle en v9.7, et vivent désormais dans le code parce que le
 contrat d'interface les y met :
 
@@ -198,6 +206,7 @@ Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
 | Le code ne nomme que des règles existantes | `contrat-regles-publicodes.ts` (TypeScript) **et** `tests/regles-front.test.ts` (les noms existent dans le modèle) |
 | Le code ne compare qu'à des **valeurs** existantes | `tests/regles-front.test.ts › valeurs comparées aux sorties du moteur`, seule garde contre une reformulation en amont, que le typage ne voit pas |
 | Chaque cas final est traité par les trois blocs de la Page Résultat 2 | `tests/regles-front.test.ts › exhaustivité de la Page Résultat 2` |
+| Chaque case des trois Cerfa a une règle qui la décide | `tests/simulateur/correspondances-documentaires.test.ts`, qui dit **quelle rubrique de quel formulaire** perd sa source |
 
 ### Deux comportements que le modèle ne porte pas
 
