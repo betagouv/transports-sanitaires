@@ -179,6 +179,7 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
     ["rap acc", ["Oui", "non"]],
     ["samu", ["Oui", "non"]],
     ["acc", ["Oui", "non", "ref"]],
+    ["ETM", ["Oui", "NON"]],
   ])("DAP — « %s » sait rendre %j", async (champ, états) => {
     expect([...(await étatsDe(GABARIT_DAP, champ))].sort()).toEqual(
       [...états].sort(),
