@@ -34,14 +34,6 @@ export type Remplissage = (réponses: Reponses) => Valeur;
 /** Un formulaire entier : un champ AcroForm par clé, sans exception. */
 export type Tableau = Readonly<Record<string, Remplissage>>;
 
-/** Une case cochée quand la situation le justifie, dans l'état d'export voulu. */
-export function coche(
-  quand: (réponses: Reponses) => boolean,
-  coché: ÉtatCoché = "On",
-): Remplissage {
-  return (réponses) => (quand(réponses) ? { coché } : undefined);
-}
-
 /** Un texte écrit dans le champ. La chaîne vide le laisse vierge. */
 export function écrit(quoi: (réponses: Reponses) => string): Remplissage {
   return (réponses) => {

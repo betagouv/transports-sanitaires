@@ -58,6 +58,31 @@ export function depuisLeMapping(
 }
 
 /**
+ * Un champ qui n'est en réalité qu'un bouton radio déguisé en case à cocher :
+ * plusieurs ids de la feuille visent le même champ AcroForm, chacun avec son
+ * état d'export, et la première ligne vraie l'emporte. La forme est posée par
+ * la décision 2 de la spec 0007 (`ALD exo`, `oui1`, `oui2`, deux ids chacun) et
+ * généralisée par la décision 1 de la 0008 aux champs à plus de deux cases
+ * (`km`, `sit`, `ti`, `ald`).
+ *
+ * L'ordre peut compter : sur `km`, le modèle sait cumuler plusieurs motifs que
+ * le formulaire ne sait dire qu'un à la fois, et c'est la première ligne vraie
+ * de la liste qui l'emporte plutôt qu'une case restée vide.
+ */
+export function premierVrai(
+  rubriques: readonly Rubrique[],
+  ...paires: ReadonlyArray<readonly [id: string, état: ÉtatCoché]>
+): Remplissage {
+  return (réponses) => {
+    for (const [id, état] of paires) {
+      const valeur = depuisLeMapping(rubriques, id, état)(réponses);
+      if (valeur !== undefined) return valeur;
+    }
+    return undefined;
+  };
+}
+
+/**
  * Les six composants d'adresse d'une ligne `address_line_selector`, assemblés
  * sur l'unique ligne que le formulaire lui donne. `id` désigne le sélecteur —
  * `depart_structure`, `arrivee_autre` — dont le préfixe (`depart` ou `arrivee`)
