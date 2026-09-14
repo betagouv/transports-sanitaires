@@ -7,17 +7,17 @@
 // centre de référence sur S3141 », « ne pas en créer ». Il n'a pas non plus de
 // cadre organisme, contrairement au PMT et à la DAP.
 
-import type { Rubrique } from "./case-de-formulaire";
-import { ACCIDENT_CAUSE_PAR_UN_TIERS } from "./rubriques-en-tete";
-import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport";
+import type { Rubrique } from "./case-de-formulaire.ts";
+import { ACCIDENT_CAUSE_PAR_UN_TIERS } from "./rubriques-en-tete.ts";
+import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport.ts";
 import {
   CADRE_TRANSPORTEUR,
   DATE_PRESCRIPTION,
   IDENTITE_PRESCRIPTEUR_ET_STRUCTURE,
   SIGNATURE_PRESCRIPTEUR,
-} from "./rubriques-prescripteur";
-import { EXONERATION_DU_TICKET_MODERATEUR } from "./rubriques-situation-medicale";
-import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet";
+} from "./rubriques-prescripteur.ts";
+import { EXONERATION_DU_TICKET_MODERATEUR } from "./rubriques-situation-medicale.ts";
+import { ADRESSES_DU_TRAJET, TRAJET } from "./rubriques-trajet.ts";
 
 export const RUBRIQUES_S3141: readonly Rubrique[] = [
   ACCIDENT_CAUSE_PAR_UN_TIERS,

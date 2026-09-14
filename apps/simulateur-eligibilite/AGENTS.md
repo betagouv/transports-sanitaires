@@ -31,6 +31,7 @@ Un sous-dossier par formulaire, gabarit compris :
 |---|---|
 | `pmt/` | prescription médicale de transport (n° 11574\*07, réf. S3138g) |
 | `dap/` | demande d'accord préalable (n° 11575\*08, réf. S3139h) |
+| `s3141/` | prescription pour permission de sortie des moins de 20 ans (n° 16184\*01, réf. S3141) |
 
 Ce qu'ils partagent est d'un cran au-dessus, dans `cerfa/` : l'écriture dans le
 PDF, la lecture du modèle, la forme d'un tableau.

@@ -8,8 +8,9 @@
 //
 // Le formulaire n'est pas choisi ici : c'est le cas final de la seed qui le
 // désigne, comme à l'écran. Une prescription donne la PMT, une demande d'accord
-// préalable la DAP ; tout autre cas final n'ouvre aucun document, et le script le
-// dit plutôt que d'en produire un.
+// préalable la DAP, une permission de sortie des moins de 20 ans le S3141 ; tout
+// autre cas final n'ouvre aucun document, et le script le dit plutôt que d'en
+// produire un.
 //
 // La situation vient du **catalogue de seeds** (`front/outils-produit/seeds/`), par
 // défaut la seed
@@ -27,11 +28,12 @@ import Engine from "publicodes";
 import { saisiesDepuisSituation as saisiesDap } from "../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
 import { saisiesDepuisSituation as saisiesPmt } from "../front/outils-produit/beta/cerfa/pmt/depuis-simulateur.ts";
 import { remplirCerfa } from "../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+import { saisiesDepuisSituation as saisiesS3141 } from "../front/outils-produit/beta/cerfa/s3141/depuis-simulateur.ts";
 import { seedParId } from "../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../front/outils-produit/seeds/seed.ts";
 
-// Les deux documents que le simulateur sait pré-remplir, par le cas final qui les
-// ouvre. C'est la même correspondance qu'à l'écran.
+// Les trois documents que le simulateur sait pré-remplir, par le cas final qui
+// les ouvre. C'est la même correspondance qu'à l'écran.
 const FORMULAIRES: Record<
   string,
   {
@@ -49,6 +51,11 @@ const FORMULAIRES: Record<
     libellé: "DAP — demande d’accord préalable (n° 11575*08)",
     gabarit: "dap/gabarit/cerfa-11575-08.pdf",
     saisies: saisiesDap,
+  },
+  "prescription S3141": {
+    libellé: "S3141 — prescription pour permission de sortie (n° 16184*01)",
+    gabarit: "s3141/gabarit/cerfa-16184-01.pdf",
+    saisies: saisiesS3141,
   },
 };
 
@@ -75,7 +82,8 @@ const formulaire = FORMULAIRES[casFinal];
 if (!formulaire) {
   console.error(
     `Aucun CERFA pour « ${casFinal} » : seules la prescription médicale de ` +
-      `transport et la demande d'accord préalable en ouvrent un.`,
+      `transport, la demande d'accord préalable et la prescription S3141 en ` +
+      `ouvrent un.`,
   );
   process.exit(1);
 }
