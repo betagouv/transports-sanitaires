@@ -49,9 +49,10 @@ flowchart LR
 Le CERFA n'a aucune flèche vers le backend, et c'est structurel. Le prescripteur y
 complète des données de santé nominatives, qui ne doivent jamais quitter le navigateur ;
 ce sont les traits tiretés ci-dessus. Son téléchargement est par ailleurs réservé au
-service produit, et le gabarit comme `pdf-lib` ne sont chargés qu'au clic. Deux
+service produit, et le gabarit comme `pdf-lib` ne sont chargés qu'au clic. Trois
 formulaires en sortent, selon le cas final : la prescription médicale de transport
-(n° 11574\*07) et la demande d'accord préalable (n° 11575\*08).
+(n° 11574\*07), la demande d'accord préalable (n° 11575\*08) et la prescription pour
+permission de sortie des moins de 20 ans (n° 16184\*01).
 
 ## Commandes
 
@@ -155,6 +156,8 @@ front/                   le front, bundlé par Vite
                          modèle, l'écriture dans le PDF et ses pièges
         pmt/             prescription médicale de transport (n° 11574*07)
         dap/             demande d'accord préalable (n° 11575*08)
+        s3141/           prescription pour permission de sortie des moins de 20 ans
+                         (n° 16184*01)
                          un sous-dossier par formulaire, gabarit compris, chacun avec
                          son tableau : un champ du PDF, une ligne, comment il se
                          remplit ou qui le remplira
