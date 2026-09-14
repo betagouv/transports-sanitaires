@@ -1,8 +1,11 @@
-// Les deux gabarits CERFA et l'écriture dedans : ce que les PDF acceptent, ce
+// Les trois gabarits CERFA et l'écriture dedans : ce que les PDF acceptent, ce
 // qu'ils refusent, ce qui survit à une relecture — et la couture entre chaque
 // gabarit et son tableau de remplissage, qui doit le couvrir champ pour champ. La
 // traduction d'une situation en saisies se teste à côté, dans
-// `depuis-simulateur.test.ts` et `depuis-simulateur-dap.test.ts`.
+// `depuis-simulateur.test.ts`, `depuis-simulateur-dap.test.ts` et
+// `depuis-simulateur-s3141.test.ts`. Les pièges propres au gabarit du S3141
+// (décision 3 de la spec 0009) sont dans `remplissage-s3141.test.ts`, pour tenir
+// ce fichier sous la limite de lignes.
 
 import { PDFDocument, PDFTextField } from "pdf-lib";
 import { describe, expect, it } from "vitest";
@@ -14,10 +17,17 @@ import {
   reponsesDe,
   VALEURS_COMPAREES,
 } from "../../front/outils-produit/beta/cerfa/reponses.ts";
+import { REMPLISSAGE_S3141 } from "../../front/outils-produit/beta/cerfa/s3141/remplissage-s3141.ts";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
-import { GABARIT, GABARIT_DAP, relire, étatsDe } from "./gabarit.ts";
+import {
+  GABARIT,
+  GABARIT_DAP,
+  GABARIT_S3141,
+  relire,
+  étatsDe,
+} from "./gabarit.ts";
 
 describe("gabarit CERFA n° 11574*07", () => {
   it("est un formulaire interactif dont les champs couvrent les deux volets", async () => {
@@ -96,6 +106,7 @@ describe("les tableaux de remplissage et leurs gabarits", () => {
   const TABLEAUX = [
     ["PMT", REMPLISSAGE_PMT, GABARIT, 53],
     ["DAP", REMPLISSAGE_DAP, GABARIT_DAP, 56],
+    ["S3141", REMPLISSAGE_S3141, GABARIT_S3141, 46],
   ] as const;
 
   it.each(TABLEAUX)(
@@ -197,7 +208,7 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
   });
 
   it("tout état qu'un tableau écrit, sur les seeds du catalogue, est connu de son champ", async () => {
-    // Généralise le test précédent à l'ensemble des deux tableaux plutôt
+    // Généralise le test précédent à l'ensemble des trois tableaux plutôt
     // qu'à leurs seuls faux-radios déjà connus : un champ dont l'état visé
     // n'existe pas sur le gabarit laisserait la case vide sans que rien ne
     // le signale avant le clic d'un prescripteur (`remplir-cerfa.ts` lève,
@@ -205,12 +216,13 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
     //
     // Un seul moteur, réinterrogé à chaque seed : le reconstruire à chaque
     // fois relit et recompile les règles depuis le disque, ce que 28 seeds
-    // sur deux tableaux rend coûteux pour rien. Le tout reste plus lourd que
+    // sur trois tableaux rend coûteux pour rien. Le tout reste plus lourd que
     // le reste du fichier : délai explicite plutôt que le défaut de 5 s.
     const moteur = moteurDeTest();
     const TABLEAUX = [
       ["PMT", REMPLISSAGE_PMT, GABARIT],
       ["DAP", REMPLISSAGE_DAP, GABARIT_DAP],
+      ["S3141", REMPLISSAGE_S3141, GABARIT_S3141],
     ] as const;
 
     for (const [nom, tableau, gabarit] of TABLEAUX) {

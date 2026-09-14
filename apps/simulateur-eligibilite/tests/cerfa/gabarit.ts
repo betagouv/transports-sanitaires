@@ -24,6 +24,9 @@ export const GABARIT = gabarit("pmt/gabarit/cerfa-11574-07.pdf");
 /** La demande d'accord préalable, n° 11575*08 (réf. S3139h). */
 export const GABARIT_DAP = gabarit("dap/gabarit/cerfa-11575-08.pdf");
 
+/** La prescription pour permission de sortie, n° 16184*01 (réf. S3141). */
+export const GABARIT_S3141 = gabarit("s3141/gabarit/cerfa-16184-01.pdf");
+
 /** Relit un PDF rempli et rend `{ nom du champ → valeur }`, champs vides exclus. */
 export async function relire(pdf: Uint8Array): Promise<Record<string, string>> {
   const formulaire = (await PDFDocument.load(pdf)).getForm();
