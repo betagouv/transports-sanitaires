@@ -26,6 +26,7 @@ import { avecCalculs } from "./recalcul";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
+import { avecArriveeDomicileEffacee } from "./trajet-domicile";
 
 export type Champ = EvaluatedFormElement & FormPageElementProp;
 
@@ -155,12 +156,14 @@ function actions({
   suivi,
 }: Contexte): Actions {
   return {
-    repondre: (id, valeur) =>
-      setFormState(
-        avecCalculs(
-          formBuilder.handleInputChange(formState, id, valeur as ValeurSaisie),
-        ),
-      ),
+    repondre: (id, valeur) => {
+      const apres = formBuilder.handleInputChange(
+        formState,
+        id,
+        valeur as ValeurSaisie,
+      );
+      setFormState(avecCalculs(avecArriveeDomicileEffacee(id, valeur, apres)));
+    },
     repondrePlusieurs: (reponses) =>
       setFormState(avecCalculs(avecReponses(formState, reponses))),
     avancer: () => {
