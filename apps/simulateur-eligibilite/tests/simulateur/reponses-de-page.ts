@@ -1,9 +1,9 @@
 // Comment on répond à un champ, dans les tests d'interface : la réponse qu'un
 // test désigne, et celle qu'on donne par défaut à ce qu'il ne désigne pas.
 //
-// Ce module ne sait rien du parcours — il ne connaît que les cinq formes de champ
-// que le modèle emploie, et ce que « répondre » veut dire pour chacune. C'est
-// `parcours.ts` qui décide quand les appeler, et jusqu'où avancer.
+// Ce module ne sait rien du parcours — il ne connaît que les quatre formes de
+// champ que le modèle emploie, et ce que « répondre » veut dire pour chacune.
+// C'est `parcours.ts` qui décide quand les appeler, et jusqu'où avancer.
 
 import { screen, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -22,8 +22,6 @@ export async function repondre(
   if (valeur === undefined) return cliquerOption(user, screen, question);
   const groupe = screen.queryByRole("group", { name: question });
   if (groupe) return cliquerOption(user, within(groupe), valeur);
-  const liste = screen.queryByRole("combobox", { name: question });
-  if (liste) return choisirDansListe(user, liste as HTMLSelectElement, valeur);
   // Une saisie chiffrée se cible comme le reste : la valeur y est tapée. C'est
   // le nombre de transports prévus qui ouvre la question de leur organisation.
   const nombre = screen.queryByRole("spinbutton", { name: question });
@@ -33,39 +31,11 @@ export async function repondre(
   }
 }
 
-// Une réponse ciblée dans une liste déroulante : l'option dont le libellé
-// correspond, désignée comme elle le serait parmi des boutons radio.
-async function choisirDansListe(
-  user: User,
-  liste: HTMLSelectElement,
-  valeur: string | RegExp,
-) {
-  const correspond = (texte: string) =>
-    typeof valeur === "string" ? texte === valeur : valeur.test(texte);
-  const option = [...liste.options].find((o) =>
-    correspond(o.textContent ?? ""),
-  );
-  if (option) await user.selectOptions(liste, option.value);
-}
-
 async function cliquerOption(user: User, dans: Portee, nom: string | RegExp) {
   const option =
     dans.queryByRole("radio", { name: nom }) ??
     dans.queryByRole("checkbox", { name: nom });
   if (option) await user.click(option);
-}
-
-// Une liste déroulante non répondue reçoit sa réponse la plus neutre : la sortie
-// « Aucun… » quand elle en offre une, sa première possibilité sinon. La première
-// entrée d'un `<select>` DSFR est l'invite « Sélectionnez une option », qui n'est
-// pas une réponse : on l'écarte.
-export async function completerListe(user: User, liste: HTMLSelectElement) {
-  if (liste.value !== "") return;
-  const possibles = [...liste.options].filter((option) => option.value !== "");
-  const neutre =
-    possibles.find((option) => /^aucun/i.test(option.textContent ?? "")) ??
-    possibles[0];
-  if (neutre) await user.selectOptions(liste, neutre.value);
 }
 
 // Un groupe resté sans réponse en reçoit une, la plus neutre de sa forme.

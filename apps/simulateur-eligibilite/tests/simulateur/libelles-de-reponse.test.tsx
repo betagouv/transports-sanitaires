@@ -107,19 +107,16 @@ async function parcourir(
 }
 
 // Les réponses proposées sur la page courante, sous leur libellé visible :
-// boutons radio, cases à cocher et options de liste déroulante.
+// boutons radio et cases à cocher.
 function reponsesAffichees(): string[] {
   const proposees = [
     ...screen.queryAllByRole("radio"),
     ...screen.queryAllByRole("checkbox"),
-    ...screen.queryAllByRole("option"),
   ];
   return proposees.map(libelleAffiche).filter((libelle) => libelle !== "");
 }
 
 function libelleAffiche(reponse: HTMLElement): string {
-  if (reponse instanceof HTMLOptionElement)
-    return reponse.textContent?.trim() ?? "";
   const etiquette = (reponse as HTMLInputElement).labels?.[0];
   return etiquette?.textContent?.trim() ?? "";
 }

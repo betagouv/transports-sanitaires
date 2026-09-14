@@ -2,12 +2,10 @@
 
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import type {
   EvaluatedFormElement,
   EvaluatedNumberInput,
   EvaluatedRadioGroup,
-  EvaluatedSelect,
   EvaluatedStringInput,
   FormPageElementProp,
 } from "@publicodes/forms";
@@ -29,9 +27,6 @@ export function ChampDeFormulaire({ champ, onChange }: Props) {
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
       {champ.element === "RadioGroup" && (
         <ChoixRadio champ={champ} onChange={onChange} />
-      )}
-      {champ.element === "select" && (
-        <ChoixDeroulant champ={champ} onChange={onChange} />
       )}
       {champ.element === "input" && champ.type === "number" && (
         <SaisieNombre champ={champ} onChange={onChange} />
@@ -76,34 +71,6 @@ function ChoixRadio({ champ, onChange }: ChampProps<EvaluatedRadioGroup>) {
         },
       }))}
     />
-  );
-}
-
-function ChoixDeroulant({ champ, onChange }: ChampProps<EvaluatedSelect>) {
-  return (
-    <Select
-      // `Select` n'expose pas de prop `classes` : on met la question en avant
-      // en enveloppant le libellé dans un span `fr-text--lead`.
-      label={<span className="fr-text--lead">{champ.label}</span>}
-      hint={champ.description}
-      disabled={champ.disabled}
-      nativeSelectProps={{
-        id: champ.id,
-        name: champ.id,
-        value: champ.value ?? "",
-        onChange: (e) => onChange(e.target.value),
-        autoFocus: champ.autofocus && champ.value === undefined,
-      }}
-    >
-      <option value="" disabled hidden>
-        Sélectionnez une option
-      </option>
-      {champ.options.map((opt) => (
-        <option key={String(opt.value)} value={String(opt.value)}>
-          {libelleDeReponse(opt.label)}
-        </option>
-      ))}
-    </Select>
   );
 }
 
