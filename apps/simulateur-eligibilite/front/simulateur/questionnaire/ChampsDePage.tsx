@@ -2,7 +2,7 @@
 // une `Mosaique` par groupe de règles booléennes.
 
 import type { Situation } from "publicodes";
-import { moteur } from "../moteur";
+import { moteur, texte } from "../moteur";
 import { ChampDeFormulaire } from "./ChampDeFormulaire";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
@@ -31,7 +31,7 @@ export function ChampsDePage({
       return (
         <ChampDeFormulaire
           key={champ.id}
-          champ={champ}
+          champ={sansDomicileEnArriveeSiDepartDomicile(champ, situation)}
           onChange={(valeur) => onReponse(champ.id, valeur)}
         />
       );
@@ -50,6 +50,26 @@ export function ChampsDePage({
 }
 
 // ---- implémentation ----
+
+// La seule combinaison de lieux qu'un trajet ne peut jamais faire : deux
+// domiciles. Le modèle ne sait pas exclure une option d'une autre — les
+// possibilités du modèle sont des chaînes littérales, jamais des règles qu'on
+// pourrait rendre non applicables —, donc c'est ici, à l'affichage, qu'on retire
+// « Domicile » de l'arrivée dès que le départ l'a déjà pris.
+// `p2_types_lieux_valides` (entrees-calculees.ts) reste le garde-fou pour toute
+// entrée qui ne passe pas par cet écran (rejeu d'une seed, saisie du secrétariat).
+function sansDomicileEnArriveeSiDepartDomicile(
+  champ: Champ,
+  situation: Situation<string>,
+): Champ {
+  if (champ.id !== "p2_trajet_arrivee" || !("options" in champ)) return champ;
+  if (texte(moteur.setSituation(situation), "p2_trajet_depart") !== "Domicile")
+    return champ;
+  return {
+    ...champ,
+    options: champ.options.filter((option) => option.value !== "Domicile"),
+  };
+}
 
 type GroupeProps = {
   groupe: MosaiqueDesc;
