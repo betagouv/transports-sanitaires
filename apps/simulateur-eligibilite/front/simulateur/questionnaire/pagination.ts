@@ -52,6 +52,11 @@ export function regleDeComplétude(
 // Une règle qu'aucune étape ne porte ferait sa propre page, en queue de parcours.
 // `tests/simulateur/etapes.test.ts` interdit ce cas plutôt que de le laisser
 // passer en silence : une question hors étape n'a pas de rang, donc pas de place.
+//
+// Une étape qui porte une règle de complétude — mosaïque ou adresse — se pose en
+// entier, et pas seulement ce qui manque : après un retour en arrière, une adresse
+// déjà saisie ne manque plus, et la page ne rendait que le complément et le pays,
+// sans moyen de revoir le reste.
 function parEtape(champs: string[]): Map<string, string[]> {
   const attendus = new Set(champs);
   const pages = new Map<string, string[]>();
@@ -63,7 +68,9 @@ function parEtape(champs: string[]): Map<string, string[]> {
     }
     pages.set(
       etape.id,
-      etape.champs.filter((declare) => attendus.has(declare)),
+      etape.complet
+        ? [...etape.champs]
+        : etape.champs.filter((declare) => attendus.has(declare)),
     );
   }
   return pages;
