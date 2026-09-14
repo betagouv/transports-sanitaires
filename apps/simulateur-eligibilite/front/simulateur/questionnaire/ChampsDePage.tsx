@@ -2,12 +2,13 @@
 // une `Mosaique` par groupe de règles booléennes.
 
 import type { Situation } from "publicodes";
-import { moteur, texte } from "../moteur";
+import { moteur, texte, vrai } from "../moteur";
 import { ChampDeFormulaire } from "./ChampDeFormulaire";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
 import type { Champ, Reponses } from "./passation";
+import { optionsVisiblesDe } from "./visibilite-des-options";
 
 type Props = {
   champs: readonly Champ[];
@@ -31,7 +32,7 @@ export function ChampsDePage({
       return (
         <ChampDeFormulaire
           key={champ.id}
-          champ={sansDomicileEnArriveeSiDepartDomicile(champ, situation)}
+          champ={champFiltre(champ, situation)}
           onChange={(valeur) => onReponse(champ.id, valeur)}
         />
       );
@@ -51,24 +52,41 @@ export function ChampsDePage({
 
 // ---- implémentation ----
 
-// La seule combinaison de lieux qu'un trajet ne peut jamais faire : deux
-// domiciles. Le modèle ne sait pas exclure une option d'une autre — les
-// possibilités du modèle sont des chaînes littérales, jamais des règles qu'on
-// pourrait rendre non applicables —, donc c'est ici, à l'affichage, qu'on retire
-// « Domicile » de l'arrivée dès que le départ l'a déjà pris.
-// `p2_types_lieux_valides` (entrees-calculees.ts) reste le garde-fou pour toute
-// entrée qui ne passe pas par cet écran (rejeu d'une seed, saisie du secrétariat).
-function sansDomicileEnArriveeSiDepartDomicile(
-  champ: Champ,
-  situation: Situation<string>,
-): Champ {
-  if (champ.id !== "p2_trajet_arrivee" || !("options" in champ)) return champ;
-  if (texte(moteur.setSituation(situation), "p2_trajet_depart") !== "Domicile")
-    return champ;
+// Le modèle ne sait pas exclure une option d'une autre, ni en cacher une sous
+// condition — les possibilités du modèle sont des chaînes littérales, jamais
+// des règles qu'on pourrait rendre non applicables —, donc c'est ici, à
+// l'affichage, que deux filtres retirent des options : celles du contrat
+// d'interface (`visibilite-des-options.ts`), et « Domicile » à l'arrivée dès que
+// le départ l'a déjà pris (la seule combinaison de lieux qu'un trajet ne peut
+// jamais faire). `p2_types_lieux_valides` (entrees-calculees.ts) reste le
+// garde-fou pour toute entrée qui ne passe pas par cet écran (rejeu d'une
+// seed, saisie du secrétariat).
+function champFiltre(champ: Champ, situation: Situation<string>): Champ {
+  if (!("options" in champ)) return champ;
+  const masquees = optionsAMasquer(champ, situation);
+  if (masquees.size === 0) return champ;
   return {
     ...champ,
-    options: champ.options.filter((option) => option.value !== "Domicile"),
+    options: champ.options.filter((option) => !masquees.has(option.value)),
   };
+}
+
+function optionsAMasquer(
+  champ: Champ & { options: unknown[] },
+  situation: Situation<string>,
+): Set<unknown> {
+  const moteurPositionne = moteur.setSituation(situation);
+  const masquees = new Set<unknown>();
+  if (
+    champ.id === "p2_trajet_arrivee" &&
+    texte(moteurPositionne, "p2_trajet_depart") === "Domicile"
+  )
+    masquees.add("Domicile");
+  for (const [libelle, regle] of Object.entries(
+    optionsVisiblesDe(champ.id) ?? {},
+  ))
+    if (!vrai(moteurPositionne, regle)) masquees.add(libelle);
+  return masquees;
 }
 
 type GroupeProps = {

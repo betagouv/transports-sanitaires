@@ -60,11 +60,7 @@ export function pageAChoixUnique(champs: readonly Champ[]): boolean {
   const posees = champs.filter((c) => c.applicable !== false && !c.hidden);
   return (
     posees.length > 0 &&
-    posees.every(
-      (c) =>
-        !mosaiqueDe(c.id) &&
-        (c.element === "RadioGroup" || c.element === "select"),
-    )
+    posees.every((c) => !mosaiqueDe(c.id) && c.element === "RadioGroup")
   );
 }
 

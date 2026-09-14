@@ -14,10 +14,12 @@ import { pagesDuParcours } from "./pagination";
  * près — les douze saisies d'adresse tiennent sur une page (cf. `pagination.ts`).
  * `selectTreshold` (sic, orthographe de la lib) : une question à N possibilités
  * est rendue en boutons radio jusqu'à ce seuil (défaut 5), en liste déroulante
- * au-delà. Relevé à 10 pour garder le radio sur les listes un peu longues.
+ * au-delà. Un choix unique reste un choix unique quel que soit son nombre de
+ * réponses : `Number.POSITIVE_INFINITY` retire le seuil plutôt que de le
+ * relever, une valeur finie retombant tôt ou tard sur une liste déroulante.
  */
 export const formBuilder = new FormBuilder({
   engine: moteur,
   pageBuilder: pagesDuParcours,
-  selectTreshold: 10,
+  selectTreshold: Number.POSITIVE_INFINITY,
 });

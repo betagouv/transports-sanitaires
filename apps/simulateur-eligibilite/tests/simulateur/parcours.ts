@@ -2,20 +2,12 @@
 // page, aller jusqu'au bout. Ce fichier est partagé par les tests du prescripteur
 // et du secrétariat, qui traversent le même questionnaire.
 //
-// Le modèle mêle cinq formes de question sur une même page : des choix uniques
-// (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple, des saisies
-// libres et — depuis la v9.7 — des listes déroulantes. Répondre « par défaut »
-// n'a donc pas un seul sens. C'est « Non » pour un oui/non, l'option exclusive
-// pour une mosaïque, ou sa première case quand elle n'en a pas, la sortie
-// « Aucun… » pour un choix unique qui en offre une et sa première possibilité
-// sinon, et un texte quelconque pour une saisie libre.
-//
-// La liste déroulante est la nouveauté de la v9.7. `selectTreshold` fait basculer
-// une question de boutons radio en `<select>` au-delà de dix réponses, et la
-// raison principale en offre douze. Un `select` n'est ni un `group` ni un
-// `textbox` : sans le cas ci-dessous, le parcours administratif ne démarrait
-// pas — sa première question restait sans réponse, et le questionnaire tournait
-// en rond jusqu'à ce qu'un test abandonne « question jamais posée ».
+// Le modèle mêle quatre formes de question sur une même page : des choix uniques
+// (Q1, A4.1-A4.3…), des oui/non, des mosaïques à choix multiple et des saisies
+// libres. Répondre « par défaut » n'a donc pas un seul sens. C'est « Non » pour
+// un oui/non, l'option exclusive pour une mosaïque, ou sa première case quand
+// elle n'en a pas, la sortie « Aucun… » pour un choix unique qui en offre une et
+// sa première possibilité sinon, et un texte quelconque pour une saisie libre.
 
 import { screen, waitFor } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -23,7 +15,6 @@ import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import {
   completerDate,
   completerGroupe,
-  completerListe,
   repondre,
   saisiesCalendaires,
   valeurParDefaut,
@@ -77,10 +68,6 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
   for (const groupe of screen.queryAllByRole("group")) {
     if (!memePage()) return;
     await completerGroupe(user, groupe);
-  }
-  for (const liste of screen.queryAllByRole("combobox")) {
-    if (!memePage()) return;
-    await completerListe(user, liste as HTMLSelectElement);
   }
   for (const champ of screen.queryAllByRole("textbox")) {
     if (!memePage()) return;

@@ -29,18 +29,18 @@ describe("secrétariat — parcours administratif", () => {
     emettrePassation(PARTIE_1_AMBULANCE);
     render(<Secretariat onNouvelleSimulation={() => {}} />);
 
-    // La v9.7 ouvre la Partie 2 sur la raison principale, une liste déroulante
-    // de douze réponses, là où la v9.5.1 posait une mosaïque de contextes.
+    // La v9.7 ouvre la Partie 2 sur la raison principale, un choix unique de
+    // douze réponses, là où la v9.5.1 posait une mosaïque de contextes.
     const rappel = /ne peuvent pas modifier le mode de transport/i;
     const raison = /raison principale du déplacement/i;
-    expect(screen.getByRole("combobox", { name: raison })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: raison })).toBeInTheDocument();
     expect(screen.getByText(rappel)).toBeInTheDocument();
 
     await repondrePage(user, [[raison, /entrée en hospitalisation/i]]);
     expect(
       await screen.findByRole("group", { name: /type d’hospitalisation/i }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: raison })).toBeNull();
+    expect(screen.queryByRole("group", { name: raison })).toBeNull();
     expect(screen.queryByText(rappel)).toBeNull();
   });
 
