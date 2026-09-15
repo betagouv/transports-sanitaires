@@ -308,6 +308,93 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-consultation-cardiologie",
+    libelle: "Secrétariat — consultation de cardiologie (accident du travail)",
+    description:
+      "Une consultation ordinaire, sans besoin de transport particulier : le " +
+      "droit s'ouvre par le contexte accident du travail, pas par un critère " +
+      "d'ambulance. Sert à couvrir la composition des éléments d'ordre médical " +
+      "sur un motif précisé plutôt qu'une hospitalisation (spec 0005, parcours " +
+      "EM-PARCOURS-PMT-CONSULTATION).",
+    outil: "secretariat",
+    entrees: {
+      p2_raison_principale: "'Consultation médicale'",
+      p2_motif_detail: "'Consultation de cardiologie'",
+      p2_contexte_at_mp: "oui",
+      p2_contexte_aucun: "non",
+      p2_date_at_mp: "'2026-01-12'",
+    },
+    attendu: {
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-motif-texte-libre",
+    libelle: "Secrétariat — motif en texte libre",
+    description:
+      "Le motif se précise en texte libre plutôt que par une valeur de la " +
+      "liste : la composition des éléments d'ordre médical le recopie sans " +
+      "réécriture (spec 0005, parcours EM-PARCOURS-PMT-TEXTE-LIBRE).",
+    outil: "secretariat",
+    entrees: {
+      p2_raison_principale: "'Autre examen ou soin'",
+      p2_motif_detail: "'Autre - préciser'",
+      p2_motif_detail_autre: "'IRM de contrôle du genou.'",
+      p2_contexte_at_mp: "oui",
+      p2_contexte_aucun: "non",
+      p2_date_at_mp: "'2026-01-12'",
+    },
+    attendu: {
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-seance-radiotherapie",
+    libelle: "Secrétariat — séance de radiothérapie",
+    description:
+      "Une séance parmi les trois que la composition des éléments d'ordre " +
+      "médical rend par un libellé fixe, sans doublon avec le motif quand les " +
+      "deux coïncident (spec 0005, parcours EM-PARCOURS-PMT-RADIO).",
+    outil: "secretariat",
+    entrees: {
+      p2_raison_principale: "'Séance de radiothérapie'",
+      p1_m0_seance_radiotherapie: "oui",
+      p1_m0_aucun: "non",
+    },
+    attendu: {
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-centre-reference-maladies-rares",
+    libelle: "Secrétariat — centre de référence maladies rares",
+    description:
+      "Orientation vers un autre centre de référence dédié à une maladie " +
+      "rare, avec le nom du lieu d'arrivée : la composition des éléments " +
+      "d'ordre médical l'ajoute au texte (spec 0005, parcours EM-PARCOURS-PMT-RARE).",
+    outil: "secretariat",
+    entrees: {
+      ...RAISON_HOSPITALISATION,
+      p2_contexte_centre_reference: "oui",
+      p2_contexte_aucun: "non",
+    },
+    attendu: {
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
     id: "secretariat-accord-prealable-distance",
     libelle: "Secrétariat — accord préalable (plus de 150 km)",
     description:
@@ -824,6 +911,58 @@ export const SEEDS: readonly Seed[] = [
     attendu: {
       cible_transport_sanitaire_prescrit:
         "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
+    },
+  },
+  {
+    id: "secretariat-permission-longue-distance",
+    libelle: "Secrétariat — permission particulière à plus de 150 km",
+    description:
+      "Permission de sortie d'un patient de moins de 20 ans, mais dont le " +
+      "trajet dépasse 150 km : l'accord préalable requis empêche le S3141 " +
+      "(réservé aux permissions sans autre cause d'accord préalable) et amène " +
+      "la DAP. La composition des éléments d'ordre médical y ajoute le détail " +
+      "de la permission — date d'hospitalisation, première permission, " +
+      "fréquence et fin (spec 0005, parcours EM-PARCOURS-DAP-PERMISSION).",
+    outil: "secretariat",
+    entrees: {
+      p2_raison_principale: "'Permission temporaire de sortie'",
+      p2_permission_age: "'De 16 à 19 ans'",
+      p2_permission_rang_jour: "15",
+      p2_permission_duree_heures: "8",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+      p2_justification_longue_distance:
+        "'Plateau technique nécessaire indisponible à proximité.'",
+      p2_nombre_transports_permission_dap: "4",
+    },
+    attendu: {
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "DAP S3139h",
+    },
+  },
+  {
+    id: "secretariat-pension-militaire",
+    libelle: "Secrétariat — pension militaire d’invalidité",
+    description:
+      "Soins dispensés au titre d'une pension militaire d'invalidité, sur un " +
+      "trajet de plus de 150 km : la composition des éléments d'ordre médical " +
+      "y ajoute la phrase fixe du contrat (spec 0005, parcours " +
+      "EM-PARCOURS-DAP-PENSION).",
+    outil: "secretariat",
+    entrees: {
+      ...RAISON_HOSPITALISATION,
+      p2_contexte_pension_militaire: "oui",
+      p2_contexte_aucun: "non",
+      p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+      p2_justification_longue_distance:
+        "'Plateau technique nécessaire indisponible à proximité.'",
+    },
+    attendu: {
       cible_partie_2_requise: "oui",
       cible_cas_final: "demande d’accord préalable",
       cible_regime_financement: "Assurance Maladie",

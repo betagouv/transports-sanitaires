@@ -244,8 +244,12 @@ describe("saisiesDepuisSituation", () => {
       oui2: "/NON",
       // Posée par l'application, hors mapping (`date-de-prescription.ts`).
       date: dateDePrescription().replaceAll("/", ""),
+      // Composée selon EM-1 (spec 0005) : l'hospitalisation et les cinq
+      // critères d'ambulance débordent la zone d'une seule ligne, le champ
+      // porte donc le renvoi à l'annexe plutôt que le texte entier.
+      "comm évent": "Éléments médicaux : voir l’annexe jointe.",
     });
-    expect(saisies).toHaveLength(18);
+    expect(saisies).toHaveLength(19);
   });
 
   it("refuse de produire ce CERFA quand le cas final relève d'un autre document", () => {

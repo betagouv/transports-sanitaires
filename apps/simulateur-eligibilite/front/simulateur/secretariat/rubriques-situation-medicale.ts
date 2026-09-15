@@ -31,13 +31,20 @@ export const URGENCE: readonly CaseDeFormulaire[] = [
  * Le volet médical du PMT et de la DAP. Le livrable insiste : « volet 1
  * exclusivement, aucune copie » sur les volets suivants.
  *
- * Les éléments d'ordre médical restent à la main du prescripteur : le mapping
- * les attribue à l'application sans qu'elle puisse les produire
- * (cf. spec 0005), et la ligne est déclarée d'origine `application` sans
- * `source` — le Cerfa la laisse au prescripteur.
+ * Les éléments d'ordre médical sont composés par l'application selon le
+ * contrat EM-1 livré en v9.7.1, plutôt que lus sur une règle unique : la
+ * ligne reste d'origine `application`, sans `source`, mais porte désormais
+ * `composition: "EM-1"` — cf. spec 0005. Sans `libelle`, la checklist du
+ * Bloc 3 continue de l'ignorer : c'est `outils-produit/beta/cerfa/mapping.ts`
+ * qui relit `composition` pour le pré-remplissage.
  */
 export const VOLET_MEDICAL: readonly CaseDeFormulaire[] = [
-  { id: "elements_medicaux", origine: "application" },
+  {
+    id: "elements_medicaux",
+    origine: "application",
+    rendu: "texte",
+    composition: "EM-1",
+  },
   {
     id: "centre_rare",
     libelle:

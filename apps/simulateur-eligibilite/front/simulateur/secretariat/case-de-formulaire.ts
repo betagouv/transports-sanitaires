@@ -94,6 +94,13 @@ export type CaseDeFormulaire = {
   readonly rendu?: Rendu;
   /** Le `when` du livrable, en plus de la source. */
   readonly quand?: Condition;
+  /**
+   * Le `composition_contract` du livrable. `EM-1` seul cas à ce jour (spec
+   * 0005) : la case ne porte pas de `source`, sa valeur est composée par
+   * `composerElementsMedicaux` plutôt que lue sur une règle unique. Absent, la
+   * case ne compose rien.
+   */
+  readonly composition?: "EM-1";
 };
 
 export type Rubrique = {
