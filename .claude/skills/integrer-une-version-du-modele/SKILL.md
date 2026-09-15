@@ -6,10 +6,10 @@ description: Intégrer une nouvelle version du modèle d'éligibilité livrée p
 # Intégrer une version du modèle
 
 Le modèle d'éligibilité est **livré de l'extérieur**. Un paquet arrive dans
-`tmp/<version>/transports-sanitaires-package-v<version>/` et porte trois YAML :
-les règles publicodes, un contrat d'interface, une matrice de tests. Seul le
-premier est chargé par l'app ; les deux autres sont **réencodés** dans nos
-composants et nos tests.
+`tmp/<version>/` (§ 1 pour sa forme, qui varie d'une livraison à l'autre) et
+porte trois YAML : les règles publicodes, un contrat d'interface, une matrice
+de tests. Seul le premier est chargé par l'app ; les deux autres sont
+**réencodés** dans nos composants et nos tests.
 
 **On ne corrige jamais le modèle localement.** Il est recopié tel qu'il est
 livré. Ce qui ne va pas se constate, se documente et se remonte à l'éditeur
@@ -21,16 +21,30 @@ rencontrés, l'unique correctif local. Elles sont dans
 
 ## 1. Le paquet
 
-```bash
-cd tmp/<version>/transports-sanitaires-package-v<version>
-sha256sum -c SHA256SUMS
-```
+Sa forme varie d'une livraison à l'autre — deux vues jusqu'ici :
 
-Puis lire, dans cet ordre, le `CHANGELOG-v<version>.md`, qui dit ce que
-l'éditeur a voulu. Puis
-`documentation-developpeur/DOCUMENTATION-DEVELOPPEUR-DIFFERENTIELLE-*.md`, qui
-sépare ce que publicodes calcule, ce que l'app doit rendre, et ce qu'il faut
-tester. Ce dernier est le plus utile des deux.
+- un dossier `tmp/<version>/transports-sanitaires-package-v<version>/`, un
+  `SHA256SUMS` à vérifier (`sha256sum -c SHA256SUMS`), les YAML dans un
+  sous-dossier ;
+- ou, depuis la v9.7.1, un dépôt à plat dans `tmp/<version>/` (YAML à la
+  racine, pas de sous-dossier), un `MANIFEST.sha256.json`, et un vérificateur
+  fourni par le paquet lui-même :
+  ```bash
+  cd tmp/<version> && PYTHONDONTWRITEBYTECODE=1 python3 src/package.py --verify
+  ```
+  Cette forme exige un inventaire **exact** : n'écrire aucun fichier dans
+  `tmp/<version>/`, et ne pas y lancer `npm test`, qui réécrit `rapports/`.
+
+Dans les deux cas, lire ensuite, dans cet ordre, le `CHANGELOG-v<version>.md`
+(`docs/` depuis la v9.7.1), qui dit ce que l'éditeur a voulu, puis le document
+qui sépare ce que publicodes calcule, ce que l'app doit rendre et ce qu'il faut
+tester — `documentation-developpeur/DOCUMENTATION-DEVELOPPEUR-DIFFERENTIELLE-*.md`
+ou, depuis la v9.7.1, `docs/GUIDE-DEVELOPPEUR-v<version>.md`. C'est le plus
+utile des deux.
+
+Les contrôles neufs d'une version peuvent vivre hors de la matrice YAML : la
+v9.7.1 les porte dans des suites `tmp/<version>/tests/*.mjs`, à lire une par
+une pour en tirer les identifiants (§ 8).
 
 ## 2. Le diff, avant toute chose
 
@@ -78,8 +92,9 @@ console.log(Object.keys(r).length,'règles,',Object.keys(r).filter(n=>n.startsWi
 ## 4. Le contrat de règles
 
 `front/simulateur/contrat-regles-publicodes.ts` déclare les noms que le code a le
-droit d'employer. Ses trois listes sont décrites par le skill `regle-publicodes` ;
-une intégration les rouvre toutes les trois.
+droit d'employer. Ses quatre listes (`CIBLES`, `QUESTIONS`, `ENTREES_CALCULEES`,
+`REGLES_LUES`) sont décrites par le skill `regle-publicodes` ; une intégration
+les rouvre toutes les quatre.
 
 **Une question devenue calculée quitte `QUESTIONS`.** Sinon `SituationTypee`
 continue d'autoriser une seed ou un test à prétendre la renseigner, alors que le
@@ -134,24 +149,56 @@ unique ajouté, ce que la réponse par défaut y déclenche.
 ## 8. La recette portée
 
 Les fichiers de recette portent la version dans leur nom et sont **renommés à
-chaque intégration** (`git mv`) :
+chaque intégration** (`git mv`), imports et commentaires recopiés à l'identique
+(y compris `matrice.ts`, qui n'est pas renommé mais importe les fichiers qui le
+sont). L'ensemble, après la v9.7.1 :
 
 ```
 tests/simulateur/situations-v<version>.ts          le vocabulaire partagé
+tests/simulateur/livrable-v<version>.ts            l'adaptateur options → réponses du livrable
 tests/simulateur/matrice.ts                        la forme d'un cas, et sa lecture
 tests/simulateur/regression-v<version>.test.ts     le droit ouvert et le mode médical
 tests/simulateur/article-80-v<version>.test.ts     la charge de l'établissement
 tests/simulateur/accord-prealable-v<version>.test.ts la série, la distance, le trajet
 tests/simulateur/familles-v<version>.test.ts       ce que le livrable décrit par un générateur
+tests/simulateur/grille-v<version>.test.ts         un produit croisé engendré
+tests/simulateur/matrice-nommee-v<version>.test.ts les cas nommés un par un
+tests/simulateur/motifs-dap-v<version>.test.ts     les motifs de DAP sans distance ni série
+tests/simulateur/permission-v<version>.test.ts     un sujet neuf, propre à sa version
 ```
 
-Ils gardent les identifiants du livrable (`ALD-002`, `CONVOCATION-001`, …) : c'est
-sous ce nom qu'un désaccord remonte à l'éditeur. Les assertions purement UI de la
-matrice n'y sont pas : elles relèvent des tests d'interface.
+Une version qui introduit un sujet entier (la convocation aérienne et son
+financement pour la v9.7.1) mérite ses propres fichiers plutôt que d'étirer un
+fichier existant — même règle de séparation par sujet qu'ailleurs dans le
+dépôt. Un sujet peut aussi se scinder en deux à la relecture (`X` et
+`X-incomplet`, un sujet et sa page « ce qui laisse indécis ») quand les deux
+dépassent 300 lignes ensemble.
 
-Chaque `test_case` neuf de la matrice livrée mérite son portage. La matrice est
-**séparée par sujet** et non par volume : à 300 lignes, `noExcessiveLinesPerFile`
-et `tests/architecture.test.ts` refusent le fichier, et le message dit pourquoi.
+Ils gardent les identifiants du livrable (`ALD-002`, `CONVOCATION-001`,
+`CONV971-AIR-ORIENTATION-SANS_CONTEXTE`, …) : c'est sous ce nom qu'un désaccord
+remonte à l'éditeur. Les assertions purement UI de la matrice n'y sont pas :
+elles relèvent des tests d'interface.
+
+Chaque `test_case` neuf de la matrice livrée mérite son portage — mais pas
+forcément littéralement : un contrôle qui manipule directement une session de
+référence (reprise d'état, historique de pages) ne transpose pas toujours à
+notre moteur nu ou à notre mécanique de retour en arrière. Le dire dans le
+commit plutôt que de forcer un test à passer sans rien vérifier de réel (§ 9
+en donne deux formes : la garde qui ne se traduit pas au moteur seul, et la
+bibliothèque de formulaire dont l'historique de pages ne rejoue pas une page
+déjà visitée).
+
+La matrice est **séparée par sujet** et non par volume : à 300 lignes,
+`noExcessiveLinesPerFile` et `tests/architecture.test.ts` refusent le fichier,
+et le message dit pourquoi.
+
+**Le piège CI du renommage :** `.gitleaks.toml` exempte les fichiers de
+recette d'un motif qui ne suit pas toujours le nom réel de la version.
+`livrable-v[0-9]+-[0-9]+\.ts$` ne matchait pas `livrable-v9-7-1.ts` (trois
+segments, pas deux) : élargi en `livrable-v[0-9]+(-[0-9]+)+\.ts$` en v9.7.1.
+Vérifier, à chaque renommage, que l'exemption suit le nouveau nom — sans
+quoi gitleaks bloque la CI sur un faux positif au premier libellé qui
+ressemble à un secret.
 
 ## 9. Les gardes qui parlent
 
@@ -168,6 +215,27 @@ Lire le message avant de toucher au code.
 | `motifs-de-la-dap.test.tsx` | le modèle porte un motif de DAP que la page n'affiche pas |
 | `bornes-de-saisie.test.tsx` | une borne de saisie du modèle n'atteint pas le champ |
 | `BandeauVersion.test.tsx` | `regles/VERSION` ou `package.json` sont désaccordés |
+
+Deux limites rencontrées en portant la matrice v9.7.1, à connaître avant d'y
+passer du temps :
+
+- **Le moteur nu n'est pas le parcours.** Une réponse manquante qui bloque la
+  navigation (question posée avant qu'on puisse avancer) ne bloque pas
+  forcément `cible_resultat_2_affichable` quand on construit la situation à la
+  main : `est défini: X` vaut `false`, pas indécis, dès que `X` est absent —
+  le modèle peut alors conclure ailleurs (souvent « non éligible ») sans
+  jamais réclamer `X`. La vraie garde tient à l'ordre du parcours
+  (`etapes.ts`), pas au moteur seul. Documenter ces contrôles-là comme non
+  transposables plutôt que de les forcer à passer sur un aveu.
+- **`@publicodes/forms` n'oublie jamais une page visitée.** `computeNextFields`
+  exclut toute règle déjà portée par une page de `formState.pages`, même
+  redevenue manquante après un `handleInputChange(..., undefined)`. Rendre une
+  page antérieure à nouveau incomplète ne suffit donc pas à la faire
+  reposer : il faut aussi tronquer `formState.pages` jusqu'à elle et la
+  reprendre comme page courante (`convocation-revalidation.ts`). Et
+  `handleInputChange` **mute** `formState` en place (il y réassigne
+  `formState.situation`) — lire une valeur « avant » se fait avant l'appel,
+  jamais sur l'objet qu'on vient de lui passer.
 
 ## 10. Les contenus du contrat d'interface
 
