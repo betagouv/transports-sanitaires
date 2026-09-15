@@ -36,16 +36,19 @@ describe("modèle v9.7 — le moteur confirme les attendus des seeds", () => {
 });
 
 describe("modèle v9.7 — couverture des cas finaux", () => {
-  // La v9.7 en compte six, contre neuf en v9.5.1. Elle a retiré « SMUR »,
+  // La v9.7 en compte sept, contre neuf en v9.5.1. Elle a retiré « SMUR »,
   // « bariatrique seul » et « prestation non prise en charge » — les trois
   // sorties directes de la Partie 1 —, et ajouté la prescription S3141, que la
-  // permission temporaire de sortie fait naître.
-  it("les 7 cas finaux sont atteints par le catalogue", () => {
+  // permission temporaire de sortie fait naître. La v9.7.1 en ajoute un
+  // huitième : l'orientation vers la caisse, quand une convocation en avion ou
+  // en bateau ne se rattache à aucune sous-situation de DAP.
+  it("les 8 cas finaux sont atteints par le catalogue", () => {
     const attendus = [
       "prescription médicale de transport",
       "demande d’accord préalable",
       "prescription S3141",
       "convocation ou avis d’audience",
+      "orientation vers la caisse pour accord préalable",
       "transport à la charge de l’établissement",
       "permission de sortie sans motif médical",
       "non éligible à une prise en charge par l’Assurance Maladie",
@@ -60,12 +63,15 @@ describe("modèle v9.7 — couverture des cas finaux", () => {
 });
 
 describe("modèle v9.7 — couverture des régimes de financement", () => {
-  it("les 4 régimes sont atteints par le catalogue", () => {
+  it("les 5 régimes sont atteints par le catalogue", () => {
     // L'axe sur lequel se lit une non-conformité : un transport dont le régime
     // n'est pas « Assurance Maladie » ne doit pas lui être facturé. La v9.7 les
-    // nomme d'un mot, et a retiré « urgence spécifique » avec le SMUR.
+    // nomme d'un mot, et a retiré « urgence spécifique » avec le SMUR. La
+    // v9.7.1 ajoute le régime propre à l'orientation caisse : la caisse
+    // confirme encore les modalités, l'Assurance Maladie n'est pas exclue.
     const attendus = [
       "Assurance Maladie",
+      "Assurance Maladie - modalités à confirmer auprès de la caisse",
       "Établissement",
       "Patient",
       "Absence de prise en charge Assurance Maladie",
