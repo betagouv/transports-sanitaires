@@ -168,21 +168,24 @@ front/                   le front, bundlé par Vite
 ## Le modèle de règles
 
 `regles/regles.publicodes` est livré de l'extérieur et intégré par recopie. C'est
-aujourd'hui la v9.7.0, qui compte 294 règles et 74 cibles. Le fichier livré ne porte pas
+aujourd'hui la v9.7.1, qui compte 308 règles et 76 cibles. Le fichier livré ne porte pas
 sa version : c'est `regles/VERSION` qui la porte à côté de lui, et c'est elle que le pied
 de page affiche. Une recopie met les deux à jour, sans quoi l'application annonce une
 version qu'elle n'exécute pas.
 
-Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.0.0), une matrice de
+Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.1.0), une matrice de
 tests et, depuis la v9.7, une correspondance documentaire. Tous sont réencodés ici plutôt
 que chargés : le contrat se lit dans les composants et dans `questionnaire/etapes.ts`, la
-matrice dans sept fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
-identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001`, `GRID-AMB-SEANCE-D2-N4`
-et les autres) pour qu'un désaccord remonte au fournisseur sous son nom.
+matrice dans quinze fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
+identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001`, `GRID-AMB-SEANCE-D2-N4`,
+`CONV971-AIR-ORIENTATION-*` et les autres) pour qu'un désaccord remonte au fournisseur sous
+son nom.
 
 La matrice v9.7 en compte 275, dont 225 engendrés par un produit croisé — cinq modes, cinq
-motifs, trois distances, trois nombres de transports. Elle ne donne pas des situations mais
-des **options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7.ts`
+motifs, trois distances, trois nombres de transports — inchangée en v9.7.1, dont les
+contrôles neufs (convocation, financement, asepsie) vivent dans les suites `tests/*.mjs` du
+paquet plutôt que dans ce fichier YAML. Elle ne donne pas des situations mais des
+**options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7-1.ts`
 en est la recopie, et c'est par lui que tous ces cas se rejouent.
 
 La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois
