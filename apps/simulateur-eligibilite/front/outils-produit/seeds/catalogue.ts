@@ -441,6 +441,84 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-convocation-longue-distance",
+    libelle: "Secrétariat — convocation à plus de 150 km",
+    description:
+      "Nouveauté v9.7.1 : une convocation peut porter ses propres " +
+      "caractéristiques. Un trajet aller de plus de 150 km en fait une demande " +
+      "d'accord préalable, avec le motif « longue distance » plutôt qu'une " +
+      "convocation simple.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      p2_convocation_plus_150km: "oui",
+      p2_convocation_aucune: "non",
+      p2_justification_longue_distance:
+        "'Plateau technique spécialisé indisponible à moins de 150 km.'",
+    },
+    attendu: {
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+    },
+  },
+  {
+    id: "secretariat-convocation-avion-hospitalisation",
+    libelle: "Secrétariat — convocation en avion, contexte d'hospitalisation",
+    description:
+      "Un avion ou un bateau de ligne régulière, avec un contexte que le " +
+      "modèle sait déjà motiver (ici l'hospitalisation) : la caractéristique " +
+      "se rattache à une DAP, comme n'importe quel autre motif d'avion/bateau.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      ...RAISON_HOSPITALISATION,
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      p2_convocation_avion_bateau: "oui",
+      p2_convocation_aucune: "non",
+    },
+    attendu: {
+      cible_cas_final: "demande d’accord préalable",
+      cible_regime_financement: "Assurance Maladie",
+    },
+  },
+  {
+    id: "secretariat-convocation-orientation-caisse",
+    libelle: "Secrétariat — convocation en avion, orientation vers la caisse",
+    description:
+      "Huitième cas final de la v9.7.1 : un avion ou un bateau de ligne " +
+      "régulière que le modèle ne sait rattacher à aucune sous-situation de " +
+      "DAP (pas d'hospitalisation, d'ALD ni d'ATMP) oriente le patient vers sa " +
+      "caisse plutôt que de fabriquer une demande d'accord préalable.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      // La raison par défaut de la base neutre (Consultation médicale) ne
+      // relève d'aucun contexte que le modèle sait motiver : c'est ce qui fait
+      // l'orientation caisse plutôt qu'une DAP.
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      p2_convocation_avion_bateau: "oui",
+      p2_convocation_aucune: "non",
+    },
+    attendu: {
+      cible_cas_final: "orientation vers la caisse pour accord préalable",
+      cible_regime_financement:
+        "Assurance Maladie - modalités à confirmer auprès de la caisse",
+      cible_document_a_remettre_au_patient:
+        "Synthèse pour démarche auprès de la caisse",
+    },
+  },
+  {
     id: "secretariat-permission-s3141",
     libelle: "Secrétariat — permission de sortie, prescription S3141",
     description:

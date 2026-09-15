@@ -47,6 +47,10 @@ export const S3141 = "prescription S3141";
 export const CHARGE_ETABLISSEMENT = "transport à la charge de l’établissement";
 export const NON_ELIGIBLE =
   "non éligible à une prise en charge par l’Assurance Maladie";
+export const CONVOCATION = "convocation ou avis d’audience";
+/** Cas final ajouté par la v9.7.1 : une convocation en avion ou en bateau que le modèle ne sait pas rattacher à une sous-situation de DAP. */
+export const ORIENTATION_CAISSE =
+  "orientation vers la caisse pour accord préalable";
 
 /**
  * Réponses d'un scénario, surchargées sur la base neutre. `null` **retire** la
