@@ -58,6 +58,12 @@ Le dossier est sous `beta/` à cause de son bouton de téléchargement, pas de s
 nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est pas
 éprouvé.
 
+La zone « éléments d'ordre médical » du PMT et de la DAP (`elements-medicaux/`)
+se compose selon le contrat EM-1 de l'éditeur, se mesure dans la police et la
+taille réelles du gabarit, et renvoie à une annexe insérée juste après le volet
+1 quand elle déborde. Voir la
+[spec 0005](../../spec/2.%20todo/0005-composer-les-elements-medicaux.md).
+
 ## Les trois racines de runtime
 
 Découpage **par fonctionnalité**, à l'intérieur de trois racines :
