@@ -32,7 +32,7 @@ export function ChampsDePage({
       return (
         <ChampDeFormulaire
           key={champ.id}
-          champ={champFiltre(champ, situation)}
+          champ={champLibelleAdapte(champFiltre(champ, situation), situation)}
           onChange={(valeur) => onReponse(champ.id, valeur)}
         />
       );
@@ -69,6 +69,25 @@ function champFiltre(champ: Champ, situation: Situation<string>): Champ {
     ...champ,
     options: champ.options.filter((option) => !masquees.has(option.value)),
   };
+}
+
+// Le contrat d'interface v9.7.1 fait porter à une convocation son propre
+// énoncé sur deux questions qu'elle partage avec le reste du parcours
+// (`label_when`) : le nombre de transports devient celui que couvre la DAP de
+// la convocation, la justification de la distance celle de la convocation elle-
+// même. Les autres champs gardent l'énoncé que le modèle porte.
+const LIBELLES_SELON_CONVOCATION: Record<string, string> = {
+  p2_nombre_transports_prevus:
+    "Combien de trajets sont couverts par cette demande d’accord préalable liée à la convocation ?",
+  p2_justification_longue_distance:
+    "Pourquoi cette convocation nécessite-t-elle un déplacement à plus de 150 km ?",
+};
+
+function champLibelleAdapte(champ: Champ, situation: Situation<string>): Champ {
+  const libelle = LIBELLES_SELON_CONVOCATION[champ.id];
+  if (!libelle) return champ;
+  if (!vrai(moteur.setSituation(situation), "p2_convocation")) return champ;
+  return { ...champ, label: libelle };
 }
 
 function optionsAMasquer(
