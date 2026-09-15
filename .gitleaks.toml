@@ -46,7 +46,9 @@ paths = ['''\.env\.example$''', '''(^|/)README\.md$''', '''(^|/)AGENTS\.md$''']
 #
 # Le second chemin est écrit pour la famille `livrable-v<majeure>-<mineure>.ts`,
 # et pas pour la seule v9.7 : le fichier est recopié à l'identique à chaque
-# version, et le faux positif reviendrait tel quel à la suivante.
+# version, et le faux positif reviendrait tel quel à la suivante. Le groupe
+# `(-[0-9]+)+` répète le segment de version pour couvrir aussi les correctifs
+# (`livrable-v9-7-1.ts`), pas seulement les `<majeure>-<mineure>`.
 #
 # L'exception est **cantonnée à cette règle** par `targetRules` : les trois règles
 # du projet continuent de s'appliquer à ces fichiers comme aux autres. Vérifié en
@@ -56,5 +58,5 @@ description = "Noms de règles publicodes, pris pour des clés par generic-api-k
 targetRules = ["generic-api-key"]
 paths = [
   '''apps/simulateur-eligibilite/front/simulateur/contrat-regles-publicodes\.ts$''',
-  '''apps/simulateur-eligibilite/tests/simulateur/livrable-v[0-9]+-[0-9]+\.ts$''',
+  '''apps/simulateur-eligibilite/tests/simulateur/livrable-v[0-9]+(-[0-9]+)+\.ts$''',
 ]
