@@ -7,6 +7,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
+import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { PARTIE_1_AMBULANCE, type Reponse, terminerParcours } from "./parcours";
@@ -40,6 +41,41 @@ describe("CONV971-JUSTIFICATION-AFFICHABLE-SANS-ECRAN-DISTANCE", () => {
       "libellé de convocation jamais affiché",
     ).toBe(true);
   }, 40_000);
+});
+
+describe("phrase de convocation jointe à une DAP née d’une convocation", () => {
+  it("s’affiche sur une convocation longue distance", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={{
+          ...BASE_NEUTRE,
+          p2_convocation_ou_avis_type:
+            "'Convocation du contrôle médical de l’Assurance Maladie.'",
+          p2_convocation_plus_150km: "oui",
+          p2_convocation_aucune: "non",
+          p2_justification_longue_distance:
+            "'Plateau technique spécialisé indisponible à moins de 150 km.'",
+        }}
+      />,
+    );
+    expect(screen.getByText(/conservez la convocation/i)).toBeInTheDocument();
+  });
+
+  it("ne s’affiche pas sur une DAP ordinaire, sans convocation", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={{
+          ...BASE_NEUTRE,
+          p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
+        }}
+      />,
+    );
+    expect(
+      screen.queryByText(/conservez la convocation/i),
+    ).not.toBeInTheDocument();
+  });
 });
 
 // ---- implémentation ----
