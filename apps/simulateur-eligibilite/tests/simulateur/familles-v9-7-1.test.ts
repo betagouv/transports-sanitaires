@@ -12,7 +12,7 @@ import {
   PRO,
   TPMR,
   VSL,
-} from "./situations-v9-7";
+} from "./situations-v9-7-1";
 
 describe("modèle v9.7 — P1-EXHAUSTIVE", () => {
   const CRITERES_AMBULANCE = [

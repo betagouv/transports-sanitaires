@@ -180,6 +180,7 @@ function TroisBlocs({
         transportPrescrit={c.transportPrescrit}
         motifs={c.motifs}
         attenteRequise={c.attenteRequise}
+        urgenceAttestee={c.urgenceAttestee}
       />
       <Bloc2Etapes
         e={e}
@@ -214,6 +215,7 @@ function cibles(e: typeof moteur) {
     transportPrescrit: transport !== "" && transport !== "aucun",
     motifs: motifsDeLaDap(e),
     attenteRequise: vrai(e, "cible_attente_accord_prealable_requise"),
+    urgenceAttestee: vrai(e, "cible_urgence_attestee"),
     // La v9.5.1 donnait à l'Article 80 deux cibles à lui : le mode qu'il retient
     // et la « situation spécifique » (détenu, UHSA/UHSI) qui en changeait le
     // rendu. La v9.7 a retiré les deux — la branche détenu n'existe plus, et le

@@ -116,6 +116,9 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_exception_aucune: "oui",
 
   p2_convocation_ou_avis_type: "'Aucun de ces cas.'",
+  p2_convocation_plus_150km: "non",
+  p2_convocation_avion_bateau: "non",
+  p2_convocation_aucune: "oui",
   p2_transport_urgence: "'Non'",
 
   p2_special_avion_bateau: "non",

@@ -9,7 +9,7 @@
 // professionnalisé, et le SAMSAH réclamait une case qui n'existe sur aucun
 // formulaire.
 //
-// Les quatre autres cas finaux n'ouvrent aucun formulaire : il n'y a rien à
+// Les cinq autres cas finaux n'ouvrent aucun formulaire : il n'y a rien à
 // cocher, seulement des éléments à vérifier avant de remettre le document — ou
 // rien du tout.
 
@@ -69,6 +69,22 @@ const A_VERIFIER: Record<string, readonly GroupeRetenu[]> = {
         "Identité du patient.",
         "Date et lieu de convocation.",
         "Cohérence avec le transport sanitaire prescrit.",
+      ],
+    },
+  ],
+  // TEXTE PROVISOIRE — à valider par le porteur, voir tâche Notion
+  // « Simulateur v9.7.1 : écrire les textes manquants du résultat orientation
+  // vers la caisse ».
+  "orientation vers la caisse pour accord préalable": [
+    {
+      titre: "Éléments à vérifier",
+      icone: "fr-icon-checkbox-circle-line",
+      cases: [
+        "Type de convocation ou d’avis.",
+        "Caractéristique déclarée (transport en avion ou en bateau de ligne régulière).",
+        "Identité du patient.",
+        "Cohérence avec le transport sanitaire prescrit.",
+        "Contact de la caisse d’Assurance Maladie transmis au patient.",
       ],
     },
   ],

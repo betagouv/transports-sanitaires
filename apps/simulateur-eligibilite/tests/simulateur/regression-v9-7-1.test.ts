@@ -25,9 +25,9 @@ import {
   PRO,
   PROCHE,
   VSL,
-} from "./situations-v9-7";
+} from "./situations-v9-7-1";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7-1`.
 const matrice: Cas[] = [
   {
     id: "ALD-001",

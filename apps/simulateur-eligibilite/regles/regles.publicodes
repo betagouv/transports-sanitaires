@@ -82,10 +82,8 @@ p1_critere_oxygene:
   question: Nécessite l’administration d’oxygène pendant le transport.
   applicable si: p1_autonomie_professionnel_requis
 p1_critere_isolement_asepsie:
-  titre: Nécessite un transport dans des conditions d’isolement, d’asepsie ou de désinfection strictes en raison
-    d’un risque infectieux.
-  question: Nécessite un transport dans des conditions d’isolement, d’asepsie ou de désinfection strictes en raison
-    d’un risque infectieux.
+  titre: L’état du patient nécessite un transport dans des conditions d’asepsie.
+  question: L’état du patient nécessite un transport dans des conditions d’asepsie.
   applicable si: p1_autonomie_professionnel_requis
 p1_critere_aucun:
   titre: Aucune de ces situations
@@ -1022,6 +1020,92 @@ p2_convocation:
   - p2_permission_speciale = non
   - est défini: p2_convocation_ou_avis_type
   - p2_convocation_ou_avis_type != 'Aucun de ces cas.'
+p2_convocation_plus_150km:
+  titre: Un trajet aller de plus de 150 km.
+  question: Un trajet aller de plus de 150 km.
+  applicable si: p2_convocation
+p2_convocation_avion_bateau:
+  titre: Un transport en avion ou en bateau de ligne régulière.
+  question: Un transport en avion ou en bateau de ligne régulière.
+  applicable si:
+    toutes ces conditions:
+    - p2_convocation
+    - p2_exception_avion_bateau = non
+p2_convocation_aucune:
+  titre: Aucune de ces situations
+  question: Aucune de ces situations
+  applicable si: p2_convocation
+p2_convocation_caracteristiques:
+  titre: Le déplacement lié à cette convocation présente-t-il l’une des caractéristiques suivantes ?
+  question: Le déplacement lié à cette convocation présente-t-il l’une des caractéristiques suivantes ?
+  applicable si: p2_convocation
+  mosaique:
+    type: selection
+    options:
+    - p2_convocation_plus_150km
+    - p2_convocation_avion_bateau
+    option aucun: p2_convocation_aucune
+p2_convocation_caracteristiques_complet:
+  titre: p2_convocation_caracteristiques_complet
+  toutes ces conditions:
+  - une de ces conditions:
+    - p2_convocation_plus_150km
+    - p2_convocation_plus_150km = non
+  - une de ces conditions:
+    - p2_exception_avion_bateau
+    - une de ces conditions:
+      - p2_convocation_avion_bateau
+      - p2_convocation_avion_bateau = non
+  - une de ces conditions:
+    - p2_convocation_aucune
+    - p2_convocation_aucune = non
+  - une de ces conditions:
+    - p2_convocation_plus_150km
+    - p2_convocation_avion_bateau
+    - p2_convocation_aucune
+  - une de ces conditions:
+    - p2_convocation_aucune = non
+    - toutes ces conditions:
+      - p2_convocation_plus_150km = non
+      - p2_convocation_avion_bateau = non
+p2_convocation_avion_bateau_effectif:
+  titre: p2_convocation_avion_bateau_effectif
+  toutes ces conditions:
+  - p2_convocation
+  - une de ces conditions:
+    - p2_convocation_avion_bateau
+    - p2_exception_avion_bateau
+p2_convocation_accord_prealable:
+  titre: p2_convocation_accord_prealable
+  toutes ces conditions:
+  - p2_convocation
+  - p2_convocation_caracteristiques_complet
+  - une de ces conditions:
+    - p2_convocation_plus_150km
+    - p2_convocation_avion_bateau_effectif
+p2_convocation_air_sous_situation:
+  titre: p2_convocation_air_sous_situation
+  une de ces conditions:
+  - p2_contexte_hospitalisation
+  - p2_ald_ouvrant_droit
+  - p2_contexte_at_mp
+p2_convocation_orientation_caisse:
+  titre: p2_convocation_orientation_caisse
+  toutes ces conditions:
+  - p2_convocation_accord_prealable
+  - p2_convocation_avion_bateau_effectif
+  - p2_convocation_air_sous_situation = non
+p2_convocation_dap_applicable:
+  titre: p2_convocation_dap_applicable
+  toutes ces conditions:
+  - p2_convocation_accord_prealable
+  - p2_convocation_orientation_caisse = non
+p2_convocation_sans_accord_prealable:
+  titre: p2_convocation_sans_accord_prealable
+  toutes ces conditions:
+  - p2_convocation
+  - p2_convocation_caracteristiques_complet
+  - p2_convocation_accord_prealable = non
 p2_collecte_qualification_document_applicable:
   titre: p2_collecte_qualification_document_applicable
   toutes ces conditions:
@@ -1029,6 +1113,7 @@ p2_collecte_qualification_document_applicable:
   - une de ces conditions:
     - p2_permission_speciale
     - p2_convocation_ou_avis_type = 'Aucun de ces cas.'
+    - p2_convocation_dap_applicable
 p2_transport_urgence:
   titre: Le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur
     ?
@@ -1036,7 +1121,9 @@ p2_transport_urgence:
     ?
   applicable si:
     toutes ces conditions:
-    - p2_collecte_qualification_document_applicable
+    - une de ces conditions:
+      - p2_collecte_qualification_document_applicable
+      - p2_convocation_accord_prealable
     - p2_exception_aide_medicale_urgente = non
   une possibilité:
   - '''Appel au SAMU - Centre 15'''
@@ -1058,7 +1145,9 @@ p2_urgence_autre_precision:
   question: Précisez la nature de l’urgence médicale attestée.
   applicable si:
     toutes ces conditions:
-    - p2_collecte_qualification_document_applicable
+    - une de ces conditions:
+      - p2_collecte_qualification_document_applicable
+      - p2_convocation_accord_prealable
     - p2_urgence_autre
   type: texte
 p2_urgence_complete:
@@ -1080,6 +1169,7 @@ p2_special_avion_bateau:
     toutes ces conditions:
     - p2_collecte_qualification_document_applicable
     - p2_urgence_complete
+    - p2_convocation = non
     - p2_exception_avion_bateau = non
 p2_special_camsp_cmpp:
   titre: Soins ou traitement d’un enfant ou adolescent dans un CAMSP (Centre d’Action Médico-Sociale Précoce) ou
@@ -1090,6 +1180,7 @@ p2_special_camsp_cmpp:
     toutes ces conditions:
     - p2_collecte_qualification_document_applicable
     - p2_urgence_complete
+    - p2_convocation = non
 p2_special_samsah:
   titre: Soins dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)
   question: Soins dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)
@@ -1110,33 +1201,36 @@ p2_situations_speciales:
     - p2_special_samsah
     option aucun: p2_special_aucune
 p2_situations_speciales_complet:
-  titre: p2_situations_speciales_complet
-  toutes ces conditions:
-  - une de ces conditions:
-    - p2_exception_avion_bateau
+  une de ces conditions:
+  - toutes ces conditions:
+    - p2_convocation_dap_applicable
+    - p2_urgence_complete
+  - toutes ces conditions:
+    - une de ces conditions:
+      - p2_exception_avion_bateau
+      - une de ces conditions:
+        - p2_special_avion_bateau
+        - p2_special_avion_bateau = non
+    - une de ces conditions:
+      - p2_special_camsp_cmpp
+      - p2_special_camsp_cmpp = non
+    - une de ces conditions:
+      - p2_special_samsah
+      - p2_special_samsah = non
+    - une de ces conditions:
+      - p2_special_aucune
+      - p2_special_aucune = non
     - une de ces conditions:
       - p2_special_avion_bateau
-      - p2_special_avion_bateau = non
-  - une de ces conditions:
-    - p2_special_camsp_cmpp
-    - p2_special_camsp_cmpp = non
-  - une de ces conditions:
-    - p2_special_samsah
-    - p2_special_samsah = non
-  - une de ces conditions:
-    - p2_special_aucune
-    - p2_special_aucune = non
-  - une de ces conditions:
-    - p2_special_avion_bateau
-    - p2_special_camsp_cmpp
-    - p2_special_samsah
-    - p2_special_aucune
-  - une de ces conditions:
-    - p2_special_aucune = non
-    - toutes ces conditions:
-      - p2_special_avion_bateau = non
-      - p2_special_camsp_cmpp = non
-      - p2_special_samsah = non
+      - p2_special_camsp_cmpp
+      - p2_special_samsah
+      - p2_special_aucune
+    - une de ces conditions:
+      - p2_special_aucune = non
+      - toutes ces conditions:
+        - p2_special_avion_bateau = non
+        - p2_special_camsp_cmpp = non
+        - p2_special_samsah = non
 p2_nombre_transports_prevus:
   titre: Combien de transports sont prévus au cours des 2 prochains mois pour ce même traitement ?
   question: Combien de transports sont prévus au cours des 2 prochains mois pour ce même traitement ?
@@ -1432,14 +1526,21 @@ p2_adresses_obligatoires_completes:
 p2_tranche_distance_trajet_aller:
   titre: 'La distance du trajet aller entre les deux adresses renseignées est :'
   question: 'La distance du trajet aller entre les deux adresses renseignées est :'
-  applicable si: p2_adresses_obligatoires_completes
+  applicable si:
+    toutes ces conditions:
+    - p2_adresses_obligatoires_completes
+    - p2_convocation = non
   une possibilité:
   - '''50 km ou moins'''
   - '''Plus de 50 km et jusqu’à 150 km inclus'''
   - '''Plus de 150 km'''
 p2_distance_aller_superieure_150km:
   titre: p2_distance_aller_superieure_150km
-  valeur: p2_tranche_distance_trajet_aller = 'Plus de 150 km'
+  valeur:
+    variations:
+    - si: p2_convocation
+      alors: p2_convocation_plus_150km
+    - sinon: p2_tranche_distance_trajet_aller = 'Plus de 150 km'
 p2_distance_aller_superieure_50km:
   titre: p2_distance_aller_superieure_50km
   une de ces conditions:
@@ -1457,7 +1558,13 @@ p2_qualification_trajet_complete:
   titre: p2_qualification_trajet_complete
   toutes ces conditions:
   - p2_adresses_obligatoires_completes
-  - est défini: p2_tranche_distance_trajet_aller
+  - une de ces conditions:
+    - toutes ces conditions:
+      - p2_convocation
+      - p2_convocation_caracteristiques_complet
+    - toutes ces conditions:
+      - p2_convocation = non
+      - est défini: p2_tranche_distance_trajet_aller
   - une de ces conditions:
     - p2_distance_aller_superieure_150km = non
     - toutes ces conditions:
@@ -1468,6 +1575,7 @@ p2_transport_en_serie:
   titre: p2_transport_en_serie
   toutes ces conditions:
   - p2_permission_speciale = non
+  - p2_convocation = non
   - p2_nombre_transports_prevus >= 4
   - p2_distance_aller_superieure_50km
 p2_ald_ouvrant_droit:
@@ -1480,6 +1588,7 @@ p2_ald_ouvrant_droit:
 p2_motif_ouvrant_droit:
   titre: p2_motif_ouvrant_droit
   une de ces conditions:
+  - p2_convocation_dap_applicable
   - p2_contexte_hospitalisation
   - p2_contexte_at_mp
   - p2_contexte_retour_penitentiaire
@@ -1492,6 +1601,12 @@ p2_motif_ouvrant_droit:
   - p2_special_camsp_cmpp
   - p2_special_samsah
   - p2_contexte_engagement_maternite
+p2_avion_bateau_effectif:
+  titre: p2_avion_bateau_effectif
+  une de ces conditions:
+  - p2_special_avion_bateau
+  - p2_exception_avion_bateau
+  - p2_convocation_avion_bateau_effectif
 p2_accord_prealable_requis:
   titre: p2_accord_prealable_requis
   une de ces conditions:
@@ -1499,8 +1614,7 @@ p2_accord_prealable_requis:
   - toutes ces conditions:
     - p2_transport_en_serie
     - p2_ald_ouvrant_droit = non
-  - p2_special_avion_bateau
-  - p2_exception_avion_bateau
+  - p2_avion_bateau_effectif
   - p2_special_camsp_cmpp
   - p2_special_samsah
   - p2_contexte_engagement_maternite
@@ -1542,9 +1656,7 @@ p2_non_eligible_motif_absent:
 p2_avion_sous_situation_complete:
   titre: p2_avion_sous_situation_complete
   une de ces conditions:
-  - toutes ces conditions:
-    - p2_special_avion_bateau = non
-    - p2_exception_avion_bateau = non
+  - p2_avion_bateau_effectif = non
   - p2_contexte_hospitalisation
   - p2_ald_ouvrant_droit
   - p2_contexte_at_mp
@@ -1618,8 +1730,7 @@ p2_patient_moins_16_ans:
     - p1_accompagnant_necessaire = non
     - une de ces conditions:
       - cible_transport_sanitaire_prescrit = 'transport en commun terrestre'
-      - p2_special_avion_bateau
-      - p2_exception_avion_bateau
+      - p2_avion_bateau_effectif
 p2_accompagnant_age_complet:
   titre: p2_accompagnant_age_complet
   une de ces conditions:
@@ -1627,8 +1738,7 @@ p2_accompagnant_age_complet:
   - p1_accompagnant_necessaire
   - toutes ces conditions:
     - cible_transport_sanitaire_prescrit != 'transport en commun terrestre'
-    - p2_special_avion_bateau = non
-    - p2_exception_avion_bateau = non
+    - p2_avion_bateau_effectif = non
   - une de ces conditions:
     - p2_patient_moins_16_ans
     - p2_patient_moins_16_ans = non
@@ -2020,8 +2130,13 @@ cible_cas_final:
       alors: '''transport à la charge de l’établissement'''
     - si: p2_permission_charge_patient
       alors: '''permission de sortie sans motif médical'''
-    - si: p2_convocation
+    - si: p2_convocation_sans_accord_prealable
       alors: '''convocation ou avis d’audience'''
+    - si:
+        toutes ces conditions:
+        - p2_convocation_orientation_caisse
+        - p2_urgence_complete
+      alors: '''orientation vers la caisse pour accord préalable'''
     - si: p2_non_eligible_motif_absent
       alors: '''non éligible à une prise en charge par l’Assurance Maladie'''
     - si:
@@ -2047,6 +2162,7 @@ cible_resultat_2_affichable:
   - cible_cas_final = 'transport à la charge de l’établissement'
   - cible_cas_final = 'permission de sortie sans motif médical'
   - cible_cas_final = 'convocation ou avis d’audience'
+  - cible_cas_final = 'orientation vers la caisse pour accord préalable'
   - cible_cas_final = 'non éligible à une prise en charge par l’Assurance Maladie'
   - cible_cas_final = 'prescription S3141'
   - cible_cas_final = 'demande d’accord préalable'
@@ -2065,6 +2181,8 @@ cible_document_a_remettre_au_patient:
       alors: '''Document interne de l’établissement'''
     - si: cible_cas_final = 'convocation ou avis d’audience'
       alors: '''Convocation ou avis d’audience'''
+    - si: cible_cas_final = 'orientation vers la caisse pour accord préalable'
+      alors: '''Synthèse pour démarche auprès de la caisse'''
     - sinon: '''aucun document'''
   applicable si: cible_resultat_2_affichable
 cible_attente_accord_prealable_requise:
@@ -2076,16 +2194,21 @@ cible_regime_financement:
   titre: cible_regime_financement
   valeur:
     variations:
-    - si: p2_transport_charge_etablissement
+    - si: cible_cas_final = 'transport à la charge de l’établissement'
       alors: '''Établissement'''
-    - si: p2_permission_charge_patient
+    - si: cible_cas_final = 'permission de sortie sans motif médical'
       alors: '''Patient'''
-    - si: p2_non_eligible_motif_absent
+    - si: cible_cas_final = 'convocation ou avis d’audience'
+      alors: '''Assurance Maladie'''
+    - si: cible_cas_final = 'orientation vers la caisse pour accord préalable'
+      alors: '''Assurance Maladie - modalités à confirmer auprès de la caisse'''
+    - si: cible_cas_final = 'non éligible à une prise en charge par l’Assurance Maladie'
       alors: '''Absence de prise en charge Assurance Maladie'''
-    - si:
-        une de ces conditions:
-        - p2_document_prescription_determine
-        - p2_convocation
+    - si: cible_cas_final = 'prescription S3141'
+      alors: '''Assurance Maladie'''
+    - si: cible_cas_final = 'demande d’accord préalable'
+      alors: '''Assurance Maladie'''
+    - si: cible_cas_final = 'prescription médicale de transport'
       alors: '''Assurance Maladie'''
     - sinon: non
   applicable si: cible_resultat_2_affichable
@@ -2102,9 +2225,7 @@ cible_personne_accompagnante:
 cible_avion_bateau_accompagnant:
   titre: cible_avion_bateau_accompagnant
   toutes ces conditions:
-  - une de ces conditions:
-    - p2_special_avion_bateau
-    - p2_exception_avion_bateau
+  - p2_avion_bateau_effectif
   - une de ces conditions:
     - p1_accompagnant_necessaire
     - p2_age_moins16
@@ -2207,9 +2328,7 @@ cible_dap_motif_avion_bateau:
   titre: cible_dap_motif_avion_bateau
   toutes ces conditions:
   - p2_document_dap_determine
-  - une de ces conditions:
-    - p2_special_avion_bateau
-    - p2_exception_avion_bateau
+  - p2_avion_bateau_effectif
 cible_dap_motif_camsp_cmpp:
   titre: cible_dap_motif_camsp_cmpp
   toutes ces conditions:
@@ -2311,7 +2430,15 @@ cible_s3141_periode_fin:
   valeur: p2_permission_periode_fin
 cible_tranche_distance_trajet_aller:
   titre: cible_tranche_distance_trajet_aller
-  valeur: p2_tranche_distance_trajet_aller
+  valeur:
+    variations:
+    - si: p2_convocation
+      alors:
+        variations:
+        - si: p2_convocation_plus_150km
+          alors: '''Plus de 150 km'''
+        - sinon: '''150 km ou moins'''
+    - sinon: p2_tranche_distance_trajet_aller
 cible_nombre_transports_prevus:
   titre: cible_nombre_transports_prevus
   valeur: p2_nombre_transports_prevus
@@ -2330,6 +2457,16 @@ cible_type_urgence:
     - si: cible_urgence_autre
       alors: '''autre urgence médicale attestée'''
     - sinon: '''aucune'''
+cible_convocation_type:
+  titre: cible_convocation_type
+  valeur:
+    variations:
+    - si: p2_convocation
+      alors: p2_convocation_ou_avis_type
+    - sinon: ''''''
+cible_orientation_caisse:
+  titre: cible_orientation_caisse
+  valeur: p2_convocation_orientation_caisse
 cible_motif_medical_deplacement:
   titre: cible_motif_medical_deplacement
   valeur:

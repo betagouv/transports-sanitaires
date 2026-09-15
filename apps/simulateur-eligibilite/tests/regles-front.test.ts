@@ -168,7 +168,7 @@ describe("modèle sans redondance", () => {
   });
 
   // Le même énoncé peut se retrouver d'une étape à l'autre, et c'est voulu :
-  // « Aucune de ces situations » clôt les huit mosaïques, « Code postal » se pose
+  // « Aucune de ces situations » clôt les neuf mosaïques, « Code postal » se pose
   // au départ comme à l'arrivée, et les trois listes d'exonération du ticket
   // modérateur reprennent les mêmes cas, une par document — le contrat interdit
   // justement de reporter les réponses de l'une sur l'autre.

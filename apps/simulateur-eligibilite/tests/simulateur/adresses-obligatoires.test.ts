@@ -19,7 +19,12 @@
 // ce que font les seeds et le pré-remplissage du CERFA.
 
 import { describe, expect, it } from "vitest";
-import { estApplicable, evalue, HOSPITALISATION, PRO } from "./situations-v9-7";
+import {
+  estApplicable,
+  evalue,
+  HOSPITALISATION,
+  PRO,
+} from "./situations-v9-7-1";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,
