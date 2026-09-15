@@ -69,7 +69,7 @@ export async function completerGroupe(user: User, groupe: HTMLElement) {
 }
 
 // Une mosaïque est répondue par son option exclusive, « Aucun… » ou « Aucune… »,
-// sauf si une case est déjà cochée. Les huit mosaïques de la v9.7 en portent une,
+// sauf si une case est déjà cochée. Les neuf mosaïques de la v9.7.1 en portent une,
 // Q1.1 comprise : la v9.5.1 l'en avait privée — le modèle y exigeait au moins un
 // critère —, la v9.7 la lui rend. Le repli sur la première case ne sert donc plus
 // qu'à une mosaïque qui perdrait sa sortie neutre.

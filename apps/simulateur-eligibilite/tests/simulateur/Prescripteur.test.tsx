@@ -20,7 +20,7 @@ const PROCHE = /accompagnement d’un proche/i;
 const PROFESSIONNEL = /prise en charge spécifique/i;
 const AIDES = /aides ou conditions particulières/i;
 const CAS_PARTICULIERS = /cas particuliers/i;
-/** La sortie exclusive, que la v9.7 donne aux huit mosaïques du même libellé. */
+/** La sortie exclusive, que la v9.7 donne aux neuf mosaïques du même libellé. */
 const AUCUNE_SITUATION = /aucune de ces situations/i;
 
 function afficher() {

@@ -418,7 +418,10 @@ export const SEEDS: readonly Seed[] = [
     libelle: "Secrétariat — convocation ou avis d'audience",
     description:
       "Déplacement sur convocation du contrôle médical : le transport relève de " +
-      "la convocation, non de la prescription.",
+      "la convocation, non de la prescription. Aucune des caractéristiques " +
+      "posées depuis la v9.7.1 (plus de 150 km, avion ou bateau) : le cas reste " +
+      "sans accord préalable. La v9.7.1 corrige l'anomalie qui réclamait encore " +
+      "le nom du lieu de départ sur cette branche (`FINANCEMENT-NOM_FACTICE`).",
     outil: "secretariat",
     entrees: {
       p1_autonomie: AIDE_PROFESSIONNEL,
@@ -427,13 +430,6 @@ export const SEEDS: readonly Seed[] = [
       ...RAISON_HOSPITALISATION,
       p2_convocation_ou_avis_type:
         "'Convocation du contrôle médical de l’Assurance Maladie.'",
-      // La convocation conclut sans passer par les données de prescription, mais
-      // le modèle continue de réclamer le nom du lieu de départ — que la base
-      // neutre n'a pas, son départ étant un domicile. La valeur des cibles ne
-      // s'en trouve pas changée ; seules leurs variables manquantes le sont.
-      // Le nom est donc donné ici pour que la seed ne laisse rien d'indécis.
-      // Question posée à l'éditeur : `tmp/9.7/anomalie-v9-7-convocation-lieu.md`.
-      p2_depart_nom_lieu: "'Domicile du patient'",
     },
     attendu: {
       cible_transport_sanitaire_prescrit:

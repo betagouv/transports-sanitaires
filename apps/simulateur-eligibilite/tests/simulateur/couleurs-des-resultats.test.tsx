@@ -15,12 +15,12 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-1";
 import { moteurDeTest } from "./moteur";
 
 beforeEach(() => sessionStorage.clear());
 
-/** Les sept cas finaux, et la situation qui mène à chacun. */
+/** Les huit cas finaux, et la situation qui mène à chacun. */
 const CAS: ReadonlyArray<[casFinal: string, options: OptionsDuLivrable]> = [
   [
     "prescription médicale de transport",
@@ -36,6 +36,18 @@ const CAS: ReadonlyArray<[casFinal: string, options: OptionsDuLivrable]> = [
       overrides: {
         p2_convocation_ou_avis_type:
           "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      },
+    },
+  ],
+  [
+    "orientation vers la caisse pour accord préalable",
+    {
+      reason: "Consultation médicale",
+      overrides: {
+        p2_convocation_ou_avis_type:
+          "'Convocation du contrôle médical de l’Assurance Maladie.'",
+        p2_convocation_avion_bateau: "oui",
+        p2_convocation_aucune: "non",
       },
     },
   ],
@@ -57,11 +69,15 @@ describe("la couleur du Résultat 2 vient du modèle", () => {
       casFinal,
     );
     // Vert quand un document est dû, bleu sinon : c'est la règle du contrat, et
-    // le seul endroit où elle est écrite.
-    const documentDu =
-      casFinal !== "demande d’accord préalable" &&
-      !casFinal.startsWith("non éligible") &&
-      !casFinal.startsWith("permission de sortie");
+    // le seul endroit où elle est écrite. Quatre cas finaux le doivent — les
+    // nommer, plutôt qu'exclure les autres, évite qu'un cas final neuf tombe
+    // en vert par défaut faute d'avoir été exclu.
+    const documentDu = new Set([
+      "prescription médicale de transport",
+      "prescription S3141",
+      "transport à la charge de l’établissement",
+      "convocation ou avis d’audience",
+    ]).has(casFinal);
     expect(moteur.evaluate("cible_resultat_2_couleur").nodeValue).toBe(
       documentDu ? "vert" : "bleu",
     );

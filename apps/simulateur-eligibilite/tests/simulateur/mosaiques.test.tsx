@@ -10,7 +10,8 @@
 //
 // La v9.7 en porte huit, contre cinq en v9.5.1, et leur donne à toutes une sortie
 // exclusive — Q1.1 comprise, qui en était privée parce que le modèle y exigeait
-// alors au moins un critère. Les huit la nomment du même libellé, « Aucune de ces
+// alors au moins un critère. La v9.7.1 en ajoute une neuvième, CONV-AP, derrière
+// la convocation. Toutes nomment leur sortie du même libellé, « Aucune de ces
 // situations ».
 //
 // Trois d'entre elles — les listes d'exonération du ticket modérateur, une par
@@ -98,6 +99,18 @@ const MOSAIQUES: Cas[] = [
       [/raison principale/i, /transfert d’un patient hospitalisé/i],
       [/transfert.*en cours/i, /^oui$/i],
     ],
+  },
+  {
+    spec: "CONV-AP",
+    parent: "p2_convocation_caracteristiques",
+    depuis: "secretariat",
+    intitule:
+      "Le déplacement lié à cette convocation présente-t-il l’une des caractéristiques suivantes ?",
+    exclusive: EXCLUSIVE,
+    // La mosaïque ne s'ouvre que derrière une convocation déclarée : la v9.7.1
+    // demande d'abord laquelle, une seule réponse hors « Aucun de ces cas. »
+    // suffisant à l'ouvrir.
+    reponses: [[/cas réglementaires/i, /convocation du contrôle médical/i]],
   },
   {
     spec: "A3.1",

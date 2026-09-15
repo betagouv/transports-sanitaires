@@ -8,7 +8,7 @@
 //
 // Le contrat d'interface de la v9.7 tranche — `navigation.source: ordered_steps`
 // —, et les variables manquantes n'y valent plus que comme diagnostic. Cette
-// liste est la recopie de ses cinquante et une étapes, dans son ordre. Le
+// liste est la recopie de ses cinquante-deux étapes, dans son ordre. Le
 // modèle, lui, ne dit plus à quelle étape appartient une question : il portait un
 // `spec_id` jusqu'en v9.5.1, il n'en porte plus. C'est ici, et nulle part
 // ailleurs, que le rattachement se lit.
@@ -136,6 +136,16 @@ export const ETAPES: readonly Etape[] = [
   {
     id: "p2_convocation_ou_avis_type",
     champs: ["p2_convocation_ou_avis_type"],
+  },
+  {
+    id: "p2_convocation_caracteristiques",
+    livrable: "CONV-AP",
+    champs: [
+      "p2_convocation_plus_150km",
+      "p2_convocation_avion_bateau",
+      "p2_convocation_aucune",
+    ],
+    complet: "p2_convocation_caracteristiques_complet",
   },
   {
     id: "p2_transport_urgence",

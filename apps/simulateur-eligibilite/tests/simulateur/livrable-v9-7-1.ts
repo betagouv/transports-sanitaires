@@ -1,11 +1,11 @@
 // La situation d'un cas du livrable, telle que sa matrice la décrit.
 //
-// `transports-sanitaires.tests.v9-7-0.yaml` ne donne pas des situations mais des
+// `transports-sanitaires.tests.v9-7-1.yaml` ne donne pas des situations mais des
 // **options** — `{autonomy: 0, distance: 2, count: 4}` —, qu'un adaptateur de
 // référence (`tests/helpers.mjs` du paquet) traduit en réponses. Sans cette
-// traduction, aucun de ses 275 cas ne serait rejouable ici.
+// traduction, aucun de ses cas ne serait rejouable ici.
 //
-// Ce fichier en est la recopie. Il tient à part de `situations-v9-7.ts`, qui
+// Ce fichier en est la recopie. Il tient à part de `situations-v9-7-1.ts`, qui
 // porte le vocabulaire de nos propres scénarios : ici, rien n'est de nous — les
 // valeurs par défaut sont celles du livrable, y compris quand elles diffèrent des
 // nôtres. Sa base répond « besoin d'un professionnel » là où notre base neutre
@@ -30,6 +30,8 @@ export type OptionsDuLivrable = {
   exceptions?: Record<string, string>;
   /** Les situations particulières cochées. */
   special?: Record<string, string>;
+  /** Les caractéristiques de la convocation cochées (CONV-AP, v9.7.1). */
+  convocationCharacteristics?: Record<string, string>;
   /** Les cas d'exonération du ticket modérateur, par document. */
   tmPmt?: Record<string, string>;
   tmDap?: Record<string, string>;
@@ -158,6 +160,11 @@ const SPECIALES = [
   "p2_special_samsah",
 ];
 
+const CONVOCATION_CARACTERISTIQUES = [
+  "p2_convocation_plus_150km",
+  "p2_convocation_avion_bateau",
+];
+
 const TM_PMT = [
   "p2_tm_pmt_acte",
   "p2_tm_pmt_consecutif",
@@ -209,6 +216,11 @@ function partie2(o: OptionsDuLivrable): Situation<string> {
     ),
     ...mosaique(EXCEPTIONS, "p2_exception_aucune", o.exceptions),
     p2_convocation_ou_avis_type: texte("Aucun de ces cas."),
+    ...mosaique(
+      CONVOCATION_CARACTERISTIQUES,
+      "p2_convocation_aucune",
+      o.convocationCharacteristics,
+    ),
     ...permissionnel(o),
     p2_transport_urgence: texte(o.urgency ?? "Non"),
     p2_urgence_autre_precision: texte(

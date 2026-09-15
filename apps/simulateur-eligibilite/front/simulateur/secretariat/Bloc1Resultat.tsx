@@ -17,6 +17,8 @@ type Props = {
   motifs: string[];
   /** `cible_attente_accord_prealable_requise` : la décision est-elle à attendre ? */
   attenteRequise: boolean;
+  /** `cible_urgence_attestee` : dispense-t-elle d'attendre la réponse de la caisse ? */
+  urgenceAttestee: boolean;
 };
 
 export function Bloc1Resultat({
@@ -26,12 +28,14 @@ export function Bloc1Resultat({
   transportPrescrit,
   motifs,
   attenteRequise,
+  urgenceAttestee,
 }: Props) {
   const { titre, corps } = verdict(casFinal, {
     transport,
     transportPrescrit,
     motifs,
     attenteRequise,
+    urgenceAttestee,
   });
 
   return (
@@ -52,6 +56,7 @@ type Contexte = {
   transportPrescrit: boolean;
   motifs: string[];
   attenteRequise: boolean;
+  urgenceAttestee: boolean;
 };
 type Verdict = { titre: string; corps: ReactNode };
 
@@ -171,6 +176,31 @@ function convocation({ transport }: Contexte): Verdict {
   };
 }
 
+// Texte livré mot pour mot (contrat v9.7.1, `application.mjs:260-266`).
+function orientationCaisse({ urgenceAttestee }: Contexte): Verdict {
+  const paragraphes = [
+    "Votre convocation nécessite un transport en avion ou en bateau de ligne régulière. Les informations renseignées ne permettent pas de compléter les sous-situations prévues par le formulaire de demande d’accord préalable.",
+    "Contactez votre caisse d’Assurance Maladie avec votre convocation et cette synthèse afin de confirmer le document, les pièces à fournir et la personne qui doit établir la demande.",
+    "Cette orientation ne constitue ni un refus de prise en charge ni un accord de remboursement. Cette synthèse vous accompagne dans votre démarche auprès de la caisse.",
+    ...(urgenceAttestee
+      ? [
+          "L’urgence médicale attestée permet de réaliser le transport sans attendre la réponse de la caisse.",
+        ]
+      : []),
+  ];
+  return {
+    titre:
+      "Contactez votre caisse pour organiser la demande d’accord préalable",
+    corps: (
+      <>
+        {paragraphes.map((p) => (
+          <p key={p}>{p}</p>
+        ))}
+      </>
+    ),
+  };
+}
+
 function chargeEtablissement({ transport }: Contexte): Verdict {
   return {
     titre: "Votre transport relève du financement de l’établissement",
@@ -242,6 +272,7 @@ const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
   "prescription S3141": prescriptionS3141,
   "demande d’accord préalable": accordPrealable,
   "convocation ou avis d’audience": convocation,
+  "orientation vers la caisse pour accord préalable": orientationCaisse,
   "transport à la charge de l’établissement": chargeEtablissement,
   "permission de sortie sans motif médical": permissionSortie,
   "non éligible à une prise en charge par l’Assurance Maladie": nonEligible,

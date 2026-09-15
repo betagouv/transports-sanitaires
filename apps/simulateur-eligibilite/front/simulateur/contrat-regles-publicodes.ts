@@ -140,7 +140,10 @@ export const QUESTIONS = [
   "p2_contexte_engagement_maternite",
   "p2_contexte_pension_militaire",
   "p2_contexte_retour_penitentiaire",
+  "p2_convocation_aucune",
+  "p2_convocation_avion_bateau",
   "p2_convocation_ou_avis_type",
+  "p2_convocation_plus_150km",
   "p2_date_accident_cause_par_tiers",
   "p2_date_at_mp",
   "p2_depart_adresse",
@@ -245,7 +248,7 @@ export const ENTREES_CALCULEES = [
  * savoir ce qu'elle a le droit de faire. Les tenir à part des `QUESTIONS`
  * empêche qu'une situation prétende les renseigner.
  *
- * Les dix premières sont les règles de complétude que le contrat d'interface
+ * Les onze premières sont les règles de complétude que le contrat d'interface
  * attache à ses étapes de groupe : une mosaïque ou une page d'adresse est
  * complète quand elles le disent, et non quand chacun de ses champs a répondu.
  */
@@ -259,6 +262,7 @@ export const REGLES_LUES = [
   "p2_adresse_arrivee_obligatoire_complete",
   "p2_adresse_depart_obligatoire_complete",
   "p2_contextes_complementaires_complet",
+  "p2_convocation_caracteristiques_complet",
   "p2_exceptions_assurance_maladie_complet",
   "p2_situations_speciales_complet",
   "p2_tm_dap_complet",

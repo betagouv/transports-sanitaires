@@ -10,7 +10,7 @@
 // ce nom qu'un désaccord remonte à l'éditeur.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-1";
 import {
   DAP,
   NON_ELIGIBLE,
@@ -19,7 +19,7 @@ import {
   TRANSPORT_EN_COMMUN,
   VEHICULE_PERSONNEL,
   VSL,
-} from "./situations-v9-7";
+} from "./situations-v9-7-1";
 
 /** Les cinq façons dont la Partie 1 arrête un mode, et le mode qu'elle arrête. */
 const MODES: ReadonlyArray<
