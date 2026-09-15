@@ -27,7 +27,10 @@ import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
 import { saisiesDepuisSituation as saisiesDap } from "../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
 import { saisiesDepuisSituation as saisiesPmt } from "../front/outils-produit/beta/cerfa/pmt/depuis-simulateur.ts";
-import { remplirCerfa } from "../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
+import {
+  remplirCerfa,
+  type Saisie,
+} from "../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { saisiesDepuisSituation as saisiesS3141 } from "../front/outils-produit/beta/cerfa/s3141/depuis-simulateur.ts";
 import { seedParId } from "../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../front/outils-produit/seeds/seed.ts";
@@ -95,12 +98,7 @@ console.log(
 );
 console.log(`champs déduits : ${saisies.length}`);
 for (const saisie of saisies) {
-  console.log(
-    "  " +
-      ("coché" in saisie
-        ? `[x] ${saisie.champ}`
-        : `    ${saisie.champ} = ${saisie.texte}`),
-  );
+  console.log(`  ${libelléDeSaisie(saisie)}`);
 }
 
 const sortie =
@@ -111,3 +109,15 @@ const gabarit = readFileSync(
 );
 writeFileSync(sortie, await remplirCerfa(gabarit, saisies));
 console.log(`\nPDF écrit : ${sortie}`);
+
+// ---- implémentation ----
+
+// Le texte médical ne s'affiche jamais, même dans un outil de développement :
+// c'est une donnée de santé nominative une fois le document complété
+// (décision 8 de la spec 0005).
+function libelléDeSaisie(saisie: Saisie): string {
+  if ("coché" in saisie) return `[x] ${saisie.champ}`;
+  if ("texteMédical" in saisie)
+    return `    ${saisie.champ} = [texte médical composé]`;
+  return `    ${saisie.champ} = ${saisie.texte}`;
+}

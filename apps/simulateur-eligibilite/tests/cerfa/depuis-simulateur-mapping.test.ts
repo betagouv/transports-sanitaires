@@ -160,7 +160,7 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
     expect(lu).not.toHaveProperty("domicile_2");
   });
 
-  it("ne produit aucune saisie pour les éléments médicaux, le prescripteur et le transporteur", async () => {
+  it("ne produit aucune saisie pour le prescripteur et le transporteur", async () => {
     const saisies = saisiesDepuisSituation(
       moteurDeTest(),
       situationDe(seedParId("secretariat-prescription")),
@@ -168,7 +168,6 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
     for (const champ of [
-      "comm évent",
       "N et P prescript",
       "raison sociale VSL",
       "adresse VSL",
@@ -178,5 +177,17 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
     ]) {
       expect(lu, champ).not.toHaveProperty(champ);
     }
+  });
+
+  it("compose les éléments d'ordre médical plutôt que de laisser « comm évent » vierge", async () => {
+    // Depuis la spec 0005 : la zone n'est plus laissée au prescripteur, elle
+    // est composée selon EM-1 puis mesurée — cette seed déborde d'une ligne.
+    const saisies = saisiesDepuisSituation(
+      moteurDeTest(),
+      situationDe(seedParId("secretariat-prescription")),
+    );
+    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+
+    expect(lu["comm évent"]).toBe("Éléments médicaux : voir l’annexe jointe.");
   });
 });

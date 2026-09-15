@@ -21,6 +21,7 @@ import {
   quandSatisfaite,
   type Rubrique,
 } from "../../../simulateur/secretariat/case-de-formulaire.ts";
+import { composerElementsMedicaux } from "./elements-medicaux/composition.ts";
 import type { ÉtatCoché } from "./remplir-cerfa.ts";
 import {
   auPrescripteur,
@@ -48,6 +49,7 @@ export function depuisLeMapping(
   état: ÉtatCoché = "On",
 ): Remplissage {
   const laCase = casesDeLaFeuille(rubriques, id);
+  if (laCase.composition === "EM-1") return composition();
   if (!laCase.source) return laisséÀ(laCase);
   const source = laCase.source;
   return (réponses) => {
@@ -128,9 +130,11 @@ function casesDeLaFeuille(
 }
 
 // Une ligne sans source : externe, manuelle, ou application sans règle qui la
-// tranche (les éléments d'ordre médical, cf. spec 0005). `publicodes` n'y
-// figure jamais — dans ce mapping, une ligne d'origine `publicodes` porte
-// toujours une `source` — mais un défaut nomme l'écart plutôt que de planter.
+// tranche (la date de prescription, hors mapping). `publicodes` n'y figure
+// jamais — dans ce mapping, une ligne d'origine `publicodes` porte toujours
+// une `source` — mais un défaut nomme l'écart plutôt que de planter. Les
+// éléments d'ordre médical n'en passent plus par là depuis la spec 0005 :
+// `composition: "EM-1"` les intercepte avant, dans `depuisLeMapping`.
 function laisséÀ(laCase: CaseDeFormulaire): Remplissage {
   const origine = origineDe(laCase);
   const raison =
@@ -141,6 +145,18 @@ function laisséÀ(laCase: CaseDeFormulaire): Remplissage {
   if (destinataire === "le transporteur") return auTransporteur(raison);
   if (destinataire === "la caisse") return àLaCaisse(raison);
   return auPrescripteur(raison);
+}
+
+// Le texte médical se compose depuis les réponses, jamais depuis une règle
+// unique : `composerElementsMedicaux` lit les cibles et les questions du
+// contrat EM-1 (spec 0005). Une composition vide laisse le champ vierge,
+// comme un champ que le simulateur sait déduire mais que la situation
+// n'appelle pas.
+function composition(): Remplissage {
+  return (réponses) => {
+    const texteMédical = composerElementsMedicaux(réponses);
+    return texteMédical === "" ? undefined : { texteMédical };
+  };
 }
 
 // `ligne` désigne soit un domicile (une case : `quandSatisfaite` a déjà tranché

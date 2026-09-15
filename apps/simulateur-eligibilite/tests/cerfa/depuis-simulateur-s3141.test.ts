@@ -130,7 +130,7 @@ describe("saisiesDepuisSituation — S3141 (0009)", () => {
     expect(nonExonéré.exo).toBe("/non");
   });
 
-  it("ne porte aucun champ d'urgence, d'éléments médicaux ou de centre de référence", async () => {
+  it("EM-S3141-SANS-RUBRIQUE — ne porte aucun champ d'urgence, d'éléments médicaux ou de centre de référence", async () => {
     // Décision 5 : le livrable le répète deux fois, et le gabarit n'a d'ailleurs
     // pas de champ pour ces rubriques — un tableau qui en nommerait un
     // échouerait déjà au test de couverture de `remplissage.test.ts`.

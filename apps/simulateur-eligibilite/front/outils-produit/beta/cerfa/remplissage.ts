@@ -15,7 +15,9 @@ type Qui = "le prescripteur" | "le transporteur" | "la caisse";
 /**
  * Ce qu'un champ reçoit, la situation lue :
  *
- *  - `{ texte }` / `{ coché }` — le simulateur a déduit quoi y écrire ;
+ *  - `{ texte }` / `{ coché }` / `{ texteMédical }` — le simulateur a déduit
+ *    quoi y écrire, ce dernier étant composé puis mesuré plutôt qu'écrit tel
+ *    quel (`depuisLeMapping` sur une case `composition: "EM-1"`) ;
  *  - `undefined` — il sait le déduire, mais cette situation ne l'appelle pas ;
  *  - `{ laisséÀ }` — il ne sait pas, et dit qui s'en chargera.
  *
@@ -25,6 +27,7 @@ type Qui = "le prescripteur" | "le transporteur" | "la caisse";
 type Valeur =
   | { readonly texte: string }
   | { readonly coché: ÉtatCoché }
+  | { readonly texteMédical: string }
   | { readonly laisséÀ: Qui; readonly raison: string }
   | undefined;
 

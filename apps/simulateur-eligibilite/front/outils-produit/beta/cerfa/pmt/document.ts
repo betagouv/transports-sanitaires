@@ -14,10 +14,11 @@ export const PMT: DocumentCerfa = {
     "la situation ouvrant droit, le mode de transport et sa justification, " +
     "le trajet et le contexte d’urgence y sont déjà cochés, sur les deux " +
     "volets, ainsi que l’exonération du ticket modérateur, la pension " +
-    "militaire d’invalidité et la date de prescription",
+    "militaire d’invalidité, la date de prescription et les éléments " +
+    "d’ordre médical, à relire",
   ceQuiResteASaisir:
     "l’identité du patient et de l’assuré, celle du prescripteur, ainsi que " +
-    "les éléments d’ordre médical",
+    "l’annexe médicale, si le document en joint une, à signer",
   chargerGabarit: () => gabaritDepuisLAsset(gabaritUrl),
   chargerSaisies: async () =>
     (await import("./depuis-simulateur.ts")).saisiesDepuisSituation,

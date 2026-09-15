@@ -98,6 +98,42 @@ const URGENCE = {
 } as const;
 
 /**
+ * Les raisons de déplacement et natures de transfert que la composition des
+ * éléments d'ordre médical compare littéralement (contrat EM-1, spec 0005) :
+ * elle ne lit pas de cible dédiée pour ces cas-là, contrairement à `MODE`,
+ * `LIEU` et `URGENCE`.
+ */
+const RAISON_HOSPITALISATION_OU_TRANSFERT = {
+  entree: "Entrée en hospitalisation",
+  sortie: "Sortie d’hospitalisation",
+  transfert:
+    "Transfert d’un patient hospitalisé vers un autre établissement de santé",
+} as const;
+const NATURE_TRANSFERT = {
+  provisoire: "Provisoire",
+  definitif: "Définitif",
+} as const;
+
+/** Les deux types de lieu qui qualifient un centre de soins, cf. `blocCentreRare`. */
+const TYPE_LIEU_CENTRE_DE_SOINS = {
+  structure: "Structure de soins",
+  usld: "USLD",
+} as const;
+
+/** Les lieux que `p2_maternite_lieu` et `p2_htnm_lieu` proposent chacun. */
+const LIEU_MATERNITE = {
+  depart: "Départ",
+  arrivee: "Arrivée",
+  distincte: "Adresse distincte",
+} as const;
+const LIEU_HTNM = {
+  non: "Non",
+  depart: "Adresse de départ",
+  arrivee: "Adresse d’arrivée",
+  distincte: "Adresse distincte",
+} as const;
+
+/**
  * Les valeurs du modèle que le tableau compare, recopiées mot pour mot.
  * `tests/cerfa/remplissage.test.ts` les confronte aux possibilités déclarées : un
  * libellé reformulé par une livraison de règles y échoue au lieu de laisser une
@@ -110,4 +146,10 @@ export const VALEURS_COMPAREES: ReadonlyArray<
   ["p2_trajet_depart", Object.values(LIEU)],
   ["p2_trajet_arrivee", Object.values(LIEU)],
   ["cible_type_urgence", Object.values(URGENCE)],
+  ["p2_raison_principale", Object.values(RAISON_HOSPITALISATION_OU_TRANSFERT)],
+  ["p2_nature_transfert", Object.values(NATURE_TRANSFERT)],
+  ["cible_lieu_depart_type", Object.values(TYPE_LIEU_CENTRE_DE_SOINS)],
+  ["cible_lieu_arrivee_type", Object.values(TYPE_LIEU_CENTRE_DE_SOINS)],
+  ["p2_maternite_lieu", Object.values(LIEU_MATERNITE)],
+  ["p2_htnm_lieu", Object.values(LIEU_HTNM)],
 ];

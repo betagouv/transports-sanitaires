@@ -34,12 +34,12 @@ const FORMULAIRES: ReadonlyArray<
   ["S3141", RUBRIQUES_S3141, 55],
 ];
 
-// Deux lignes d'origine `application` sans `source` : le mapping les attribue à
-// l'application sans qu'elle puisse les produire (`elements_medicaux`, hors
-// périmètre — cf. spec 0005) ou sans qu'aucune règle du moteur ne la tranche
-// (`date_prescription`, posée par `date-de-prescription.ts`, hors moteur). Les
-// deux sont nommées ici plutôt que de laisser passer un défaut en silence.
-const APPLICATION_SANS_SOURCE = ["elements_medicaux", "date_prescription"];
+// Une ligne d'origine `application` sans `source` ni `composition` : aucune
+// règle du moteur ne la tranche (`date_prescription`, posée par
+// `date-de-prescription.ts`, hors moteur). Nommée ici plutôt que de laisser
+// passer un défaut en silence. `elements_medicaux` en sortait depuis la spec
+// 0005 : sa ligne porte `composition: "EM-1"` à la place d'une source.
+const APPLICATION_SANS_SOURCE = ["date_prescription"];
 
 const moteur = moteurDeTest(situationDe(seedParId("secretariat-prescription")));
 
@@ -63,12 +63,13 @@ describe.each(FORMULAIRES)("%s", (_nom, rubriques, lignes) => {
     expect(echouent).toEqual([]);
   });
 
-  it("toute case publicodes ou application porte une source, sauf l'exception nommée", () => {
+  it("toute case publicodes ou application porte une source ou une composition, sauf l'exception nommée", () => {
     const sansSource = toutesLesCases
       .filter((laCase) =>
         ["publicodes", "application"].includes(origineDe(laCase)),
       )
       .filter((laCase) => laCase.source === undefined)
+      .filter((laCase) => laCase.composition === undefined)
       .map((laCase) => laCase.id)
       .filter((id) => !APPLICATION_SANS_SOURCE.includes(id));
     expect(sansSource).toEqual([]);
@@ -81,6 +82,19 @@ describe.each(FORMULAIRES)("%s", (_nom, rubriques, lignes) => {
       .map((laCase) => laCase.id);
     expect(avecSource).toEqual([]);
   });
+});
+
+it("EM-MAPPING-ET-CONTRAT-ALIGNES", () => {
+  // Les lignes `elements_medicaux` du PMT et de la DAP portent bien
+  // `composition: "EM-1"` et `rendu: "texte"` — le S3141 n'a pas de ligne de
+  // ce nom, cf. `EM-S3141-SANS-RUBRIQUE`.
+  for (const rubriques of [RUBRIQUES_PMT, RUBRIQUES_DAP]) {
+    const laCase = rubriques
+      .flatMap((rubrique) => rubrique.cases)
+      .find((c) => c.id === "elements_medicaux");
+    expect(laCase?.composition).toBe("EM-1");
+    expect(laCase?.rendu).toBe("texte");
+  }
 });
 
 describe("dateSurLeChamp", () => {
