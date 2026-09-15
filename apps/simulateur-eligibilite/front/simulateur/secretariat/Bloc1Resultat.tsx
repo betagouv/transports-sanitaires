@@ -4,6 +4,7 @@
 // évalués par `ResultatFinal`.
 
 import type { ReactNode } from "react";
+import { ConvocationJointeALaDap } from "./convocation-dap";
 import { FraisAPrevoir } from "./frais-a-prevoir";
 import { VerdictDapUrgente } from "./urgence-attestee";
 
@@ -19,6 +20,7 @@ type Props = {
   attenteRequise: boolean;
   /** `cible_urgence_attestee` : dispense-t-elle d'attendre la réponse de la caisse ? */
   urgenceAttestee: boolean;
+  estConvocation: boolean;
 };
 
 export function Bloc1Resultat({
@@ -29,6 +31,7 @@ export function Bloc1Resultat({
   motifs,
   attenteRequise,
   urgenceAttestee,
+  estConvocation,
 }: Props) {
   const { titre, corps } = verdict(casFinal, {
     transport,
@@ -36,6 +39,7 @@ export function Bloc1Resultat({
     motifs,
     attenteRequise,
     urgenceAttestee,
+    estConvocation,
   });
 
   return (
@@ -57,6 +61,7 @@ type Contexte = {
   motifs: string[];
   attenteRequise: boolean;
   urgenceAttestee: boolean;
+  estConvocation: boolean;
 };
 type Verdict = { titre: string; corps: ReactNode };
 
@@ -81,9 +86,8 @@ function prescriptionMedicale({ transport }: Contexte): Verdict {
   };
 }
 
-// La permission temporaire de sortie admissible a son formulaire à elle depuis
-// la v9.7 : le S3141, que la circulaire CIR-16/2020 accompagne. Le contrat range
-// sa page de résultat en vert, comme la PMT — le droit est ouvert, sans réserve.
+// Le S3141 (circulaire CIR-16/2020) : sa page de résultat est verte, comme la
+// PMT — le droit est ouvert, sans réserve.
 function prescriptionS3141({ transport }: Contexte): Verdict {
   return {
     titre: "Votre transport pour cette permission peut être pris en charge",
@@ -109,7 +113,11 @@ function accordPrealable(contexte: Contexte): Verdict {
     : accordPrealableUrgent(contexte);
 }
 
-function accordPrealableAAttendre({ transport, motifs }: Contexte): Verdict {
+function accordPrealableAAttendre({
+  transport,
+  motifs,
+  estConvocation,
+}: Contexte): Verdict {
   return {
     titre:
       "La prise en charge de votre transport nécessite un accord préalable",
@@ -121,18 +129,24 @@ function accordPrealableAAttendre({ transport, motifs }: Contexte): Verdict {
           <strong>Demande d’Accord Préalable</strong>.
         </p>
         <MotifsDeLAccord motifs={motifs} />
+        {estConvocation && <ConvocationJointeALaDap />}
       </>
     ),
   };
 }
 
-function accordPrealableUrgent({ transport, motifs }: Contexte): Verdict {
+function accordPrealableUrgent({
+  transport,
+  motifs,
+  estConvocation,
+}: Contexte): Verdict {
   return {
     titre: "Votre transport peut être réalisé sans attendre l’accord préalable",
     corps: (
       <>
         <VerdictDapUrgente transport={transport} />
         <MotifsDeLAccord motifs={motifs} />
+        {estConvocation && <ConvocationJointeALaDap />}
       </>
     ),
   };
@@ -278,14 +292,8 @@ const VERDICTS: Record<string, (contexte: Contexte) => Verdict> = {
   "non éligible à une prise en charge par l’Assurance Maladie": nonEligible,
 };
 
-// La teinte DSFR de l'alerte, traduite de la couleur que le modèle décide.
-//
-// Elle se lisait ici, dans une table tenue à la main, cas final par cas final —
-// et la table avait dérivé : elle rendait un transport à la charge de
-// l'établissement en orange, quand le contrat le veut vert. La v9.7 porte la
-// couleur en cible (`cible_resultat_2_couleur`), et c'est elle qui tranche
-// désormais : vert quand un document est dû, bleu pour un accord préalable comme
-// pour un refus.
+// La teinte DSFR de l'alerte, traduite de la couleur que le modèle décide
+// (`cible_resultat_2_couleur`) : vert quand un document est dû, bleu sinon.
 function teinte(couleur: string): "success" | "info" {
   return couleur === "vert" ? "success" : "info";
 }

@@ -130,6 +130,25 @@ function ConvocationTransporteur({ transport }: { transport: string }) {
   );
 }
 
+// TEXTE PROVISOIRE — à valider par le porteur (tâche Notion « v9.7.1 : textes
+// manquants du résultat orientation vers la caisse »).
+function EtapesOrientationCaisse({ urgenceAttestee }: Contexte) {
+  const etapes = [
+    "Conservez votre convocation et la synthèse remise ici.",
+    "Contactez votre caisse d’Assurance Maladie pour confirmer le document à établir, les pièces à fournir et la personne qui doit établir la demande.",
+    urgenceAttestee
+      ? "L’urgence médicale attestée permet de réaliser le transport sans attendre la réponse de la caisse."
+      : "Attendez la confirmation de votre caisse avant d’organiser le transport.",
+  ];
+  return (
+    <ol>
+      {etapes.map((etape) => (
+        <li key={etape}>{etape}</li>
+      ))}
+    </ol>
+  );
+}
+
 function EtapesChargeEtablissement({ transport }: Contexte) {
   return (
     <ol>
@@ -268,6 +287,7 @@ const ETAPES: Record<string, (contexte: Contexte) => React.ReactNode> = {
   "prescription médicale de transport": EtapesPMT,
   "demande d’accord préalable": EtapesDAP,
   "convocation ou avis d’audience": EtapesConvocation,
+  "orientation vers la caisse pour accord préalable": EtapesOrientationCaisse,
   "transport à la charge de l’établissement": EtapesChargeEtablissement,
   SMUR: EtapesSMUR,
   "bariatrique seul": EtapesBariatriqueSeul,
