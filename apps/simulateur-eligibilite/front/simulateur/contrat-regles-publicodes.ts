@@ -272,6 +272,10 @@ export const REGLES_LUES = [
   // mois, chacun à plus de 50 km. Le CERFA en a besoin pour *ne pas* remplir la
   // rubrique des transports itératifs, qu'elle lui réserve.
   "p2_transport_en_serie",
+  // Lue pour adapter deux libellés à la convocation (`label_when` du contrat
+  // d'interface v9.7.1), pas pour décider du parcours : `etapes.ts` s'en tient
+  // à `p2_convocation_caracteristiques_complet`.
+  "p2_convocation",
 ] as const;
 
 export type Cible = (typeof CIBLES)[number];
