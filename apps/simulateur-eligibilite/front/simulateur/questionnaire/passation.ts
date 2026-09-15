@@ -23,10 +23,10 @@ import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
 import { regleDeComplétude } from "./pagination";
 import { avecCalculs } from "./recalcul";
+import { avecReponse } from "./reponse-unique";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
-import { avecArriveeDomicileEffacee } from "./trajet-domicile";
 
 export type Champ = EvaluatedFormElement & FormPageElementProp;
 
@@ -156,14 +156,8 @@ function actions({
   suivi,
 }: Contexte): Actions {
   return {
-    repondre: (id, valeur) => {
-      const apres = formBuilder.handleInputChange(
-        formState,
-        id,
-        valeur as ValeurSaisie,
-      );
-      setFormState(avecCalculs(avecArriveeDomicileEffacee(id, valeur, apres)));
-    },
+    repondre: (id, valeur) =>
+      setFormState(avecCalculs(avecReponse(formState, id, valeur))),
     repondrePlusieurs: (reponses) =>
       setFormState(avecCalculs(avecReponses(formState, reponses))),
     avancer: () => {
@@ -287,5 +281,3 @@ function useConclusionSansQuestion(
     }
   }, [aucuneQuestion, formState, options, termineRef]);
 }
-
-type ValeurSaisie = string | number | boolean | undefined;
