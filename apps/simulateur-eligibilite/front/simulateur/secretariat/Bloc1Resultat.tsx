@@ -6,6 +6,7 @@
 import type { ReactNode } from "react";
 import { ConvocationJointeALaDap } from "./convocation-dap";
 import { FraisAPrevoir } from "./frais-a-prevoir";
+import { orientationCaisse } from "./orientation-caisse";
 import { VerdictDapUrgente } from "./urgence-attestee";
 
 type Props = {
@@ -185,31 +186,6 @@ function convocation({ transport }: Contexte): Verdict {
         <p>
           Document patient : <strong>convocation ou avis d’audience</strong>.
         </p>
-      </>
-    ),
-  };
-}
-
-// Texte livré mot pour mot (contrat v9.7.1, `application.mjs:260-266`).
-function orientationCaisse({ urgenceAttestee }: Contexte): Verdict {
-  const paragraphes = [
-    "Votre convocation nécessite un transport en avion ou en bateau de ligne régulière. Les informations renseignées ne permettent pas de compléter les sous-situations prévues par le formulaire de demande d’accord préalable.",
-    "Contactez votre caisse d’Assurance Maladie avec votre convocation et cette synthèse afin de confirmer le document, les pièces à fournir et la personne qui doit établir la demande.",
-    "Cette orientation ne constitue ni un refus de prise en charge ni un accord de remboursement. Cette synthèse vous accompagne dans votre démarche auprès de la caisse.",
-    ...(urgenceAttestee
-      ? [
-          "L’urgence médicale attestée permet de réaliser le transport sans attendre la réponse de la caisse.",
-        ]
-      : []),
-  ];
-  return {
-    titre:
-      "Contactez votre caisse pour organiser la demande d’accord préalable",
-    corps: (
-      <>
-        {paragraphes.map((p) => (
-          <p key={p}>{p}</p>
-        ))}
       </>
     ),
   };
