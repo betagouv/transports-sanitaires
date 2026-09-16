@@ -72,19 +72,15 @@ const A_VERIFIER: Record<string, readonly GroupeRetenu[]> = {
       ],
     },
   ],
-  // TEXTE PROVISOIRE — à valider par le porteur, voir tâche Notion
-  // « Simulateur v9.7.1 : écrire les textes manquants du résultat orientation
-  // vers la caisse ».
+  // Texte livré mot pour mot (contrat v9.7.2, `checks_to_perform`).
   "orientation vers la caisse pour accord préalable": [
     {
       titre: "Éléments à vérifier",
       icone: "fr-icon-checkbox-circle-line",
       cases: [
-        "Type de convocation ou d’avis.",
-        "Caractéristique déclarée (transport en avion ou en bateau de ligne régulière).",
-        "Identité du patient.",
-        "Cohérence avec le transport sanitaire prescrit.",
-        "Contact de la caisse d’Assurance Maladie transmis au patient.",
+        "Vérifier que la convocation ou l’avis d’audience mentionne le mode de transport adapté.",
+        "Confirmer les caractéristiques du trajet : avion ou bateau de ligne régulière et distance aller.",
+        "Contacter la caisse avec la convocation et la synthèse pour confirmer la procédure, les pièces nécessaires et la personne qui doit établir la demande.",
       ],
     },
   ],

@@ -95,11 +95,9 @@ const CAS_RETENU: Record<string, string> = {
   "demande d’accord préalable": "DAP (Demande d’Accord Préalable)",
   "convocation ou avis d’audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
-  // TEXTE PROVISOIRE — à valider par le porteur, voir tâche Notion
-  // « Simulateur v9.7.1 : écrire les textes manquants du résultat orientation
-  // vers la caisse ».
+  // Texte livré mot pour mot (contrat v9.7.2, `case_label`).
   "orientation vers la caisse pour accord préalable":
-    "Orientation vers la caisse pour accord préalable — convocation en avion ou en bateau de ligne régulière",
+    "Convocation avec transport en avion ou bateau : orientation vers la caisse",
   "transport à la charge de l’établissement":
     "Transport à charge de l’établissement de santé",
   "permission de sortie sans motif médical":
