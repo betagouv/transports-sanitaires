@@ -14,8 +14,8 @@
 // PERMISSION-SEUIL-*, PERMISSION-PATIENT.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-1";
-import { CHARGE_ETABLISSEMENT, DAP, S3141 } from "./situations-v9-7-1";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-2";
+import { CHARGE_ETABLISSEMENT, DAP, S3141 } from "./situations-v9-7-2";
 
 const PERMISSION: OptionsDuLivrable = {
   reason: "Permission temporaire de sortie",

@@ -1,6 +1,6 @@
 // Le volet aérien de la convocation, part de la matrice de non-régression du
 // livrable v9.7.1 (tmp/9.7.1/tests/convocation.mjs). Le volet terrestre — la
-// distance seule — est dans `convocation-v9-7-1.test.ts`.
+// distance seule — est dans `convocation-v9-7-2.test.ts`.
 //
 // Un avion ou un bateau de ligne régulière ouvre, selon le contexte, l'une des
 // quatre sous-situations qu'une DAP sait déjà motiver (hospitalisation, ALD,
@@ -15,9 +15,9 @@ import {
   evaluerLeCas,
   type OptionsDuLivrable,
   situationDuLivrable,
-} from "./livrable-v9-7-1";
+} from "./livrable-v9-7-2";
 import { moteurDeTest } from "./moteur";
-import { DAP, ORIENTATION_CAISSE } from "./situations-v9-7-1";
+import { DAP, ORIENTATION_CAISSE } from "./situations-v9-7-2";
 
 const convocation = (overrides?: Record<string, string>) =>
   ({

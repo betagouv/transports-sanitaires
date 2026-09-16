@@ -1,7 +1,7 @@
 // Ce que chaque cas final doit au patient en matière de financement — la
 // transposition de `assertFinalFunding` (tmp/9.7.1/tests/financement.mjs).
-// Partagé par `financement-v9-7-1.test.ts` (la grille des convocations et les
-// deux issues sans convocation) et `financement-incomplet-v9-7-1.test.ts` (ce
+// Partagé par `financement-v9-7-2.test.ts` (la grille des convocations et les
+// deux issues sans convocation) et `financement-incomplet-v9-7-2.test.ts` (ce
 // qui laisse le financement indécis).
 
 import { expect } from "vitest";
@@ -14,7 +14,7 @@ import {
   ORIENTATION_CAISSE,
   PMT,
   S3141,
-} from "./situations-v9-7-1";
+} from "./situations-v9-7-2";
 
 /** Les six cibles qu'une issue tranchée ne doit jamais laisser indécises. */
 export const CORE = [

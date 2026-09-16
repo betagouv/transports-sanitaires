@@ -1,11 +1,11 @@
 // La situation d'un cas du livrable, telle que sa matrice la décrit.
 //
-// `transports-sanitaires.tests.v9-7-1.yaml` ne donne pas des situations mais des
+// `transports-sanitaires.tests.v9-7-2.yaml` ne donne pas des situations mais des
 // **options** — `{autonomy: 0, distance: 2, count: 4}` —, qu'un adaptateur de
 // référence (`tests/helpers.mjs` du paquet) traduit en réponses. Sans cette
 // traduction, aucun de ses cas ne serait rejouable ici.
 //
-// Ce fichier en est la recopie. Il tient à part de `situations-v9-7-1.ts`, qui
+// Ce fichier en est la recopie. Il tient à part de `situations-v9-7-2.ts`, qui
 // porte le vocabulaire de nos propres scénarios : ici, rien n'est de nous — les
 // valeurs par défaut sont celles du livrable, y compris quand elles diffèrent des
 // nôtres. Sa base répond « besoin d'un professionnel » là où notre base neutre

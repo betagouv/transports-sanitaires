@@ -1,6 +1,6 @@
 // Une case d'un Cerfa, et ce que le mapping documentaire en dit.
 //
-// La v9.7 livre un quatrième YAML, `transports-sanitaires.documents.v9-7-1.yaml`
+// La v9.7 livre un quatrième YAML, `transports-sanitaires.documents.v9-7-2.yaml`
 // (`kind: semantic_document_mapping`). Pour chacune des zones des trois
 // formulaires — PMT S3138g, DAP S3139h, S3141 — il nomme la règle qui la
 // remplit, la condition qui la fait exister, la façon de la rendre et **d'où
