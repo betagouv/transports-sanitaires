@@ -151,7 +151,7 @@ critères n'est affichée.
 | Brancardage ou portage | Votre état nécessite une aide physique importante pour être installé, déplacé ou transféré, même sur une courte distance. |
 | Surveillance constante et matériel de secours | Votre état peut se dégrader pendant le trajet : une personne qualifiée doit vous surveiller, avec du matériel de secours à disposition. |
 | Administration d’oxygène | Votre état nécessite la présence ou l’administration d’oxygène pendant le trajet. |
-| Isolement, asepsie ou désinfection stricts | Votre état impose des conditions renforcées pour éviter un risque infectieux ou protéger votre santé. |
+| Transport dans des conditions d’asepsie | Votre état de santé nécessite un transport dans des conditions d’asepsie, c’est-à-dire des mesures destinées à prévenir une contamination. Ce besoin est distinct de la désinfection du véhicule. |
 | Aucune aide ou condition particulière | Les informations renseignées ne montrent pas de besoin médical imposant une ambulance, un VSL, un taxi conventionné ou un véhicule adapté au fauteuil roulant. |
 
 ## Descriptions vulgarisées — cas particuliers médicaux (M0)

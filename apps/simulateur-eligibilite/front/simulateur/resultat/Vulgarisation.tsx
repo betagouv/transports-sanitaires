@@ -76,11 +76,17 @@ export const CRITERES: EntreeVulgarisee[] = [
     description:
       "Votre état nécessite la présence ou l’administration d’oxygène pendant le trajet.",
   },
+  // Texte livré mot pour mot (contrat v9.7.2, `additional_explanations[id=asepsie]`).
+  // Le contrat le scope au seul Résultat 1 ; `CRITERES` est partagé avec le
+  // Résultat 2 (`Bloc2Etapes.tsx`), et le remplacement en place — plutôt qu'une
+  // liste séparée — l'y diffuse aussi. C'est le geste le plus simple, et il
+  // respecte la consigne du contrat : ne jamais afficher l'ancien et le nouvel
+  // item ensemble.
   {
     id: "p1_critere_isolement_asepsie",
-    libelle: "Isolement, asepsie ou désinfection stricts",
+    libelle: "Transport dans des conditions d’asepsie",
     description:
-      "Votre état impose des conditions renforcées pour éviter un risque infectieux ou protéger votre santé.",
+      "Votre état de santé nécessite un transport dans des conditions d’asepsie, c’est-à-dire des mesures destinées à prévenir une contamination. Ce besoin est distinct de la désinfection du véhicule.",
   },
 ];
 
