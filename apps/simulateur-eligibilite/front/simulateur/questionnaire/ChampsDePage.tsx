@@ -4,6 +4,7 @@
 import type { Situation } from "publicodes";
 import { moteur, texte, vrai } from "../moteur";
 import { ChampDeFormulaire } from "./ChampDeFormulaire";
+import { faitsConnusDe } from "./faits-connus";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
@@ -120,19 +121,20 @@ function GroupeMosaique({ groupe, parId, situation, onReponses }: GroupeProps) {
     .map((id) => parId.get(id))
     .filter((champ): champ is Champ => Boolean(champ));
   const aucun = groupe.aucun;
-  // État de « aucun » lu sur SA règle (champ de page si présent, sinon
-  // évaluation) — pas dérivé des autres options, car cette règle peut porter
-  // de la logique métier (ex. p1_critere_aucune_situation_encadree).
-  const aucunCoche = aucun
-    ? valeurRegle(aucun.id, situation, parId.get(aucun.id))
-    : false;
+  const { libelles: faitsConnus, libelleAucun } = faitsConnusEtLibelleAucun(
+    groupe.parentId,
+    situation,
+    aucun?.libelle,
+  );
+  const aucunProp = aucunPourMosaique(aucun, libelleAucun, situation, parId);
 
   return (
     <Mosaique
       question={groupe.question}
       information={groupe.information}
+      faitsConnus={faitsConnus}
       options={options}
-      aucun={aucun ? { libelle: aucun.libelle, coche: aucunCoche } : undefined}
+      aucun={aucunProp}
       onToggleOption={(id, coche) =>
         onReponses(apresBasculeOption(options, aucun?.id, id, coche))
       }
@@ -141,6 +143,44 @@ function GroupeMosaique({ groupe, parId, situation, onReponses }: GroupeProps) {
       }
     />
   );
+}
+
+// L'option « aucun » d'une mosaïque : son libellé (par défaut, ou celui d'un
+// fait connu) et son état, lu sur SA règle — pas dérivé des autres options,
+// car cette règle peut porter de la logique métier (ex.
+// p1_critere_aucune_situation_encadree).
+function aucunPourMosaique(
+  aucun: MosaiqueDesc["aucun"],
+  libelle: string | undefined,
+  situation: Situation<string>,
+  parId: Map<string, Champ>,
+): { libelle: string; coche: boolean } | undefined {
+  if (!aucun || !libelle) return undefined;
+  return {
+    libelle,
+    coche: valeurRegle(aucun.id, situation, parId.get(aucun.id)),
+  };
+}
+
+// Les faits déjà connus de cette mosaïque, et le libellé que prend son option
+// « aucun » quand l'un d'eux s'applique (`faits-connus.ts`).
+function faitsConnusEtLibelleAucun(
+  parentId: string,
+  situation: Situation<string>,
+  libelleAucunParDefaut: string | undefined,
+): { libelles: string[]; libelleAucun: string | undefined } {
+  const faits = faitsConnusDe(parentId);
+  const moteurPositionne = moteur.setSituation(situation);
+  const retenus = (faits?.faits ?? []).filter((fait) =>
+    vrai(moteurPositionne, fait.condition),
+  );
+  return {
+    libelles: retenus.map((fait) => fait.libelle),
+    libelleAucun:
+      retenus.length && faits
+        ? faits.libelleAucunSiFaitConnu
+        : libelleAucunParDefaut,
+  };
 }
 
 // Bascule d'une option : la règle touchée prend la nouvelle valeur, les autres
