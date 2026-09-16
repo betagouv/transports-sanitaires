@@ -24,11 +24,9 @@ const RESTE_A_CHARGE: Record<string, string> = {
     "Votre transport peut être pris en charge par l’Assurance Maladie uniquement si l’accord préalable est obtenu. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
   "convocation ou avis d’audience":
     "La convocation ou l’avis d’audience sert de document patient pour votre transport. La prise en charge dépend des règles applicables à cette convocation ou à cet avis. Un reste à charge peut exister selon votre situation.",
-  // TEXTE PROVISOIRE — à valider par le porteur, voir tâche Notion
-  // « Simulateur v9.7.1 : écrire les textes manquants du résultat orientation
-  // vers la caisse ».
+  // Texte livré mot pour mot (contrat v9.7.2, `remaining_cost`).
   "orientation vers la caisse pour accord préalable":
-    "La prise en charge de ce transport dépend de l’accord que votre caisse d’Assurance Maladie doit encore confirmer. Un reste à charge peut exister selon vos droits, votre couverture complémentaire et les frais non couverts.",
+    "À ce stade, le simulateur ne peut pas déterminer le montant qui restera à votre charge. Contactez votre caisse d’Assurance Maladie pour connaître les conditions de prise en charge applicables à ce trajet.",
   "transport à la charge de l’établissement":
     "Ce transport est à la charge de l’établissement de santé. Le service ou le secrétariat de l’établissement vous indiquera les modalités d’organisation applicables.",
   "permission de sortie sans motif médical":
