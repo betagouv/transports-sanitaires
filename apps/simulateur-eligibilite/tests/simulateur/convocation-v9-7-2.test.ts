@@ -1,6 +1,6 @@
 // La convocation terrestre, part de la matrice de non-régression du livrable
 // v9.7.1 (tmp/9.7.1/tests/convocation.mjs). Le volet aérien — celui qui bascule
-// vers l'orientation caisse — est dans `convocation-aerienne-v9-7-1.test.ts`.
+// vers l'orientation caisse — est dans `convocation-aerienne-v9-7-2.test.ts`.
 //
 // La v9.7.1 pose, derrière toute convocation, une mosaïque de caractéristiques
 // (CONV-AP) : plus de 150 km, avion ou bateau, ou aucune des deux. Ici, les cas
@@ -16,9 +16,9 @@ import {
   evaluerLeCas,
   type OptionsDuLivrable,
   situationDuLivrable,
-} from "./livrable-v9-7-1";
+} from "./livrable-v9-7-2";
 import { moteurDeTest } from "./moteur";
-import { CONVOCATION, DAP } from "./situations-v9-7-1";
+import { CONVOCATION, DAP } from "./situations-v9-7-2";
 
 const TYPES_DE_CONVOCATION = [
   "Convocation du contrôle médical de l’Assurance Maladie.",

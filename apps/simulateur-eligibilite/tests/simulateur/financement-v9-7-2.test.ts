@@ -5,13 +5,13 @@
 // variantes de lieu de départ qui l'avaient révélée.
 //
 // Ce qui laisse le financement indécis est dans
-// `financement-incomplet-v9-7-1.test.ts`.
+// `financement-incomplet-v9-7-2.test.ts`.
 
 import { describe, expect, it } from "vitest";
-import { attendFinancementComplet } from "./financement-v9-7-1";
-import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-1";
+import { attendFinancementComplet } from "./financement-v9-7-2";
+import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-2";
 import { moteurDeTest } from "./moteur";
-import { CONVOCATION } from "./situations-v9-7-1";
+import { CONVOCATION } from "./situations-v9-7-2";
 
 const TYPES_DE_CONVOCATION = [
   "Convocation du contrôle médical de l’Assurance Maladie.",

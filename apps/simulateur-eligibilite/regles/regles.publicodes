@@ -2188,8 +2188,11 @@ cible_document_a_remettre_au_patient:
 cible_attente_accord_prealable_requise:
   titre: cible_attente_accord_prealable_requise
   toutes ces conditions:
-  - p2_document_dap_determine
+  - une de ces conditions:
+    - cible_cas_final = 'demande d’accord préalable'
+    - cible_cas_final = 'orientation vers la caisse pour accord préalable'
   - cible_urgence_attestee = non
+  applicable si: cible_resultat_2_affichable
 cible_regime_financement:
   titre: cible_regime_financement
   valeur:
