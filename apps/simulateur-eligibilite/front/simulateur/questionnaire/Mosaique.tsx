@@ -16,6 +16,9 @@ type Props = {
   question: string;
   // Phrase indicative rendue sous la question, quand la règle parente en porte une.
   information?: string;
+  // Faits déjà établis ailleurs dans le parcours, rendus avant les choix
+  // (`known_facts` du contrat d'interface — `faits-connus.ts`).
+  faitsConnus?: string[];
   // Éléments booléens des options présents sur la page courante.
   options: ChampOption[];
   // Option d'exclusivité « aucun » (état dérivé : toutes les options décochées).
@@ -27,19 +30,27 @@ type Props = {
 export function Mosaique({
   question,
   information,
+  faitsConnus,
   options,
   aucun,
   onToggleOption,
   onToggleAucun,
 }: Props) {
   return (
-    <Checkbox
-      legend={question}
-      hintText={information}
-      options={casesACocher(options, aucun, onToggleOption, onToggleAucun)}
-      classes={{ legend: "fr-text--lead" }}
-      style={{ marginBottom: "1.5rem" }}
-    />
+    <>
+      {faitsConnus?.map((fait) => (
+        <p key={fait} className="fr-text--bold">
+          {fait}
+        </p>
+      ))}
+      <Checkbox
+        legend={question}
+        hintText={information}
+        options={casesACocher(options, aucun, onToggleOption, onToggleAucun)}
+        classes={{ legend: "fr-text--lead" }}
+        style={{ marginBottom: "1.5rem" }}
+      />
+    </>
   );
 }
 
