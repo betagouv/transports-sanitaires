@@ -10,7 +10,7 @@ export type Prescripteur = { id: string; libelle: string };
 
 /**
  * L'accès est masqué derrière cette interface, décrite au §5 de
- * docs/architecture/identification.md, pour pouvoir substituer la source sans
+ * docs/knowledge/adr/identification.md, pour pouvoir substituer la source sans
  * toucher les composants consommateurs. C'est aujourd'hui le client HTTP
  * same-origin `front/identification/referentiel-http.ts` vers le backend Grist, et
  * demain peut-être FINESS et RPPS.
@@ -23,7 +23,7 @@ export interface Referentiel {
    * Enrichit le référentiel avec les saisies libres d'une sélection, celles du
    * service « autre » et du prescripteur « hors liste ». C'est optionnel : seule la
    * source Grist l'implémente, le client HTTP du front n'écrivant jamais. Voir
-   * docs/specs/enrichissement-referentiel-saisies-libres.md.
+   * docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
    */
   enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
 }

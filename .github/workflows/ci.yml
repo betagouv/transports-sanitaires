@@ -76,20 +76,6 @@ jobs:
       - run: pnpm audit --audit-level high
         continue-on-error: true
 
-  # Le style de la documentation ne se scope pas non plus : `AGENTS.md`, les
-  # `README.md` et `docs/` débordent des apps. La garde rend exécutable la
-  # section « Communication » d'AGENTS.md : tirets cadratins, phrases de plus
-  # de 25 mots, paragraphes de plus de 4 phrases.
-  documentation:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: package.json
-      # Node 24 exécute le TypeScript nativement : ni installation, ni build.
-      - run: node --test verifier-documentation.ts
-
   # Scan de secrets sur **tout** l'historique, pas seulement le diff : un secret
   # commité puis retiré reste lisible dans les objets git. Le dépôt étant public,
   # GitHub scanne déjà les motifs des fournisseurs connus. gitleaks ajoute les

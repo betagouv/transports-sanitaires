@@ -2,7 +2,7 @@
 // et le seul module que le reste de l'app importe pour tracer. Le transport (tag
 // Matomo, file `_paq`) est derrière, dans `matomo.ts`.
 //
-// Voir docs/architecture/analytics.md.
+// Voir docs/knowledge/adr/analytics.md.
 
 import { emettre } from "./matomo";
 

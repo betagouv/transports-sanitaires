@@ -2,7 +2,7 @@
 
 > Statut : **décidé (phase expérimentale)** · Dernière mise à jour : 2026-07-08
 >
-> Étape d'identification **intégrée** au [simulateur d'éligibilité](../../apps/simulateur-eligibilite),
+> Étape d'identification **intégrée** au simulateur d'éligibilité,
 > **préalable obligatoire** à toute simulation. Le suivi analytique du parcours fait
 > l'objet d'un document séparé : [analytics.md](./analytics.md).
 >
@@ -204,7 +204,7 @@ option « pas dans la liste ». Il a une particularité : quand « Autre » est 
 le prescripteur doit saisir son service ou son unité réels. Ce texte libre est alors
 écrit dans Grist, ce qui crée le vrai service et y rattache le prescripteur, pour qu'à la
 connexion suivante il apparaisse sous ce service réel et non plus sous « Autre » (voir la
-[spec enrichissement](../specs/enrichissement-referentiel-saisies-libres.md)). L'autre
+[spec enrichissement](../domain/enrichissement-referentiel-saisies-libres.md)). L'autre
 texte libre du workflow est le nom et le prénom du prescripteur hors liste.
 
 Les prescripteurs sans établissement de rattachement, en libéral, à la CNAM ou à la CPAM,

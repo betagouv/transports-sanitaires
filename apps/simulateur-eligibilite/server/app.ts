@@ -1,7 +1,7 @@
 // App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
 // identification, référentiel et identité pseudonymisée, sous `/api`, puis sert le
 // front construit par Vite en same-origin. Voir l'ADR-5 de
-// docs/architecture/identification.md.
+// docs/knowledge/adr/identification.md.
 //
 // `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock.
 // Les tests injectent le snapshot ; en production, `server.ts` injecte le choix de

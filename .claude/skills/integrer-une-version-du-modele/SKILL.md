@@ -276,7 +276,7 @@ Le premier, en revanche, est gros par nature et ne se découpe pas. Le modèle
 recopié casse tout ce qui le nomme, et rien n'est vert tant que tout ne l'est
 pas.
 
-Les règles de commit du dépôt s'appliquent (`docs/contributing/regles-git.md`),
+Les règles de commit du dépôt s'appliquent (`docs/knowledge/contributing/regles-git.md`),
 GIT-005 compris : deux paragraphes, et l'état de vérification pour finir.
 
 **La livraison est un autre geste**, décrit par le skill `livrer-une-version` :

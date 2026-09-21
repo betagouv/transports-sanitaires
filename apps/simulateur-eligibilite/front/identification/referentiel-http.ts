@@ -1,5 +1,5 @@
 // Implémentation `Referentiel` côté navigateur : appelle l'API same-origin
-// exposée par le backend (voir docs/architecture/identification.md — ADR-5).
+// exposée par le backend (voir docs/knowledge/adr/identification.md — ADR-5).
 // Aucun secret, aucun CORS (même origine). Le snapshot factice reste le défaut
 // des tests et du dev sans backend (voir shared/referentiel.ts).
 

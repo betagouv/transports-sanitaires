@@ -1,7 +1,7 @@
 // Racine de l'app : **écran-porte** d'identification devant les simulateurs.
 // Tant que le prescripteur n'est pas identifié, seul l'écran d'identification
 // s'affiche — impossible de simuler sans s'être identifié (voir
-// docs/architecture/identification.md — ADR-1).
+// docs/knowledge/adr/identification.md — ADR-1).
 //
 // À la validation, on convertit l'identité saisie en identité pseudonymisée via
 // l'API (`pseudonymiserViaApi`), on la range en session (pour Matomo), puis on

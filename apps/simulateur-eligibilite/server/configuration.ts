@@ -12,7 +12,7 @@
 // variante de production où ces deux-là sont exigées. C'est lui qui porte la
 // règle — ce fichier ne l'énonce pas deux fois.
 //
-// Voir le README § « Configuration » et docs/architecture/identification.md —
+// Voir le README § « Configuration » et docs/knowledge/adr/identification.md —
 // ADR-5.
 
 import { z } from "zod";

@@ -51,8 +51,8 @@ la décide. La correspondance id vers règle vit dans
 dans `cerfa/`.
 
 C'est la même transcription que lit la checklist du Bloc 3. `mapping.ts` la relit
-pour le pré-remplissage. Voir la
-[spec 0006](../../spec/4.%20done/0006-socle-du-mapping-documentaire.md).
+pour le pré-remplissage. Voir
+[`socle-du-mapping-documentaire.md`](docs/knowledge/domain/socle-du-mapping-documentaire.md).
 
 Le dossier est sous `beta/` à cause de son bouton de téléchargement, pas de sa
 nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est pas
@@ -61,8 +61,8 @@ nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est
 La zone « éléments d'ordre médical » du PMT et de la DAP (`elements-medicaux/`)
 se compose selon le contrat EM-1 de l'éditeur, se mesure dans la police et la
 taille réelles du gabarit, et renvoie à une annexe insérée juste après le volet
-1 quand elle déborde. Voir la
-[spec 0005](../../spec/2.%20todo/0005-composer-les-elements-medicaux.md).
+1 quand elle déborde. Voir
+[`composer-les-elements-medicaux.md`](docs/knowledge/domain/composer-les-elements-medicaux.md).
 
 ## Les trois racines de runtime
 
@@ -76,8 +76,8 @@ Découpage **par fonctionnalité**, à l'intérieur de trois racines :
 
 À lire à côté :
 
-- [`docs/architecture/identification.md`](../../docs/architecture/identification.md)
-- [`docs/architecture/analytics.md`](../../docs/architecture/analytics.md)
+- [`docs/knowledge/adr/identification.md`](docs/knowledge/adr/identification.md)
+- [`docs/knowledge/adr/analytics.md`](docs/knowledge/adr/analytics.md)
 - le [README](README.md), pour l'arborescence commentée
 
 ## Commandes
@@ -162,7 +162,7 @@ nu. Ajouter une clé au contrat est ce qui en autorise l'usage, et
 **Les questions à choix multiple** s'encodent en `mosaique` : N règles booléennes
 plus une règle parente inerte qui porte la métadonnée, consommée par
 `front/simulateur/questionnaire/mosaique.ts`. Le format exact est dans
-[`docs/specs/formalisation-mosaique-choix-multiple.md`](../../docs/specs/formalisation-mosaique-choix-multiple.md).
+[`docs/knowledge/domain/formalisation-mosaique-choix-multiple.md`](docs/knowledge/domain/formalisation-mosaique-choix-multiple.md).
 
 ## Pièges
 

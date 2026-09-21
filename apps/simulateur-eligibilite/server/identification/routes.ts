@@ -1,7 +1,7 @@
 // Router de la feature **identification** (backend) : lecture du référentiel
 // (établissement / service / prescripteur) + pseudonymisation de l'identité
 // saisie. Monté sous `/api` par `server/app.ts`. Voir
-// docs/architecture/identification.md — ADR-5.
+// docs/knowledge/adr/identification.md — ADR-5.
 //
 // Prend le `Referentiel` et le secret en paramètres pour rester testable sans
 // mock (les tests injectent le snapshot).
@@ -83,7 +83,7 @@ function lister(
 // Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
 // prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
 // d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
-// Voir docs/specs/enrichissement-referentiel-saisies-libres.md.
+// Voir docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
 async function enrichir(referentiel: Referentiel, saisie: IdentiteSaisie) {
   try {
     await referentiel.enrichirDepuisSaisie?.(saisie);

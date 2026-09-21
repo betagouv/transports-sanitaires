@@ -1,5 +1,5 @@
 // Écran-porte d'identification du prescripteur : étape préalable **obligatoire**
-// au simulateur (voir docs/architecture/identification.md — ADR-1). Formulaire à
+// au simulateur (voir docs/knowledge/adr/identification.md — ADR-1). Formulaire à
 // **révélation progressive** : chaque réponse dévoile la suite selon la branche
 // (workflow §4). Composant de pure sélection ; à la validation il remonte la
 // `IdentiteSaisie` brute à `onValide` (c'est la porte, App.tsx, qui la convertit

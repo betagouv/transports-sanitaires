@@ -6,7 +6,7 @@
 /** Valeur sentinelle (hors référentiel) choisie dans la liste des prescripteurs. */
 export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
 
-// Le workflow est linéaire, décrit au §4 de docs/architecture/identification.md :
+// Le workflow est linéaire, décrit au §4 de docs/knowledge/adr/identification.md :
 //   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
 // Le service « Autre » est une entrée du référentiel comme les autres, une par
 // établissement, avec ses propres prescripteurs et la même option « hors liste ».

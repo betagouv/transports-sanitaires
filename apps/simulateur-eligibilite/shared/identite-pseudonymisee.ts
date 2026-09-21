@@ -1,7 +1,7 @@
 // Contrat partagé entre le front et le back pour l'identité pseudonymisée du
 // prescripteur. C'est la source unique de sa forme et de sa version : le backend la
 // produit, le front la valide et la consomme. Voir l'ADR-4 de
-// docs/architecture/identification.md.
+// docs/knowledge/adr/identification.md.
 
 export const VERSION = 2 as const;
 
