@@ -4,7 +4,7 @@
 // éléments médicaux, urgence ou centre de référence sur S3141 », « ne pas en
 // créer ». L'exonération, elle, est commune aux trois formulaires.
 
-import type { CaseDeFormulaire } from "./case-de-formulaire.ts";
+import type { CaseDeFormulaire } from "../case-de-formulaire.ts";
 
 /** L'urgence, sur le PMT et la DAP seulement. */
 export const URGENCE: readonly CaseDeFormulaire[] = [

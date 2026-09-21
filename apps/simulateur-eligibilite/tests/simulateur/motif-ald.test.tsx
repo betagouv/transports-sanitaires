@@ -18,7 +18,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
 import { type Seed, situationDe } from "../../front/outils-produit/seeds/seed";
-import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
+import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
 
 const INFORMATION_PATIENT =
   /l’absence d’incapacité ou de déficience définie par le référentiel ne permet pas de retenir l’ALD/i;

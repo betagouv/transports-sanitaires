@@ -7,7 +7,7 @@
 // ou bateau, dans la même rubrique. Le livrable prévient : « ne pas renseigner
 // une sous-situation aérienne sans transport aérien ».
 
-import type { Rubrique } from "./case-de-formulaire.ts";
+import type { Rubrique } from "../case-de-formulaire.ts";
 import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete.ts";
 import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport.ts";
 import {

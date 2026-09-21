@@ -6,8 +6,8 @@
 
 import type { Situation } from "publicodes";
 import type { ReactNode } from "react";
-import { moteur, texte, vrai } from "../moteur";
-import { TraceDebug } from "../resultat/TraceDebug";
+import { moteur, texte, vrai } from "../../moteur";
+import { TraceDebug } from "../../resultat/TraceDebug";
 import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
 import { Bloc2Etapes } from "./Bloc2Etapes";

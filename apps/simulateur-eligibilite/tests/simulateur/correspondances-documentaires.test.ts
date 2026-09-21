@@ -16,9 +16,9 @@ import type {
   CaseDeFormulaire,
   Rubrique,
 } from "../../front/simulateur/secretariat/case-de-formulaire";
-import { RUBRIQUES_DAP } from "../../front/simulateur/secretariat/rubriques-de-la-dap";
-import { RUBRIQUES_PMT } from "../../front/simulateur/secretariat/rubriques-du-pmt";
-import { RUBRIQUES_S3141 } from "../../front/simulateur/secretariat/rubriques-du-s3141";
+import { RUBRIQUES_DAP } from "../../front/simulateur/secretariat/rubriques/rubriques-de-la-dap";
+import { RUBRIQUES_PMT } from "../../front/simulateur/secretariat/rubriques/rubriques-du-pmt";
+import { RUBRIQUES_S3141 } from "../../front/simulateur/secretariat/rubriques/rubriques-du-s3141";
 import { moteurDeTest } from "./moteur";
 
 const FORMULAIRES: ReadonlyArray<

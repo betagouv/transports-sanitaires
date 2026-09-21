@@ -230,13 +230,13 @@ describe("exhaustivité de la Page Résultat 2", () => {
   // document amputé. `cerfa/depuis-simulateur.ts` en est exclu à dessein : il ne
   // traite que la prescription médicale de transport.
   const BLOCS = [
-    "front/simulateur/secretariat/Bloc1Resultat.tsx",
-    "front/simulateur/secretariat/Bloc2Etapes.tsx",
-    "front/simulateur/secretariat/Bloc3CasRetenu.tsx",
+    "front/simulateur/secretariat/resultat/Bloc1Resultat.tsx",
+    "front/simulateur/secretariat/resultat/Bloc2Etapes.tsx",
+    "front/simulateur/secretariat/resultat/Bloc3CasRetenu.tsx",
     // Le Bloc 3 délègue sa checklist : un cas final absent de ces deux tables
     // n'y provoque rien non plus, et le prescripteur n'a plus aucune case à
     // cocher là où le formulaire en attend.
-    "front/simulateur/secretariat/cases-documentaires.ts",
+    "front/simulateur/secretariat/resultat/cases-documentaires.ts",
   ];
 
   it.each(BLOCS)("%s traite chaque cas final", (bloc) => {

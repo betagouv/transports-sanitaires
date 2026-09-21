@@ -32,7 +32,7 @@
 //     l'omettant du tableau.
 
 import { dateDePrescription } from "../../../../simulateur/secretariat/date-de-prescription.ts";
-import { RUBRIQUES_S3141 } from "../../../../simulateur/secretariat/rubriques-du-s3141.ts";
+import { RUBRIQUES_S3141 } from "../../../../simulateur/secretariat/rubriques/rubriques-du-s3141.ts";
 import { dateSurLeChamp } from "../dates.ts";
 import { depuisLeMapping, premierVrai as premierVraiSur } from "../mapping.ts";
 import type { ÉtatCoché } from "../remplir-cerfa.ts";

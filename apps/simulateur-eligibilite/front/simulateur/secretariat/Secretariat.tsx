@@ -20,7 +20,7 @@ import { reprendrePassation } from "../passation";
 import { Parcours } from "../questionnaire/Parcours";
 import { rejouerLesReponses } from "../questionnaire/rejeu";
 import { dateDePrescription } from "./date-de-prescription";
-import { ResultatFinal } from "./ResultatFinal";
+import { ResultatFinal } from "./resultat/ResultatFinal";
 
 type Props = {
   onNouvelleSimulation: () => void;

@@ -33,7 +33,7 @@
 // les fige.
 
 import { dateDePrescription } from "../../../../simulateur/secretariat/date-de-prescription.ts";
-import { RUBRIQUES_DAP } from "../../../../simulateur/secretariat/rubriques-de-la-dap.ts";
+import { RUBRIQUES_DAP } from "../../../../simulateur/secretariat/rubriques/rubriques-de-la-dap.ts";
 import { dateSurLeChamp } from "../dates.ts";
 import { depuisLeMapping, premierVrai as premierVraiSur } from "../mapping.ts";
 import type { ÉtatCoché } from "../remplir-cerfa.ts";

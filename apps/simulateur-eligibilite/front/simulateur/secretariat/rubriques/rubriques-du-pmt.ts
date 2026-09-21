@@ -8,7 +8,7 @@
 // pour laquelle les cases communes aux trois Cerfa ne portent pas leur titre avec
 // elles.
 
-import type { Rubrique } from "./case-de-formulaire.ts";
+import type { Rubrique } from "../case-de-formulaire.ts";
 import { ACCIDENT_CAUSE_PAR_UN_TIERS, ORGANISME } from "./rubriques-en-tete.ts";
 import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport.ts";
 import {

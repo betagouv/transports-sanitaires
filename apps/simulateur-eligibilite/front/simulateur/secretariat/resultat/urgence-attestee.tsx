@@ -14,7 +14,7 @@
 // (`result_block_urgence`, `patient_block_urgence`, `medical_block_urgence`,
 // `urgent_information`).
 
-import { SousTitre } from "../resultat/InformationPatient";
+import { SousTitre } from "../../resultat/InformationPatient";
 
 /** Corps du verdict d'une DAP dispensée d'attente (Bloc 1). */
 export function VerdictDapUrgente({ transport }: { transport: string }) {
