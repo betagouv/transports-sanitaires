@@ -153,7 +153,7 @@ saisie complète.
 
 ## Docs / mémoire (à mettre à jour lors de l'implémentation)
 
-- `docs/architecture/identification.md` : une nouvelle sous-section en §4, ou un ADR, sur
+- `docs/knowledge/adr/identification.md` : une nouvelle sous-section en §4, ou un ADR, sur
   l'enrichissement du référentiel depuis les saisies libres. Y noter l'assouplissement de
   R-6, la PII en clair dans Grist et le HMAC réservé à l'analytics, ainsi que R-9.
 - Mémoire `project_identification_analytics.md` : acter l'écriture Grist et les Id2 des

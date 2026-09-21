@@ -228,7 +228,7 @@ jamais parfaitement. Après l'alignement des finess sur le référentiel, il res
 Elles sont exposées par `alerte_qualite`, sans correction. Le grain amortit la divergence :
 elle est la plus forte au grain géographique, moindre au juridique, et proche de zéro au
 grain GHT. Le détail et des exemples sont dans
-[`apps/data-analyzer/spec/points-attention-metier.md`](../../apps/data-analyzer/spec/points-attention-metier.md).
+[`spec/points-attention-metier.md`](../../../spec/points-attention-metier.md).
 
 ## Vérification
 

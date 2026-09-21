@@ -1,6 +1,6 @@
 // Les invariants d'architecture, rendus exécutables.
 //
-// AGENTS.md et `docs/architecture/` énoncent des règles que rien ne vérifiait :
+// AGENTS.md et `docs/knowledge/adr/` énoncent des règles que rien ne vérifiait :
 // « les secrets restent au serveur », « le CERFA n'atteint jamais le backend »,
 // « l'identification reste hors du moteur d'éligibilité ». Une prose ne bloque
 // personne — ce fichier, si.
@@ -64,7 +64,7 @@ describe("invariants métier", () => {
         commencePar("front/identification/"),
       ),
       "Le moteur d'éligibilité raisonne sur une situation médicale, jamais " +
-        "sur une identité (docs/architecture/identification.md). L'analytics, " +
+        "sur une identité (docs/knowledge/adr/identification.md). L'analytics, " +
         "lui, est admis : il lit l'identité en session de son côté, sans la " +
         "faire transiter ici.",
     ).toEqual([]);

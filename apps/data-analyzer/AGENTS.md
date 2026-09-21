@@ -45,7 +45,7 @@ Trois sources écrites, dans cet ordre d'autorité :
    sept marts, `points-attention-metier.md` les dix propriétés de la donnée à
    connaître avant de citer un chiffre ;
 2. le [README](README.md), qui ne traite que de l'exécution du pipeline ;
-3. [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-part-plateformes.md),
+3. [`docs/knowledge/domain/etl-part-plateformes.md`](docs/knowledge/domain/etl-part-plateformes.md),
    qui porte le cadrage d'origine.
 
 **Le cadrage est le moins à jour des trois** : il annonce 5 marts, il y en a 7.

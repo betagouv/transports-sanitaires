@@ -23,7 +23,7 @@ export type Navigation = {
   outil: Outil;
   // Le service identifié déverrouille-t-il les outils produit (service n° 4) ?
   // Retenu à la validation pour pouvoir les reproposer au début du parcours —
-  // c'est un booléen, pas une identité : l'invariant de `docs/architecture` tient.
+  // c'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
   outilsProduit: boolean;
   // Situation qui ouvre directement une page de résultat : celle d'une seed, ou
   // celle du retour au résultat médical depuis le document.

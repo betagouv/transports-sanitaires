@@ -1,6 +1,6 @@
 // Implémentation `Referentiel` au-dessus d'un doc Grist.
 //
-// Voir l'ADR-5 et le §5 de docs/architecture/identification.md. Ce module vit côté
+// Voir l'ADR-5 et le §5 de docs/knowledge/adr/identification.md. Ce module vit côté
 // serveur uniquement : il détient la clé Grist, jamais exposée au navigateur, et ne
 // renvoie que des données filtrées. Les noms de prescripteurs ne sortent que pour
 // le service demandé, jamais l'annuaire complet. L'accès HTTP lui-même est dans
@@ -101,7 +101,7 @@ async function prescripteurs(
 // Écrit les saisies libres dans le référentiel, avec la colonne
 // `Origine=formulaire`. C'est idempotent, la déduplication se faisant sur le nom et
 // le prénom normalisés, et sans effet pour une sélection issue des listes. Voir
-// docs/specs/enrichissement-referentiel-saisies-libres.md.
+// docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
 async function enrichir(doc: DocGrist, saisie: IdentiteSaisie): Promise<void> {
   if (saisie.serviceEstAutre && saisie.serviceLibre?.trim()) {
     return rattacherAuServiceReel(doc, saisie, saisie.serviceLibre);

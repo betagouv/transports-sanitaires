@@ -4,7 +4,7 @@
 // - accès Grist présent → référentiel **Grist** réel (ADR-5) ;
 // - absent → **snapshot factice** (partagé avec le front), pour le développement
 //   local et les tests sans configuration ni secret. Voir
-//   docs/architecture/identification.md — §7 (incréments).
+//   docs/knowledge/adr/identification.md — §7 (incréments).
 
 import {
   type Referentiel,

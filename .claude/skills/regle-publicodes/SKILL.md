@@ -66,7 +66,7 @@ métadonnée que lit `front/simulateur/questionnaire/mosaique.ts` pour rendre un
 `fieldset` de cases à cocher.
 
 Le format exact est dans
-[`docs/specs/formalisation-mosaique-choix-multiple.md`](../../../docs/specs/formalisation-mosaique-choix-multiple.md).
+[`docs/knowledge/domain/formalisation-mosaique-choix-multiple.md`](../../../apps/simulateur-eligibilite/docs/knowledge/domain/formalisation-mosaique-choix-multiple.md).
 Lis-le avant d'encoder une question de ce type, et ne réinvente pas la forme.
 
 ## Ce qui trahit une erreur

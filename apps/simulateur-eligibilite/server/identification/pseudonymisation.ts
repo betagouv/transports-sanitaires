@@ -1,6 +1,6 @@
 // Transforme l'identité saisie en refs à sens unique, pour l'API
 // `POST /api/identite-pseudonymisee`. Voir l'ADR-4 de
-// docs/architecture/identification.md.
+// docs/knowledge/adr/identification.md.
 
 import { createHmac } from "node:crypto";
 import {

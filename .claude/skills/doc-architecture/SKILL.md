@@ -1,13 +1,15 @@
 ---
 name: doc-architecture
-description: Écrire ou mettre à jour un document d'architecture dans docs/architecture/, au format ADR maison du dépôt. À charger dès qu'une décision structurante est prise, révisée ou révoquée, ou qu'on demande de « documenter l'archi ».
+description: Écrire ou mettre à jour un document d'architecture dans docs/knowledge/adr/, au format ADR maison du dépôt. À charger dès qu'une décision structurante est prise, révisée ou révoquée, ou qu'on demande de « documenter l'archi ».
 ---
 
 # Écrire un document d'architecture
 
-Les documents d'architecture vivent dans `docs/architecture/`, aujourd'hui
-`identification.md` et `analytics.md`. Il y a **un document par sujet**, et non un
-fichier par décision : les ADR sont groupés dedans et numérotés.
+Les documents d'architecture vivent dans `docs/knowledge/adr/` : celui de l'app
+concernée, ou celui de la racine si la décision traverse plusieurs apps.
+Aujourd'hui `apps/simulateur-eligibilite/docs/knowledge/adr/identification.md` et
+`analytics.md`. Il y a **un document par sujet**, et non un fichier par décision :
+les ADR sont groupés dedans et numérotés.
 
 Ils restent au niveau composant C4 : ce qui parle, à quoi, et pourquoi. On n'y met
 aucun détail de fichier ni de fonction. Ça, c'est le code et le README de l'app qui
@@ -76,5 +78,5 @@ Ce qui n'est pas une décision d'architecture se range ailleurs :
 `AGENTS.md § Où écrire quoi` dit où.
 
 Un point vaut d'être retenu en écrivant ici. Le test, le code et le README d'une
-app priment sur `docs/architecture/`. Un document d'architecture qui contredit le
+app priment sur `docs/knowledge/adr/`. Un document d'architecture qui contredit le
 code a tort : corrige-le, ne t'y fie pas.

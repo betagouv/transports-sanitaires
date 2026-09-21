@@ -43,7 +43,7 @@ publie les marts dans [Grist](#publication-dataviz).
 |---|---|
 | [`spec/livrables.md`](spec/livrables.md) | Les sept marts : grain, colonnes, ce que chacun sait et ne sait pas dire. |
 | [`spec/points-attention-metier.md`](spec/points-attention-metier.md) | Les dix propriétés de la donnée et règles de gestion à connaître avant de citer un chiffre. |
-| [`docs/specs/etl-part-plateformes.md`](../../docs/specs/etl-part-plateformes.md) | La spec de cadrage d'origine. |
+| [`docs/knowledge/domain/etl-part-plateformes.md`](docs/knowledge/domain/etl-part-plateformes.md) | La spec de cadrage d'origine. |
 
 ---
 

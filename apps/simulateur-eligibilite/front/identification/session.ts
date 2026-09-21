@@ -14,5 +14,5 @@ export function identiteEnSession(): IdentitePseudonymisee | null {
 // ---- implémentation ----
 
 // En mémoire uniquement (pas de localStorage) — voir
-// docs/architecture/identification.md — ADR-4.
+// docs/knowledge/adr/identification.md — ADR-4.
 let identiteCourante: IdentitePseudonymisee | null = null;

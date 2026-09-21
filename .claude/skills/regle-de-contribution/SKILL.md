@@ -1,12 +1,12 @@
 ---
 name: regle-de-contribution
-description: Ajouter, modifier ou retirer une règle de docs/contributing/ (les QUAL-* de code, les GIT-* de commit). À charger dès qu'il s'agit d'écrire une convention d'écriture ou de commit, de la numéroter, ou qu'une revue fait apparaître une règle qui n'était nulle part.
+description: Ajouter, modifier ou retirer une règle de docs/knowledge/contributing/ (les QUAL-* de code, les GIT-* de commit). À charger dès qu'il s'agit d'écrire une convention d'écriture ou de commit, de la numéroter, ou qu'une revue fait apparaître une règle qui n'était nulle part.
 ---
 
 # Structurer une règle de contribution
 
-Les règles numérotées vivent dans `docs/contributing/`. Il y a **un recueil par
-domaine**, et non un fichier par règle.
+Les règles numérotées vivent dans `docs/knowledge/contributing/`. Il y a **un
+recueil par domaine**, et non un fichier par règle.
 
 | Recueil | Préfixe | Ce qu'il couvre |
 |---|---|---|
@@ -51,7 +51,7 @@ jamais**. Si `QUAL-014` est retirée, la suivante est `QUAL-016`.
 
 Un numéro réemployé ferait pointer un vieux commit ou une vieille revue sur une
 autre règle. C'est la même raison qui fait garder les ADR révoqués dans
-`docs/architecture/`, barrés plutôt qu'effacés.
+`docs/knowledge/adr/`, barrés plutôt qu'effacés.
 
 Une règle retirée disparaît du corps du recueil. Sa ligne d'index reste, barrée,
 avec la date et le motif :
@@ -130,28 +130,8 @@ grep -nE '^\s*(describe|it)\(' apps/simulateur-eligibilite/tests/lisibilite.test
 | L'en-tête du recueil (`> Les N règles`) | le décompte, si le nombre change |
 | `AGENTS.md § Toute règle nomme sa garde` | le tableau de répartition, si la garde change de nature |
 
-Le `**N règles**` du chapô n'est pas à surveiller. La garde le compare au nombre
-réel de règles, et échoue s'il ment.
-
-## Vérifier
-
-```bash
-pnpm verifier-documentation
-```
-
-Six assertions, dans `verifier-documentation.ts` à la racine. Quatre valent pour
-toute la documentation, deux pour les recueils seuls :
-
-| Assertion | Ce qu'elle refuse |
-|---|---|
-| pas de tiret cadratin | un cadratin hors bloc de code, titres et cellules compris |
-| une phrase tient en 25 mots | une phrase plus longue |
-| un paragraphe tient en 4 phrases | un paragraphe plus long |
-| les listes d'exemption nomment des fichiers qui existent | une exemption devenue orpheline |
-| le décompte annoncé par un recueil est le bon | un chapô qui annonce autre chose que le vrai nombre |
-| chaque règle numérotée est dans l'index de son recueil | une règle sans ligne d'index |
-
-Le message d'échec dit ce que la règle protège. Lis-le avant de contourner.
+Le `**N règles**` du chapô n'est pas à surveiller à la main : vérifie-le contre
+l'index avant de committer.
 
 ## Ce qui ne va pas là
 
