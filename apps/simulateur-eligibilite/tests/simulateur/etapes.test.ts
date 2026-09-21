@@ -23,16 +23,22 @@ const racine = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 const regles = yaml.load(
   readFileSync(join(racine, "regles/regles.publicodes"), "utf-8"),
-) as Record<string, { question?: string; mosaique?: unknown } | null>;
+) as Record<
+  string,
+  { question?: string; mosaique?: unknown; "applicable si"?: unknown } | null
+>;
 
 /**
  * Les questions du modèle : celles qui portent un énoncé, donc un écran. Les
  * règles parentes des mosaïques n'en sont pas — elles portent l'énoncé du groupe
- * et rien à répondre, ce sont leurs options que l'étape pose.
+ * et rien à répondre, ce sont leurs options que l'étape pose. Une règle retirée
+ * (`applicable si: non`) non plus : elle garde son énoncé pour mémoire, mais ne
+ * s'affichera jamais.
  */
 const QUESTIONS_DU_MODELE = Object.entries(regles)
   .filter(([, corps]) => corps?.question !== undefined)
   .filter(([, corps]) => corps?.mosaique === undefined)
+  .filter(([, corps]) => corps?.["applicable si"] !== "non")
   .map(([cle]) => cle);
 
 /** Les règles que le parcours pose, toutes étapes confondues. */

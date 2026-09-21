@@ -1,4 +1,4 @@
-// Les onze entrées que l'application calcule et verse au modèle.
+// Les quatorze entrées que l'application calcule et verse au modèle.
 //
 // Le contrat d'interface de la v9.7 les marque `owner: application`. Leur nom
 // commence par `p1_` ou `p2_` comme celui d'une question, mais elles n'en sont
@@ -48,11 +48,22 @@ export function avecEntreesCalculees(
     p2_arrivee_format_valide: oui(formatValide(situation, "arrivee")),
     p2_adresses_strictement_identiques: oui(adressesIdentiques(situation)),
     p2_types_lieux_valides: oui(typesLieuxValides(situation)),
+    p2_qualification_declarations_valides: oui(
+      qualificationDeclarationsValide(situation),
+    ),
+    p2_exceptions_trajet_valides: oui(exceptionsTrajetValides(situation)),
+    p2_nombre_permission_dap_valide: NOMBRE_PERMISSION_DAP_VALIDE_PAR_DEFAUT,
     p2_validations_documentaires: "oui",
   };
 }
 
 // ---- implémentation ----
+
+// TS973-09 (à porter) : le total déclaré n'est pas encore confronté à la
+// période, la fréquence et les sens couverts de la permission. En attendant,
+// aucune quantité n'est refusée — le comportement d'avant la v9.7.3, où ce
+// contrôle n'existait pas.
+const NOMBRE_PERMISSION_DAP_VALIDE_PAR_DEFAUT = "oui";
 
 function oui(vrai: boolean): string {
   return vrai ? "oui" : "non";
@@ -65,6 +76,14 @@ function texte(valeur: unknown): string {
   return valeur.startsWith("'") && valeur.endsWith("'")
     ? valeur.slice(1, -1)
     : valeur;
+}
+
+// Les deux lectures que les gardes de cohérence (v9.7.3) répètent : le texte
+// nu d'une clé, et si elle vaut « oui ».
+function lecteurs(situation: Situation<string>) {
+  const lu = (cle: CleDeRegle) => texte(situation[cle]);
+  const vrai = (cle: CleDeRegle) => lu(cle) === "oui";
+  return { lu, vrai };
 }
 
 /** La date du jour à Paris, au format `YYYYMMDD` que le modèle compare. */
@@ -187,4 +206,66 @@ function typesLieuxValides(situation: Situation<string>): boolean {
   const arrivee = texte(situation.p2_trajet_arrivee);
   if (depart === "" || arrivee === "") return true;
   return !(depart === "Domicile" && arrivee === "Domicile");
+}
+
+// Cohérence des déclarations brutes, indépendante des lieux : une contradiction
+// entre la raison principale et une exception cochée ne doit produire aucune
+// issue précoce. Réencodage TypeScript de `qualificationDeclarationsValid`
+// (v9.7.3, `src/application.mjs`).
+//
+// Le contrôle générique du livrable — une mosaïque dont « Aucun » et une
+// option sont tous deux cochés, notamment via une option devenue masquée —
+// n'est pas porté ici : nos mosaïques ne permettent pas aujourd'hui cette
+// combinaison, et l'introduire suppose le catalogue de groupes que les
+// tickets de filtrage (masquage d'options) apportent.
+function qualificationDeclarationsValide(
+  situation: Situation<string>,
+): boolean {
+  const { lu, vrai } = lecteurs(situation);
+  const raison = lu("p2_raison_principale");
+  const retourPenitentiaire =
+    vrai("p2_exception_retour_penitentiaire") ||
+    vrai("p2_contexte_retour_penitentiaire");
+  const raisonsIncompatiblesAvecLePenitentiaire = [
+    "Entrée en hospitalisation",
+    "Permission temporaire de sortie",
+    "Transport vers un service d’urgences",
+  ];
+  if (
+    retourPenitentiaire &&
+    raisonsIncompatiblesAvecLePenitentiaire.includes(raison)
+  )
+    return false;
+  if (
+    vrai("p2_exception_admission_had") &&
+    (retourPenitentiaire || raison === "Transport vers un service d’urgences")
+  )
+    return false;
+  if (
+    vrai("p2_exception_radiotherapie_moins_48h") &&
+    (lu("p2_nature_transfert") !== "Provisoire" ||
+      !vrai("p1_m0_seance_radiotherapie"))
+  )
+    return false;
+  return true;
+}
+
+// Les exceptions EHPAD/USLD contre les lieux réellement renseignés.
+// Réencodage TypeScript de `exceptionsRouteValid` (v9.7.3,
+// `src/application.mjs`), simplifié : la référence compare l'exception au
+// lieu **déduit** (`placeType`, qui recouvre HAD, retour pénitentiaire et
+// entrée/sortie d'hospitalisation) — cette déduction n'existe pas encore côté
+// application (ticket 11), donc la comparaison porte ici sur le lieu
+// directement répondu. Les deux coïncident tant que `p2_trajet_depart` et
+// `p2_trajet_arrivee` restent des questions posées telles quelles.
+function exceptionsTrajetValides(situation: Situation<string>): boolean {
+  if (!qualificationDeclarationsValide(situation)) return false;
+  const { lu, vrai } = lecteurs(situation);
+  const depart = lu("p2_trajet_depart");
+  const arrivee = lu("p2_trajet_arrivee");
+  if (vrai("p2_exception_ehpad") && depart !== "EHPAD" && arrivee !== "EHPAD")
+    return false;
+  if (vrai("p2_exception_usld") && depart !== "USLD" && arrivee !== "USLD")
+    return false;
+  return true;
 }

@@ -296,8 +296,7 @@ export const SEEDS: readonly Seed[] = [
       p1_critere_brancardage_portage: "oui",
       ...CRITERE_AUCUN_DECOCHE,
       p2_raison_principale: "'Autre examen ou soin'",
-      p2_motif_detail: "'Autre - préciser'",
-      p2_motif_detail_autre: "'Bilan de suivi sans lien avec une ALD.'",
+      p2_motif_detail: "'Bilan de suivi sans lien avec une ALD.'",
     },
     attendu: {
       cible_transport_sanitaire_prescrit: "ambulance",
@@ -335,14 +334,15 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-motif-texte-libre",
     libelle: "Secrétariat — motif en texte libre",
     description:
-      "Le motif se précise en texte libre plutôt que par une valeur de la " +
-      "liste : la composition des éléments d'ordre médical le recopie sans " +
-      "réécriture (spec 0005, parcours EM-PARCOURS-PMT-TEXTE-LIBRE).",
+      "Le motif se précise en texte libre : la composition des éléments " +
+      "d'ordre médical le recopie sans réécriture (spec 0005, parcours " +
+      "EM-PARCOURS-PMT-TEXTE-LIBRE). Depuis la v9.7.3, c'est la seule forme " +
+      "que prend `p2_motif_detail` — le détour par « Autre - préciser » " +
+      "n'existe plus dans le modèle.",
     outil: "secretariat",
     entrees: {
       p2_raison_principale: "'Autre examen ou soin'",
-      p2_motif_detail: "'Autre - préciser'",
-      p2_motif_detail_autre: "'IRM de contrôle du genou.'",
+      p2_motif_detail: "'IRM de contrôle du genou.'",
       p2_contexte_at_mp: "oui",
       p2_contexte_aucun: "non",
       p2_date_at_mp: "'2026-01-12'",

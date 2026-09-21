@@ -46,7 +46,7 @@ describe("les saisies calendaires du parcours", () => {
 
   it("laisse les autres saisies en texte libre", () => {
     expect(formeDeSaisie("p2_depart_adresse")).toBeUndefined();
-    expect(formeDeSaisie("p2_motif_detail_autre")).toBeUndefined();
+    expect(formeDeSaisie("p2_motif_detail")).toBeUndefined();
   });
 
   it("rend la date d’hospitalisation en calendrier, et non en champ libre", async () => {

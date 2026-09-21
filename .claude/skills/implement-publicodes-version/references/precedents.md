@@ -81,3 +81,59 @@ première possibilité, ce qui concluait le parcours avant l'heure.
 `tmp/anomalie-v9-5-0-accompagnement.md` est le précédent dont le § 12 du mode
 d'emploi reprend la structure. Le dossier `tmp/` n'est pas versionné : si le
 fichier a disparu, le tableau des sections suffit.
+
+## v9.7.3 : trois entrées calculées qui gardent `cible_cas_final` pour tous
+
+Trois clés `owner: application` sont apparues sans qu'aucun changelog ne les
+titre : `p2_qualification_declarations_valides` et `p2_exceptions_trajet_valides`
+gardent l'`applicable si` de `cible_cas_final` lui-même — sans elles, **aucun**
+scénario ne conclut, pas seulement ceux qui touchent à leur sujet.
+`p2_nombre_permission_dap_valide` est plus étroite (elle ne garde que
+`p2_nombre_permission_dap_complet`, donc seulement les permissions avec DAP).
+
+Reconnaître ce genre de clé : une règle du flat sans `valeur` ni `formule`, avec
+`description: Donnée technique calculée par le module de référence ; jamais une
+question.` — et un diff `owner: application` entre les deux `*.ui.yaml` (§ 2 du
+mode d'emploi le dit maintenant, mais ne l'avait pas encore appris).
+
+Le réencodage suit `src/application.mjs` (le nom de la fonction de référence
+donne le nom français à choisir). Deux ont été portées intégralement
+(`qualificationDeclarationsValid`, une partie d'`exceptionsRouteValid` — la
+partie lieux, `placeType`, a été volontairement laissée à la version qui porte
+les lieux déduits) ; la troisième a reçu un défaut permissif (`"oui"`,
+comportement d'avant la version) le temps que son propre sujet soit porté. Une
+clé qui garde `cible_cas_final` pour tous n'a pas ce choix : elle doit être
+correcte dès la recopie, ou rien n'avance.
+
+**Piège qui a coûté 300+ tests rouges pour rien** : `avecEntreesCalculees()`
+n'est pas le seul endroit qui fournit ces entrées. `base-neutre.ts` les
+duplique en dur (`p1_verrou_medical_valide: "oui"`, etc.) pour les tests qui
+construisent une situation à la main sans passer par la fonction — la moitié
+des fichiers de recette. Toute nouvelle entrée calculée s'ajoute **aux deux
+endroits**, sans quoi ces tests-là citent la clé comme manquante alors que
+l'application, elle, tourne très bien.
+
+## v9.7.3 : une question retirée garde son `question:` dans le flat
+
+`p2_type_hospitalisation` et consorts (§ 3 du mode d'emploi) restent
+`titre`/`question` dans le YAML plat, seul `applicable si: non` les neutralise
+— le contrat d'interface les marque `retired: true`, mais le flat ne le dit
+pas. `tests/simulateur/etapes.test.ts` vérifie que toute question du modèle a
+son étape en lisant `question !== undefined` dans le flat : ça la fait
+compter une règle retirée comme orpheline. Le filtre a dû apprendre
+`applicable si !== "non"`.
+
+## v9.7.3 : les lieux déduits traversent déjà le CERFA
+
+`TS973-11` (lieux déduits, pas redemandés) inquiétait par son ampleur estimée
+— à tort. Les cibles `cible_lieu_depart_type`/`cible_lieu_arrivee_type`
+existaient déjà et valent `p2_lieu_depart_type_effectif`/`..._arrivee_...`, que
+le flat calcule tout seul (`si p2_type_depart_deduit alors 'Structure de
+soins' sinon p2_trajet_depart`). Le CERFA (`rubriques-trajet.ts`,
+`composition.ts`) lisait déjà ces cibles, pas la question brute : la
+déduction traverse tout le pipeline sans une ligne de code applicative. Le
+travail réel a été ailleurs : les fixtures qui répondaient la question devenue
+inapplicable, et les tests de navigation qui attendaient un écran « type de
+lieu » qui ne s'affiche plus. Ce que le mode d'emploi reste à porter pour ce
+sujet : le récapitulatif distinguant un fait déduit d'une réponse, et
+l'invalidation des données incompatibles quand le motif change.

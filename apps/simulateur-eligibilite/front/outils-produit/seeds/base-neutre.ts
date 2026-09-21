@@ -29,6 +29,9 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_arrivee_format_valide: "oui",
   p2_adresses_strictement_identiques: "non",
   p2_types_lieux_valides: "oui",
+  p2_qualification_declarations_valides: "oui",
+  p2_exceptions_trajet_valides: "oui",
+  p2_nombre_permission_dap_valide: "oui",
   p2_permission_dates_valides: "oui",
   p2_permission_calendrier_valide: "oui",
   p2_permission_duree_heures: "0",
@@ -80,8 +83,6 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_raison_principale: "'Consultation médicale'",
   p2_motif_detail: "'Consultation de cardiologie'",
 
-  p2_type_hospitalisation: "'Hospitalisation complète'",
-
   p2_contexte_at_mp: "non",
   p2_contexte_engagement_maternite: "non",
   p2_contexte_retour_penitentiaire: "non",
@@ -113,6 +114,7 @@ export const BASE_NEUTRE: SituationTypee = {
   p2_exception_radiotherapie_moins_48h: "non",
   p2_exception_dialyse_domicile: "non",
   p2_exception_admission_had: "non",
+  p2_exception_retour_penitentiaire: "non",
   p2_exception_aucune: "oui",
 
   p2_convocation_ou_avis_type: "'Aucun de ces cas.'",

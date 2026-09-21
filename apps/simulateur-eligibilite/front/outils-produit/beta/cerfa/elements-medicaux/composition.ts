@@ -1,5 +1,5 @@
 // La composition des éléments d'ordre médical : réencodage TypeScript du
-// contrat EM-1 (`composeMedicalText`, `tmp/9.7.1/src/medical-text.mjs`), treize
+// contrat EM-1 (`composeMedicalText`, `tmp/9.7.1/src/medical-text.mjs`), douze
 // blocs assemblés dans un ordre fixe, jamais depuis un texte inventé — cf. la
 // décision 2 de la spec 0005 pour le choix de réencoder plutôt que charger le
 // module de l'éditeur.
@@ -7,19 +7,22 @@
 // Chaque bloc lit `Reponses`, jamais la situation brute : c'est le moteur qui
 // rend une question non applicable comme absente, à l'identique de
 // `adresseSurLaLigne` dans `mapping.ts` (décision 3 de la spec 0005).
+//
+// Le bloc du type d'hospitalisation a disparu avec `p2_type_hospitalisation`
+// (retiré en v9.7.3, ticket 10). Le passage au contrat EM-2 (texte médical
+// intégral, sans annexe) reste à faire — ticket 12.
 
 import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
 import type { Reponses } from "../reponses.ts";
 import { dateEtHeureDePermission, dateMedicale } from "./dates.ts";
 import { CRITERES_MEDICAUX, SEANCES } from "./libelles.ts";
 
-/** Les treize blocs, dans l'ordre du contrat, dédupliqués et joints par un `\n`. */
+/** Les douze blocs, dans l'ordre du contrat, dédupliqués et joints par un `\n`. */
 export function composerElementsMedicaux(réponses: Reponses): string {
   const blocs = [
     blocTransfert(réponses),
     réponses.texte("cible_motif_medical_deplacement"),
     blocConvocation(réponses),
-    blocHospitalisation(réponses),
     ...blocsSeances(réponses),
     ...blocsCriteres(réponses),
     blocCentreRare(réponses),
@@ -68,15 +71,6 @@ function blocTransfert(réponses: Reponses): string {
 function blocConvocation(réponses: Reponses): string {
   const type = réponses.texte("cible_convocation_type");
   return type === "" ? "" : `Déplacement lié à la convocation : ${type}`;
-}
-
-function blocHospitalisation(réponses: Reponses): string {
-  const raison = réponses.texte("p2_raison_principale");
-  const entreeOuSortie = [
-    "Entrée en hospitalisation",
-    "Sortie d’hospitalisation",
-  ].includes(raison);
-  return entreeOuSortie ? réponses.texte("p2_type_hospitalisation") : "";
 }
 
 function blocsSeances(réponses: Reponses): string[] {

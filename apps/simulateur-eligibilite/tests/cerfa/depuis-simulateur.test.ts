@@ -143,6 +143,10 @@ describe("saisiesDepuisSituation", () => {
         p2_trajet_arrivee: "'Structure de soins'",
         p2_exception_aide_medicale_urgente: "oui",
         p2_exception_aucune: "non",
+        // v9.7.3 : l'exception qualifie désormais l'urgence elle-même
+        // (`p2_urgence_autre`), qui réclame sa précision comme tout « Autre
+        // urgence médicale attestée » répondu directement.
+        p2_urgence_autre_precision: "'Aide médicale urgente déclenchée'",
       }),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
