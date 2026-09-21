@@ -30,7 +30,7 @@
 //     imprimé, à la main. `autres` reste la seule case de la rubrique.
 
 import { dateDePrescription } from "../../../../simulateur/secretariat/date-de-prescription.ts";
-import { RUBRIQUES_PMT } from "../../../../simulateur/secretariat/rubriques-du-pmt.ts";
+import { RUBRIQUES_PMT } from "../../../../simulateur/secretariat/rubriques/rubriques-du-pmt.ts";
 import { dateSurLeChamp } from "../dates.ts";
 import { depuisLeMapping, premierVrai as premierVraiSur } from "../mapping.ts";
 import type { ÉtatCoché } from "../remplir-cerfa.ts";

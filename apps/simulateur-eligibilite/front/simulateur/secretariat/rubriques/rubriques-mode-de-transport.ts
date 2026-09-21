@@ -6,7 +6,7 @@
 // ses cinq justifications — et le transport à mobilité réduite se coche **en
 // plus** du transport assis professionnalisé, non à sa place.
 
-import type { CaseDeFormulaire } from "./case-de-formulaire.ts";
+import type { CaseDeFormulaire } from "../case-de-formulaire.ts";
 
 export const MODE_DE_TRANSPORT: readonly CaseDeFormulaire[] = [
   {

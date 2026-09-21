@@ -7,7 +7,7 @@
 // formulaire soit complet — cf. `case-de-formulaire.ts` — mais leur origine
 // `externe` les tient hors de la checklist : rien n'y change à l'écran.
 
-import type { CaseDeFormulaire, Rubrique } from "./case-de-formulaire.ts";
+import type { CaseDeFormulaire, Rubrique } from "../case-de-formulaire.ts";
 
 /**
  * Bénéficiaire et assuré, sur les trois formulaires. Le référentiel

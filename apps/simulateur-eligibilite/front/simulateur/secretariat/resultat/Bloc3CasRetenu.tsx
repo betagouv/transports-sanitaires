@@ -2,9 +2,9 @@
 // retenu et les cases documentaires à reporter sur le formulaire. Chaque case n'est
 // listée que si la simulation l'a établie, d'où le moteur en paramètre.
 
-import { type moteur, vrai } from "../moteur";
+import { type moteur, vrai } from "../../moteur";
+import type { GroupeRetenu } from "../case-de-formulaire";
 import { type Article80, Article80CorpsMedical } from "./Article80";
-import type { GroupeRetenu } from "./case-de-formulaire";
 import { casesRetenues } from "./cases-documentaires";
 import { NoteUrgenceCorpsMedical } from "./urgence-attestee";
 

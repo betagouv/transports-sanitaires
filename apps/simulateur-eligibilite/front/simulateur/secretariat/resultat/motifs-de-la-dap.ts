@@ -5,8 +5,8 @@
 // rejouer le raisonnement. Une DAP peut en réunir plusieurs — d'où une liste, et
 // non un motif unique.
 
-import type { Cible } from "../contrat-regles-publicodes";
-import { type moteur, vrai } from "../moteur";
+import type { Cible } from "../../contrat-regles-publicodes";
+import { type moteur, vrai } from "../../moteur";
 
 /**
  * Les six causes, avec le libellé que le contrat d'interface leur donne — repris

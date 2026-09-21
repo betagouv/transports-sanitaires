@@ -10,8 +10,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { situationDe } from "../../front/outils-produit/seeds/seed";
-import { casesRetenues } from "../../front/simulateur/secretariat/cases-documentaires";
-import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
+import { casesRetenues } from "../../front/simulateur/secretariat/resultat/cases-documentaires";
+import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
 import { moteurDeTest } from "./moteur";
 
 describe("le nombre de transports", () => {

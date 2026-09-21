@@ -7,7 +7,7 @@
 // centre de référence sur S3141 », « ne pas en créer ». Il n'a pas non plus de
 // cadre organisme, contrairement au PMT et à la DAP.
 
-import type { Rubrique } from "./case-de-formulaire.ts";
+import type { Rubrique } from "../case-de-formulaire.ts";
 import { ACCIDENT_CAUSE_PAR_UN_TIERS } from "./rubriques-en-tete.ts";
 import { MODE_DE_TRANSPORT } from "./rubriques-mode-de-transport.ts";
 import {

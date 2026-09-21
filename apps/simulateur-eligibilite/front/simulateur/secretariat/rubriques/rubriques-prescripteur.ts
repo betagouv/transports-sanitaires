@@ -9,7 +9,7 @@
 // date système implicite »), et la signature, le cadre transporteur et l'avis
 // de la caisse sont `manuel` — remplis à la main sur le papier.
 
-import type { CaseDeFormulaire } from "./case-de-formulaire.ts";
+import type { CaseDeFormulaire } from "../case-de-formulaire.ts";
 
 /** Sur les trois formulaires : le référentiel ne porte que des libellés. */
 export const IDENTITE_PRESCRIPTEUR_ET_STRUCTURE: readonly CaseDeFormulaire[] = [

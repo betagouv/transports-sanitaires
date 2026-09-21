@@ -10,7 +10,7 @@
 // `case-de-formulaire.ts` — mais ils comptent dans le mapping, et
 // `outils-produit/beta/cerfa/mapping.ts` s'en sert pour composer la ligne.
 
-import type { CaseDeFormulaire } from "./case-de-formulaire.ts";
+import type { CaseDeFormulaire } from "../case-de-formulaire.ts";
 
 export const TRAJET: readonly CaseDeFormulaire[] = [
   {

@@ -13,12 +13,12 @@
 // cocher, seulement des éléments à vérifier avant de remettre le document — ou
 // rien du tout.
 
-import { faux, type moteur, texte, vrai } from "../moteur";
-import type { GroupeRetenu, Lecteur, Rubrique } from "./case-de-formulaire";
-import { rubriquesRetenues } from "./case-de-formulaire";
-import { RUBRIQUES_DAP } from "./rubriques-de-la-dap";
-import { RUBRIQUES_PMT } from "./rubriques-du-pmt";
-import { RUBRIQUES_S3141 } from "./rubriques-du-s3141";
+import { faux, type moteur, texte, vrai } from "../../moteur";
+import type { GroupeRetenu, Lecteur, Rubrique } from "../case-de-formulaire";
+import { rubriquesRetenues } from "../case-de-formulaire";
+import { RUBRIQUES_DAP } from "../rubriques/rubriques-de-la-dap";
+import { RUBRIQUES_PMT } from "../rubriques/rubriques-du-pmt";
+import { RUBRIQUES_S3141 } from "../rubriques/rubriques-du-s3141";
 
 /**
  * Les cases du cas final, réduites à ce que la simulation a établi. Le mode de

@@ -21,8 +21,8 @@ import {
   MODES_SANS_MODALITE,
   ModalitesDAP,
   ModalitesPMT,
-} from "../../front/simulateur/secretariat/modalites-transport";
-import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
+} from "../../front/simulateur/secretariat/resultat/modalites-transport";
+import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
 
 describe("les modes que le modèle nomme", () => {
   it("sont tous traités, et nommés comme lui les nomme", () => {

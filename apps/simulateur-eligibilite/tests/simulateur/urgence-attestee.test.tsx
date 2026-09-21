@@ -16,7 +16,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { situationDe } from "../../front/outils-produit/seeds/seed";
-import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
+import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
 
 // Les phrases de la variante standard, celles qu'une DAP urgente ne doit jamais
 // porter. Le délai de 15 jours se cite dans les deux variantes — l'une l'impose,

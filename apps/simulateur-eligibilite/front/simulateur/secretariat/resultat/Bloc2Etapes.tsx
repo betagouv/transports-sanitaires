@@ -3,13 +3,17 @@
 // transport. Le contenu en langage clair vient de `resultat/` ; ce module choisit
 // quoi dire selon le cas final et le transport retenu.
 
-import { type moteur, vrai } from "../moteur";
+import { type moteur, vrai } from "../../moteur";
 import {
   ExplicationTransportImpossible,
   PourquoiCeTransport,
   SousTitre,
-} from "../resultat/InformationPatient";
-import { CAS_PARTICULIERS, CRITERES, retenus } from "../resultat/Vulgarisation";
+} from "../../resultat/InformationPatient";
+import {
+  CAS_PARTICULIERS,
+  CRITERES,
+  retenus,
+} from "../../resultat/Vulgarisation";
 import { type Article80, Article80Patient } from "./Article80";
 import { EtapesPatient } from "./EtapesPatient";
 import { InformationUrgencePmt } from "./urgence-attestee";

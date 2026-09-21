@@ -19,9 +19,9 @@ import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import type { Rubrique } from "../../front/simulateur/secretariat/case-de-formulaire.ts";
 import { origineDe } from "../../front/simulateur/secretariat/case-de-formulaire.ts";
-import { RUBRIQUES_DAP } from "../../front/simulateur/secretariat/rubriques-de-la-dap.ts";
-import { RUBRIQUES_PMT } from "../../front/simulateur/secretariat/rubriques-du-pmt.ts";
-import { RUBRIQUES_S3141 } from "../../front/simulateur/secretariat/rubriques-du-s3141.ts";
+import { RUBRIQUES_DAP } from "../../front/simulateur/secretariat/rubriques/rubriques-de-la-dap.ts";
+import { RUBRIQUES_PMT } from "../../front/simulateur/secretariat/rubriques/rubriques-du-pmt.ts";
+import { RUBRIQUES_S3141 } from "../../front/simulateur/secretariat/rubriques/rubriques-du-s3141.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
 
 // [nom, rubriques, lignes du mapping]. Comptées ligne à ligne sur le YAML

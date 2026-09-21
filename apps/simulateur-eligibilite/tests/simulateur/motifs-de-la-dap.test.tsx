@@ -14,8 +14,8 @@ import yaml from "js-yaml";
 import { describe, expect, it } from "vitest";
 import { SEEDS } from "../../front/outils-produit/seeds/catalogue";
 import { type Seed, situationDe } from "../../front/outils-produit/seeds/seed";
-import { MOTIFS_DE_LA_DAP } from "../../front/simulateur/secretariat/motifs-de-la-dap";
-import { ResultatFinal } from "../../front/simulateur/secretariat/ResultatFinal";
+import { MOTIFS_DE_LA_DAP } from "../../front/simulateur/secretariat/resultat/motifs-de-la-dap";
+import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
 
 // La cause que chaque seed déclenche, désignée par ce qui la distingue dans le
 // libellé du contrat d'interface.
