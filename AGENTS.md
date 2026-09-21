@@ -164,7 +164,7 @@ demande plutôt que recopié ici :
 | `regle-de-contribution` | Ajouter, modifier ou retirer une règle de `docs/knowledge/contributing/` : identifiant, raison, deux exemples, garde nommée |
 | `regle-publicodes` | Toucher au modèle d'éligibilité : les quatre endroits qu'une règle traverse, et l'encodage des choix multiples en mosaïque |
 | `situation-de-reference` | Couvrir un cas métier : il va dans le catalogue de seeds, pas dans un fichier de test |
-| `integrer-une-version-du-modele` | Intégrer une version du modèle livrée par l'éditeur : le diff du paquet, le contrat, les seeds, la recette portée, le retour à l'éditeur |
+| `implement-publicodes-version` | Intégrer une version du modèle livrée par l'éditeur : le diff du paquet, le contrat, les seeds, la recette portée, le retour à l'éditeur |
 | `doc-architecture` | Écrire ou réviser un document de `docs/knowledge/adr/` : format ADR maison, décisions révoquées conservées et barrées |
 | `livrer-une-version` | Livrer une app : numéro, journal des versions, tag `<app>@<version>` et release GitHub, qui vont ensemble |
 

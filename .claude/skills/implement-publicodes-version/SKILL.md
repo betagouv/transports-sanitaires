@@ -1,9 +1,9 @@
 ---
-name: integrer-une-version-du-modele
+name: implement-publicodes-version
 description: Intégrer une nouvelle version du modèle d'éligibilité livrée par l'éditeur dans apps/simulateur-eligibilite (paquet déposé dans tmp/<version>/). À charger dès qu'il s'agit de recopier, porter ou monter le modèle publicodes, de faire le diff d'un livrable, ou de remonter une anomalie à l'éditeur.
 ---
 
-# Intégrer une version du modèle
+# Implémenter une version du modèle
 
 Le modèle d'éligibilité est **livré de l'extérieur**. Un paquet arrive dans
 `tmp/<version>/` (§ 1 pour sa forme, qui varie d'une livraison à l'autre) et
@@ -13,13 +13,15 @@ de tests. Seul le premier est chargé par l'app ; les deux autres sont
 
 **On ne corrige jamais le modèle localement.** Il est recopié tel qu'il est
 livré. Ce qui ne va pas se constate, se documente et se remonte à l'éditeur
-(§ 12).
+(§ Retour à l'éditeur, dans les connaissances du domaine ci-dessous).
 
 Les intégrations passées ont laissé des traces datées : les commits, les pièges
 rencontrés, l'unique correctif local. Elles sont dans
 [`references/precedents.md`](references/precedents.md), à lire au besoin.
 
-## 1. Le paquet
+## Process
+
+### 1. Le paquet
 
 Sa forme varie d'une livraison à l'autre — deux vues jusqu'ici :
 
@@ -44,9 +46,9 @@ utile des deux.
 
 Les contrôles neufs d'une version peuvent vivre hors de la matrice YAML : la
 v9.7.1 les porte dans des suites `tmp/<version>/tests/*.mjs`, à lire une par
-une pour en tirer les identifiants (§ 8).
+une pour en tirer les identifiants (voir « La recette portée » ci-dessous).
 
-## 2. Le diff, avant toute chose
+### 2. Le diff, avant toute chose
 
 ```bash
 A=tmp/<précédente>/…-package-v<précédente> B=tmp/<version>/…-package-v<version>
@@ -66,9 +68,49 @@ Trois questions à lui poser, dans cet ordre :
    pour une `valeur` n'est plus renseignable. C'est le changement le plus
    coûteux, et le moins visible.
 3. **Quels libellés changent ?** Ce sont eux qui cassent le plus de tests, et
-   pour la plus mauvaise raison (§ 6).
+   pour la plus mauvaise raison (voir « Les libellés recopiés » ci-dessous).
 
-## 3. La recopie
+### 3. Découper en tickets avec `/to-tasks`
+
+Le diff en main, passer par `/to-tasks` plutôt que d'enchaîner à la main :
+lui donner le diff et les connaissances du domaine ci-dessous comme contexte.
+Les frontières naturelles d'une intégration, observées sur les précédentes :
+
+| Ticket | Ce qu'il porte | Bloqué par |
+|---|---|---|
+| Porter le modèle en v<version> | le modèle recopié, `VERSION`, le contrat de règles, les seeds, la recette renommée, les libellés recopiés : tout ce qu'il faut pour que la suite repasse | — |
+| Porter la recette v<version> | les assertions neuves de la matrice livrée | le ticket précédent |
+| Rendre les contenus de la v<version> | ce que le contrat d'interface (`*.ui.yaml`) ajoute ou réécrit à l'écran | le ticket précédent |
+| Mettre à jour le README | le compte de règles et de cibles, les noms des fichiers de recette | tous les tickets de code |
+| Remonter les anomalies à l'éditeur | un fichier par sujet dans `tmp/`, indépendant du reste | — |
+
+Le premier ticket est gros par nature et ne se scinde pas : le modèle recopié
+casse tout ce qui le nomme, rien n'est vert tant que tout ne l'est pas. Une
+version plus large (un écran refondu, un sujet neuf comme la convocation
+aérienne en v9.7.1) mérite ses propres tickets en plus de ceux du tableau —
+même règle de séparation par sujet qu'ailleurs dans le dépôt.
+
+**La livraison est un autre geste**, décrit par le skill `livrer-une-version` :
+aucun ticket ne monte `package.json` ni n'écrit dans `CHANGELOG.md`.
+
+### 4. Implémenter avec `/implement`
+
+Exécuter les tickets avec `/implement`. Les seams naturels pour le TDD :
+`contrat-regles-publicodes.ts` (une clé qui entre ou sort), `base-neutre.ts` et
+`catalogue.ts` (une seed qui change), `scenarios.test.ts` (un attendu qui
+bouge). Les « gardes qui parlent » ci-dessous disent, pour chaque suite de
+tests existante, ce qu'un échec signifie réellement — les lire avant de
+toucher au code qu'elles gardent.
+
+`pnpm verifier` vert à la fin de chaque ticket, comme le veut `/implement` —
+et comme le veut GIT-005 (`docs/knowledge/contributing/regles-git.md`) pour
+chaque commit qui en résulte : un commit, une intention.
+
+## Connaissances du domaine
+
+À lire en écrivant les tickets (§ 3) et en les implémentant (§ 4).
+
+### La recopie
 
 ```bash
 cp tmp/<version>/…/transports-sanitaires.publicodes.flat-v<version>.yaml \
@@ -89,7 +131,7 @@ node -e "const r=require('js-yaml').load(require('fs').readFileSync('regles/regl
 console.log(Object.keys(r).length,'règles,',Object.keys(r).filter(n=>n.startsWith('cible_')).length,'cibles')"
 ```
 
-## 4. Le contrat de règles
+### Le contrat de règles
 
 `front/simulateur/contrat-regles-publicodes.ts` déclare les noms que le code a le
 droit d'employer. Ses quatre listes (`CIBLES`, `QUESTIONS`, `ENTREES_CALCULEES`,
@@ -101,7 +143,7 @@ continue d'autoriser une seed ou un test à prétendre la renseigner, alors que 
 modèle en décide désormais seul. Si plus rien ne la nomme, elle quitte le
 contrat tout court : y déclarer une clé est le geste qui en autorise l'usage.
 
-## 5. Les seeds
+### Les seeds
 
 `front/outils-produit/seeds/base-neutre.ts` répond à **chaque** question du
 modèle par sa valeur la plus banale. Une question supprimée en sort ; une
@@ -113,7 +155,7 @@ Un attendu qui change **n'est pas un test à réparer** : c'est un comportement 
 modèle qui a bougé. Le mettre à jour, et écrire dans la `description` de la seed
 pourquoi il a bougé.
 
-## 6. Les libellés recopiés
+### Les libellés recopiés
 
 C'est le gros du travail, et le moins intéressant. Un énoncé ou une possibilité
 du modèle est recopié à ces endroits :
@@ -132,7 +174,7 @@ Les regex des tests sont les plus traîtres : elles échouent loin de la cause. 
 énoncé reformulé fait manquer une réponse, le parcours bifurque, et le test tombe
 trois écrans plus loin. Les précédents en montrent deux exemples.
 
-## 7. Le piège de la réponse par défaut
+### Le piège de la réponse par défaut
 
 `tests/simulateur/parcours.ts` remplit par défaut toute question qu'un test ne
 cible pas :
@@ -146,7 +188,7 @@ cible pas :
 parcours casse tous les tests qui la traversent.** Vérifier, pour chaque choix
 unique ajouté, ce que la réponse par défaut y déclenche.
 
-## 8. La recette portée
+### La recette portée
 
 Les fichiers de recette portent la version dans leur nom et sont **renommés à
 chaque intégration** (`git mv`), imports et commentaires recopiés à l'identique
@@ -183,10 +225,10 @@ Chaque `test_case` neuf de la matrice livrée mérite son portage — mais pas
 forcément littéralement : un contrôle qui manipule directement une session de
 référence (reprise d'état, historique de pages) ne transpose pas toujours à
 notre moteur nu ou à notre mécanique de retour en arrière. Le dire dans le
-commit plutôt que de forcer un test à passer sans rien vérifier de réel (§ 9
-en donne deux formes : la garde qui ne se traduit pas au moteur seul, et la
-bibliothèque de formulaire dont l'historique de pages ne rejoue pas une page
-déjà visitée).
+commit plutôt que de forcer un test à passer sans rien vérifier de réel (« Les
+gardes qui parlent » ci-dessous en donne deux formes : la garde qui ne se
+traduit pas au moteur seul, et la bibliothèque de formulaire dont l'historique
+de pages ne rejoue pas une page déjà visitée).
 
 La matrice est **séparée par sujet** et non par volume : à 300 lignes,
 `noExcessiveLinesPerFile` et `tests/architecture.test.ts` refusent le fichier,
@@ -200,7 +242,7 @@ Vérifier, à chaque renommage, que l'exemption suit le nouveau nom — sans
 quoi gitleaks bloque la CI sur un faux positif au premier libellé qui
 ressemble à un secret.
 
-## 9. Les gardes qui parlent
+### Les gardes qui parlent
 
 Ces tests-là ne sont pas des tests à réparer : chacun dit une chose précise.
 Lire le message avant de toucher au code.
@@ -237,7 +279,7 @@ passer du temps :
   `formState.situation`) — lire une valeur « avant » se fait avant l'appel,
   jamais sur l'objet qu'on vient de lui passer.
 
-## 10. Les contenus du contrat d'interface
+### Les contenus du contrat d'interface
 
 Le `*.ui.yaml` n'est pas chargé : ses contenus sont réencodés dans les
 composants. Une version qui réécrit un bloc de résultat se répercute donc à la
@@ -251,38 +293,7 @@ main :
 Reprendre les textes **mot pour mot** : ils sont validés par le porteur, et une
 reformulation en passant ne se verrait nulle part.
 
-## 11. La découpe en commits
-
-**Un commit, une intention**, comme partout dans le dépôt : le nombre suit ce que
-la version apporte, pas un gabarit. Chacun laisse `pnpm verifier` vert : un
-commit qui ne compile qu'avec le suivant n'est pas une intention, c'est une
-moitié de geste.
-
-Les intentions qu'une intégration met typiquement en jeu :
-
-| Type | Ce qu'il porte |
-|---|---|
-| `feat(simulateur): porte le modèle d'éligibilité en v<version>` | le modèle, `VERSION`, le contrat, les seeds, la recette renommée, les libellés recopiés : tout ce qu'il faut pour que la suite repasse |
-| `test(simulateur): porte la recette v<version>` | les assertions neuves de la matrice livrée |
-| `feat(simulateur): rend les contenus de la v<version>` | ce que le contrat d'interface ajoute ou réécrit à l'écran |
-| `docs(simulateur): met à jour le README pour la v<version>` | le compte de règles et de cibles, les noms des fichiers de recette |
-
-Une version plus large en demandera davantage. Un écran refondu, une mécanique
-d'interface à revoir ou un correctif que le nouveau modèle rend possible sont
-autant d'intentions distinctes. Chacune vaut son commit, et une version étroite
-peut n'en demander qu'un seul.
-
-Le premier, en revanche, est gros par nature et ne se découpe pas. Le modèle
-recopié casse tout ce qui le nomme, et rien n'est vert tant que tout ne l'est
-pas.
-
-Les règles de commit du dépôt s'appliquent (`docs/knowledge/contributing/regles-git.md`),
-GIT-005 compris : deux paragraphes, et l'état de vérification pour finir.
-
-**La livraison est un autre geste**, décrit par le skill `livrer-une-version` :
-ne pas monter `package.json` ni écrire dans `CHANGELOG.md` ici.
-
-## 12. Le retour à l'éditeur
+### Le retour à l'éditeur
 
 Une intégration apprend des choses que seul l'intégrateur voit :
 
