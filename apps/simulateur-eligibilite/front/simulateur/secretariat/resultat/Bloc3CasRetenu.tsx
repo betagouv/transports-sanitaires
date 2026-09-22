@@ -95,9 +95,11 @@ const CAS_RETENU: Record<string, string> = {
   "demande d’accord préalable": "DAP (Demande d’Accord Préalable)",
   "convocation ou avis d’audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
-  // Texte livré mot pour mot (contrat v9.7.2, `case_label`).
+  // Texte livré mot pour mot (contrat v9.7.3, `case_label`) — sans ancrage
+  // « convocation » depuis TS973-03, qui étend ce cas final à l'avion/bateau
+  // hors convocation.
   "orientation vers la caisse pour accord préalable":
-    "Convocation avec transport en avion ou bateau : orientation vers la caisse",
+    "Transport en avion ou bateau : orientation vers la caisse",
   "transport à la charge de l’établissement":
     "Transport à charge de l’établissement de santé",
   "permission de sortie sans motif médical":

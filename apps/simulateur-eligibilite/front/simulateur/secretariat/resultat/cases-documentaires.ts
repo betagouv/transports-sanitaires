@@ -72,15 +72,18 @@ const A_VERIFIER: Record<string, readonly GroupeRetenu[]> = {
       ],
     },
   ],
-  // Texte livré mot pour mot (contrat v9.7.2, `checks_to_perform`).
+  // Texte livré mot pour mot (contrat v9.7.3, `checks_to_perform`). La
+  // formulation couvre les deux parcours — convocation et TS973-03 hors
+  // convocation — par une seule clause conditionnelle, sans en dupliquer le
+  // texte.
   "orientation vers la caisse pour accord préalable": [
     {
       titre: "Éléments à vérifier",
       icone: "fr-icon-checkbox-circle-line",
       cases: [
-        "Vérifier que la convocation ou l’avis d’audience mentionne le mode de transport adapté.",
+        "Préparer les informations médicales et administratives utiles ; joindre la convocation ou l’avis d’audience si le déplacement en relève.",
         "Confirmer les caractéristiques du trajet : avion ou bateau de ligne régulière et distance aller.",
-        "Contacter la caisse avec la convocation et la synthèse pour confirmer la procédure, les pièces nécessaires et la personne qui doit établir la demande.",
+        "Contacter la caisse avec la synthèse pour confirmer la procédure, les pièces nécessaires et la personne qui doit établir la demande.",
       ],
     },
   ],

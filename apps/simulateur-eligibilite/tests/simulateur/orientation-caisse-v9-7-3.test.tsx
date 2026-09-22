@@ -1,25 +1,27 @@
 // Les contenus validés de l'orientation vers la caisse, recopiés mot pour mot
-// du contrat v9.7.2 (`CONTRAT-RESULTATS-v9-7-2.md` § 1) dans `Bloc2Etapes.tsx`,
+// du contrat v9.7.3 (`CONTRAT-RESULTATS-v9-7-3.md` § 2) dans `Bloc2Etapes.tsx`,
 // `Bloc3CasRetenu.tsx`, `cases-documentaires.ts` et `orientation-caisse.tsx`.
-// Identifiants du livrable : `RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES`,
-// `RETOURS972-CAISSE-RENDU-ET-SYNTHESE-*`, `RETOURS972-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS`,
-// `INDEPENDANT972-CAISSE-CONSIGNE-ET-SYNTHESE-*`.
+// La v9.7.3 étend ce résultat aux parcours avion/bateau hors convocation
+// (TS973-03, famille AUD-AIR-ORIENTATION) : le cas retenu et les points à
+// vérifier perdent leur ancrage « convocation », et le corps du verdict se
+// contextualise (« Votre convocation » / « Votre déplacement »).
 
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue";
+import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 
 beforeEach(() => sessionStorage.clear());
 
 const REMAINING_COST =
   "À ce stade, le simulateur ne peut pas déterminer le montant qui restera à votre charge. Contactez votre caisse d’Assurance Maladie pour connaître les conditions de prise en charge applicables à ce trajet.";
-const CASE_LABEL =
-  "Convocation avec transport en avion ou bateau : orientation vers la caisse";
+const CASE_LABEL = "Transport en avion ou bateau : orientation vers la caisse";
 const CHECKS = [
-  "Vérifier que la convocation ou l’avis d’audience mentionne le mode de transport adapté.",
+  "Préparer les informations médicales et administratives utiles ; joindre la convocation ou l’avis d’audience si le déplacement en relève.",
   "Confirmer les caractéristiques du trajet : avion ou bateau de ligne régulière et distance aller.",
-  "Contacter la caisse avec la convocation et la synthèse pour confirmer la procédure, les pièces nécessaires et la personne qui doit établir la demande.",
+  "Contacter la caisse avec la synthèse pour confirmer la procédure, les pièces nécessaires et la personne qui doit établir la demande.",
 ];
 const AWAITING =
   "Contactez votre caisse avant le transport pour organiser la demande d’accord préalable.";
@@ -34,7 +36,7 @@ const CAISSE = {
   p2_convocation_aucune: "non",
 };
 
-describe("RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () => {
+describe("RETOURS973-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () => {
   it.each([
     ["NON-URGENTE", { ...CAISSE, p2_transport_urgence: "'Non'" }, AWAITING],
     [
@@ -46,7 +48,7 @@ describe("RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () 
       URGENT,
     ],
   ] as const)(
-    "RETOURS972-CAISSE-RENDU-ET-SYNTHESE-%s",
+    "RETOURS973-CAISSE-RENDU-ET-SYNTHESE-%s",
     (_nom, situationFinale, instructionAttendue) => {
       render(
         <Secretariat
@@ -65,6 +67,14 @@ describe("RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () 
       expect(
         within(verdict).queryByText(autreInstruction),
       ).not.toBeInTheDocument();
+      // Une vraie convocation : le corps la nomme, et la demande de la
+      // joindre est affirmative.
+      expect(
+        within(verdict).getByText(/^votre convocation nécessite/i),
+      ).toBeInTheDocument();
+      expect(
+        within(verdict).getByText(/avec votre convocation et cette synthèse/i),
+      ).toBeInTheDocument();
 
       // Bloc 2 — reste à charge, et aucune répétition de la consigne.
       expect(screen.getByText(REMAINING_COST)).toBeInTheDocument();
@@ -78,7 +88,7 @@ describe("RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () 
   );
 });
 
-describe("RETOURS972-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS", () => {
+describe("RETOURS973-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS", () => {
   it("n’apparaissent pas sur une DAP ordinaire", () => {
     render(
       <Secretariat
@@ -93,5 +103,56 @@ describe("RETOURS972-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS", () => {
     expect(screen.queryByText(CASE_LABEL)).not.toBeInTheDocument();
     for (const point of CHECKS)
       expect(screen.queryByText(point)).not.toBeInTheDocument();
+  });
+});
+
+// TS973-03 : la même orientation caisse, hors convocation — famille
+// AUD-AIR-ORIENTATION. Rien de ce qui s'affiche ne doit prétendre qu'une
+// convocation existe.
+describe("TS973-03 — orientation caisse hors convocation", () => {
+  const SITUATION_HORS_CONVOCATION = situationDe(
+    seedParId("secretariat-avion-orientation-caisse-hors-convocation"),
+  );
+
+  it("contextualise le verdict sur le déplacement, sans jamais nommer une convocation absente", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={SITUATION_HORS_CONVOCATION}
+      />,
+    );
+
+    const verdict = screen.getByRole("heading", {
+      name: /contactez votre caisse pour organiser/i,
+    }).parentElement as HTMLElement;
+    expect(
+      within(verdict).getByText(/^votre déplacement nécessite/i),
+    ).toBeInTheDocument();
+    expect(
+      within(verdict).queryByText(/^votre convocation nécessite/i),
+    ).not.toBeInTheDocument();
+    expect(
+      within(verdict).getByText(
+        /^contactez votre caisse d’assurance maladie avec cette synthèse/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(verdict).queryByText(/avec votre convocation et cette synthèse/i),
+    ).not.toBeInTheDocument();
+
+    // Bloc 3 — même cas retenu que le parcours convocation, sans son en-tête.
+    expect(screen.getByText(CASE_LABEL)).toBeInTheDocument();
+  });
+
+  it("reste imprimable, comme tout Résultat 2", () => {
+    render(
+      <Secretariat
+        onNouvelleSimulation={() => {}}
+        situationFinale={SITUATION_HORS_CONVOCATION}
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "Imprimer" }),
+    ).toBeInTheDocument();
   });
 });

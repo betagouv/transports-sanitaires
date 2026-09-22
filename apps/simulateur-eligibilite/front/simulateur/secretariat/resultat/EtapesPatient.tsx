@@ -12,6 +12,8 @@ type Props = {
   transportPrescrit: boolean;
   /** `cible_urgence_attestee` : la DAP se passe-t-elle d'attendre la décision ? */
   urgenceAttestee: boolean;
+  /** `p2_convocation` : l'orientation caisse porte-t-elle une vraie convocation ? */
+  estConvocation: boolean;
 };
 
 export function EtapesPatient({ casFinal, ...contexte }: Props) {

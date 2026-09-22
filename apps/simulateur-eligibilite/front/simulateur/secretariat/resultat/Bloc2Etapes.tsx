@@ -45,6 +45,8 @@ type Props = {
   transport: string;
   transportPrescrit: boolean;
   article80: Article80;
+  /** `p2_convocation` : l'orientation caisse porte-t-elle une vraie convocation ? */
+  estConvocation: boolean;
 };
 
 export function Bloc2Etapes({ e, casFinal, article80, ...contexte }: Props) {
