@@ -9,6 +9,10 @@ récapitulatif.
 
 **Status:** ready-for-agent
 
+**Bloqueur :** voir
+[`04-destination-urgences-coherente.blocker.md`](04-destination-urgences-coherente.blocker.md)
+— la liste des sept contradictions n'est plus disponible dans le dépôt.
+
 - [ ] Les sept contradictions de la famille AUD-ROUTE-URG-DEST ne finalisent
       plus un trajet incohérent
 - [ ] Une arrivée cohérente aux urgences reste possible, sans déduire une
