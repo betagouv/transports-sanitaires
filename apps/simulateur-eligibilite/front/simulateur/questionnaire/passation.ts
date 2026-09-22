@@ -157,9 +157,11 @@ function actions({
 }: Contexte): Actions {
   return {
     repondre: (id, valeur) =>
-      setFormState(avecCalculs(avecReponse(formState, id, valeur))),
+      setFormState(
+        avecRecalcul(formState, (fs) => avecReponse(fs, id, valeur)),
+      ),
     repondrePlusieurs: (reponses) =>
-      setFormState(avecCalculs(avecReponses(formState, reponses))),
+      setFormState(avecRecalcul(formState, (fs) => avecReponses(fs, reponses))),
     avancer: () => {
       // Sécurité : ne jamais avancer (ni conclure le parcours) tant qu'une
       // question posée reste sans réponse — le bouton est déjà désactivé, ceci
@@ -178,6 +180,19 @@ function actions({
     // ne rend que ce qui *manque*, et une question répondue ne manque plus.
     reculer: () => setFormState(formBuilder.goToPreviousPage(formState)),
   };
+}
+
+// La situation précédente est capturée avant l'appel qui mute son argument
+// (`avecReponse`/`avecReponses` → `handleInputChange`, cf. AGENTS.md) :
+// `avecEntreesCalculees` en renvoie une copie, insensible à la mutation qui
+// suit. TS973-11 s'en sert pour invalider une adresse dont le lieu déduit a
+// changé de type entre les deux saisies (`recalcul.ts`).
+function avecRecalcul(
+  formState: FormState<string>,
+  produire: (formState: FormState<string>) => FormState<string>,
+): FormState<string> {
+  const precedente = avecEntreesCalculees(formState.situation);
+  return avecCalculs(produire(formState), precedente);
 }
 
 // Toute saisie relance l'avancement automatique — y compris au retour sur une

@@ -42,11 +42,25 @@ export function faux(moteurPositionne: Engine, cle: CleDeRegle): boolean {
   return moteurPositionne.evaluate(cle).nodeValue === false;
 }
 
+/**
+ * Une règle explicitement **non applicable** : son `applicable si` a tranché
+ * non, pas seulement une dépendance encore sans réponse (auquel cas
+ * publicodes rendrait `null`, ni applicable ni inapplicable).
+ */
+export function inapplicable(
+  moteurPositionne: Engine,
+  cle: CleDeRegle,
+): boolean {
+  return (
+    moteurPositionne.evaluate({ "est applicable": cle }).nodeValue === false
+  );
+}
+
 // ---- implémentation ----
 //
-// `texte`, `vrai` et `faux` suffisent à tout le produit. Elles passent par
-// `CleDeRegle`, donc une clé absente du contrat ne compile pas — c'est leur seule
-// raison d'être, la brièveté n'est qu'un bonus.
+// `texte`, `vrai`, `faux` et `inapplicable` suffisent à tout le produit. Elles
+// passent par `CleDeRegle`, donc une clé absente du contrat ne compile pas —
+// c'est leur seule raison d'être, la brièveté n'est qu'un bonus.
 
 // Choisit les règles à charger : celles du **mode labo** (test de règles par le
 // produit, cf. `outils-produit/labo/labo.ts`) si présentes et valides, sinon les
