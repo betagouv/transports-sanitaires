@@ -3,11 +3,22 @@
 // rien ne doit en réclamer une pour conclure. Contrat v9.7.3, guide
 // développeur §5 : « les cibles de cases DAP sont fausses et ne réclament pas
 // une adresse cachée ».
+//
+// Deux parcours mènent à l'orientation caisse (`p2_orientation_caisse`) : la
+// convocation (`p2_convocation_orientation_caisse`) et les « situations
+// spéciales » hors convocation (`p2_avion_orientation_caisse`). Seule la
+// première est visée par ce ticket : une convocation ne pose aucune question
+// de trajet, donc une adresse qu'elle exigerait serait bien « cachée ». La
+// seconde qualifie un trajet réel (`p2_qualification_trajet_complete`) quelle
+// que soit son issue — l'adresse y est une question ordinaire et visible, pas
+// un contournement. La contre-épreuve ci-dessous le vérifie : elle reste, par
+// construction du modèle, indécidable sans adresse.
 
 import { render, screen } from "@testing-library/react";
 import type { Situation } from "publicodes";
 import { beforeEach, describe, expect, it } from "vitest";
-import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
+import { seedParId } from "../../front/outils-produit/seeds/catalogue";
+import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { moteurDeTest } from "./moteur";
 
@@ -18,36 +29,27 @@ const CASE_LABEL =
 const CARACTERISTIQUES_TRAJET =
   "Confirmer les caractéristiques du trajet : avion ou bateau de ligne régulière et distance aller.";
 
-const CHAMPS_DE_TRAJET = [
-  "p2_depart_nom_lieu",
-  "p2_depart_adresse",
-  "p2_depart_complement_adresse",
-  "p2_depart_code_postal",
-  "p2_depart_commune",
-  "p2_depart_pays",
-  "p2_arrivee_nom_lieu",
-  "p2_arrivee_adresse",
-  "p2_arrivee_complement_adresse",
-  "p2_arrivee_code_postal",
-  "p2_arrivee_commune",
-  "p2_arrivee_pays",
-  "p2_tranche_distance_trajet_aller",
-] as const;
+const SEED_SANS_ADRESSE = seedParId(
+  "secretariat-convocation-orientation-caisse-sans-adresse",
+);
+// Ses champs de trajet sont déjà absents (la seed les retire), donc les deux
+// contre-épreuves ci-dessous n'ont qu'à retirer ce qui la rend « convocation ».
+const CAISSE_SANS_ADRESSE = situationDe(SEED_SANS_ADRESSE);
 
-function sansTrajet(situation: Situation<string>): Situation<string> {
+function sans(
+  situation: Situation<string>,
+  champs: string[],
+): Situation<string> {
   const copie = { ...situation };
-  for (const champ of CHAMPS_DE_TRAJET) delete copie[champ];
+  for (const champ of champs) delete copie[champ];
   return copie;
 }
 
-const CAISSE_SANS_ADRESSE: Situation<string> = {
-  ...sansTrajet(BASE_NEUTRE),
-  p2_convocation_ou_avis_type:
-    "'Convocation du contrôle médical de l’Assurance Maladie.'",
-  p2_convocation_avion_bateau: "oui",
-  p2_convocation_aucune: "non",
-  p2_transport_urgence: "'Non'",
-};
+const CHAMPS_DE_CONVOCATION = [
+  "p2_convocation_ou_avis_type",
+  "p2_convocation_avion_bateau",
+  "p2_convocation_aucune",
+];
 
 describe("TS973-02 — orientation caisse sans adresse", () => {
   it("conclut sans qu’aucune adresse ne soit citée comme manquante", () => {
@@ -74,8 +76,30 @@ describe("TS973-02 — orientation caisse sans adresse", () => {
     // Cerfa justifiée), l'avion/bateau donne une vraie DAP — et celle-ci
     // reste bloquée tant que le trajet n'est pas qualifié.
     const situation: Situation<string> = {
-      ...sansTrajet(BASE_NEUTRE),
+      ...sans(CAISSE_SANS_ADRESSE, CHAMPS_DE_CONVOCATION),
       p2_raison_principale: "'Entrée en hospitalisation'",
+      p2_special_avion_bateau: "oui",
+      p2_special_aucune: "non",
+    };
+
+    const resultat = moteurDeTest(situation).evaluate("cible_cas_final");
+    expect(Object.keys(resultat.missingVariables ?? {})).not.toEqual([]);
+  });
+
+  it("le parcours hors convocation qualifie toujours le trajet, adresse comprise — hors périmètre de TS973-02", () => {
+    // Même une orientation caisse hors convocation (avion/bateau en
+    // « situations spéciales », sans hospitalisation/ALD/ATMP) reste
+    // indécidable sans adresse : `p2_avion_orientation_caisse` exige
+    // `p2_qualification_trajet_complete`, qui exige les deux adresses. Ce
+    // n'est pas une adresse cachée : c'est la question de trajet ordinaire,
+    // posée quelle que soit l'issue. Rien à retirer ici.
+    const situation: Situation<string> = {
+      ...sans(CAISSE_SANS_ADRESSE, CHAMPS_DE_CONVOCATION),
+      p1_autonomie:
+        "'Nécessite une prise en charge spécifique pendant le trajet, une aide d’un professionnel pour se déplacer ou, en l’absence d’un proche accompagnant, pour transmettre les informations nécessaires à l’équipe soignante.'",
+      p1_critere_oxygene: "oui",
+      p1_critere_aucun: "non",
+      p2_raison_principale: "'Consultation médicale'",
       p2_special_avion_bateau: "oui",
       p2_special_aucune: "non",
     };
