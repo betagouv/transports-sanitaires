@@ -38,7 +38,7 @@ const FORMULAIRES: ReadonlyArray<
 // règle du moteur ne la tranche (`date_prescription`, posée par
 // `date-de-prescription.ts`, hors moteur). Nommée ici plutôt que de laisser
 // passer un défaut en silence. `elements_medicaux` en sortait depuis la spec
-// 0005 : sa ligne porte `composition: "EM-1"` à la place d'une source.
+// 0005 : sa ligne porte `composition: "EM-2"` à la place d'une source.
 const APPLICATION_SANS_SOURCE = ["date_prescription"];
 
 const moteur = moteurDeTest(situationDe(seedParId("secretariat-prescription")));
@@ -86,13 +86,13 @@ describe.each(FORMULAIRES)("%s", (_nom, rubriques, lignes) => {
 
 it("EM-MAPPING-ET-CONTRAT-ALIGNES", () => {
   // Les lignes `elements_medicaux` du PMT et de la DAP portent bien
-  // `composition: "EM-1"` et `rendu: "texte"` — le S3141 n'a pas de ligne de
+  // `composition: "EM-2"` et `rendu: "texte"`. Le S3141 n'a pas de ligne de
   // ce nom, cf. `EM-S3141-SANS-RUBRIQUE`.
   for (const rubriques of [RUBRIQUES_PMT, RUBRIQUES_DAP]) {
     const laCase = rubriques
       .flatMap((rubrique) => rubrique.cases)
       .find((c) => c.id === "elements_medicaux");
-    expect(laCase?.composition).toBe("EM-1");
+    expect(laCase?.composition).toBe("EM-2");
     expect(laCase?.rendu).toBe("texte");
   }
 });

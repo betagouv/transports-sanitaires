@@ -1,13 +1,14 @@
-// Les deux formats de date qu'EM-1 impose sur la zone médicale : une date
-// calendaire (`dateMedicale`) et un horaire de permission (`dateEtHeureDePermission`).
-// Réencodage de `medicalDate` et `medicalDateTime` (`tmp/9.7.1/src/medical-text.mjs`),
-// pour la zone médicale seulement — le reste du CERFA a son propre format,
-// `dateSurLeChamp` dans `cerfa/dates.ts`.
+// Les deux formats de date qu'EM-2 impose sur la zone médicale, inchangés
+// depuis EM-1 : une date calendaire (`dateMedicale`) et un horaire de
+// permission (`dateEtHeureDePermission`). Réencodage de `medicalDate` et
+// `medicalDateTime` (`tmp/9.7.3/src/medical-text.mjs`), pour la zone médicale
+// seulement — le reste du CERFA a son propre format, `dateSurLeChamp` dans
+// `cerfa/dates.ts`.
 //
-// EM-1 exige un horaire avec décalage (`Z` ou `+02:00`) et lève sinon.
+// Le contrat exige un horaire avec décalage (`Z` ou `+02:00`) et lève sinon.
 // `dateEtHeureAvecDecalage` porte cette exigence à la lettre, testée telle
 // quelle. Mais la saisie de permission est un `datetime-local` sans décalage :
-// appliquer EM-1 à la lettre ferait échouer toute DAP à permission. Question
+// appliquer le contrat à la lettre ferait échouer toute DAP à permission. Question
 // ouverte 1 de la spec 0005, tranchée : `dateEtHeureDePermission` lit la
 // saisie comme une heure de Paris et lui ajoute le décalage qui s'applique à
 // cet instant avant de la confier à la fonction stricte.
@@ -33,7 +34,7 @@ export function dateMedicale(valeur: string): string {
 /**
  * Un horaire `AAAA-MM-JJTHH:MM[:SS](Z|±HH:MM)`, écrit `JJ/MM/AAAA à HHhMM`,
  * heure de Paris. Réencodage fidèle de `medicalDateTime` : lève sur un
- * décalage absent, comme EM-1 le demande.
+ * décalage absent, comme le contrat le demande.
  */
 export function dateEtHeureAvecDecalage(valeur: string): string {
   if (valeur === "") return "";

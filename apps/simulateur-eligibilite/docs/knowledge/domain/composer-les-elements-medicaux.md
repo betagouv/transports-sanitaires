@@ -12,6 +12,36 @@
 > 0010). S'appuie sur les specs 0007 (PMT) et 0008 (DAP). Le S3141 n'est pas
 > concerné.
 
+## v9.7.3 : le contrat EM-2 remplace EM-1 (TS973-12)
+
+EM-2 garde les douze blocs, leurs libellés et leurs dates. Deux choses
+changent :
+
+- les blocs sont joints par « ; », sans saut de ligne ;
+- le texte reste entier dans la rubrique, **sans annexe ni renvoi**.
+
+Les décisions 6 et 7 ci-dessous sont donc révoquées. Elles restent écrites,
+barrées, pour l'histoire.
+
+| Sujet | Décision |
+|---|---|
+| Où va le texte | Dans le champ du volet 1, en entier. Aucune page n'est ajoutée au PDF. |
+| Mesure | Toujours avec la police et la géométrie réelles (`mesure-de-la-zone.ts`). |
+| Taille | Le cadre est petit : 535 × 20 pt sur la PMT, multiligne, et 522 × 15 pt sur la DAP, une seule ligne même à 6 pt. La police descend de 10 au plancher de lisibilité de 6 pt, celui des adresses (TS973-14). En EM-2 strict à 10 pt, 24 des 33 documents tirés des seeds débordaient. |
+| Débordement | Au-delà du plancher, `remplirCerfa` lève `DebordementDuTexteMedical`, qui porte le texte entier. Aucun PDF n'est produit. |
+| Révision | `BoutonCerfa` montre le texte entier dans une zone de saisie (`ReviserLeTexteMedical.tsx`). Le prescripteur le reformule, puis le texte révisé est remesuré avant la génération. |
+| Revalidation | La révision garde le texte composé qu'elle révisait. Si les réponses changent, le texte composé change aussi : la révision ne vaut plus. |
+| Réponses | La révision ne touche que le document, jamais les réponses de la simulation. |
+| Résultat | Un débordement n'empêche que le Cerfa. Le résultat reste affiché et imprimable. |
+
+Sept seeds débordent encore, dont `secretariat-prescription` (cinq besoins de
+transport) et `secretariat-permission-longue-distance`. Sur la DAP, à une
+seule ligne de cadre, le texte déborde dès deux besoins de transport.
+
+`annexe.ts` et `plan-d-impression.ts`, cités plus bas, n'existent plus. La
+mesure vit dans `mesure-de-la-zone.ts`, le débordement dans
+`debordement-du-texte-medical.ts`.
+
 ## Décisions prises avec l'utilisateur
 
 | # | Sujet | Décision |
@@ -209,7 +239,10 @@ Une liste de noms de champs, comme `MULTILIGNES_ROGNÉS`, aurait suffi. Le type 
 qu'un texte médical ne s'écrit jamais comme un texte ordinaire, et TypeScript force chaque
 étape à le traiter.
 
-### 6. La mesure se fait dans la police et à la taille qui composent l'apparence
+### ~~6. La mesure se fait dans la police et à la taille qui composent l'apparence~~
+
+> Révoquée en v9.7.3 (EM-2) : la police descend jusqu'à 6 pt avant de
+> déclarer un débordement, faute d'annexe. Voir la section EM-2 en tête.
 
 EM-1 demande de mesurer avec la police, la taille et la géométrie réelles. Pour nous, c'est
 Helvetica à 10 pt, dans le cadre du widget moins les marges de `pdf-lib`. Sur `elmedic`, un
@@ -221,7 +254,9 @@ texte que le médecin-conseil doit lire, et l'annexe existe pour ce cas.
 Ce qu'on perd : une page de plus à signer sur presque chaque document, cf. la section
 précédente.
 
-### 7. L'annexe s'insère dans le même PDF, juste après la page du volet 1
+### ~~7. L'annexe s'insère dans le même PDF, juste après la page du volet 1~~
+
+> Révoquée en v9.7.3 (EM-2) : il n'y a plus d'annexe.
 
 Un seul téléchargement, conformément à « dans la même opération ». Placée juste après la
 page 3 du PMT ou la page 2 de la DAP, elle se lit avec le volet qu'elle complète.

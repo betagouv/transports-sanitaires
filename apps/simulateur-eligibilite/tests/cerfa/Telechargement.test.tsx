@@ -10,6 +10,7 @@ import {
   genererCerfa,
   nomFichier,
 } from "../../front/outils-produit/beta/cerfa/document";
+import type { DebordementDuTexteMedical } from "../../front/outils-produit/beta/cerfa/elements-medicaux/debordement-du-texte-medical";
 import { PMT } from "../../front/outils-produit/beta/cerfa/pmt/document";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { moteur } from "../../front/simulateur/moteur";
@@ -113,8 +114,17 @@ describe("genererCerfa", () => {
   it("produit l’autre formulaire pour un accord préalable", async () => {
     // Le même chemin de génération, un autre descripteur : c'est tout ce qui
     // distingue les deux documents.
+    // Son texte médical déborde la rubrique d'une ligne : on le révise, comme
+    // le prescripteur (contrat EM-2).
+    const compose = await genererCerfa(DAP, moteur, ACCORD_PREALABLE, {
+      chargerGabarit,
+    }).catch((erreur: DebordementDuTexteMedical) => erreur.texte);
     const blob = await genererCerfa(DAP, moteur, ACCORD_PREALABLE, {
       chargerGabarit,
+      revision: {
+        compose: String(compose),
+        revise: "Entrée en hospitalisation",
+      },
     });
     const formulaire = (
       await PDFDocument.load(await blob.arrayBuffer())

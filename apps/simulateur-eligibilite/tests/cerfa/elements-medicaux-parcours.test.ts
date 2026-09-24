@@ -1,4 +1,4 @@
-// La composition des éléments d'ordre médical (contrat EM-1, spec 0005), lue
+// La composition des éléments d'ordre médical (contrat EM-2, spec 0005), lue
 // par la couture `saisiesDepuisSituation` sur le moteur réel : chaque
 // parcours porte l'identifiant `EM-PARCOURS-*` du livrable. Les fonctions
 // pures (dates, dédoublonnage, cas particuliers) sont testées à côté, dans

@@ -162,9 +162,9 @@ front/                   le front, bundlé par Vite
                          son tableau : un champ du PDF, une ligne, comment il se
                          remplit ou qui le remplira
         elements-medicaux/ la composition de la zone « éléments d'ordre médical »
-                         du PMT et de la DAP, selon le contrat EM-1 de l'éditeur :
-                         treize blocs, la mesure dans le gabarit réel, l'annexe
-                         quand ça déborde
+                         du PMT et de la DAP, selon le contrat EM-2 de l'éditeur :
+                         douze blocs, la mesure dans le gabarit réel, jamais
+                         d'annexe
   analytics/             le vocabulaire mesuré, seul import du reste, et son transport
                          vers Matomo
 ```

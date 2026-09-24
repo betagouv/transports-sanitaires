@@ -16,7 +16,9 @@ import {
   HOSPITALISATION,
   PROCHE_ACCOMPAGNANT,
   relire,
+  remplirApresRevision,
   situation,
+  TEXTE_MEDICAL_REVISE,
 } from "./gabarit.ts";
 
 describe("saisiesDepuisSituation", () => {
@@ -221,7 +223,9 @@ describe("saisiesDepuisSituation", () => {
       moteurDeTest(),
       situationDe(seedParId("secretariat-prescription")),
     );
-    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+    // Composé selon EM-2, son texte médical déborde la rubrique ⑤ : le
+    // prescripteur le révise avant génération (`texte-medical-integral.test.ts`).
+    const lu = await relire(await remplirApresRevision(GABARIT, saisies));
 
     expect(lu).toMatchObject({
       // Deux contextes administratifs cumulés, chacun avec sa date.
@@ -248,10 +252,7 @@ describe("saisiesDepuisSituation", () => {
       oui2: "/NON",
       // Posée par l'application, hors mapping (`date-de-prescription.ts`).
       date: dateDePrescription().replaceAll("/", ""),
-      // Composée selon EM-1 (spec 0005) : l'hospitalisation et les cinq
-      // critères d'ambulance débordent la zone d'une seule ligne, le champ
-      // porte donc le renvoi à l'annexe plutôt que le texte entier.
-      "comm évent": "Éléments médicaux : voir l’annexe jointe.",
+      "comm évent": TEXTE_MEDICAL_REVISE,
     });
     expect(saisies).toHaveLength(19);
   });

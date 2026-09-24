@@ -103,8 +103,23 @@ describe("accès au CERFA via la galerie de seeds", () => {
       screen.findByRole("button", TELECHARGER, { timeout: 10_000 });
 
     await user.click(await attendreBouton());
-    // Le bouton reprend son libellé une fois le PDF produit.
-    await attendreBouton();
+    // Le texte médical de cette seed déborde sa rubrique (contrat EM-2) : le
+    // prescripteur le reformule, puis le PDF se produit.
+    const texte = await screen.findByRole(
+      "textbox",
+      { name: /Éléments d’ordre médical à reporter/i },
+      { timeout: 10_000 },
+    );
+    await user.clear(texte);
+    await user.type(texte, "Entrée en hospitalisation ; ambulance.");
+    await user.click(
+      screen.getByRole("button", { name: /Remesurer et télécharger/i }),
+    );
+    expect(
+      await screen.findByText(/porte votre texte révisé/i, undefined, {
+        timeout: 10_000,
+      }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("alert")).toBeNull();
   }, 40_000);
 

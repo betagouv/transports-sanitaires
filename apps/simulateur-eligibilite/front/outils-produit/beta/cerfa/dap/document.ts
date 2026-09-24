@@ -16,9 +16,8 @@ export const DAP: DocumentCerfa = {
     "ainsi que l’exonération du ticket modérateur, la précision de l’urgence, " +
     "la date de prescription et les éléments d’ordre médical, à relire",
   ceQuiResteASaisir:
-    "l’identité du patient et de l’assuré, celle du prescripteur, ainsi que " +
-    "l’annexe médicale, si le document en joint une, à signer. Les avis " +
-    "médical et administratif sont, eux, réservés à votre caisse",
+    "l’identité du patient et de l’assuré, et celle du prescripteur. Les " +
+    "avis médical et administratif sont, eux, réservés à votre caisse",
   chargerGabarit: () => gabaritDepuisLAsset(gabaritUrl),
   chargerSaisies: async () =>
     (await import("./depuis-simulateur.ts")).saisiesDepuisSituation,
