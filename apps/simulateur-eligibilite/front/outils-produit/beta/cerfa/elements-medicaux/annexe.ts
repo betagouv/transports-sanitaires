@@ -33,21 +33,27 @@ const MARGE_ANNEXE = 36; // 0,5 pouce
 const HAUTEUR_ENTETE = 60;
 const HAUTEUR_SIGNATURE = 90;
 
-/** Une mesure liée à `champ` : `texte` entre-t-il dans sa zone réelle, à `police` ? */
+/**
+ * Une mesure liée à `champ` : `texte` entre-t-il dans sa zone réelle, à
+ * `police` et `taille` ? `taille` par défaut à `TAILLE_DE_POLICE` (10, jamais
+ * réduite pour la zone médicale, décision 6) ; `remplir-cerfa.ts` l'appelle
+ * aussi au plancher de lisibilité d'une adresse (TS973-14).
+ */
 export function tientDansLaZone(
   champ: PDFTextField,
   police: PDFFont,
+  taille: number = TAILLE_DE_POLICE,
 ): (texte: string) => boolean {
   const bornes = bornesUtiles(champ);
   if (!bornes || bornes.width <= 0 || bornes.height <= 0) {
     return (texte) => texte === "";
   }
   return champ.isMultiline()
-    ? (texte) => tientEnMultiligne(texte, police, bornes)
+    ? (texte) => tientEnMultiligne(texte, police, taille, bornes)
     : (texte) =>
         layoutSinglelineText(texte, {
           alignment: TextAlignment.Left,
-          fontSize: TAILLE_DE_POLICE,
+          fontSize: taille,
           font: police,
           bounds: bornes,
         }).line.width <= bornes.width;
@@ -132,11 +138,12 @@ function bornesUtiles(champ: PDFTextField): Bornes | undefined {
 function tientEnMultiligne(
   texte: string,
   police: PDFFont,
+  taille: number,
   bornes: Bornes,
 ): boolean {
   const disposition = layoutMultilineText(texte, {
     alignment: TextAlignment.Left,
-    fontSize: TAILLE_DE_POLICE,
+    fontSize: taille,
     font: police,
     bounds: bornes,
   });

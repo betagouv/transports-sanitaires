@@ -88,9 +88,11 @@ export async function remplirCerfa(
 ): Promise<Uint8Array> {
   const document = await PDFDocument.load(gabarit);
   const formulaire = document.getForm();
-  const police = saisies.some((saisie) => "texteMédical" in saisie)
-    ? await document.embedFont(StandardFonts.Helvetica)
-    : undefined;
+  // `formulaire.updateFieldAppearances()` (plus bas) recompose l'apparence de
+  // tout champ écrit dans SA police par défaut, jamais dans celle déclarée par
+  // le gabarit : la mesure de débordement doit donc porter sur cette police-là,
+  // pas sur celle du `/DA` d'origine — cf. `réduireSiÇaDéborde`.
+  const police = await document.embedFont(StandardFonts.Helvetica);
 
   for (const saisie of saisies) {
     if ("coché" in saisie) cocher(formulaire, saisie.champ, saisie.coché);
@@ -98,11 +100,11 @@ export async function remplirCerfa(
       await écrireTexteMédical(
         document,
         formulaire,
-        police as PDFFont,
+        police,
         saisie.champ,
         saisie.texteMédical,
       );
-    } else écrire(formulaire, saisie.champ, saisie.texte);
+    } else écrire(formulaire, police, saisie.champ, saisie.texte);
   }
 
   // Sans cet appel, les valeurs sont bien dans le PDF, mais rien ne s'affiche tant
@@ -120,7 +122,12 @@ export async function remplirCerfa(
 
 type Formulaire = ReturnType<PDFDocument["getForm"]>;
 
-function écrire(formulaire: Formulaire, nom: string, texte: string): void {
+function écrire(
+  formulaire: Formulaire,
+  police: PDFFont,
+  nom: string,
+  texte: string,
+): void {
   const champ = formulaire.getField(nom);
   if (!(champ instanceof PDFTextField)) {
     throw new Error(`Le champ « ${nom} » n'est pas un champ texte.`);
@@ -136,36 +143,36 @@ function écrire(formulaire: Formulaire, nom: string, texte: string): void {
     );
   }
   champ.setText(valeur);
-  réduireSiÇaDéborde(champ, valeur);
+  réduireSiÇaDéborde(champ, police, valeur);
 }
 
 /**
- * Les deux gabarits écrivent en Courier 10 (`/Cour 10 Tf`), à taille fixe. Une
- * valeur composée, comme une adresse aplatie sur l'unique ligne que le formulaire
- * lui donne, dépasse le cadre : le PDF la porte entière, l'impression la rogne, et
- * rien ne le signale.
+ * Les gabarits déclarent Courier 10 (`/Cour 10 Tf`), mais `pdf-lib` recompose
+ * l'apparence de tout champ écrit dans sa police par défaut au moment de
+ * `formulaire.updateFieldAppearances()`, jamais dans celle du `/DA` d'origine —
+ * ici Helvetica, embarquée dans `remplirCerfa`. Une valeur composée, comme une
+ * adresse assemblée sur l'unique ligne que le formulaire lui donne, peut
+ * dépasser le cadre réel à 10 points, mesuré avec cette police réelle
+ * (`tientDansLaZone`, la même mesure que pour la zone médicale).
  *
- * On passe alors en taille automatique, et `pdf-lib` recompose l'apparence à une
- * taille qui tient, dans sa police par défaut puisque Courier n'est pas des
- * siennes. On ne le fait que dans ce cas : en taille automatique partout, une
- * valeur courte grossirait jusqu'à la hauteur du cadre, et le document changerait
- * d'allure sans qu'on y gagne rien.
- *
- * Courier est à chasse fixe, chaque caractère occupant 0,6 cadratin, donc la
- * largeur se calcule sans rien mesurer. `tests/cerfa/remplissage.test.ts` vérifie
- * que les deux gabarits emploient bien cette police et cette taille.
+ * Provisoire : on descend directement à `TAILLE_MINIMALE_LISIBLE` plutôt que de
+ * chercher une taille intermédiaire, et sans garantir que tout y tienne — une
+ * prochaine spec doit encore trancher le comportement attendu quand même ce
+ * plancher ne suffit pas (TS973-14).
  */
-function réduireSiÇaDéborde(champ: PDFTextField, valeur: string): void {
-  const cadre = champ.acroField.getWidgets()[0]?.getRectangle();
-  if (!cadre) return;
-  const largeur = valeur.length * TAILLE_DU_GABARIT * AVANCE_COURIER;
-  if (largeur > cadre.width - 2 * MARGE_INTERNE) champ.setFontSize(0);
+function réduireSiÇaDéborde(
+  champ: PDFTextField,
+  police: PDFFont,
+  valeur: string,
+): void {
+  if (tientDansLaZone(champ, police, TAILLE_DU_GABARIT)(valeur)) return;
+  champ.setFontSize(TAILLE_MINIMALE_LISIBLE);
 }
 
 const TAILLE_DU_GABARIT = 10;
-const AVANCE_COURIER = 0.6;
-// La marge que pdf-lib laisse de chaque côté en composant l'apparence.
-const MARGE_INTERNE = 2;
+// En dessous, un texte imprimé n'est plus confortablement lisible : plancher
+// courant pour une mention secondaire (notes de bas de page, mentions légales).
+const TAILLE_MINIMALE_LISIBLE = 6;
 
 /**
  * Coche en imposant l'état d'export attendu.
