@@ -20,6 +20,7 @@ import type { Situation } from "publicodes";
 import type { CleDeRegle } from "./contrat-regles-publicodes";
 import { exceptionSansLieu } from "./exception-sans-lieu";
 import { lecteurs, texteBrut } from "./lecture-de-situation";
+import { causeDeRefus } from "./nombre-permission-dap";
 
 /**
  * La situation, augmentée de ce que l'application calcule. Les valeurs déjà
@@ -54,18 +55,12 @@ export function avecEntreesCalculees(
       qualificationDeclarationsValide(situation),
     ),
     p2_exceptions_trajet_valides: oui(exceptionsTrajetValides(situation)),
-    p2_nombre_permission_dap_valide: NOMBRE_PERMISSION_DAP_VALIDE_PAR_DEFAUT,
+    p2_nombre_permission_dap_valide: oui(causeDeRefus(situation) === undefined),
     p2_validations_documentaires: "oui",
   };
 }
 
 // ---- implémentation ----
-
-// TS973-09 (à porter) : le total déclaré n'est pas encore confronté à la
-// période, la fréquence et les sens couverts de la permission. En attendant,
-// aucune quantité n'est refusée — le comportement d'avant la v9.7.3, où ce
-// contrôle n'existait pas.
-const NOMBRE_PERMISSION_DAP_VALIDE_PAR_DEFAUT = "oui";
 
 function oui(vrai: boolean): string {
   return vrai ? "oui" : "non";

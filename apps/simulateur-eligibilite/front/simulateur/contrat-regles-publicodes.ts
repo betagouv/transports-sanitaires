@@ -251,9 +251,8 @@ export const ENTREES_CALCULEES = [
  * savoir ce qu'elle a le droit de faire. Les tenir à part des `QUESTIONS`
  * empêche qu'une situation prétende les renseigner.
  *
- * Les onze premières sont les règles de complétude que le contrat d'interface
- * attache à ses étapes de groupe : une mosaïque ou une page d'adresse est
- * complète quand elles le disent, et non quand chacun de ses champs a répondu.
+ * La plupart sont les règles de complétude des étapes (`etapes.ts`) : une
+ * étape est complète quand elles le disent, pas quand ses champs ont répondu.
  */
 export const REGLES_LUES = [
   // Une ALD reconnue *et* assortie d'une incapacité ou d'une déficience. Les
@@ -267,6 +266,7 @@ export const REGLES_LUES = [
   "p2_contextes_complementaires_complet",
   "p2_convocation_caracteristiques_complet",
   "p2_exceptions_assurance_maladie_complet",
+  "p2_nombre_permission_dap_complet",
   // Lue par les éléments d'ordre médical (spec 0005), jamais posée.
   "p2_permission_speciale",
   "p2_situations_speciales_complet",

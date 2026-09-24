@@ -1099,7 +1099,10 @@ export const SEEDS: readonly Seed[] = [
       p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
       p2_justification_longue_distance:
         "'Plateau technique nécessaire indisponible à proximité.'",
-      p2_nombre_transports_permission_dap: "4",
+      // Deux trajets simples : la période de la base neutre (une permission
+      // le 20 janvier, un aller-retour par mois jusqu'au 31 mars) en permet
+      // trois au plus (TS973-09).
+      p2_nombre_transports_permission_dap: "2",
     },
     attendu: {
       cible_partie_2_requise: "oui",
