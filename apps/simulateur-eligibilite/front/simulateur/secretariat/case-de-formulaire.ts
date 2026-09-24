@@ -22,17 +22,23 @@
 import type { CleDeRegle } from "../contrat-regles-publicodes.ts";
 
 /**
- * Le `when` du livrable, dans les quatre formes qu'il emploie : une conjonction,
- * une disjonction, l'appartenance d'une valeur à un ensemble — les types de lieu,
- * dont le formulaire ne distingue que trois familles —, ou son complémentaire —
- * les six composants d'adresse, qui s'appliquent à tout type de lieu sauf le
- * domicile.
+ * Le `when` du livrable, dans les cinq formes qu'il emploie :
+ *
+ *  - une conjonction ;
+ *  - une disjonction ;
+ *  - l'appartenance d'une valeur à un ensemble : les types de lieu, dont le
+ *    formulaire ne distingue que trois familles ;
+ *  - son complémentaire : les six composants d'adresse, qui s'appliquent à tout
+ *    type de lieu sauf le domicile ;
+ *  - un nombre strictement au-dessus d'un seuil : le nombre itératif de la PMT
+ *    (v9.7.3).
  */
 type Condition =
   | { readonly toutes: readonly CleDeRegle[] }
   | { readonly une: readonly CleDeRegle[] }
   | { readonly regle: CleDeRegle; readonly parmi: readonly string[] }
-  | { readonly regle: CleDeRegle; readonly sauf: readonly string[] };
+  | { readonly regle: CleDeRegle; readonly sauf: readonly string[] }
+  | { readonly regle: CleDeRegle; readonly auDessusDe: number };
 
 /**
  * La colonne d'origine du mapping, dans les quatre valeurs de sa légende. C'est
@@ -240,6 +246,8 @@ function remplie(condition: Condition, lecteur: Lecteur): boolean {
     return condition.une.some((regle) => lecteur.vrai(regle));
   if ("sauf" in condition)
     return !condition.sauf.includes(lecteur.texte(condition.regle));
+  if ("auDessusDe" in condition)
+    return Number(lecteur.texte(condition.regle)) > condition.auDessusDe;
   return condition.parmi.includes(lecteur.texte(condition.regle));
 }
 

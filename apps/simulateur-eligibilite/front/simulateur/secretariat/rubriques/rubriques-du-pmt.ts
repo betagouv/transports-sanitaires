@@ -92,6 +92,9 @@ export const RUBRIQUES_PMT: readonly Rubrique[] = [
         libelle: "Nombre de transports itératifs",
         source: "cible_nombre_transports_document",
         rendu: "nombre",
+        // TS973-13 : vide pour un trajet unique, comme toute prescription
+        // unique.
+        quand: { regle: "cible_nombre_transports_document", auDessusDe: 1 },
       },
       ...ADRESSES_DU_TRAJET,
     ],
