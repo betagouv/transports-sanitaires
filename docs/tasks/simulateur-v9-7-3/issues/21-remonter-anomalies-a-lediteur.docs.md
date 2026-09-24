@@ -21,6 +21,14 @@ vouloir couvrir. À vérifier au moteur nu avant d'écrire le constat : est-ce
 une contrainte voulue (et alors le test date d'avant elle), ou une
 contradiction avec l'intention du ticket TS973-09 ?
 
+Un écart assumé au ticket 08, à signaler sans question : l'application ne
+porte pas `restartMedical()`. Comme chez l'éditeur (`option_visibility`,
+`allowedOptions()`), l'exception radiothérapie est masquée sans séance
+déclarée : le refus de `application.mjs` n'est pas atteignable par le
+parcours. « Faire une nouvelle simulation » tient lieu de reprise médicale. Le
+détail est dans `docs/knowledge/domain/page-resultat-administratif.md` de
+l'app.
+
 **Blocked by:** 19 (peut démarrer dès qu'un écart est constaté, sans attendre
 la fin des autres tickets)
 

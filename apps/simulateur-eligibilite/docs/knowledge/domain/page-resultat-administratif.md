@@ -78,6 +78,22 @@ aussi le résultat, mais garde le message générique. L'arrivée y est déduite
 la question n'est plus posée : aucun message ne pourrait renvoyer vers une
 réponse que le prescripteur peut corriger.
 
+L'exception radiothérapie cochée sans séance déclarée en partie médicale
+(TS973-08) bloque aussi le résultat, avec le message générique. Cette
+contradiction n'est pas atteignable dans le parcours :
+
+- l'exception n'est proposée que si la Partie 1 déclare une séance ;
+- la Partie 1 est verrouillée dès l'entrée dans la Partie 2.
+
+Seules une seed ou le labo peuvent la produire. L'application ne coche jamais
+la séance à la place du prescripteur, même quand l'exception le laisserait
+supposer.
+
+L'éditeur prévoit une reprise médicale (`restartMedical()`) : elle rouvre la
+Partie 1 et efface toute la Partie 2. Elle n'est pas construite ici. Pour
+corriger une réponse médicale, le prescripteur fait une nouvelle simulation,
+qui efface aussi la Partie 2.
+
 ---
 
 # Bloc 1 — Résultat final
