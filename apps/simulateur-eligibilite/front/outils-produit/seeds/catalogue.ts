@@ -501,6 +501,39 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-transfert-provisoire-radiotherapie",
+    libelle:
+      "Secrétariat — transfert provisoire pour une séance de radiothérapie",
+    description:
+      "L'exception radiothérapie réserve le financement par l'Assurance " +
+      "Maladie au transfert provisoire de moins de 48 heures (TS973-06, " +
+      "famille AUD-ROUTE-RADIO-DURATION) : le pendant favorable du transfert " +
+      "définitif, qui reste à la charge de l'établissement.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p1_m0_seance_radiotherapie: "oui",
+      p1_m0_aucun: "non",
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Provisoire'",
+      p2_transfert_motif_detail: "'Séance de radiothérapie'",
+      p2_exception_radiotherapie_moins_48h: "oui",
+      p2_exception_aucune: "non",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
     id: "secretariat-convocation",
     libelle: "Secrétariat — convocation ou avis d'audience",
     description:
