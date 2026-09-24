@@ -8,7 +8,7 @@
 //
 // Le contrat d'interface de la v9.7 tranche — `navigation.source: ordered_steps`
 // —, et les variables manquantes n'y valent plus que comme diagnostic. Cette
-// liste est la recopie de ses cinquante-deux étapes, dans son ordre. Le
+// liste est la recopie de ses quarante-neuf étapes (v9.7.3), dans son ordre. Le
 // modèle, lui, ne dit plus à quelle étape appartient une question : il portait un
 // `spec_id` jusqu'en v9.5.1, il n'en porte plus. C'est ici, et nulle part
 // ailleurs, que le rattachement se lit.
@@ -109,12 +109,6 @@ export const ETAPES: readonly Etape[] = [
     complet: "p2_convocation_caracteristiques_complet",
   },
   {
-    id: "p2_transport_urgence",
-    livrable: "A2.4",
-    champs: ["p2_transport_urgence"],
-  },
-  { id: "p2_urgence_autre_precision", champs: ["p2_urgence_autre_precision"] },
-  {
     id: "p2_situations_speciales",
     livrable: "A3.1",
     champs: [
@@ -171,6 +165,14 @@ export const ETAPES: readonly Etape[] = [
     id: "p2_justification_longue_distance",
     champs: ["p2_justification_longue_distance"],
   },
+  // TS973-17 : l'urgence après le trajet, comme dans le contrat. Un S3141
+  // sans DAP se conclut sans elle.
+  {
+    id: "p2_transport_urgence",
+    livrable: "A2.4",
+    champs: ["p2_transport_urgence"],
+  },
+  { id: "p2_urgence_autre_precision", champs: ["p2_urgence_autre_precision"] },
   // TS973-15 : au stade documentaire, quand un Cerfa les porte, et complètes
   // quand le modèle le dit : un libellé générique ne suffit pas.
   {

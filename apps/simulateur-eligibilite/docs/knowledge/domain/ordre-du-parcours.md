@@ -44,6 +44,24 @@ la lisaient et pouvaient bloquer une issue légitime.
 Revenir sur une page sans rien changer, ou répondre pour la première fois,
 n'efface rien.
 
+## Les permissions avant les contextes, l'urgence après le trajet (TS973-17)
+
+L'âge, les dates et le cadre d'une permission passent avant les contextes,
+dans le bloc du transfert. L'urgence passe après la distance.
+
+| Permission | Issue | Contextes | Urgence |
+|---|---|---|---|
+| 20 ans ou plus, motif thérapeutique | à la charge de l'établissement | non | non |
+| 20 ans ou plus, demande du patient | à la charge du patient | non | non |
+| 16 à 19 ans, à partir du 14ᵉ jour, 150 km au plus | S3141 | oui | non |
+| 16 à 19 ans, à partir du 14ᵉ jour, plus de 150 km | DAP | oui | oui, avec ses effets |
+
+Un trajet retour séparé, en trajets simples, reste possible : aucun
+aller-retour n'est imposé.
+
+L'ordre d'`etapes.ts` suit celui du contrat v9.7.3, étape pour étape
+(vérifié à l'intégration, sur le YAML du livrable).
+
 ## Les précisions médicales à la fin (TS973-15)
 
 Voir [`precisions-medicales.md`](precisions-medicales.md).

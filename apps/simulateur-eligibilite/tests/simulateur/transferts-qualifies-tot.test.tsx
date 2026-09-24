@@ -12,12 +12,8 @@ import { moteur, texte } from "../../front/simulateur/moteur";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { ETAPES } from "../../front/simulateur/questionnaire/etapes";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import {
-  allerAuGroupe,
-  PARTIE_1_AMBULANCE,
-  type Reponse,
-  terminerParcours,
-} from "./parcours";
+import { champsPoses } from "./champs-poses";
+import { allerAuGroupe, PARTIE_1_AMBULANCE } from "./parcours";
 
 beforeEach(() => sessionStorage.clear());
 
@@ -50,7 +46,7 @@ describe("TS973-16, l'ordre des étapes", () => {
 
 describe("TS973-16, un transfert à la charge de l'établissement", () => {
   it("se conclut sans contextes, urgence, nombre ni adresse", async () => {
-    const posees = await parcourir([
+    const posees = await champsPoses([
       [RAISON, TRANSFERT],
       [NATURE, /^définitif$/i],
     ]);
@@ -74,7 +70,7 @@ describe("TS973-16, un transfert à la charge de l'établissement", () => {
 
 describe("TS973-16, une exception Assurance Maladie cohérente", () => {
   it("poursuit la collecte jusqu'au trajet, contextes après exceptions", async () => {
-    const posees = await parcourir([
+    const posees = await champsPoses([
       [RAISON, TRANSFERT],
       [NATURE, /^définitif$/i],
       [EHPAD],
@@ -155,20 +151,3 @@ describe("TS973-16, au moteur", () => {
     },
   );
 });
-
-// ---- implémentation ----
-
-/** Mène la Partie 2 au bout, et rend les champs posés, dans l'ordre. */
-async function parcourir(reponses: Reponse[]): Promise<string[]> {
-  const user = userEvent.setup({ delay: null });
-  emettrePassation(PARTIE_1_AMBULANCE);
-  render(<Secretariat onNouvelleSimulation={() => {}} />);
-  const posees: string[] = [];
-  await terminerParcours(user, reponses, () => {
-    for (const champ of document.querySelectorAll("input[name]")) {
-      const nom = champ.getAttribute("name") ?? "";
-      if (!posees.includes(nom)) posees.push(nom);
-    }
-  });
-  return posees;
-}
