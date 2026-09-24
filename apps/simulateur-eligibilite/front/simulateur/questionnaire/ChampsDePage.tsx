@@ -3,6 +3,7 @@
 
 import type { Situation } from "publicodes";
 import { moteur, texte, vrai } from "../moteur";
+import { precisionMedicale } from "../precision-medicale";
 import { ChampDeFormulaire } from "./ChampDeFormulaire";
 import { faitsConnusDe } from "./faits-connus";
 import { lieuArriveeDeduit, lieuDepartDeduit } from "./lieu-deduit";
@@ -67,6 +68,7 @@ function rendreChamp(champ: Champ, ctx: ContexteDeRendu) {
         champ={champLibelleAdapte(champFiltre(champ, situation), situation)}
         onChange={(valeur) => onReponse(champ.id, valeur)}
         erreur={saisieACorriger(champ.id, situation)}
+        precision={precisionMedicale(champ.id, situation)}
       />
     );
   if (groupesVus.has(groupe.parentId)) return null;
@@ -147,6 +149,8 @@ const LIBELLES_SELON_CONVOCATION: Record<string, string> = {
 };
 
 function champLibelleAdapte(champ: Champ, situation: Situation<string>): Champ {
+  const precise = precisionMedicale(champ.id, situation)?.libelle;
+  if (precise) return { ...champ, label: precise };
   const libelle = LIBELLES_SELON_CONVOCATION[champ.id];
   if (!libelle) return champ;
   if (!vrai(moteur.setSituation(situation), "p2_convocation")) return champ;

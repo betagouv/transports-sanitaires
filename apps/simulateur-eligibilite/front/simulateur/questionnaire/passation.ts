@@ -24,6 +24,7 @@ import { mosaiqueDe } from "./mosaique";
 import { regleDeComplétude } from "./pagination";
 import { avecCalculs } from "./recalcul";
 import { avecReponse } from "./reponse-unique";
+import { saisieACorriger } from "./saisie-a-corriger";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
@@ -212,18 +213,17 @@ function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
   };
 }
 
-// Ce qui manque encore pour quitter la page. Deux régimes, et le modèle décide
-// duquel relève la page : quand il porte une règle de complétude — les deux pages
-// d'adresse —, elle tranche à elle seule, y compris sur ce qui est facultatif ;
-// partout ailleurs, la page se quitte dès que chacune de ses questions a répondu.
-//
-// Cette distinction était naguère une liste de saisies facultatives tenue dans
-// `Secretariat.tsx` : l'application décidait de son côté que le complément
-// d'adresse et le pays n'étaient pas exigés. Le modèle le dit désormais lui-même.
+// Ce qui manque encore pour quitter la page. Une saisie en erreur la retient
+// toujours (`saisie-a-corriger.ts`). Sinon, deux régimes : quand l'étape porte
+// une règle de complétude du modèle, elle tranche seule, facultatif compris ;
+// partout ailleurs, la page se quitte dès que chacune de ses questions a
+// répondu. Le modèle dit lui-même ce qui est facultatif, l'application ne le
+// décide plus (le complément d'adresse et le pays, jadis dans `Secretariat.tsx`).
 function resteARepondre(
   champs: readonly Champ[],
   situation: Situation<string>,
 ): boolean {
+  if (champs.some((champ) => saisieACorriger(champ.id, situation))) return true;
   const complet = regleDeComplétude(champs.map((champ) => champ.id));
   if (complet === undefined) return resteUneQuestion(champs, situation);
   return moteur.setSituation(situation).evaluate(complet).nodeValue !== true;

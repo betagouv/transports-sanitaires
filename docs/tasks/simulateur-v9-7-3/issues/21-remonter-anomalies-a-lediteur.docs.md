@@ -38,6 +38,17 @@ réclame plus jamais le total. Un total répondu est contrôlé comme chez
 l'éditeur. Le détail est dans `docs/knowledge/domain/total-dap-permission.md`
 de l'app.
 
+Une question au ticket 15 : l'étape `p2_transfert_motif_detail` déclare des
+`session_suggestions` (les séances déclarées en M0), mais `suggestionsFor()`
+ne lit que `suggestions`. Laquelle des deux fait foi ? L'application suit le
+YAML et propose les séances déclarées.
+
+Un constat au ticket 15 : `p2_motif_detail_complet` compare des chaînes
+exactes. « Autre », « À préciser » ou « consultation médicale » en minuscules
+le rendent vrai, alors que `medicalDetailValid()` les refuse après repli.
+L'application refuse ces saisies à l'écran et verse
+`p2_validations_documentaires = non`.
+
 **Blocked by:** 19 (peut démarrer dès qu'un écart est constaté, sans attendre
 la fin des autres tickets)
 

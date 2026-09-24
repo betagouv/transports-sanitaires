@@ -18,6 +18,7 @@
 // c'est sous ce nom qu'un désaccord se discute avec l'éditeur.
 
 import type { CleDeRegle } from "../contrat-regles-publicodes";
+import { ETAPES_DE_LA_PARTIE_1 } from "./etapes-de-la-partie-1";
 
 export type Etape = {
   /** Identifiant du contrat d'interface (`ui.steps[].id`). */
@@ -39,53 +40,13 @@ export type Etape = {
  * médicale d'abord, l'administrative ensuite.
  */
 export const ETAPES: readonly Etape[] = [
-  // Partie 1 — la décision médicale.
-  { id: "Q1", champs: ["p1_autonomie"] },
-  {
-    id: "p1_criteres_transport",
-    livrable: "Q1.1",
-    champs: [
-      "p1_critere_incapacite_deplacement_autonome",
-      "p1_critere_aide_technique",
-      "p1_critere_aide_professionnel",
-      "p1_critere_hygiene_desinfection",
-      "p1_critere_risque_effets_secondaires",
-      "p1_critere_fauteuil_sans_transfert",
-      "p1_critere_position_allongee_demi_assise",
-      "p1_critere_brancardage_portage",
-      "p1_critere_surveillance_constante",
-      "p1_critere_oxygene",
-      "p1_critere_isolement_asepsie",
-      "p1_critere_aucun",
-    ],
-    complet: "p1_criteres_transport_complet",
-  },
-  { id: "M4", champs: ["p1_transport_partage_incompatible"] },
-  {
-    id: "p1_cas_particuliers_medicaux",
-    livrable: "M0",
-    champs: [
-      "p1_m0_bariatrique",
-      "p1_m0_ald",
-      "p1_m0_seance_chimiotherapie",
-      "p1_m0_seance_radiotherapie",
-      "p1_m0_seance_dialyse_centre",
-      "p1_m0_aucun",
-    ],
-    complet: "p1_cas_particuliers_medicaux_complet",
-  },
-  { id: "p1_type_ald", champs: ["p1_type_ald"] },
-  {
-    id: "p1_mode_non_professionnalise",
-    champs: ["p1_mode_non_professionnalise"],
-  },
+  ...ETAPES_DE_LA_PARTIE_1,
   // Partie 2 — le cas administratif.
   {
     id: "p2_raison_principale",
     livrable: "M1.1",
     champs: ["p2_raison_principale"],
   },
-  { id: "p2_motif_detail", champs: ["p2_motif_detail"] },
   {
     id: "p2_contextes_complementaires",
     livrable: "M1.2",
@@ -105,7 +66,6 @@ export const ETAPES: readonly Etape[] = [
     champs: ["p2_transfert_en_cours"],
   },
   { id: "p2_nature_transfert", champs: ["p2_nature_transfert"] },
-  { id: "p2_transfert_motif_detail", champs: ["p2_transfert_motif_detail"] },
   { id: "p2_permission_age", champs: ["p2_permission_age"] },
   {
     id: "p2_permission_debut_hospitalisation",
@@ -207,6 +167,18 @@ export const ETAPES: readonly Etape[] = [
   {
     id: "p2_justification_longue_distance",
     champs: ["p2_justification_longue_distance"],
+  },
+  // TS973-15 : au stade documentaire, quand un Cerfa les porte, et complètes
+  // quand le modèle le dit : un libellé générique ne suffit pas.
+  {
+    id: "p2_motif_detail",
+    champs: ["p2_motif_detail"],
+    complet: "p2_motif_detail_complet",
+  },
+  {
+    id: "p2_transfert_motif_detail",
+    champs: ["p2_transfert_motif_detail"],
+    complet: "p2_transfert_precision_complete",
   },
   {
     id: "p2_nombre_transports_permission_dap",

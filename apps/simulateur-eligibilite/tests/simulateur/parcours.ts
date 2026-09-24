@@ -69,7 +69,12 @@ export async function repondrePage(user: User, reponses: Reponse[]) {
     if (!memePage()) return;
     await completerGroupe(user, groupe);
   }
-  for (const champ of screen.queryAllByRole("textbox")) {
+  // Une saisie qui propose des suggestions (`<datalist>`, les précisions
+  // médicales) prend le rôle `combobox` plutôt que `textbox`.
+  for (const champ of [
+    ...screen.queryAllByRole("textbox"),
+    ...screen.queryAllByRole("combobox"),
+  ]) {
     if (!memePage()) return;
     if ((champ as HTMLInputElement).value === "")
       await user.type(champ, valeurParDefaut(champ as HTMLInputElement));
