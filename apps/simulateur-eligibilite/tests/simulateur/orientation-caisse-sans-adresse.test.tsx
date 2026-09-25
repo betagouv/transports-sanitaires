@@ -24,8 +24,7 @@ import { moteurDeTest } from "./moteur";
 
 beforeEach(() => sessionStorage.clear());
 
-const CASE_LABEL =
-  "Convocation avec transport en avion ou bateau : orientation vers la caisse";
+const CASE_LABEL = "Transport en avion ou bateau : orientation vers la caisse";
 const CARACTERISTIQUES_TRAJET =
   "Confirmer les caractéristiques du trajet : avion ou bateau de ligne régulière et distance aller.";
 

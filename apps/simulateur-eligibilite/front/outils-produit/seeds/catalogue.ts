@@ -646,6 +646,33 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-avion-orientation-caisse-hors-convocation",
+    libelle:
+      "Secrétariat — avion hors convocation, orientation vers la caisse (TS973-03)",
+    description:
+      "Famille AUD-AIR-ORIENTATION : un avion ou bateau de ligne régulière en " +
+      "« situations spéciales » (hors convocation), sans hospitalisation, ALD " +
+      "ni ATMP pour le rattacher à une sous-situation de DAP — la même " +
+      "orientation caisse que la convocation, mais sans qu'aucune convocation " +
+      "n'existe. Verrouille TS973-03 : le corps du verdict et le cas retenu ne " +
+      "doivent mentionner « convocation » à aucun moment.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_special_avion_bateau: "oui",
+      p2_special_aucune: "non",
+    },
+    attendu: {
+      cible_cas_final: "orientation vers la caisse pour accord préalable",
+      cible_regime_financement:
+        "Assurance Maladie - modalités à confirmer auprès de la caisse",
+      cible_document_a_remettre_au_patient:
+        "Synthèse pour démarche auprès de la caisse",
+    },
+  },
+  {
     id: "secretariat-permission-s3141",
     libelle: "Secrétariat — permission de sortie, prescription S3141",
     description:

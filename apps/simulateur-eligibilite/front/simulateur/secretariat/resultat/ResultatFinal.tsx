@@ -189,6 +189,7 @@ function TroisBlocs({
         transport={c.transport}
         transportPrescrit={c.transportPrescrit}
         article80={c.article80}
+        estConvocation={c.estConvocation}
       />
       <Bloc3CasRetenu
         datePrescription={datePrescription}
