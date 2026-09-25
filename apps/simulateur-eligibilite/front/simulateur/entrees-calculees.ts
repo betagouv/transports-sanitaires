@@ -18,6 +18,8 @@
 
 import type { Situation } from "publicodes";
 import type { CleDeRegle } from "./contrat-regles-publicodes";
+import { exceptionSansLieu } from "./exception-sans-lieu";
+import { lecteurs, texteBrut } from "./lecture-de-situation";
 
 /**
  * La situation, augmentée de ce que l'application calcule. Les valeurs déjà
@@ -28,7 +30,7 @@ export function avecEntreesCalculees(
   situation: Situation<string>,
   maintenant: Date = new Date(),
 ): Situation<string> {
-  const lu = (cle: CleDeRegle) => texte(situation[cle]);
+  const lu = (cle: CleDeRegle) => texteBrut(situation[cle]);
   const debut = lu("p2_permission_debut");
   const fin = lu("p2_permission_fin");
   const heures = dureeEnHeures(debut, fin);
@@ -67,23 +69,6 @@ const NOMBRE_PERMISSION_DAP_VALIDE_PAR_DEFAUT = "oui";
 
 function oui(vrai: boolean): string {
   return vrai ? "oui" : "non";
-}
-
-// Une valeur de situation en texte nu : le modèle les reçoit entre quotes
-// simples (`'2026-01-20T10:00'`), c'est la forme publicodes d'une chaîne.
-function texte(valeur: unknown): string {
-  if (typeof valeur !== "string") return "";
-  return valeur.startsWith("'") && valeur.endsWith("'")
-    ? valeur.slice(1, -1)
-    : valeur;
-}
-
-// Les deux lectures que les gardes de cohérence (v9.7.3) répètent : le texte
-// nu d'une clé, et si elle vaut « oui ».
-function lecteurs(situation: Situation<string>) {
-  const lu = (cle: CleDeRegle) => texte(situation[cle]);
-  const vrai = (cle: CleDeRegle) => lu(cle) === "oui";
-  return { lu, vrai };
 }
 
 /** La date du jour à Paris, au format `YYYYMMDD` que le modèle compare. */
@@ -144,7 +129,7 @@ function formatValide(
   situation: Situation<string>,
   lieu: "depart" | "arrivee",
 ): boolean {
-  const lu = (suffixe: string) => texte(situation[`p2_${lieu}_${suffixe}`]);
+  const lu = (suffixe: string) => texteBrut(situation[`p2_${lieu}_${suffixe}`]);
   const codePostal = lu("code_postal");
   const etranger = lu("pays") !== "";
   if (lu("adresse") === "" || lu("commune") === "") return false;
@@ -163,7 +148,7 @@ function adressesIdentiques(situation: Situation<string>): boolean {
     return false;
   const empreinte = (lieu: "depart" | "arrivee") =>
     [
-      texte(situation[`p2_trajet_${lieu}`]),
+      texteBrut(situation[`p2_trajet_${lieu}`]),
       "nom_lieu",
       "adresse",
       "complement_adresse",
@@ -172,7 +157,7 @@ function adressesIdentiques(situation: Situation<string>): boolean {
       "pays",
     ]
       .map((cle, rang) =>
-        rang === 0 ? cle : texte(situation[`p2_${lieu}_${cle}`]),
+        rang === 0 ? cle : texteBrut(situation[`p2_${lieu}_${cle}`]),
       )
       .map(normalise)
       .join("|");
@@ -185,7 +170,7 @@ function decrit(
   lieu: "depart" | "arrivee",
 ): boolean {
   return ["adresse", "code_postal", "commune"].some(
-    (cle) => texte(situation[`p2_${lieu}_${cle}`]) !== "",
+    (cle) => texteBrut(situation[`p2_${lieu}_${cle}`]) !== "",
   );
 }
 
@@ -202,8 +187,8 @@ function normalise(valeur: string): string {
 // aux deux bouts. Les autres contraintes de trajet dépendent du motif, et le
 // modèle les porte lui-même.
 function typesLieuxValides(situation: Situation<string>): boolean {
-  const depart = texte(situation.p2_trajet_depart);
-  const arrivee = texte(situation.p2_trajet_arrivee);
+  const depart = texteBrut(situation.p2_trajet_depart);
+  const arrivee = texteBrut(situation.p2_trajet_arrivee);
   if (depart === "" || arrivee === "") return true;
   return !(depart === "Domicile" && arrivee === "Domicile");
 }
@@ -250,15 +235,13 @@ function qualificationDeclarationsValide(
   return true;
 }
 
-// Les exceptions EHPAD/USLD contre les lieux réellement renseignés, et la
-// destination urgences contre le lieu d'arrivée réellement renseigné.
 // Réencodage TypeScript de `exceptionsRouteValid` (v9.7.3,
-// `src/application.mjs`), simplifié : la référence compare l'exception au
-// lieu **déduit** (`placeType`, qui recouvre HAD, retour pénitentiaire et
-// entrée/sortie d'hospitalisation) — cette déduction n'existe pas encore côté
-// application (ticket 11), donc la comparaison porte ici sur le lieu
-// directement répondu. Les deux coïncident tant que `p2_trajet_depart` et
-// `p2_trajet_arrivee` restent des questions posées telles quelles.
+// `src/application.mjs`). Les exceptions EHPAD/USLD se comparent aux types de
+// lieu effectifs, déduits compris (`exception-sans-lieu.ts`, que l'écran de
+// résultat relit pour nommer la réponse à corriger).
+//
+// La destination urgences, elle, se compare à l'arrivée **répondue** : c'est
+// justement une réponse restée en arrière-plan qu'elle doit attraper.
 //
 // TS973-04 (famille AUD-ROUTE-URG-DEST) : une arrivée urgences déduit toujours
 // « Structure de soins » (`p2_type_arrivee_deduit`, regles.publicodes), donc
@@ -269,13 +252,9 @@ function qualificationDeclarationsValide(
 // admission HAD) sont déjà couvertes par `qualificationDeclarationsValide`.
 function exceptionsTrajetValides(situation: Situation<string>): boolean {
   if (!qualificationDeclarationsValide(situation)) return false;
-  const { lu, vrai } = lecteurs(situation);
-  const depart = lu("p2_trajet_depart");
+  if (exceptionSansLieu(situation)) return false;
+  const { lu } = lecteurs(situation);
   const arrivee = lu("p2_trajet_arrivee");
-  if (vrai("p2_exception_ehpad") && depart !== "EHPAD" && arrivee !== "EHPAD")
-    return false;
-  if (vrai("p2_exception_usld") && depart !== "USLD" && arrivee !== "USLD")
-    return false;
   if (
     lu("p2_raison_principale") === "Transport vers un service d’urgences" &&
     arrivee !== "" &&

@@ -534,6 +534,69 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-transfert-exception-ehpad",
+    libelle: "Secrétariat : transfert vers un EHPAD sous exception",
+    description:
+      "L'exception EHPAD finance le transfert par l'Assurance Maladie dès que " +
+      "le départ ou l'arrivée déclaré est un EHPAD (TS973-07, famille " +
+      "AUD-ROUTE-EXCEPTION-PLACE). Le pendant valide des trajets sans EHPAD, " +
+      "que l'écran de résultat renvoie vers la réponse à corriger.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Définitif'",
+      p2_exception_ehpad: "oui",
+      p2_exception_aucune: "non",
+      p2_trajet_depart: "'Structure de soins'",
+      p2_depart_nom_lieu: "'CH de Rennes'",
+      p2_trajet_arrivee: "'EHPAD'",
+      p2_arrivee_nom_lieu: "'EHPAD Les Tilleuls'",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit: "ambulance",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-transfert-exception-usld",
+    libelle: "Secrétariat : transfert depuis une USLD sous exception",
+    description:
+      "Le sens inverse de l'exception EHPAD, pour une USLD : le départ déclaré " +
+      "suffit à justifier l'exception (TS973-07, famille " +
+      "AUD-ROUTE-EXCEPTION-PLACE).",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Définitif'",
+      p2_exception_usld: "oui",
+      p2_exception_aucune: "non",
+      p2_trajet_depart: "'USLD'",
+      p2_depart_nom_lieu: "'USLD du CH'",
+      p2_trajet_arrivee: "'Structure de soins'",
+      p2_arrivee_nom_lieu: "'CH de Rennes'",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit: "ambulance",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
     id: "secretariat-convocation",
     libelle: "Secrétariat — convocation ou avis d'audience",
     description:

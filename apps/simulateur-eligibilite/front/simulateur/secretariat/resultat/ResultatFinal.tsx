@@ -6,12 +6,14 @@
 
 import type { Situation } from "publicodes";
 import type { ReactNode } from "react";
+import { exceptionSansLieu } from "../../exception-sans-lieu";
 import { moteur, texte, vrai } from "../../moteur";
 import { TraceDebug } from "../../resultat/TraceDebug";
 import type { Article80 } from "./Article80";
 import { Bloc1Resultat } from "./Bloc1Resultat";
 import { Bloc2Etapes } from "./Bloc2Etapes";
 import { Bloc3CasRetenu } from "./Bloc3CasRetenu";
+import { MessageExceptionSansLieu } from "./MessageExceptionSansLieu";
 import { motifsDeLaDap } from "./motifs-de-la-dap";
 
 type Props = {
@@ -127,7 +129,12 @@ function DocumentARemettre({
   documentTelechargeable,
 }: Pick<Props, "situation" | "datePrescription" | "documentTelechargeable">) {
   const e = moteur.setSituation(situation);
-  if (!vrai(e, "cible_resultat_2_affichable")) return <Incomplet />;
+  if (!vrai(e, "cible_resultat_2_affichable")) {
+    const contradiction = exceptionSansLieu(situation);
+    if (contradiction)
+      return <MessageExceptionSansLieu contradiction={contradiction} />;
+    return <Incomplet />;
+  }
   const lues = cibles(e);
   return (
     <>
@@ -144,6 +151,9 @@ function DocumentARemettre({
 //
 // Le guide le dit sans détour : « Un écran technique "incomplet" ne doit jamais
 // devenir un document. »
+//
+// Une exception EHPAD/USLD sans lieu correspondant bloque aussi le résultat,
+// mais rien n'y manque : `MessageExceptionSansLieu` nomme la contradiction.
 function Incomplet() {
   return (
     <div className="fr-alert fr-alert--info">
