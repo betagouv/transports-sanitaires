@@ -207,7 +207,18 @@ tests/simulateur/grille-v<version>.test.ts         un produit croisé engendré
 tests/simulateur/matrice-nommee-v<version>.test.ts les cas nommés un par un
 tests/simulateur/motifs-dap-v<version>.test.ts     les motifs de DAP sans distance ni série
 tests/simulateur/permission-v<version>.test.ts     un sujet neuf, propre à sa version
+tests/simulateur/campagne-*-v<version>.test.ts     la campagne de l'éditeur, une famille par fichier
 ```
+
+Depuis la v9.7.3, l'éditeur livre aussi une **campagne** (`tests/campagne-v973/`
+du paquet) : `ROUTE-*`, `PERM-*`, `DEC-*`, `DOC-*`, `TR-*`, plus les `V973-*` et
+`EM-*`. Elle se rejoue au moteur, une famille par fichier `campagne-*`. Un refus
+de `Session.submit()` s'y lit comme un résultat bloqué, un `field()` du payload
+par `depuisLeMapping` (`document-du-livrable.ts`). Les modifications après coup
+(`TR-*`) se rejouent en simulant ce que fait l'application
+(`transfert-requalifie.ts`, `invalidation-lieu.ts`), pas la session de
+l'éditeur. L'adaptateur migre les fixtures de la version précédente
+(`migration-du-livrable-v<version>.ts`).
 
 Une version qui introduit un sujet entier (la convocation aérienne et son
 financement pour la v9.7.1) mérite ses propres fichiers plutôt que d'étirer un

@@ -9,9 +9,9 @@
 // durable — `sessionStorage` seulement).
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas } from "./livrable-v9-7-2";
+import { evaluerLeCas } from "./livrable-v9-7-3";
 import { moteurDeTest } from "./moteur";
-import { DAP, NON_ELIGIBLE, PMT, S3141 } from "./situations-v9-7-2";
+import { DAP, NON_ELIGIBLE, PMT, S3141 } from "./situations-v9-7-3";
 
 const BASE = {
   organization: "trajets simples",

@@ -59,11 +59,9 @@ export function refusDeLaPrecision(
 }
 
 /**
- * Les précisions que la situation demande sont-elles acceptables ? C'est la
- * part médicale de `p2_validations_documentaires`, que le modèle attend de
- * l'application : une seed ou le labo qui pose une précision refusée
- * n'obtient aucun document. Une réponse restée d'une autre raison ne compte
- * pas.
+ * Les précisions que la situation demande sont-elles acceptables ? Une
+ * réponse restée d'une autre raison ne compte pas. Lue par
+ * `validations-documentaires.ts`.
  */
 export function precisionsValides(situation: Situation<string>): boolean {
   return (["p2_motif_detail", "p2_transfert_motif_detail"] as const)

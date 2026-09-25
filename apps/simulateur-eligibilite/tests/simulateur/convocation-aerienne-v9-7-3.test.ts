@@ -1,6 +1,6 @@
 // Le volet aérien de la convocation, part de la matrice de non-régression du
 // livrable v9.7.1 (tmp/9.7.1/tests/convocation.mjs). Le volet terrestre — la
-// distance seule — est dans `convocation-v9-7-2.test.ts`.
+// distance seule — est dans `convocation-v9-7-3.test.ts`.
 //
 // Un avion ou un bateau de ligne régulière ouvre, selon le contexte, l'une des
 // quatre sous-situations qu'une DAP sait déjà motiver (hospitalisation, ALD,
@@ -15,9 +15,9 @@ import {
   evaluerLeCas,
   type OptionsDuLivrable,
   situationDuLivrable,
-} from "./livrable-v9-7-2";
+} from "./livrable-v9-7-3";
 import { moteurDeTest } from "./moteur";
-import { DAP, ORIENTATION_CAISSE } from "./situations-v9-7-2";
+import { DAP, ORIENTATION_CAISSE } from "./situations-v9-7-3";
 
 const convocation = (overrides?: Record<string, string>) =>
   ({
@@ -200,20 +200,15 @@ describe("matrice v9.7.1 — la convocation aérienne", () => {
   });
 
   it("CONV971-CAS-AERIEN-HORS-CONVOCATION-INCHANGE", () => {
-    // Un avion/bateau hors convocation (situation spéciale A3.1) reste
-    // incomplet faute de sous-situation, comme avant la v9.7.1 : elle ne touche
-    // qu'à la branche convocation, et ne le fait pas basculer en orientation.
+    // Un avion/bateau hors convocation (situation spéciale A3.1) restait
+    // incomplet faute de sous-situation jusqu'en v9.7.2. La v9.7.3 étend
+    // l'orientation vers la caisse hors convocation (TS973-03) : le cas n'est
+    // plus inchangé, il est orienté. L'identifiant reste celui du livrable.
     const moteur = evaluerLeCas({
       criterion: "p1_critere_oxygene",
       special: { p2_special_avion_bateau: "oui" },
     });
-    expect(moteur.evaluate("cible_resultat_2_affichable").nodeValue).not.toBe(
-      true,
-    );
-    expect(moteur.evaluate("p2_document_dap_determine").nodeValue).toBe(true);
-    expect(moteur.evaluate("cible_orientation_caisse").nodeValue).not.toBe(
-      true,
-    );
+    expect(moteur.evaluate("cible_orientation_caisse").nodeValue).toBe(true);
   });
 
   describe("INDEPENDANT971 — contrôles adverses transposés", () => {

@@ -74,7 +74,7 @@ describe("la composition EM-2", () => {
 });
 
 describe("la mesure", () => {
-  it("un texte court tient à 10, un texte long à aucune taille lisible", async () => {
+  it("EM-MESURE-COURT-DEPASSEMENT-EXPLICITE : un texte court tient à 10, un texte long à aucune taille lisible", async () => {
     const document = await PDFDocument.load(GABARIT_DAP);
     const police = await document.embedFont(StandardFonts.Helvetica);
     const champ = document.getForm().getField("elmedic");
@@ -105,6 +105,16 @@ describe("remplirCerfa sur les gabarits réels", () => {
     );
   });
 
+  it("EM-MESURE-VIDE-OBLIGATOIRE : un texte vide se génère, rubrique vierge", async () => {
+    // Chez l'éditeur, la mesure est exigée même pour un texte vide. Ici, elle
+    // n'est pas fournie par l'appelant : le remplissage mesure lui-même, et
+    // un texte vide tient par définition.
+    const pdf = await remplirCerfa(GABARIT, [
+      { champ: "comm évent", texteMédical: "" },
+    ]);
+    expect((await relire(pdf))["comm évent"]).toBeUndefined();
+  });
+
   it("DAP : un texte qui tient reste entier, police réduite au besoin", async () => {
     const saisies = saisiesDap(
       moteurDeTest(),
@@ -122,7 +132,7 @@ describe("remplirCerfa sur les gabarits réels", () => {
     ["PMT", "secretariat-prescription", saisiesPmt, GABARIT],
     ["DAP", "secretariat-permission-longue-distance", saisiesDap, GABARIT_DAP],
   ] as const)(
-    "%s : un texte qui déborde ne produit aucun PDF, et garde le texte entier",
+    "EM-LONG-TEXTE-INTEGRAL-SANS-ANNEXE (%s) : un texte qui déborde ne produit aucun PDF, et garde le texte entier",
     async (_document, seed, saisiesDe, gabarit) => {
       const saisies = saisiesDe(moteurDeTest(), situationDe(seedParId(seed)));
       const compose = saisies.find((saisie) => "texteMédical" in saisie);

@@ -4,7 +4,7 @@
 // L'Article 80 et le régime pénitentiaire ont ceci de commun qu'ils déplacent la
 // charge du transport : l'Assurance Maladie n'en est plus le payeur, et le
 // patient ne repart avec aucun document de sa part. Le reste de la matrice est
-// dans `regression-v9-7-2.test.ts` et `accord-prealable-v9-7-2.test.ts`.
+// dans `regression-v9-7-3.test.ts` et `accord-prealable-v9-7-3.test.ts`.
 //
 // La v9.7 a refondu la qualification. Un transfert ne se déduit plus de
 // l'hospitalisation du patient : il se déclare, par la raison principale puis par
@@ -15,10 +15,10 @@
 // Ces deux cas sont donc remplacés par les deux natures de transfert.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-2";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-3";
 import { type Cas, rejouerLaMatrice } from "./matrice";
 import { moteurDeTest } from "./moteur";
-import { CHARGE_ETABLISSEMENT, DAP, PMT, PRO } from "./situations-v9-7-2";
+import { CHARGE_ETABLISSEMENT, DAP, PMT, PRO } from "./situations-v9-7-3";
 
 const TRANSFERT = {
   p2_raison_principale:
@@ -111,7 +111,7 @@ describe("modèle v9.7 — la charge de l’établissement", () => {
 });
 
 // Les cas nommés de la matrice v9.7 sur ce sujet. Ils passent par les options du
-// livrable (`livrable-v9-7-2.ts`) plutôt que par notre vocabulaire : ce sont ses
+// livrable (`livrable-v9-7-3.ts`) plutôt que par notre vocabulaire : ce sont ses
 // situations, et ses attendus.
 
 // Un transfert qualifié met le transport à la charge de l'établissement — c'est
@@ -139,6 +139,19 @@ const EXCEPTIONS: ReadonlyArray<[nom: string, attendu: string]> = [
   ["admission_had", PMT],
 ];
 
+// v9.7.3 : trois exceptions exigent un fait de plus pour tenir. Une exception
+// EHPAD ou USLD veut un lieu de ce type sur le trajet (TS973-07). L'exception
+// radiothérapie veut une séance déclarée en partie médicale (TS973-08). Sans
+// eux, le résultat est bloqué, et plus une PMT.
+const FAITS_EXIGES_EN_V9_7_3: Record<string, OptionsDuLivrable> = {
+  usld: { depart: "USLD" },
+  ehpad: { depart: "EHPAD" },
+  radiotherapie_moins_48h: {
+    reason: "Examen médical",
+    m0: { p1_m0_seance_radiotherapie: "oui" },
+  },
+};
+
 describe("matrice v9.7 — l’Article 80 et ses exceptions", () => {
   it("ARTICLE80-POSITIF — un transfert déclaré suffit", () => {
     const moteur = evaluerLeCas({ transfer: true });
@@ -150,6 +163,7 @@ describe("matrice v9.7 — l’Article 80 et ses exceptions", () => {
   it.each(EXCEPTIONS)("ARTICLE80-EXCEPTION-%s", (nom, attendu) => {
     const moteur = evaluerLeCas({
       ...TRANSFERT_DU_LIVRABLE,
+      ...FAITS_EXIGES_EN_V9_7_3[nom],
       exceptions: { [`p2_exception_${nom}`]: "oui" },
     });
     expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(attendu);

@@ -193,9 +193,9 @@ v9.7.2. Les contrôles neufs de chaque version vivent dans les suites `tests/*.m
 paquet plutôt que dans ce fichier YAML : convocation, financement et asepsie pour la
 v9.7.1 ; l'attente de l'accord préalable, l'explication de l'asepsie et les faits connus
 de la mosaïque de convocation pour la v9.7.2, portés respectivement par
-`attente-accord-v9-7-2.test.ts`, `asepsie-explication-v9-7-2.test.tsx` et
-`faits-connus-v9-7-2.test.tsx`. La matrice elle-même ne donne pas des situations mais des
-**options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7-2.ts`
+`attente-accord-v9-7-3.test.ts`, `asepsie-explication-v9-7-3.test.tsx` et
+`faits-connus-v9-7-3.test.tsx`. La matrice elle-même ne donne pas des situations mais des
+**options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable-v9-7-3.ts`
 en est la recopie, et c'est par lui que tous ces cas se rejouent.
 
 La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois

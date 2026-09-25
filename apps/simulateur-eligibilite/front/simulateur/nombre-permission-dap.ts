@@ -3,8 +3,9 @@
 // Voir `docs/knowledge/domain/total-dap-permission.md`.
 
 import type { Situation } from "publicodes";
+import { ajouterMois } from "./dates-de-permission";
 import { instantDe, jourAParis, jourValide } from "./heure-de-paris";
-import { lecteurs, texteBrut } from "./lecture-de-situation";
+import { lecteurs, nombreSaisi, pasRepondu } from "./lecture-de-situation";
 import { lieuEffectif } from "./lieu-effectif";
 
 /**
@@ -45,7 +46,7 @@ export function causeDeRefus(
 ): CauseDeRefus | undefined {
   const saisie = situation.p2_nombre_transports_permission_dap;
   if (pasRepondu(saisie)) return undefined;
-  const total = nombre(saisie);
+  const total = nombreSaisi(saisie);
   if (!Number.isInteger(total) || total < 1) return "pas un entier";
   if (total > capaciteDeLaDap(situation)) return "au-dela de la capacite";
   if (allersRetoursIdentiques(situation) && total % 2 !== 0) return "impair";
@@ -86,7 +87,7 @@ function periodeDeLaPermission(
   const fin = instantDe(lu("p2_permission_fin"));
   const hospitalisation = lu("p2_permission_debut_hospitalisation");
   const derniere = lu("p2_permission_periode_fin");
-  const quota = nombre(situation.p2_permission_ar_par_mois);
+  const quota = nombreSaisi(situation.p2_permission_ar_par_mois);
   if (debut === undefined || fin === undefined) return undefined;
   if (!(fin - debut > 0 && fin - debut <= 48 * HEURE)) return undefined;
   if (!jourValide(hospitalisation) || !jourValide(derniere)) return undefined;
@@ -149,19 +150,6 @@ function couplageMaximal(candidats: readonly (readonly number[])[]): number {
   return servies;
 }
 
-function pasRepondu(saisie: unknown): boolean {
-  return typeof saisie !== "number" && texteBrut(saisie).trim() === "";
-}
-
-// Une réponse chiffrée : un nombre quand le formulaire l'a saisie, un texte
-// quand une seed ou un rejeu l'a posée. Un texte qui n'est pas un nombre rend
-// `NaN`, donc un refus.
-function nombre(valeur: unknown): number {
-  if (typeof valeur === "number") return valeur;
-  const texte = texteBrut(valeur).trim();
-  return texte === "" ? Number.NaN : Number(texte);
-}
-
 function midi(jour: string): Date {
   return new Date(`${jour}T12:00:00Z`);
 }
@@ -174,18 +162,4 @@ function ajouterJours(jour: string, n: number): string {
 
 function lundiDe(jour: string): string {
   return ajouterJours(jour, -((midi(jour).getUTCDay() + 6) % 7));
-}
-
-// Six mois calendaires, ramenés au dernier jour du mois quand il est plus
-// court : le 31 mars mène au 30 septembre, pas au 1er octobre.
-function ajouterMois(jour: string, n: number): string {
-  const date = midi(jour);
-  const quantieme = date.getUTCDate();
-  date.setUTCDate(1);
-  date.setUTCMonth(date.getUTCMonth() + n);
-  const dernier = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
-  ).getUTCDate();
-  date.setUTCDate(Math.min(quantieme, dernier));
-  return date.toISOString().slice(0, 10);
 }

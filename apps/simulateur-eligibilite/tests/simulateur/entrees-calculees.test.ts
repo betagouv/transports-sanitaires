@@ -12,7 +12,7 @@ import type { Situation } from "publicodes";
 import { describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
-import { URGENCES } from "./situations-v9-7-2";
+import { URGENCES } from "./situations-v9-7-3";
 
 const MAINTENANT = new Date("2026-09-08T10:00:00Z");
 
@@ -70,5 +70,21 @@ describe("TS973-04 (famille AUD-ROUTE-URG-DEST), les sept contradictions", () =>
       p2_exception_admission_had: "oui",
     });
     expect(qualification).toBe("non");
+  });
+});
+
+describe("p2_validations_documentaires, les dates d'accident", () => {
+  // `technicalSituation` (v9.7.3) : une date d'AT/MP ou d'accident causé par
+  // un tiers existe au calendrier et n'est pas future.
+  it.each([
+    ["2026-08-01", "oui"],
+    ["2026-02-30", "non"],
+    ["2026-09-22", "non"],
+  ])("date d'AT/MP %s → %s", (date, attendu) => {
+    const situation = avecEntreesCalculees(
+      { p2_contexte_at_mp: "oui", p2_date_at_mp: `'${date}'` },
+      new Date("2026-09-21T10:00:00Z"),
+    );
+    expect(situation.p2_validations_documentaires).toBe(attendu);
   });
 });

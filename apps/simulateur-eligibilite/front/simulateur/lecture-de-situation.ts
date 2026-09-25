@@ -23,3 +23,21 @@ export function lecteurs(situation: Situation<string>) {
   const vrai = (cle: CleDeRegle) => lu(cle) === "oui";
   return { lu, vrai };
 }
+
+/**
+ * Une réponse chiffrée : un nombre quand le formulaire l'a saisie, un texte
+ * nu (`"4"`) quand une seed l'a posée. Un texte entre quotes (`"'4'"`) est une
+ * chaîne pour le modèle, pas un nombre : il rend `NaN`, comme une saisie vide
+ * ou illisible.
+ */
+export function nombreSaisi(valeur: unknown): number {
+  if (typeof valeur === "number") return valeur;
+  if (typeof valeur !== "string" || valeur.startsWith("'")) return Number.NaN;
+  const texte = valeur.trim();
+  return texte === "" ? Number.NaN : Number(texte);
+}
+
+/** Une réponse absente, ou vide : c'est la complétude qui la réclame. */
+export function pasRepondu(valeur: unknown): boolean {
+  return typeof valeur !== "number" && texteBrut(valeur).trim() === "";
+}

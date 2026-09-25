@@ -15,7 +15,11 @@ import type { Situation } from "publicodes";
 import { moteur, texte } from "../moteur";
 import { estDeduit } from "./lieu-deduit";
 
+// Le type répondu part avec l'adresse : un retour pénitentiaire retiré laisse
+// sinon « Établissement pénitentiaire » en réponse à une question qui
+// redevient posée, et que le parcours ne repose pas (TR-CTX-4).
 const ADRESSE_DEPART = [
+  "p2_trajet_depart",
   "p2_depart_nom_lieu",
   "p2_depart_adresse",
   "p2_depart_complement_adresse",
@@ -25,6 +29,7 @@ const ADRESSE_DEPART = [
 ] as const;
 
 const ADRESSE_ARRIVEE = [
+  "p2_trajet_arrivee",
   "p2_arrivee_nom_lieu",
   "p2_arrivee_adresse",
   "p2_arrivee_complement_adresse",
@@ -77,14 +82,10 @@ export function avecLieuInvalide(
   const arriveeAvant = texte(surAvant, "cible_lieu_arrivee_type");
 
   let resultat = situation;
-  if (
-    (departApresDeduit || departAvantDeduit) &&
-    aChange(departAvant, departApres)
-  )
+  if (aEffacer(departAvantDeduit, departApresDeduit, departAvant, departApres))
     resultat = sansChamps(resultat, ADRESSE_DEPART);
   if (
-    (arriveeApresDeduit || arriveeAvantDeduit) &&
-    aChange(arriveeAvant, arriveeApres)
+    aEffacer(arriveeAvantDeduit, arriveeApresDeduit, arriveeAvant, arriveeApres)
   )
     resultat = sansChamps(resultat, ADRESSE_ARRIVEE);
   // `moteur` est resté positionné sur `situationPrecedente` depuis la
@@ -94,6 +95,20 @@ export function avecLieuInvalide(
 }
 
 // ---- implémentation ----
+
+// Un lieu déduit avant ou après la saisie, dont le type a changé. Ou un lieu
+// qui cesse d'être déduit : il perd toujours ce qui lui était répondu, car la
+// réponse, masquée tant qu'il était déduit, n'a pas été confirmée pour le
+// trajet actuel.
+function aEffacer(
+  avantDeduit: boolean,
+  apresDeduit: boolean,
+  avant: string,
+  apres: string,
+): boolean {
+  if (avantDeduit && !apresDeduit && avant !== "") return true;
+  return (avantDeduit || apresDeduit) && aChange(avant, apres);
+}
 
 // Un lieu qui n'était pas encore tranché (page pas encore atteinte) n'a pas
 // d'adresse à invalider : la comparaison ne porte que sur un type déjà connu.

@@ -11,15 +11,11 @@ l'application n'a pas ; la décision (documenter plutôt que construire) et
 le détail sont dans `references/precedents.md` du skill
 `implement-publicodes-version`.
 
-Un candidat repéré au ticket 01 : `tests/cerfa/depuis-simulateur-dap-mapping.test.ts`
-(« écrit « nom tra » depuis la cible du document, pas les transports prévus »)
-vise un cas où le nombre couvert par la DAP (5) dépasse le nombre prescrit (3)
-en « aller-retour différent ». `p2_configuration_trajet_complete` exige
-pourtant, sur cette branche, `p2_nombre_transports_couvert_simulation <=
-p2_nombre_transports_prevus` — ce qui bloque exactement le cas que le test dit
-vouloir couvrir. À vérifier au moteur nu avant d'écrire le constat : est-ce
-une contrainte voulue (et alors le test date d'avant elle), ou une
-contradiction avec l'intention du ticket TS973-09 ?
+Candidat du ticket 01 écarté au ticket 19 : le test « nom tra » prenait 5
+transports couverts pour 3 prévus. `p2_configuration_trajet_complete` exige
+le contraire, et `Session.submit()` refuse aussi (« Le nombre couvert ne peut
+pas dépasser le total »). La contrainte est voulue, le test datait d'avant
+elle : il est réécrit avec 2 couverts pour 5 prévus. Rien à remonter.
 
 Un écart assumé au ticket 08, à signaler sans question : l'application ne
 porte pas `restartMedical()`. Comme chez l'éditeur (`option_visibility`,

@@ -1,10 +1,10 @@
 // Ce qui laisse le financement indécis, part de la matrice de non-régression du
 // livrable v9.7.1 (tmp/9.7.1/tests/financement.mjs). La grille des convocations
-// et les deux issues sans convocation sont dans `financement-v9-7-2.test.ts`.
+// et les deux issues sans convocation sont dans `financement-v9-7-3.test.ts`.
 
 import { describe, expect, it } from "vitest";
-import { attendFinancementComplet, CORE } from "./financement-v9-7-2";
-import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-2";
+import { attendFinancementComplet, CORE } from "./financement-v9-7-3";
+import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-3";
 import { moteurDeTest } from "./moteur";
 
 const BASES = {

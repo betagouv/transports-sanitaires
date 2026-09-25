@@ -217,7 +217,9 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
     // Un seul moteur, réinterrogé à chaque seed : le reconstruire à chaque
     // fois relit et recompile les règles depuis le disque, ce que 28 seeds
     // sur trois tableaux rend coûteux pour rien. Le tout reste plus lourd que
-    // le reste du fichier : délai explicite plutôt que le défaut de 5 s.
+    // le reste du fichier : délai explicite plutôt que le défaut de 5 s. Il
+    // tient en 8 s seul, mais dépassait 20 s sous la charge de la suite
+    // complète, que la campagne v9.7.3 a alourdie : 60 s de marge.
     const moteur = moteurDeTest();
     const TABLEAUX = [
       ["PMT", REMPLISSAGE_PMT, GABARIT],
@@ -242,7 +244,7 @@ describe("les champs qui portent plusieurs cases sous un même nom", () => {
           expect(connus, `${nom} — « ${champ} » — /${état}`).toContain(état);
       }
     }
-  }, 20_000);
+  }, 60_000);
 });
 
 describe("la taille des valeurs écrites", () => {
