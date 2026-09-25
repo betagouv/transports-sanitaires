@@ -250,7 +250,8 @@ function qualificationDeclarationsValide(
   return true;
 }
 
-// Les exceptions EHPAD/USLD contre les lieux réellement renseignés.
+// Les exceptions EHPAD/USLD contre les lieux réellement renseignés, et la
+// destination urgences contre le lieu d'arrivée réellement renseigné.
 // Réencodage TypeScript de `exceptionsRouteValid` (v9.7.3,
 // `src/application.mjs`), simplifié : la référence compare l'exception au
 // lieu **déduit** (`placeType`, qui recouvre HAD, retour pénitentiaire et
@@ -258,6 +259,14 @@ function qualificationDeclarationsValide(
 // application (ticket 11), donc la comparaison porte ici sur le lieu
 // directement répondu. Les deux coïncident tant que `p2_trajet_depart` et
 // `p2_trajet_arrivee` restent des questions posées telles quelles.
+//
+// TS973-04 (famille AUD-ROUTE-URG-DEST) : une arrivée urgences déduit toujours
+// « Structure de soins » (`p2_type_arrivee_deduit`, regles.publicodes), donc
+// une réponse contraire ne peut venir que d'avant un changement de raison
+// principale : un domicile, un EHPAD, une USLD, un autre lieu ou un
+// établissement pénitentiaire laissé en arrière-plan. Cinq des sept
+// contradictions de la famille ; les deux autres (retour pénitentiaire,
+// admission HAD) sont déjà couvertes par `qualificationDeclarationsValide`.
 function exceptionsTrajetValides(situation: Situation<string>): boolean {
   if (!qualificationDeclarationsValide(situation)) return false;
   const { lu, vrai } = lecteurs(situation);
@@ -266,6 +275,12 @@ function exceptionsTrajetValides(situation: Situation<string>): boolean {
   if (vrai("p2_exception_ehpad") && depart !== "EHPAD" && arrivee !== "EHPAD")
     return false;
   if (vrai("p2_exception_usld") && depart !== "USLD" && arrivee !== "USLD")
+    return false;
+  if (
+    lu("p2_raison_principale") === "Transport vers un service d’urgences" &&
+    arrivee !== "" &&
+    arrivee !== "Structure de soins"
+  )
     return false;
   return true;
 }

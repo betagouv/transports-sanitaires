@@ -27,6 +27,11 @@ export const HOSPITALISATION = {
   p2_raison_principale: "'Entrée en hospitalisation'",
 };
 
+/** Raison principale ajoutée par la v9.7.3, qui déduit désormais son lieu d'arrivée. */
+export const URGENCES = {
+  p2_raison_principale: "'Transport vers un service d’urgences'",
+};
+
 /** Les deux mosaïques dont on décoche l'option exclusive. */
 export const ALD = { p1_m0_ald: "oui", p1_m0_aucun: "non" };
 export const CRITERES = { p1_critere_aucun: "non" };

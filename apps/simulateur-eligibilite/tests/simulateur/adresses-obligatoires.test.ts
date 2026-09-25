@@ -24,6 +24,7 @@ import {
   evalue,
   HOSPITALISATION,
   PRO,
+  URGENCES,
 } from "./situations-v9-7-2";
 
 const PARCOURS_ADMINISTRATIF = {
@@ -196,5 +197,30 @@ describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () =>
       evalue(PARCOURS_ADMINISTRATIF).evaluate("cible_lieu_arrivee_type")
         .nodeValue,
     ).toBe("Structure de soins");
+  });
+
+  // TS973-04 (famille AUD-ROUTE-URG-DEST) : même déduction pour une arrivée
+  // urgences, et les deux options qui déduisaient une autre destination
+  // (retour pénitentiaire, admission HAD) n'y sont plus proposées.
+  it("ne pose jamais le type du lieu d’arrivée : il est déduit d’un transport vers les urgences", () => {
+    const versLesUrgences = {
+      ...PARCOURS_ADMINISTRATIF,
+      ...URGENCES,
+    };
+    expect(
+      estApplicable(evalue(versLesUrgences), "p2_trajet_arrivee"),
+    ).not.toBe(true);
+    expect(
+      evalue(versLesUrgences).evaluate("cible_lieu_arrivee_type").nodeValue,
+    ).toBe("Structure de soins");
+    expect(
+      estApplicable(
+        evalue(versLesUrgences),
+        "p2_exception_retour_penitentiaire",
+      ),
+    ).not.toBe(true);
+    expect(
+      estApplicable(evalue(versLesUrgences), "p2_exception_admission_had"),
+    ).not.toBe(true);
   });
 });
