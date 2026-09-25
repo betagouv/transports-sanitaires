@@ -137,3 +137,33 @@ inapplicable, et les tests de navigation qui attendaient un écran « type de
 lieu » qui ne s'affiche plus. Ce que le mode d'emploi reste à porter pour ce
 sujet : le récapitulatif distinguant un fait déduit d'une réponse, et
 l'invalidation des données incompatibles quand le motif change.
+
+## v9.7.3 : un ticket qui suppose une capacité produit qu'on n'a pas
+
+`TS973-18` (revalider les simulations administratives anciennes) demande de
+persister `Session.exportState()` et de revalider le volet administratif à
+la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket est
+écrit depuis l'adaptateur de référence de l'éditeur, qui a lui-même une
+session persistable et reprenable entre deux visites — une hypothèse sur
+les capacités de l'intégrateur, pas seulement sur le modèle.
+
+Vérifié à l'exécution (grep de `exportState`/`importState`/`localStorage`
+dans `front/`) : rien de tel n'existe côté application. Les deux mécanismes
+de « reprise » qu'on a sont plus étroits — `passation.ts` (le volet médical
+P1, même poste, même enchaînement, « hors périmètre » assumé par son propre
+commentaire) et `convocation-revalidation.ts` (revalide dans la même page
+chargée, jamais entre deux visites). Sans persistance longue durée, il
+n'existe aucun cas où une session « v9.7.2 » serait rechargée sous
+« v9.7.3 » : rien à revalider dans ce sens.
+
+**Décision retenue : documenter l'écart plutôt que construire le
+mécanisme.** Construire une persistance et une révision qu'aucune
+fonctionnalité actuelle n'exploite est le genre d'abstraction spéculative
+que le dépôt évite ailleurs — mieux vaut l'anomalie remontée
+(`tmp/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`, non
+versionné) que du code mort. Si une reprise longue durée du volet
+administratif devient un besoin produit réel, `administrative_revision`
+(et son pendant clinique déjà présent, `clinical_criteria_revision`) sera
+le point de départ naturel. **À revérifier à chaque intégration** tant que
+l'éditeur écrit ses tickets depuis son propre adaptateur : la même
+hypothèse peut revenir sous un autre nom.

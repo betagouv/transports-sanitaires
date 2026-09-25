@@ -1,8 +1,15 @@
 # 21: Remonter les anomalies à l'éditeur
 
-**What to build:** chaque écart constaté pendant l'intégration — dont,
-potentiellement, TS973-18 — part chez l'éditeur du modèle sous forme d'un
-fichier par sujet, écrit pour être envoyé tel quel.
+**What to build:** chaque écart constaté pendant l'intégration part chez
+l'éditeur du modèle sous forme d'un fichier par sujet, écrit pour être
+envoyé tel quel.
+
+Déjà écrit, au ticket 18 : `tmp/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`
+(non versionné — à récupérer et envoyer). TS973-18 suppose une session
+persistable et reprenable entre deux visites (`Session.exportState()`), que
+l'application n'a pas ; la décision (documenter plutôt que construire) et
+le détail sont dans `references/precedents.md` du skill
+`implement-publicodes-version`.
 
 Un candidat repéré au ticket 01 : `tests/cerfa/depuis-simulateur-dap-mapping.test.ts`
 (« écrit « nom tra » depuis la cible du document, pas les transports prévus »)
