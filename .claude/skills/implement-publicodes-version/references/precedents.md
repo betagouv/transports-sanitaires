@@ -191,7 +191,7 @@ Dans `tmp/`, non versionnées, écrites au ticket 21 :
 | Fichier | Sujet | Question |
 |---|---|---|
 | `anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md` | TS973-18 suppose une session persistable | oui |
-| `anomalie-v9-7-3-completude-des-precisions-medicales.md` | la complétude compare des chaînes exactes, l'adaptateur replie | oui |
+| `anomalie-v9-7-3-completude-des-precisions-medicales.md` | le modèle accepte « Autre » comme précision médicale, le code de l’éditeur la refuse | oui |
 | `anomalie-v9-7-3-suggestions-de-seances-du-transfert.md` | `session_suggestions` que `suggestionsFor()` ignore | oui |
 | `anomalie-v9-7-3-texte-medical-et-taille-des-champs.md` | EM-2 sans annexe face à des champs d'une ligne | oui |
 | `anomalie-v9-7-3-ecarts-d-integration-assumes.md` | reprise médicale, total DAP, fuseau, effacement en aval | à confirmer, écart par écart |
