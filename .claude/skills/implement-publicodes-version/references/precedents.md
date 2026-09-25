@@ -142,10 +142,10 @@ l'invalidation des données incompatibles quand le motif change.
 
 `TS973-18` (revalider les simulations administratives anciennes) demande de
 persister `Session.exportState()` et de revalider le volet administratif à
-la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket est
-écrit depuis l'adaptateur de référence de l'éditeur, qui a lui-même une
-session persistable et reprenable entre deux visites — une hypothèse sur
-les capacités de l'intégrateur, pas seulement sur le modèle.
+la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket et le
+guide (§ 6) supposent une session persistable et reprenable entre deux
+visites : une hypothèse sur les capacités de l'intégrateur, pas seulement
+sur publicodes.
 
 Vérifié à l'exécution (grep de `exportState`/`importState`/`localStorage`
 dans `front/`) : rien de tel n'existe côté application. Les deux mécanismes
@@ -164,8 +164,7 @@ que le dépôt évite ailleurs — mieux vaut l'anomalie remontée
 versionné) que du code mort. Si une reprise longue durée du volet
 administratif devient un besoin produit réel, `administrative_revision`
 (et son pendant clinique déjà présent, `clinical_criteria_revision`) sera
-le point de départ naturel. **À revérifier à chaque intégration** tant que
-l'éditeur écrit ses tickets depuis son propre adaptateur : la même
+le point de départ naturel. **À revérifier à chaque intégration** : la même
 hypothèse peut revenir sous un autre nom.
 
 ## v9.7.3 : une fixture qui répond à une question que le parcours ne pose pas
@@ -191,11 +190,9 @@ Dans `tmp/9.7.3/anomalies/`, non versionnées, écrites au ticket 21 :
 | Fichier | Sujet | Question |
 |---|---|---|
 | `anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md` | TS973-18 suppose une session persistable | oui |
-| `anomalie-v9-7-3-completude-des-precisions-medicales.md` | publicodes accepte « Autre » comme précision médicale, le code de l’éditeur la refuse | oui |
-| `anomalie-v9-7-3-suggestions-de-seances-du-transfert.md` | `session_suggestions` que `suggestionsFor()` ignore | oui |
 | `anomalie-v9-7-3-texte-medical-et-taille-des-champs.md` | EM-2 sans annexe face à des champs d'une ligne | oui |
-| `anomalie-v9-7-3-ecarts-d-integration-assumes.md` | reprise médicale, total DAP, fuseau, effacement en aval | à confirmer, écart par écart |
+| `anomalie-v9-7-3-ecarts-d-integration-assumes.md` | reprise médicale et effacement en aval, face à TS973-08, TS973-16 et au guide | à confirmer, écart par écart |
 
-Pour reproduire dans l'adaptateur de l'éditeur, copier le paquet hors de
-`tmp/` et lui monter un `node_modules` minimal (`publicodes`, `yaml`) par
-liens vers le magasin pnpm du dépôt. Le paquet livré ne les installe pas.
+Deux autres constats ont été écrits puis retirés : ils opposaient notre
+application au code livré par l'éditeur (`src/application.mjs`), qui n'est
+pas une référence. Seuls les YAML et les `docs/*.md` le sont.

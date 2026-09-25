@@ -331,17 +331,22 @@ ni nos tests. Sa structure :
 | Ce qu'on a fait de notre côté | pour que l'éditeur sache ce qu'il défait s'il corrige |
 | La question | fermée, avec les pistes de correction : le choix lui revient |
 
+La référence, ce sont **uniquement les fichiers YAML et les documents
+`docs/*.md`** du livrable. Le code livré par l'éditeur (`src/*.mjs`) n'en fait
+pas partie : on ne le cite pas, on ne s'y compare pas, et un écart avec lui
+n'est pas une anomalie.
+
 L'origine dit à l'éditeur quelle pièce corriger :
 
 | Origine | Où est le problème | Exemple |
 |---|---|---|
 | `spec` | un ticket, un contrat (`docs/*.md`) ou le contrat d'interface (`*.ui.yaml`) | un ticket suppose une capacité que l'application n'a pas |
 | `publicodes` | les règles du modèle (`*.publicodes.flat-*.yaml`) | une règle accepte une réponse que le reste du livrable refuse |
-| `app` | du code applicatif : celui de référence de l'éditeur (`src/application.mjs`), ou le nôtre | une fonction de référence ignore une clé du contrat ; un écart que notre application assume |
+| `app` | notre application, qui s'écarte de la spec ou de publicodes | un écart que notre application assume |
 
-Quand deux pièces se contredisent, les nommer toutes les deux (`spec et app`),
+Quand deux pièces se contredisent, les nommer toutes les deux (`spec et publicodes`),
 et dire laquelle on a suivie. L'origine se complète de deux lignes : le
-comportement **attendu**, tel que la spec et le modèle le décrivent, et le
+comportement **attendu**, tel que la spec et publicodes le décrivent, et le
 comportement **observé dans notre application**. Sans elles, le lecteur ne
 sait pas si le problème est chez nous.
 
