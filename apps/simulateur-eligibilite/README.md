@@ -172,31 +172,45 @@ front/                   le front, bundlé par Vite
 ## Le modèle de règles
 
 `regles/regles.publicodes` est livré de l'extérieur et intégré par recopie. C'est
-aujourd'hui la v9.7.2, qui compte 308 règles et 76 cibles — inchangés depuis la v9.7.1,
-que ce correctif ne touche que sur une seule règle
-(`cible_attente_accord_prealable_requise`). Le fichier livré ne porte pas sa version :
-c'est `regles/VERSION` qui la porte à côté de lui, et c'est elle que le pied de page
-affiche. Une recopie met les deux à jour, sans quoi l'application annonce une version
-qu'elle n'exécute pas.
+aujourd'hui la v9.7.3, qui compte 324 règles et 76 cibles. La v9.7.2 en comptait 308.
+Les seize règles de plus portent les contrôles de cohérence de la version :
 
-Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.2.0), une matrice de
+- trois gardes que l'application calcule (`owner: application`, cf.
+  [`gardes-calculees.md`](docs/knowledge/domain/gardes-calculees.md)) ;
+- une question, l'exception de retour pénitentiaire ;
+- douze règles de cohérence et de possibilité, comme l'orientation vers la caisse ou
+  l'exception radiothérapie possible.
+
+Le fichier livré ne porte pas sa version : c'est `regles/VERSION` qui la porte à côté de
+lui, et c'est elle que le pied de page affiche. Une recopie met les deux à jour, sans quoi
+l'application annonce une version qu'elle n'exécute pas.
+
+Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.3.0), une matrice de
 tests et, depuis la v9.7, une correspondance documentaire. Tous sont réencodés ici plutôt
 que chargés : le contrat se lit dans les composants et dans `questionnaire/etapes.ts`, la
-matrice dans vingt-deux fichiers de `tests/simulateur/`, un par sujet. Ces tests gardent les
-identifiants du livrable (`ALD-002`, `SERIE-001`, `ARTICLE80-001`, `GRID-AMB-SEANCE-D2-N4`,
-`CONV971-AIR-ORIENTATION-*`, `RETOURS972-*`, `INDEPENDANT972-*` et les autres) pour qu'un
-désaccord remonte au fournisseur sous son nom.
+recette dans vingt-huit fichiers `tests/simulateur/*.test.ts(x)`, un par sujet.
+Ces tests gardent les identifiants du livrable : `ALD-002`, `SERIE-001`, `ARTICLE80-001`,
+`GRID-AMB-SEANCE-D2-N4`, `ROUTE-ER-DESTINATION-1`, `PERM-DAP-PERIODE-DEPASSE-4`,
+`TR-CTX-4` et les autres. Un désaccord remonte ainsi au fournisseur sous son nom.
 
-La matrice v9.7 en compte 275, dont 225 engendrés par un produit croisé — cinq modes, cinq
-motifs, trois distances, trois nombres de transports — inchangée en v9.7.1 comme en
-v9.7.2. Les contrôles neufs de chaque version vivent dans les suites `tests/*.mjs` du
-paquet plutôt que dans ce fichier YAML : convocation, financement et asepsie pour la
-v9.7.1 ; l'attente de l'accord préalable, l'explication de l'asepsie et les faits connus
-de la mosaïque de convocation pour la v9.7.2, portés respectivement par
-`attente-accord.test.ts`, `asepsie-explication.test.tsx` et
-`faits-connus.test.tsx`. La matrice elle-même ne donne pas des situations mais des
-**options**, qu'un adaptateur traduit en réponses : `tests/simulateur/livrable.ts`
-en est la recopie, et c'est par lui que tous ces cas se rejouent.
+La matrice v9.7 en compte 275, dont 225 engendrés par un produit croisé : cinq modes,
+cinq motifs, trois distances, trois nombres de transports. Elle est inchangée jusqu'en
+v9.7.3. Les contrôles neufs de chaque version vivent dans les suites `tests/*.mjs` du
+paquet plutôt que dans ce fichier YAML :
+
+| Version | Contrôles neufs | Portés par |
+|---|---|---|
+| v9.7.1 | convocation, financement, asepsie | `convocation*`, `financement*`, `asepsie` |
+| v9.7.2 | attente de l'accord préalable, explication de l'asepsie, faits connus de la convocation | `attente-accord`, `asepsie-explication`, `faits-connus` |
+| v9.7.3 | la campagne de l'éditeur (`tests/campagne-v973/`) | les neuf fichiers `campagne-*` |
+
+La campagne v9.7.3 couvre les trajets, les permissions, les décisions, les documents et
+les modifications après coup. Elle ajoute les régressions `V973-*` et `EM-*`.
+
+La matrice elle-même ne donne pas des situations mais des **options**, qu'un adaptateur
+traduit en réponses : `tests/simulateur/livrable.ts` en est la recopie, et c'est
+par lui que tous ces cas se rejouent. `migration-du-livrable.ts` y ramène les
+fixtures écrites pour la v9.7.2.
 
 La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois
 Cerfa — PMT S3138g, DAP S3139h, S3141 — elle nomme la règle qui la décide, la condition
