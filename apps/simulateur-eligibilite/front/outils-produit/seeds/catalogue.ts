@@ -606,6 +606,46 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-convocation-orientation-caisse-sans-adresse",
+    libelle:
+      "Secrétariat — convocation en avion, orientation caisse sans adresse (TS973-02)",
+    description:
+      "La même orientation caisse que ci-dessus, sans aucune adresse de trajet : " +
+      "aucune DAP n'est produite sur ce parcours, donc rien n'en réclame une. " +
+      "Verrouille TS973-02 : le verdict et les six motifs DAP (faux) se " +
+      "déterminent sans qu'une adresse soit jamais citée comme manquante.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      p2_convocation_avion_bateau: "oui",
+      p2_convocation_aucune: "non",
+      p2_depart_nom_lieu: null,
+      p2_depart_adresse: null,
+      p2_depart_complement_adresse: null,
+      p2_depart_code_postal: null,
+      p2_depart_commune: null,
+      p2_depart_pays: null,
+      p2_arrivee_nom_lieu: null,
+      p2_arrivee_adresse: null,
+      p2_arrivee_complement_adresse: null,
+      p2_arrivee_code_postal: null,
+      p2_arrivee_commune: null,
+      p2_arrivee_pays: null,
+      p2_tranche_distance_trajet_aller: null,
+    },
+    attendu: {
+      cible_cas_final: "orientation vers la caisse pour accord préalable",
+      cible_regime_financement:
+        "Assurance Maladie - modalités à confirmer auprès de la caisse",
+      cible_document_a_remettre_au_patient:
+        "Synthèse pour démarche auprès de la caisse",
+    },
+  },
+  {
     id: "secretariat-permission-s3141",
     libelle: "Secrétariat — permission de sortie, prescription S3141",
     description:
