@@ -167,6 +167,16 @@ describe("depuisLeMapping", () => {
     });
   });
 
+  it("laisse l'adresse du bénéficiaire au prescripteur, jamais à l'adresse du trajet", () => {
+    // TS973-14 : rien ne doit copier l'adresse de départ ou d'arrivée dans
+    // l'adresse du bénéficiaire — la ligne n'a pas de source, quelle que soit
+    // la situation, y compris quand un lieu de trajet est renseigné.
+    const remplissage = depuisLeMapping(RUBRIQUES_PMT, "beneficiaire_adresse");
+    expect(remplissage(réponses)).toMatchObject({
+      laisséÀ: "le prescripteur",
+    });
+  });
+
   it("laisse le cadre transporteur au transporteur", () => {
     const remplissage = depuisLeMapping(RUBRIQUES_PMT, "cadre_transporteur");
     expect(remplissage(réponses)).toMatchObject({

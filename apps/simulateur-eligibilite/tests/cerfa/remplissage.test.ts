@@ -282,8 +282,9 @@ describe("la taille des valeurs écrites", () => {
       return Number(/(\d+(?:\.\d+)?) Tf/.exec(da ?? "")?.[1]);
     };
 
-    // Réduite jusqu'à tenir dans les 182 points du cadre.
-    expect(taille("arrivée struct soins")).toBeLessThan(10);
+    // Descend directement au plancher de lisibilité (TS973-14), sans chercher
+    // une taille intermédiaire — provisoire, une prochaine spec le précisera.
+    expect(taille("arrivée struct soins")).toBe(6);
     // L'autre garde celle du gabarit : en automatique, elle grossirait pour rien.
     expect(taille("nbr transp")).toBe(10);
   });
