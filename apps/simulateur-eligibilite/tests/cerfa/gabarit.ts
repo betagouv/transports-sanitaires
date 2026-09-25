@@ -12,6 +12,10 @@ import {
   PDFName,
   PDFTextField,
 } from "pdf-lib";
+import {
+  remplirCerfa,
+  type Saisie,
+} from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre.ts";
 
 const ici = dirname(fileURLToPath(import.meta.url));
@@ -41,6 +45,28 @@ export async function relire(pdf: Uint8Array): Promise<Record<string, string>> {
     }
   }
   return lu;
+}
+
+/** Un texte médical court, comme le réviserait le prescripteur. */
+export const TEXTE_MEDICAL_REVISE = "Texte médical révisé par le prescripteur.";
+
+/**
+ * Remplit comme `remplirCerfa`, texte médical révisé : c'est ce que fait le
+ * prescripteur quand le texte composé déborde de sa rubrique (contrat EM-2).
+ * Pour les tests qui lisent d'autres champs, sur une seed au texte long.
+ */
+export function remplirApresRevision(
+  gabarit: Uint8Array,
+  saisies: readonly Saisie[],
+): Promise<Uint8Array> {
+  return remplirCerfa(
+    gabarit,
+    saisies.map((saisie) =>
+      "texteMédical" in saisie
+        ? { champ: saisie.champ, texteMédical: TEXTE_MEDICAL_REVISE }
+        : saisie,
+    ),
+  );
 }
 
 export const situation = (entrées: Record<string, string>) => ({

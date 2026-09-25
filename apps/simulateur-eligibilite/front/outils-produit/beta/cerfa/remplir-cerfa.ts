@@ -17,8 +17,13 @@ import {
   PDFTextField,
   StandardFonts,
 } from "pdf-lib";
-import { insererAnnexe, tientDansLaZone } from "./elements-medicaux/annexe.ts";
-import { planDImpression } from "./elements-medicaux/plan-d-impression.ts";
+import { DebordementDuTexteMedical } from "./elements-medicaux/debordement-du-texte-medical.ts";
+import {
+  TAILLE_DU_GABARIT,
+  TAILLE_MINIMALE_LISIBLE,
+  tailleQuiTient,
+  tientDansLaZone,
+} from "./elements-medicaux/mesure-de-la-zone.ts";
 
 /**
  * État d'export à écrire pour cocher un champ. Le « off » est toujours `/Off`.
@@ -47,8 +52,8 @@ export type ÉtatCoché =
 
 /**
  * Une valeur à écrire : un texte dans un champ nommé, une case à cocher, ou un
- * texte médical — composé, mesuré et éventuellement renvoyé à une annexe
- * plutôt qu'écrit tel quel (`écrireTexteMédical`, décision 5 de la spec 0005).
+ * texte médical, mesuré avant d'être écrit en entier (`écrireTexteMédical`,
+ * contrat EM-2).
  */
 export type Saisie = { readonly champ: string } & (
   | { readonly texte: string }
@@ -78,8 +83,10 @@ const MULTILIGNES_ROGNÉS: readonly string[] = ["adresse"];
  * Les champs de l'en-tête et de la prescription portent un widget sur chacun des
  * deux volets. Écrire une fois suffit donc, et les deux volets restent cohérents
  * par construction. Seuls `comm évent`, qui porte les éléments d'ordre médical, et
- * le bloc transporteur sont propres à un volet. `comm évent` et `elmedic` peuvent
- * en plus joindre une annexe : c'est `écrireTexteMédical` qui en décide.
+ * le bloc transporteur sont propres à un volet.
+ *
+ * @throws {DebordementDuTexteMedical} si le texte médical ne tient pas dans sa
+ * rubrique : aucun PDF n'est produit, plutôt qu'un texte coupé.
  */
 export async function remplirCerfa(
   gabarit: Uint8Array | ArrayBuffer,
@@ -96,15 +103,9 @@ export async function remplirCerfa(
 
   for (const saisie of saisies) {
     if ("coché" in saisie) cocher(formulaire, saisie.champ, saisie.coché);
-    else if ("texteMédical" in saisie) {
-      await écrireTexteMédical(
-        document,
-        formulaire,
-        police,
-        saisie.champ,
-        saisie.texteMédical,
-      );
-    } else écrire(formulaire, police, saisie.champ, saisie.texte);
+    else if ("texteMédical" in saisie)
+      écrireTexteMédical(formulaire, police, saisie.champ, saisie.texteMédical);
+    else écrire(formulaire, police, saisie.champ, saisie.texte);
   }
 
   // Sans cet appel, les valeurs sont bien dans le PDF, mais rien ne s'affiche tant
@@ -153,7 +154,7 @@ function écrire(
  * ici Helvetica, embarquée dans `remplirCerfa`. Une valeur composée, comme une
  * adresse assemblée sur l'unique ligne que le formulaire lui donne, peut
  * dépasser le cadre réel à 10 points, mesuré avec cette police réelle
- * (`tientDansLaZone`, la même mesure que pour la zone médicale).
+ * (`tientDansLaZone`, sur laquelle repose aussi la zone médicale).
  *
  * Provisoire : on descend directement à `TAILLE_MINIMALE_LISIBLE` plutôt que de
  * chercher une taille intermédiaire, et sans garantir que tout y tienne — une
@@ -168,11 +169,6 @@ function réduireSiÇaDéborde(
   if (tientDansLaZone(champ, police, TAILLE_DU_GABARIT)(valeur)) return;
   champ.setFontSize(TAILLE_MINIMALE_LISIBLE);
 }
-
-const TAILLE_DU_GABARIT = 10;
-// En dessous, un texte imprimé n'est plus confortablement lisible : plancher
-// courant pour une mention secondaire (notes de bas de page, mentions légales).
-const TAILLE_MINIMALE_LISIBLE = 6;
 
 /**
  * Coche en imposant l'état d'export attendu.
@@ -218,46 +214,26 @@ function aplatir(texte: string): string {
 }
 
 /**
- * Écrit un texte médical selon son plan d'impression : le champ, ou le renvoi
- * à une annexe insérée juste après la page qui le porte. Jamais
- * `réduireSiÇaDéborde` sur cette zone (décision 6 de la spec 0005) : réduire
- * la police rendrait illisible un texte que le médecin-conseil doit lire.
+ * Écrit un texte médical en entier, s'il tient dans sa rubrique (contrat EM-2).
+ *
+ * Le cadre du gabarit est petit : une ligne et demie sur la PMT, qui passe à
+ * la ligne d'elle-même, une seule sur la DAP. La police descend jusqu'au
+ * plancher de lisibilité s'il le faut. Au-delà, rien n'est écrit plus petit ni
+ * coupé : le texte déborde, et le prescripteur le révise.
  */
-async function écrireTexteMédical(
-  document: PDFDocument,
+function écrireTexteMédical(
   formulaire: Formulaire,
   police: PDFFont,
   nom: string,
   texte: string,
-): Promise<void> {
+): void {
   const champ = formulaire.getField(nom);
   if (!(champ instanceof PDFTextField)) {
     throw new Error(`Le champ « ${nom} » n'est pas un champ texte.`);
   }
-  const plan = planDImpression(texte, tientDansLaZone(champ, police));
-  champ.setText(plan.texteDuChamp);
-  if (plan.annexe) {
-    await insererAnnexe(
-      document,
-      pageDuChamp(document, champ, nom),
-      plan.annexe,
-    );
-  }
-}
-
-// La page qui porte le widget du champ : c'est après elle, et non après un
-// numéro figé pour PMT ou DAP, que l'annexe s'insère — ce module ignore lequel
-// des deux gabarits il remplit.
-function pageDuChamp(
-  document: PDFDocument,
-  champ: PDFTextField,
-  nom: string,
-): number {
-  const référence = champ.acroField.getWidgets()[0]?.P();
-  const pages = document.getPages().map((page) => page.ref);
-  const index = référence ? pages.indexOf(référence) : -1;
-  if (index === -1) {
-    throw new Error(`Impossible de situer « ${nom} » sur une page.`);
-  }
-  return index;
+  const taille =
+    texte === "" ? TAILLE_DU_GABARIT : tailleQuiTient(champ, police, texte);
+  if (taille === undefined) throw new DebordementDuTexteMedical(texte);
+  champ.setText(texte);
+  champ.setFontSize(taille);
 }

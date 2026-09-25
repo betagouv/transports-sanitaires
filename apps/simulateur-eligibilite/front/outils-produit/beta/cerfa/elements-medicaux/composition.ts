@@ -1,5 +1,5 @@
 // La composition des éléments d'ordre médical : réencodage TypeScript du
-// contrat EM-1 (`composeMedicalText`, `tmp/9.7.1/src/medical-text.mjs`), douze
+// contrat EM-2 (`composeMedicalText`, `tmp/9.7.3/src/medical-text.mjs`), douze
 // blocs assemblés dans un ordre fixe, jamais depuis un texte inventé — cf. la
 // décision 2 de la spec 0005 pour le choix de réencoder plutôt que charger le
 // module de l'éditeur.
@@ -8,16 +8,17 @@
 // rend une question non applicable comme absente, à l'identique de
 // `adresseSurLaLigne` dans `mapping.ts` (décision 3 de la spec 0005).
 //
-// Le bloc du type d'hospitalisation a disparu avec `p2_type_hospitalisation`
-// (retiré en v9.7.3, ticket 10). Le passage au contrat EM-2 (texte médical
-// intégral, sans annexe) reste à faire — ticket 12.
+// EM-2 (v9.7.3) sépare les blocs par « ; » au lieu d'un saut de ligne : le
+// moteur PDF garde le retour automatique à la ligne, la rubrique n'est plus
+// occupée par des lignes à moitié vides (TS973-12). Le bloc du type
+// d'hospitalisation a disparu avec `p2_type_hospitalisation` (ticket 10).
 
 import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
 import type { Reponses } from "../reponses.ts";
 import { dateEtHeureDePermission, dateMedicale } from "./dates.ts";
 import { CRITERES_MEDICAUX, SEANCES } from "./libelles.ts";
 
-/** Les douze blocs, dans l'ordre du contrat, dédupliqués et joints par un `\n`. */
+/** Les douze blocs, dans l'ordre du contrat, dédupliqués et joints par « ; ». */
 export function composerElementsMedicaux(réponses: Reponses): string {
   const blocs = [
     blocTransfert(réponses),
@@ -39,8 +40,11 @@ export function composerElementsMedicaux(réponses: Reponses): string {
 
 type Bout = "depart" | "arrivee";
 
+// Le séparateur exact du contrat, espaces compris.
+const SEPARATEUR = " ; ";
+
 // Les quatre composants d'une adresse liée au trajet, dans l'ordre où
-// `boundAddress` (EM-1) les assemble.
+// `boundAddress` (EM-2) les assemble.
 const COMPOSANTS_ADRESSE: Record<
   Bout,
   readonly [CleDeRegle, CleDeRegle, CleDeRegle, CleDeRegle]
@@ -213,7 +217,7 @@ function adresseLiée(
 
 function dédupliqués(blocs: readonly string[]): string {
   const nettoyés = blocs.map(nettoyé).filter((bloc) => bloc !== "");
-  return [...new Set(nettoyés)].join("\n");
+  return [...new Set(nettoyés)].join(SEPARATEUR);
 }
 
 function nettoyé(bloc: string): string {

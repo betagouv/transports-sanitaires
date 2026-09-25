@@ -5,7 +5,6 @@
 
 import { describe, expect, it } from "vitest";
 import { saisiesDepuisSituation } from "../../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { dateDePrescription } from "../../front/simulateur/secretariat/date-de-prescription.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
 import {
@@ -13,12 +12,13 @@ import {
   GABARIT_DAP,
   PROCHE_ACCOMPAGNANT,
   relire,
+  remplirApresRevision,
   situation,
 } from "./gabarit.ts";
 
 const depuisLaSituation = async (entrées: Record<string, string>) =>
   relire(
-    await remplirCerfa(
+    await remplirApresRevision(
       GABARIT_DAP,
       saisiesDepuisSituation(moteurDeTest(), situation(entrées)),
     ),

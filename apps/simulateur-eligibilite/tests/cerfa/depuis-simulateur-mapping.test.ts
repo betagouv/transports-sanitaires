@@ -15,6 +15,7 @@ import {
   HOSPITALISATION,
   PROCHE_ACCOMPAGNANT,
   relire,
+  remplirApresRevision,
   situation,
 } from "./gabarit.ts";
 
@@ -97,7 +98,7 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
     // ni l'un ni l'autre : ce ne sont pas des cases par défaut.
     const ambulance = situationDe(seedParId("secretariat-prescription"));
     const luAmbulance = await relire(
-      await remplirCerfa(
+      await remplirApresRevision(
         GABARIT,
         saisiesDepuisSituation(moteurDeTest(), ambulance),
       ),
@@ -165,7 +166,7 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
       moteurDeTest(),
       situationDe(seedParId("secretariat-prescription")),
     );
-    const lu = await relire(await remplirCerfa(GABARIT, saisies));
+    const lu = await relire(await remplirApresRevision(GABARIT, saisies));
 
     for (const champ of [
       "N et P prescript",
@@ -181,13 +182,13 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0007)", ()
 
   it("compose les éléments d'ordre médical plutôt que de laisser « comm évent » vierge", async () => {
     // Depuis la spec 0005 : la zone n'est plus laissée au prescripteur, elle
-    // est composée selon EM-1 puis mesurée — cette seed déborde d'une ligne.
+    // est composée selon EM-2 puis mesurée. Le texte entier tient ici.
     const saisies = saisiesDepuisSituation(
       moteurDeTest(),
-      situationDe(seedParId("secretariat-prescription")),
+      situationDe(seedParId("secretariat-consultation-cardiologie")),
     );
     const lu = await relire(await remplirCerfa(GABARIT, saisies));
 
-    expect(lu["comm évent"]).toBe("Éléments médicaux : voir l’annexe jointe.");
+    expect(lu["comm évent"]).toBe("Consultation de cardiologie");
   });
 });

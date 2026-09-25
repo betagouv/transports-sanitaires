@@ -60,9 +60,10 @@ nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est
 éprouvé.
 
 La zone « éléments d'ordre médical » du PMT et de la DAP (`elements-medicaux/`)
-se compose selon le contrat EM-1 de l'éditeur, se mesure dans la police et la
-taille réelles du gabarit, et renvoie à une annexe insérée juste après le volet
-1 quand elle déborde. Voir
+se compose selon le contrat EM-2 de l'éditeur et se mesure dans la police et la
+géométrie réelles du gabarit. Le texte reste entier dans la rubrique, sans
+annexe. S'il déborde, aucun PDF ne sort : le prescripteur révise le texte à
+l'écran, puis il est remesuré. Voir
 [`composer-les-elements-medicaux.md`](docs/knowledge/domain/composer-les-elements-medicaux.md).
 
 ## Les trois racines de runtime

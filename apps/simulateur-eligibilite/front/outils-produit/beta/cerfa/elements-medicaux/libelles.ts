@@ -1,9 +1,9 @@
-// Les libellés figés du contrat EM-1 (`tmp/9.7.1/docs/CONTRAT-ELEMENTS-MEDICAUX.md`) :
-// les onze besoins de transport, les trois séances, et les deux textes du
-// débordement. Mot pour mot, apostrophes typographiques comprises — une
-// évolution clinique impose de les revoir ici, une évolution du questionnaire
-// ne les modifie pas d'elle-même (décision « Composition dans l'ordre » du
-// contrat).
+// Les libellés figés du contrat EM-2
+// (`tmp/9.7.3/docs/CONTRAT-ELEMENTS-MEDICAUX.md`) : les onze besoins de
+// transport et les trois séances. Mot pour mot, apostrophes typographiques
+// comprises. Une évolution clinique impose de les revoir ici, une évolution
+// du questionnaire ne les modifie pas d'elle-même (décision « Composition
+// dans l'ordre » du contrat).
 //
 // Les types de clé sont dérivés du contrat de règles plutôt que recopiés : si
 // un critère ou une séance disparaît du modèle, ce fichier cesse de compiler
@@ -16,7 +16,7 @@ export type CleDeCritereMedical = Exclude<
   "p1_critere_aucun"
 >;
 
-/** Les onze besoins de transport de la mosaïque Q1.1, dans l'ordre du dictionnaire EM-1. */
+/** Les onze besoins de transport de la mosaïque Q1.1, dans l'ordre du dictionnaire EM-2. */
 export const CRITERES_MEDICAUX: Readonly<Record<CleDeCritereMedical, string>> =
   {
     p1_critere_incapacite_deplacement_autonome:
@@ -54,14 +54,3 @@ export const SEANCES: ReadonlyArray<readonly [CleDeSeance, string]> = [
     "Séance de dialyse en centre, notamment d’hémodialyse",
   ],
 ];
-
-/** Ce que le champ porte quand le texte entier ne tient pas dans la zone. */
-export const RENVOI_A_L_ANNEXE = "Éléments médicaux : voir l’annexe jointe.";
-
-/** Le titre de l'annexe, quand elle existe. */
-export const TITRE_DE_L_ANNEXE =
-  "Éléments d’ordre médical - complément à la prescription";
-
-/** La mention de confidentialité, en tête de la première page de l'annexe. */
-export const MENTION_CONFIDENTIALITE =
-  "Confidentiel. Réservé au médecin-conseil. À joindre au volet 1.";
