@@ -23,7 +23,7 @@ import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
 import { regleDeComplétude } from "./pagination";
 import { avecCalculs } from "./recalcul";
-import { avecReponse } from "./reponse-unique";
+import { avecReponse, avecReponses } from "./reponse-unique";
 import { saisieACorriger } from "./saisie-a-corriger";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
@@ -259,16 +259,6 @@ function resteUneQuestion(
     groupesEvalues.add(m.parentId);
     return !repondue(m);
   });
-}
-
-// Applique plusieurs réponses booléennes en une passe. La mosaïque s'en sert
-// pour, à chaque clic, mettre à jour l'option touchée ET figer les autres
-// options du groupe (sinon indéfinies → le moteur les considère non répondues).
-function avecReponses(formState: FormState<string>, reponses: Reponses) {
-  let etat = formState;
-  for (const [id, valeur] of reponses)
-    etat = formBuilder.handleInputChange(etat, id, valeur);
-  return etat;
 }
 
 function conclure(

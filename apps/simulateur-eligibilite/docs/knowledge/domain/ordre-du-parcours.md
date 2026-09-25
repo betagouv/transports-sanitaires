@@ -22,19 +22,24 @@ Un transfert se qualifie par la question posée (`p2_transfert_en_cours`,
 `p2_nature_transfert`), jamais par les types de lieu : deux structures de soins
 aux deux bouts ne font pas un transfert.
 
-## Changer une réponse de transfert
+## Changer une réponse
 
-Changer réellement la raison, le transfert en cours ou la nature efface les
-réponses de toutes les étapes suivantes, qui se reposent
-(`transfert-requalifie.ts`). C'est la règle de l'éditeur : « toute
-modification réelle invalide les seules étapes en aval ».
+Toute modification réelle d'une réponse efface les réponses de toutes les
+étapes suivantes, qui se reposent (`aval-invalide.ts`). C'est la règle du
+contrat d'interface (`state.on_change:
+clear_all_downstream_question_values_then_recompute_technical_values`) et du
+guide de l'éditeur (§ 6).
 
-Exemple : une exception EHPAD cochée pour un transfert provisoire. La nature
-passe à « Définitif » : les exceptions se reposent, sans la case cochée.
+Exemples :
 
-Sans cet effacement, la réponse restait dans la situation. Le modèle
-l'ignorait, mais la garde des déclarations la lisait et pouvait bloquer une
-issue légitime.
+- une exception EHPAD cochée pour un transfert provisoire, puis la nature
+  passe à « Définitif » : les exceptions se reposent, sans la case cochée ;
+- le type de lieu de départ change : l'adresse, l'arrivée, la distance et
+  les précisions documentaires se reposent.
+
+Sans cet effacement, une réponse d'une autre branche restait dans la
+situation. Le modèle l'ignorait, mais les gardes calculées par l'application
+la lisaient et pouvaient bloquer une issue légitime.
 
 Revenir sur une page sans rien changer, ou répondre pour la première fois,
 n'efface rien.
