@@ -1,10 +1,10 @@
 // Ce qui laisse le financement indécis, part de la matrice de non-régression du
 // livrable v9.7.1 (tmp/9.7.1/tests/financement.mjs). La grille des convocations
-// et les deux issues sans convocation sont dans `financement-v9-7-2.test.ts`.
+// et les deux issues sans convocation sont dans `financement.test.ts`.
 
 import { describe, expect, it } from "vitest";
-import { attendFinancementComplet, CORE } from "./financement-v9-7-2";
-import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-2";
+import { attendFinancementComplet, CORE } from "./financement";
+import { evaluerLeCas, situationDuLivrable } from "./livrable";
 import { moteurDeTest } from "./moteur";
 
 const BASES = {
@@ -21,7 +21,7 @@ const CHAMPS_A_RETIRER = [
   "p2_tranche_distance_trajet_aller",
 ] as const;
 
-describe("matrice v9.7.1 — ce qui laisse le financement indécis", () => {
+describe("matrice du livrable — ce qui laisse le financement indécis", () => {
   for (const [id, options] of Object.entries(BASES)) {
     describe(id, () => {
       it.each(CHAMPS_A_RETIRER)("FINANCEMENT-INCOMPLET-%s", (champ) => {

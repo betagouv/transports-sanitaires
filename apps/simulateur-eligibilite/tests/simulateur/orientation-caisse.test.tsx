@@ -36,7 +36,7 @@ const CAISSE = {
   p2_convocation_aucune: "non",
 };
 
-describe("RETOURS973-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () => {
+describe("RETOURS972-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () => {
   it.each([
     ["NON-URGENTE", { ...CAISSE, p2_transport_urgence: "'Non'" }, AWAITING],
     [
@@ -48,7 +48,7 @@ describe("RETOURS973-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () 
       URGENT,
     ],
   ] as const)(
-    "RETOURS973-CAISSE-RENDU-ET-SYNTHESE-%s",
+    "RETOURS972-CAISSE-RENDU-ET-SYNTHESE-%s",
     (_nom, situationFinale, instructionAttendue) => {
       render(
         <Secretariat
@@ -88,7 +88,7 @@ describe("RETOURS973-CAISSE-CONTRAT-TEXTES-VALIDES — les contenus rendus", () 
   );
 });
 
-describe("RETOURS973-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS", () => {
+describe("RETOURS972-CAISSE-CONTENUS-NON-DIFFUSES-AUX-AUTRES-CAS", () => {
   it("n’apparaissent pas sur une DAP ordinaire", () => {
     render(
       <Secretariat

@@ -78,7 +78,7 @@ describe("genererCerfa et la révision", () => {
 });
 
 describe("la révision à l'écran", () => {
-  it("montre le texte entier, le fait reformuler, puis génère", async () => {
+  it("EM-REVISION-EXPLICITE-REMESUREE : montre le texte entier, le fait reformuler, puis génère", async () => {
     const user = userEvent.setup();
     render(
       <Secretariat

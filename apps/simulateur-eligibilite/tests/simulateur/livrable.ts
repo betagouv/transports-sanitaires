@@ -5,7 +5,7 @@
 // référence (`tests/helpers.mjs` du paquet) traduit en réponses. Sans cette
 // traduction, aucun de ses cas ne serait rejouable ici.
 //
-// Ce fichier en est la recopie. Il tient à part de `situations-v9-7-2.ts`, qui
+// Ce fichier en est la recopie. Il tient à part de `situations.ts`, qui
 // porte le vocabulaire de nos propres scénarios : ici, rien n'est de nous — les
 // valeurs par défaut sont celles du livrable, y compris quand elles diffèrent des
 // nôtres. Sa base répond « besoin d'un professionnel » là où notre base neutre
@@ -14,6 +14,7 @@
 
 import type { Situation } from "publicodes";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
+import { migree } from "./migration-du-livrable";
 import { moteurDeTest } from "./moteur";
 
 /** Les options qu'un cas du livrable peut porter. */
@@ -38,6 +39,10 @@ export type OptionsDuLivrable = {
   aldType?: string;
   mode?: string;
   reason?: string;
+  /** La nature d'un transfert, « Provisoire » par défaut. */
+  nature?: string;
+  /** La précision du motif, saisie directement depuis la v9.7.3. */
+  detail?: string;
   age?: string;
   hospital?: string;
   permissionStart?: string;
@@ -86,7 +91,10 @@ export function situationDuLivrable(
   options: OptionsDuLivrable = {},
 ): Situation<string> {
   return avecEntreesCalculees(
-    { ...partie1(options), ...partie2(options), ...options.overrides },
+    migree(
+      { ...partie1(options), ...partie2(options), ...options.overrides },
+      options,
+    ),
     options.instant
       ? new Date(options.instant)
       : new Date("2026-09-08T10:00:00Z"),
@@ -152,6 +160,8 @@ const EXCEPTIONS = [
   "p2_exception_radiotherapie_moins_48h",
   "p2_exception_dialyse_domicile",
   "p2_exception_admission_had",
+  // v9.7.3 : un retour pénitentiaire se déclare aussi parmi les exceptions.
+  "p2_exception_retour_penitentiaire",
 ];
 
 const SPECIALES = [
@@ -204,14 +214,16 @@ function partie2(o: OptionsDuLivrable): Situation<string> {
   const permission = (o.reason ?? "").includes("Permission");
   return {
     p2_raison_principale: texte(o.reason ?? "Examen médical"),
-    p2_motif_detail: texte("Autre - préciser"),
-    p2_motif_detail_autre: texte("Examen de contrôle médical"),
-    p2_type_hospitalisation: texte("Hospitalisation complète"),
+    // v9.7.3 : saisie directe, sans détour par « Autre - préciser ».
+    p2_motif_detail: texte(
+      o.detail && o.detail !== "Autre - préciser"
+        ? o.detail
+        : "Examen de contrôle médical",
+    ),
     ...mosaique(CONTEXTES, "p2_contexte_aucun", o.contexts),
     p2_transfert_en_cours: o.transfer ? "oui" : "non",
-    p2_nature_transfert: texte("Provisoire"),
-    p2_transfert_motif_detail: texte("Autre - préciser"),
-    p2_transfert_motif_autre: texte(
+    p2_nature_transfert: texte(o.nature ?? "Provisoire"),
+    p2_transfert_motif_detail: texte(
       "IRM nécessitant le plateau technique destinataire",
     ),
     ...mosaique(EXCEPTIONS, "p2_exception_aucune", o.exceptions),

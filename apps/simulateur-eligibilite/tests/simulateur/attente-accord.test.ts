@@ -7,10 +7,10 @@
 // sont volontairement absentes :
 // - `CAISSE-CONTRAT-TEXTES-VALIDES`, `CAISSE-RENDU-ET-SYNTHESE-*` et
 //   `CAISSE-CONSIGNE-ET-SYNTHESE-*` comparent des textes rendus : elles
-//   accompagnent la recopie des contenus dans `orientation-caisse-v9-7-2.test.tsx`.
+//   accompagnent la recopie des contenus dans `orientation-caisse.test.tsx`.
 // - `FAIT-CONNU-*`, `FAIT-INCONNU-*` et `AIR-*-RENDER-ET-CALCUL` portent sur
 //   `groupPresentation` (faits connus de la mosaïque) : elles accompagnent
-//   `faits-connus.ts` dans `faits-connus-v9-7-2.test.tsx`.
+//   `faits-connus.ts` dans `faits-connus.test.tsx`.
 // - `CAISSE-RETOUR-ARRIERE-RECALCULE-ATTENTE` rejoue une navigation arrière de
 //   session — la limite du § 9 du skill d'intégration (`@publicodes/forms`
 //   n'oublie jamais une page visitée) — et `PRESENTATION-HORS-MOSAIQUE-REJETEE`,
@@ -20,7 +20,7 @@
 //   chaque appel plutôt que partagé.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-2";
+import { evaluerLeCas, situationDuLivrable } from "./livrable";
 import { moteurDeTest } from "./moteur";
 import {
   CHARGE_ETABLISSEMENT,
@@ -30,7 +30,7 @@ import {
   ORIENTATION_CAISSE,
   PMT,
   S3141,
-} from "./situations-v9-7-2";
+} from "./situations";
 
 const WAIT = "cible_attente_accord_prealable_requise";
 const AVION_BATEAU = { p2_convocation_avion_bateau: "oui" };
@@ -194,7 +194,7 @@ describe("RETOURS972 / INDEPENDANT972 — l’attente de l’accord préalable",
   // réponse (constaté à l'exécution : `cible_resultat_2_affichable` devient
   // `true`). La vraie garde tient à l'ordre du parcours (`etapes.ts`), qui pose
   // la question avant de laisser avancer — voir le même constat déjà fait sur
-  // `CAISSE-URGENCE-REPONSE-OBLIGATOIRE` dans `convocation-aerienne-v9-7-2.test.ts`.
+  // `CAISSE-URGENCE-REPONSE-OBLIGATOIRE` dans `convocation-aerienne.test.ts`.
 
   it("INDEPENDANT972-MUTANT-ANCIENNE-ATTENTE-DETECTE", () => {
     // La formule d'avant v9.7.2 indexait l'attente sur `p2_document_dap_determine`,

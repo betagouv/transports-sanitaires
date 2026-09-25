@@ -17,11 +17,13 @@
 // jamais qu'elles viennent d'une réponse.
 
 import type { Situation } from "publicodes";
-import type { CleDeRegle } from "./contrat-regles-publicodes";
+import { datesDePermission } from "./dates-de-permission";
 import { exceptionSansLieu } from "./exception-sans-lieu";
+import { jourAParis } from "./heure-de-paris";
 import { lecteurs, texteBrut } from "./lecture-de-situation";
+import { lieuEffectif } from "./lieu-effectif";
 import { causeDeRefus } from "./nombre-permission-dap";
-import { precisionsValides } from "./precision-medicale";
+import { validationsDocumentaires } from "./validations-documentaires";
 
 /**
  * La situation, augmentée de ce que l'application calcule. Les valeurs déjà
@@ -32,22 +34,16 @@ export function avecEntreesCalculees(
   situation: Situation<string>,
   maintenant: Date = new Date(),
 ): Situation<string> {
-  const lu = (cle: CleDeRegle) => texteBrut(situation[cle]);
-  const debut = lu("p2_permission_debut");
-  const fin = lu("p2_permission_fin");
-  const heures = dureeEnHeures(debut, fin);
+  const aujourdhui = jourAParis(maintenant.getTime());
+  const dates = datesDePermission(situation, aujourdhui);
   return {
     ...situation,
     p0_date_reference_yyyymmdd: String(dateDeReference(maintenant)),
     p1_verrou_medical_valide: "oui",
-    p2_permission_duree_heures: String(heures),
-    p2_permission_rang_jour: String(
-      rangDuJour(lu("p2_permission_debut_hospitalisation"), debut),
-    ),
-    p2_permission_dates_valides: oui(debut !== "" && fin !== "" && heures > 0),
-    p2_permission_calendrier_valide: oui(
-      dansLesSixMois(lu("p2_permission_debut_hospitalisation"), debut),
-    ),
+    p2_permission_duree_heures: String(dates.heures),
+    p2_permission_rang_jour: String(dates.rangDuJour),
+    p2_permission_dates_valides: oui(dates.valides),
+    p2_permission_calendrier_valide: oui(dates.calendrierValide),
     p2_depart_format_valide: oui(formatValide(situation, "depart")),
     p2_arrivee_format_valide: oui(formatValide(situation, "arrivee")),
     p2_adresses_strictement_identiques: oui(adressesIdentiques(situation)),
@@ -57,7 +53,9 @@ export function avecEntreesCalculees(
     ),
     p2_exceptions_trajet_valides: oui(exceptionsTrajetValides(situation)),
     p2_nombre_permission_dap_valide: oui(causeDeRefus(situation) === undefined),
-    p2_validations_documentaires: oui(precisionsValides(situation)),
+    p2_validations_documentaires: oui(
+      validationsDocumentaires(situation, aujourdhui),
+    ),
   };
 }
 
@@ -78,44 +76,6 @@ function dateDeReference(maintenant: Date): number {
     .format(maintenant)
     .split("/");
   return Number(`${annee}${mois}${jour}`);
-}
-
-/** Les heures entre deux instants ISO, `0` si l'une des deux manque. */
-function dureeEnHeures(debut: string, fin: string): number {
-  const depuis = Date.parse(debut);
-  const jusqua = Date.parse(fin);
-  if (Number.isNaN(depuis) || Number.isNaN(jusqua)) return 0;
-  return Math.max(0, (jusqua - depuis) / 3_600_000);
-}
-
-/**
- * Le rang du jour de la permission dans l'hospitalisation : les jours
- * calendaires écoulés, plus un. Le premier jour d'hospitalisation porte donc le
- * rang 1, et le S3141 s'ouvre au quatorzième.
- *
- * C'est la convention que le livrable dit **provisoire** : R.322-10-8 parle du
- * quatorzième jour, le formulaire de « plus de 14 jours », et l'éditeur attend
- * une confirmation de la CNAM. Elle est donc écrite ici, à un seul endroit.
- */
-function rangDuJour(
-  debutHospitalisation: string,
-  debutPermission: string,
-): number {
-  const depuis = Date.parse(debutHospitalisation);
-  const jusqua = Date.parse(debutPermission);
-  if (Number.isNaN(depuis) || Number.isNaN(jusqua)) return 0;
-  return Math.floor((jusqua - depuis) / 86_400_000) + 1;
-}
-
-/** La permission tombe-t-elle dans les six mois suivant le début d'hospitalisation ? */
-function dansLesSixMois(debutHospitalisation: string, debutPermission: string) {
-  const depuis = new Date(debutHospitalisation);
-  const jusqua = new Date(debutPermission);
-  if (Number.isNaN(depuis.getTime()) || Number.isNaN(jusqua.getTime()))
-    return false;
-  const limite = new Date(depuis);
-  limite.setMonth(limite.getMonth() + 6);
-  return jusqua >= depuis && jusqua <= limite;
 }
 
 // Un lieu est bien formé quand sa voie, sa commune et son code postal sont
@@ -179,14 +139,40 @@ function normalise(valeur: string): string {
     .toLowerCase();
 }
 
-// La seule combinaison de types que le contrat interdit d'emblée : un domicile
-// aux deux bouts. Les autres contraintes de trajet dépendent du motif, et le
-// modèle les porte lui-même.
+// Deux combinaisons de types que le contrat interdit, et que le modèle ne
+// porte pas : un domicile aux deux bouts, et une permission qui ne relie pas
+// une structure à un lieu de vie. Les autres contraintes de trajet dépendent
+// du motif, et le modèle les porte lui-même.
+// Les types lus sont les types effectifs, déduits compris (`lieu-effectif.ts`).
 function typesLieuxValides(situation: Situation<string>): boolean {
-  const depart = texteBrut(situation.p2_trajet_depart);
-  const arrivee = texteBrut(situation.p2_trajet_arrivee);
+  const depart = lieuEffectif(situation, "depart").type;
+  const arrivee = lieuEffectif(situation, "arrivee").type;
   if (depart === "" || arrivee === "") return true;
-  return !(depart === "Domicile" && arrivee === "Domicile");
+  if (depart === "Domicile" && arrivee === "Domicile") return false;
+  return permissionEntreStructureEtLieuDeVie(depart, arrivee, situation);
+}
+
+// Branche permission de `routeTypesValid` (v9.7.3) : une permission part d'une
+// structure vers un lieu de vie, ou en revient seule, sans aller-retour
+// identique (ROUTE-PERMISSION-HOSP-HOSP-REFUSED, PERM-TRAJET-INVALIDE-*).
+function permissionEntreStructureEtLieuDeVie(
+  depart: string,
+  arrivee: string,
+  situation: Situation<string>,
+): boolean {
+  const { lu } = lecteurs(situation);
+  if (lu("p2_raison_principale") !== "Permission temporaire de sortie")
+    return true;
+  const structure = (type: string) =>
+    ["Structure de soins", "USLD"].includes(type);
+  const lieuDeVie = (type: string) =>
+    ["Domicile", "Autre lieu", "EHPAD"].includes(type);
+  const allerRetour =
+    lu("p2_organisation_transports") === "aller-retour identique";
+  return (
+    (structure(depart) && lieuDeVie(arrivee)) ||
+    (structure(arrivee) && lieuDeVie(depart) && !allerRetour)
+  );
 }
 
 // Cohérence des déclarations brutes, indépendante des lieux : une contradiction

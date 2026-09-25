@@ -2,14 +2,14 @@
 // soient pour quelque chose : les situations particulières, et ce que l'urgence
 // en change.
 //
-// La série et les seuils de distance sont dans `accord-prealable-v9-7-2.test.ts`.
+// La série et les seuils de distance sont dans `accord-prealable.test.ts`.
 // Ici, deux familles de la matrice v9.7 : DAP-* et URGENCE-*.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas } from "./livrable-v9-7-2";
-import { DAP } from "./situations-v9-7-2";
+import { evaluerLeCas } from "./livrable";
+import { DAP } from "./situations";
 
-describe("matrice v9.7 — les motifs d’accord préalable et l’urgence", () => {
+describe("matrice du livrable — les motifs d’accord préalable et l’urgence", () => {
   it.each([
     ["camsp_cmpp", true],
     ["samsah", false],

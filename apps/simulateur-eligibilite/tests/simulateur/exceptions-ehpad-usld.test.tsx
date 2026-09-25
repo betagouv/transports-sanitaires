@@ -13,7 +13,7 @@ import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
 import { exceptionSansLieu } from "../../front/simulateur/exception-sans-lieu";
 import { moteur } from "../../front/simulateur/moteur";
 import { ResultatFinal } from "../../front/simulateur/secretariat/resultat/ResultatFinal";
-import { PMT } from "./situations-v9-7-2";
+import { PMT } from "./situations";
 
 const CONTRADICTOIRES = [
   ["EHPAD", "Domicile", "Autre lieu"],

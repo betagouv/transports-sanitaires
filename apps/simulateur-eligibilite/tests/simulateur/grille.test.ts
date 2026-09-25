@@ -10,7 +10,7 @@
 // ce nom qu'un désaccord remonte à l'éditeur.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-2";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
 import {
   DAP,
   NON_ELIGIBLE,
@@ -19,7 +19,7 @@ import {
   TRANSPORT_EN_COMMUN,
   VEHICULE_PERSONNEL,
   VSL,
-} from "./situations-v9-7-2";
+} from "./situations";
 
 /** Les cinq façons dont la Partie 1 arrête un mode, et le mode qu'elle arrête. */
 const MODES: ReadonlyArray<
@@ -117,7 +117,7 @@ const CAS = MODES.flatMap(([mode, optionsMode, transport]) =>
   ),
 );
 
-describe("modèle v9.7 — la grille du livrable", () => {
+describe("la grille du livrable", () => {
   it("compte les 225 cas que le livrable engendre", () => {
     expect(CAS).toHaveLength(225);
   });

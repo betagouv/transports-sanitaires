@@ -15,7 +15,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-2";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
 import { moteurDeTest } from "./moteur";
 
 beforeEach(() => sessionStorage.clear());

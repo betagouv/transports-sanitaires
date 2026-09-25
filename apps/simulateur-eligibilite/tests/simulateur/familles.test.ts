@@ -5,16 +5,9 @@
 // leur séparation d'avec `regression-v9-5-1.test.ts`.
 
 import { describe, expect, it } from "vitest";
-import {
-  evalue,
-  HOSPITALISATION,
-  PMT,
-  PRO,
-  TPMR,
-  VSL,
-} from "./situations-v9-7-2";
+import { evalue, HOSPITALISATION, PMT, PRO, TPMR, VSL } from "./situations";
 
-describe("modèle v9.7 — P1-EXHAUSTIVE", () => {
+describe("P1-EXHAUSTIVE", () => {
   const CRITERES_AMBULANCE = [
     "p1_critere_position_allongee_demi_assise",
     "p1_critere_brancardage_portage",
@@ -106,7 +99,7 @@ describe("modèle v9.7 — P1-EXHAUSTIVE", () => {
   });
 });
 
-describe("modèle v9.7 — générateurs du livrable", () => {
+describe("générateurs du livrable", () => {
   const CONVOCATIONS = [
     "Convocation du contrôle médical de l’Assurance Maladie.",
     "Convocation d’un médecin-expert ou consultant désigné par une juridiction.",

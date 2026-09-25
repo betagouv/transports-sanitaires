@@ -36,7 +36,7 @@ async function nombreSurLePdf(seed: string): Promise<string | undefined> {
 }
 
 describe("TS973-13, la checklist du Bloc 3", () => {
-  it("PMT à un seul trajet : pas de nombre itératif", () => {
+  it("EM-PMT-NOMBRE-ITERATIF-SEULEMENT : PMT à un seul trajet, pas de nombre itératif", () => {
     const positionne = positionneSur("secretariat-consultation-cardiologie");
     expect(texte(positionne, "cible_nombre_transports_document")).toBe("1");
     expect(casesDe(positionne).join(" ")).not.toMatch(ITERATIFS);
@@ -48,13 +48,13 @@ describe("TS973-13, la checklist du Bloc 3", () => {
     );
   });
 
-  it("DAP : le nombre reste reporté, même à un seul trajet", () => {
+  it("EM-NOMBRE-DAP-ET-S3141-CONSERVE : la DAP garde son nombre, même à un seul trajet", () => {
     const positionne = positionneSur("secretariat-accord-prealable-distance");
     expect(texte(positionne, "cible_nombre_transports_document")).toBe("1");
     expect(casesDe(positionne)).toContain("Nombre de transports : 1.");
   });
 
-  it("S3141 : le nombre de trajets par mois reste reporté", () => {
+  it("EM-NOMBRE-DAP-ET-S3141-CONSERVE : le S3141 garde son nombre de trajets par mois", () => {
     expect(casesDe(positionneSur("secretariat-permission-s3141"))).toContain(
       "Nombre de trajets par mois : 1.",
     );
