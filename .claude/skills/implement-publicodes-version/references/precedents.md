@@ -142,10 +142,10 @@ l'invalidation des données incompatibles quand le motif change.
 
 `TS973-18` (revalider les simulations administratives anciennes) demande de
 persister `Session.exportState()` et de revalider le volet administratif à
-la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket est
-écrit depuis l'adaptateur de référence de l'éditeur, qui a lui-même une
-session persistable et reprenable entre deux visites — une hypothèse sur
-les capacités de l'intégrateur, pas seulement sur le modèle.
+la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket et le
+guide (§ 6) supposent une session persistable et reprenable entre deux
+visites : une hypothèse sur les capacités de l'intégrateur, pas seulement
+sur publicodes.
 
 Vérifié à l'exécution (grep de `exportState`/`importState`/`localStorage`
 dans `front/`) : rien de tel n'existe côté application. Les deux mécanismes
@@ -160,10 +160,39 @@ n'existe aucun cas où une session « v9.7.2 » serait rechargée sous
 mécanisme.** Construire une persistance et une révision qu'aucune
 fonctionnalité actuelle n'exploite est le genre d'abstraction spéculative
 que le dépôt évite ailleurs — mieux vaut l'anomalie remontée
-(`tmp/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`, non
+(`tmp/9.7.3/anomalies/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`, non
 versionné) que du code mort. Si une reprise longue durée du volet
 administratif devient un besoin produit réel, `administrative_revision`
 (et son pendant clinique déjà présent, `clinical_criteria_revision`) sera
-le point de départ naturel. **À revérifier à chaque intégration** tant que
-l'éditeur écrit ses tickets depuis son propre adaptateur : la même
+le point de départ naturel. **À revérifier à chaque intégration** : la même
 hypothèse peut revenir sous un autre nom.
+
+## v9.7.3 : une fixture qui répond à une question que le parcours ne pose pas
+
+En portant la campagne de l'éditeur, huit cas `ROUTE-*` passaient sans rien
+vérifier. Notre adaptateur du livrable remplit toutes les réponses, y compris
+le type d'un lieu **déduit**, dont la question n'est jamais posée. Nos gardes
+calculées lisent la situation brute, et prennent cette réponse pour une
+réponse restée en arrière-plan. Le résultat était bloqué, et le helper de
+test sortait avant toute assertion.
+
+**Règle retenue** : une fixture rejouée au moteur retire les réponses que le
+parcours ne poserait pas (lieu déduit, date d'un contexte non déclaré,
+précision d'une autre raison). Côté application, une garde ne contrôle
+qu'une réponse que la situation demande. Et un helper de test n'a jamais de
+branche de sortie sans assertion : il vérifie le cas attendu, ou un refus
+« par une garde » (aucune variable manquante).
+
+## v9.7.3 : les anomalies remontées
+
+Dans `tmp/9.7.3/anomalies/`, non versionnées, écrites au ticket 21 :
+
+| Fichier | Sujet | Question |
+|---|---|---|
+| `anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md` | TS973-18 suppose une session persistable | oui |
+| `anomalie-v9-7-3-texte-medical-et-taille-des-champs.md` | EM-2 sans annexe face à des champs d'une ligne | oui |
+| `anomalie-v9-7-3-ecarts-d-integration-assumes.md` | reprise médicale et effacement en aval, face à TS973-08, TS973-16 et au guide | à confirmer, écart par écart |
+
+Deux autres constats ont été écrits puis retirés : ils opposaient notre
+application au code livré par l'éditeur (`src/application.mjs`), qui n'est
+pas une référence. Seuls les YAML et les `docs/*.md` le sont.
