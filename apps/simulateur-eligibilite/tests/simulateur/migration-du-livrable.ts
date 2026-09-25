@@ -1,10 +1,10 @@
 // La migration que fait l'adaptateur v9.7.3 de l'éditeur (`answers()`,
 // `tests/helpers.mjs`) sur les fixtures écrites pour la v9.7.2. Tenue à part
-// de `livrable-v9-7-3.ts`, qui traduit les options en réponses : ici, on
+// de `livrable.ts`, qui traduit les options en réponses : ici, on
 // ramène d'anciennes réponses au modèle actuel.
 
 import type { Situation } from "publicodes";
-import type { OptionsDuLivrable } from "./livrable-v9-7-3";
+import type { OptionsDuLivrable } from "./livrable";
 
 /**
  * La migration des fixtures que fait l'adaptateur v9.7.3 (`answers()`,

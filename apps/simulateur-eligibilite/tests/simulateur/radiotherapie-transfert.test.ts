@@ -27,7 +27,7 @@ import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { situationDe } from "../../front/outils-produit/seeds/seed";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
 import { moteur, vrai } from "../../front/simulateur/moteur";
-import { estApplicable, evalue } from "./situations-v9-7-3";
+import { estApplicable, evalue } from "./situations";
 
 const RADIOTHERAPIE_DECLAREE = {
   p1_m0_seance_radiotherapie: "oui",

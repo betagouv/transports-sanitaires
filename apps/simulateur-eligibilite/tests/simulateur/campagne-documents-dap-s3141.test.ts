@@ -1,7 +1,7 @@
 // La campagne v9.7.3 de l'éditeur sur les documents (`documents.mjs`), côté
 // DAP, S3141 et issues sans Cerfa, rejouée sous ses identifiants `DOC-*`.
 // Les écarts de lecture et ce qui n'est pas transposé sont décrits en tête de
-// `campagne-documents-pmt-v9-7-3.test.ts`.
+// `campagne-documents-pmt.test.ts`.
 
 import { describe, expect, it } from "vitest";
 import { moteur, texte, vrai } from "../../front/simulateur/moteur";
@@ -14,7 +14,7 @@ import {
   INSTANT,
   PERMISSION,
 } from "./document-du-livrable";
-import { situationDuLivrable } from "./livrable-v9-7-3";
+import { situationDuLivrable } from "./livrable";
 
 describe("DOC, la DAP", () => {
   it.each([

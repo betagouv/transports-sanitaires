@@ -1,14 +1,14 @@
 // Un cas de la campagne `routes.mjs` de l'éditeur, rejoué au moteur, et ce
 // que ses deux fichiers de test en vérifient. Partagé par
-// `campagne-routes-lieux-v9-7-3.test.ts` et
-// `campagne-routes-exceptions-v9-7-3.test.ts`.
+// `campagne-routes-lieux.test.ts` et
+// `campagne-routes-exceptions.test.ts`.
 
 import type { Situation } from "publicodes";
 import { expect } from "vitest";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
 import { lieuEffectif } from "../../front/simulateur/lieu-effectif";
 import { texte } from "../../front/simulateur/moteur";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
 import { moteurDeTest } from "./moteur";
 
 export const [

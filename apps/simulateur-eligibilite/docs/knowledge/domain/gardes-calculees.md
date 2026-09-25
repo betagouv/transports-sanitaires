@@ -7,7 +7,7 @@ l'une vaut « non ».
 
 Depuis la v9.7.3, elles réencodent `technicalSituation` de l'adaptateur de
 l'éditeur (`src/application.mjs`). La campagne v9.7.3 les éprouve
-(`tests/simulateur/campagne-*-v9-7-3.test.ts`).
+(`tests/simulateur/campagne-*.test.ts`).
 
 | Entrée | Refuse | Où |
 |---|---|---|

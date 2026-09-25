@@ -1,6 +1,6 @@
 // Un document tiré d'un cas du livrable, lu champ par champ par son id du
 // mapping, comme `field()` de la campagne v9.7.3 de l'éditeur. Partagé par
-// les deux fichiers `campagne-documents-*-v9-7-3.test.ts`.
+// les deux fichiers `campagne-documents-*.test.ts`.
 //
 // La lecture passe par notre transcription (`depuisLeMapping`) : c'est elle
 // que le Cerfa remplit. Une case cochée se lit `true`, une ligne d'adresse
@@ -17,7 +17,7 @@ import {
 import { RUBRIQUES_DAP } from "../../front/simulateur/secretariat/rubriques/rubriques-de-la-dap";
 import { RUBRIQUES_PMT } from "../../front/simulateur/secretariat/rubriques/rubriques-du-pmt";
 import { RUBRIQUES_S3141 } from "../../front/simulateur/secretariat/rubriques/rubriques-du-s3141";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
 
 export const SORTIE: OptionsDuLivrable = {
   reason: "Sortie d’hospitalisation",

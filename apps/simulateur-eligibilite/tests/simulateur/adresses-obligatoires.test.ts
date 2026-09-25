@@ -25,7 +25,7 @@ import {
   HOSPITALISATION,
   PRO,
   URGENCES,
-} from "./situations-v9-7-3";
+} from "./situations";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,

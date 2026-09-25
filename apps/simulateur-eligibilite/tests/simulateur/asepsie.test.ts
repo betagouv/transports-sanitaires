@@ -9,9 +9,9 @@
 // durable — `sessionStorage` seulement).
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas } from "./livrable-v9-7-3";
+import { evaluerLeCas } from "./livrable";
 import { moteurDeTest } from "./moteur";
-import { DAP, NON_ELIGIBLE, PMT, S3141 } from "./situations-v9-7-3";
+import { DAP, NON_ELIGIBLE, PMT, S3141 } from "./situations";
 
 const BASE = {
   organization: "trajets simples",
@@ -29,7 +29,7 @@ const CRITERES_AMBULANCE = {
   p1_critere_isolement_asepsie: "cible_ambulance_isolement_asepsie",
 } as const;
 
-describe("matrice v9.7.1 — l’asepsie", () => {
+describe("matrice du livrable — l’asepsie", () => {
   it("ASEPSIE-LIBELLE-SANS-DESINFECTION", () => {
     // Le libellé livré, recopié mot pour mot dans le modèle
     // (`regles/regles.publicodes`, recopie du flat v9.7.2 — inchangé depuis

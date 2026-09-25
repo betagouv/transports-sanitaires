@@ -1,7 +1,7 @@
 // La campagne v9.7.3 de l'éditeur sur les contradictions de motif, de trajet
 // et d'exceptions (`tests/campagne-v973/routes.mjs`), côté exceptions et
 // permissions, rejouée au moteur sous ses identifiants `ROUTE-*`. Ce qui ne
-// se transpose pas est dit en tête de `campagne-routes-lieux-v9-7-3.test.ts`.
+// se transpose pas est dit en tête de `campagne-routes-lieux.test.ts`.
 
 import { describe, expect, it } from "vitest";
 import {

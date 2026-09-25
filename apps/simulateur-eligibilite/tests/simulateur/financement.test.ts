@@ -5,13 +5,13 @@
 // variantes de lieu de départ qui l'avaient révélée.
 //
 // Ce qui laisse le financement indécis est dans
-// `financement-incomplet-v9-7-3.test.ts`.
+// `financement-incomplet.test.ts`.
 
 import { describe, expect, it } from "vitest";
-import { attendFinancementComplet } from "./financement-v9-7-3";
-import { evaluerLeCas, situationDuLivrable } from "./livrable-v9-7-3";
+import { attendFinancementComplet } from "./financement";
+import { evaluerLeCas, situationDuLivrable } from "./livrable";
 import { moteurDeTest } from "./moteur";
-import { CONVOCATION } from "./situations-v9-7-3";
+import { CONVOCATION } from "./situations";
 
 const TYPES_DE_CONVOCATION = [
   "Convocation du contrôle médical de l’Assurance Maladie.",
@@ -36,7 +36,7 @@ const grille = TYPES_DE_CONVOCATION.flatMap((type, i) =>
   MODES.map((mode, j) => [`${i}-${j}`, type, mode] as const),
 );
 
-describe("matrice v9.7.1 — le financement d’une convocation", () => {
+describe("matrice du livrable — le financement d’une convocation", () => {
   it.each(grille)("FINANCEMENT-CONVOCATION-%s", (_id, type, mode) => {
     const moteur = evaluerLeCas({
       ...mode,

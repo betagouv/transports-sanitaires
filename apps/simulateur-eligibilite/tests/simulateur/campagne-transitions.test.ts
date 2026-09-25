@@ -31,8 +31,8 @@ import {
   ETAPES,
 } from "../../front/simulateur/questionnaire/etapes";
 import { avecLieuInvalide } from "../../front/simulateur/questionnaire/invalidation-lieu";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
-import { TRANSITIONS } from "./transitions-du-livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
+import { TRANSITIONS } from "./transitions-du-livrable";
 
 describe("TR, une modification après coup vaut une simulation neuve", () => {
   it.each(

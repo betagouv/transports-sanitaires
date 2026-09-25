@@ -24,7 +24,7 @@ import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
 import { moteur, texte, vrai } from "../../front/simulateur/moteur";
 import { capaciteDeLaDap } from "../../front/simulateur/nombre-permission-dap";
 import { saisieACorriger } from "../../front/simulateur/questionnaire/saisie-a-corriger";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
 
 const PMT = "prescription médicale de transport";
 const DAP = "demande d’accord préalable";

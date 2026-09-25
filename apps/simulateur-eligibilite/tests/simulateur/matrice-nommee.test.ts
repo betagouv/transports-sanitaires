@@ -1,18 +1,18 @@
 // Les cas nommés de la matrice v9.7 : ce que le livrable décrit un par un, là où
-// la grille (`grille-v9-7-3.test.ts`) balaie un produit croisé.
+// la grille (`grille.test.ts`) balaie un produit croisé.
 //
 // Ils se lisent par sujet — le mode médical, les séances, l'ALD datée, le ticket
 // modérateur, les contextes réglementaires — et chacun garde son identifiant du
 // livrable, sous lequel un désaccord remonte à l'éditeur.
 //
 // Trois sujets ont leur propre fichier, parce qu'ils portent chacun une famille
-// entière : la charge de l'établissement (`article-80-v9-7-3.test.ts`), l'accord
-// préalable (`accord-prealable-v9-7-3.test.ts`) et la permission temporaire de
-// sortie (`permission-v9-7-3.test.ts`).
+// entière : la charge de l'établissement (`article-80.test.ts`), l'accord
+// préalable (`accord-prealable.test.ts`) et la permission temporaire de
+// sortie (`permission.test.ts`).
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-3";
-import { DAP, NON_ELIGIBLE, PMT } from "./situations-v9-7-3";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
+import { DAP, NON_ELIGIBLE, PMT } from "./situations";
 
 /** Un cas nommé : ses options, et les sorties que le livrable lui attend. */
 type Cas = [
@@ -29,7 +29,7 @@ function rejouer(cas: readonly Cas[]) {
   });
 }
 
-describe("modèle v9.7 — le mode médical et l’accompagnement", () => {
+describe("le mode médical et l’accompagnement", () => {
   rejouer([
     // Q1.1 sans aucun critère : le mode retombe sur le non professionnalisé, et
     // aucun motif n'ouvre le droit.
@@ -56,7 +56,7 @@ describe("modèle v9.7 — le mode médical et l’accompagnement", () => {
   ]);
 });
 
-describe("modèle v9.7 — les trois séances, détachées de l’ALD", () => {
+describe("les trois séances, détachées de l’ALD", () => {
   // La v9.5.1 les réunissait sous une case unique, subordonnée à l'ALD. La v9.7
   // en fait trois cases indépendantes, et chacune ouvre le droit à elle seule.
   rejouer([
@@ -100,7 +100,7 @@ describe("modèle v9.7 — les trois séances, détachées de l’ALD", () => {
   ]);
 });
 
-describe("modèle v9.7 — l’ALD non exonérante et sa bascule du 1er octobre", () => {
+describe("l’ALD non exonérante et sa bascule du 1er octobre", () => {
   // Le décret n° 2026-812 du 21 août 2026 retire à l'ALD non exonérante, seule,
   // l'ouverture de droit du b de R.322-10. Les autres motifs sont conservés.
   rejouer([
@@ -131,7 +131,7 @@ describe("modèle v9.7 — l’ALD non exonérante et sa bascule du 1er octobre"
   ]);
 });
 
-describe("modèle v9.7 — l’exonération du ticket modérateur", () => {
+describe("l’exonération du ticket modérateur", () => {
   // Nouveauté de la v9.7, et trois listes distinctes, une par document. Une ALD
   // seule ne donne pas l'exonération : il y faut un cas particulier déclaré.
   rejouer([
@@ -161,7 +161,7 @@ describe("modèle v9.7 — l’exonération du ticket modérateur", () => {
   ]);
 });
 
-describe("modèle v9.7 — les contextes réglementaires cumulables", () => {
+describe("les contextes réglementaires cumulables", () => {
   // Aucun n'ouvre le droit à lui seul : c'est ce que RARE-SEUL-SANS-DROIT et
   // PENSION-SEULE établissent, et ce qui les distingue d'une raison principale.
   rejouer([
@@ -229,7 +229,7 @@ describe("modèle v9.7 — les contextes réglementaires cumulables", () => {
   ]);
 });
 
-describe("modèle v9.7 — le retour pénitentiaire", () => {
+describe("le retour pénitentiaire", () => {
   // Il reste un contexte, et non une branche : le parcours standard se poursuit,
   // et le trajet est contraint — départ d'une structure, arrivée en établissement
   // pénitentiaire.

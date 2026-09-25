@@ -14,7 +14,7 @@
 import { describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
-import { estApplicable, evalue, HOSPITALISATION } from "./situations-v9-7-3";
+import { estApplicable, evalue, HOSPITALISATION } from "./situations";
 
 const PERMISSION = {
   p2_raison_principale: "'Permission temporaire de sortie'",

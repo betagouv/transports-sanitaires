@@ -18,7 +18,7 @@ import { moteur, texte } from "../../front/simulateur/moteur";
 import { capaciteDeLaDap } from "../../front/simulateur/nombre-permission-dap";
 import { Parcours } from "../../front/simulateur/questionnaire/Parcours";
 import { saisieACorriger } from "../../front/simulateur/questionnaire/saisie-a-corriger";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
 
 const DAP = "demande d’accord préalable";
 const LIMITE_DE_PAGES = 40;

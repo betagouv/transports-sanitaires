@@ -1,6 +1,6 @@
 // La convocation terrestre, part de la matrice de non-régression du livrable
 // v9.7.1 (tmp/9.7.1/tests/convocation.mjs). Le volet aérien — celui qui bascule
-// vers l'orientation caisse — est dans `convocation-aerienne-v9-7-3.test.ts`.
+// vers l'orientation caisse — est dans `convocation-aerienne.test.ts`.
 //
 // La v9.7.1 pose, derrière toute convocation, une mosaïque de caractéristiques
 // (CONV-AP) : plus de 150 km, avion ou bateau, ou aucune des deux. Ici, les cas
@@ -16,9 +16,9 @@ import {
   evaluerLeCas,
   type OptionsDuLivrable,
   situationDuLivrable,
-} from "./livrable-v9-7-3";
+} from "./livrable";
 import { moteurDeTest } from "./moteur";
-import { CONVOCATION, DAP } from "./situations-v9-7-3";
+import { CONVOCATION, DAP } from "./situations";
 
 const TYPES_DE_CONVOCATION = [
   "Convocation du contrôle médical de l’Assurance Maladie.",
@@ -40,7 +40,7 @@ const convocation = (overrides?: Record<string, string>) =>
 
 const LONGUE_DISTANCE = { p2_convocation_plus_150km: "oui" };
 
-describe("matrice v9.7.1 — la convocation terrestre", () => {
+describe("matrice du livrable — la convocation terrestre", () => {
   it.each(TYPES_DE_CONVOCATION.map((type, i) => [i, type] as const))(
     "CONV971-TERRESTRE-MAX150-TYPE-%s",
     (_i, type) => {

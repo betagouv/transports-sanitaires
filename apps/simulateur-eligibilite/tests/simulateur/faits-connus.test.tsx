@@ -10,9 +10,9 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
-import { evaluerLeCas } from "./livrable-v9-7-3";
+import { evaluerLeCas } from "./livrable";
 import { allerAuGroupe, PARTIE_1_AMBULANCE, type Reponse } from "./parcours";
-import { DAP } from "./situations-v9-7-3";
+import { DAP } from "./situations";
 
 beforeEach(() => sessionStorage.clear());
 

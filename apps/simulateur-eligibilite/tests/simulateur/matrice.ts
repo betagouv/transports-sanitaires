@@ -10,7 +10,7 @@
 // désaccord doit remonter au fournisseur du modèle.
 
 import { expect, it } from "vitest";
-import { evalue, type Reponses } from "./situations-v9-7-3";
+import { evalue, type Reponses } from "./situations";
 
 /** Un scénario : des réponses, et ce que le modèle doit en tirer. */
 export type Cas = {

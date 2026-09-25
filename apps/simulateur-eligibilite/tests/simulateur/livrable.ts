@@ -5,7 +5,7 @@
 // référence (`tests/helpers.mjs` du paquet) traduit en réponses. Sans cette
 // traduction, aucun de ses cas ne serait rejouable ici.
 //
-// Ce fichier en est la recopie. Il tient à part de `situations-v9-7-3.ts`, qui
+// Ce fichier en est la recopie. Il tient à part de `situations.ts`, qui
 // porte le vocabulaire de nos propres scénarios : ici, rien n'est de nous — les
 // valeurs par défaut sont celles du livrable, y compris quand elles diffèrent des
 // nôtres. Sa base répond « besoin d'un professionnel » là où notre base neutre
@@ -14,7 +14,7 @@
 
 import type { Situation } from "publicodes";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
-import { migree } from "./migration-du-livrable-v9-7-3";
+import { migree } from "./migration-du-livrable";
 import { moteurDeTest } from "./moteur";
 
 /** Les options qu'un cas du livrable peut porter. */

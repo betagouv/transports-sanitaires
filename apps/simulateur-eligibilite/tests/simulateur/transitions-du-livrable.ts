@@ -1,8 +1,8 @@
 // Les modifications après coup de la campagne v9.7.3 de l'éditeur
 // (`tests/campagne-v973/transitions.mjs`), recopiées en données sous leurs
-// identifiants `TR-*`. `campagne-transitions-v9-7-3.test.ts` les rejoue.
+// identifiants `TR-*`. `campagne-transitions.test.ts` les rejoue.
 
-import type { OptionsDuLivrable } from "./livrable-v9-7-3";
+import type { OptionsDuLivrable } from "./livrable";
 
 /** Une modification : la simulation de départ, ce qui change, et l'étape où. */
 export type Transition = {

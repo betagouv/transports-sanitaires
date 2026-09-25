@@ -4,7 +4,7 @@
 // L'Article 80 et le régime pénitentiaire ont ceci de commun qu'ils déplacent la
 // charge du transport : l'Assurance Maladie n'en est plus le payeur, et le
 // patient ne repart avec aucun document de sa part. Le reste de la matrice est
-// dans `regression-v9-7-3.test.ts` et `accord-prealable-v9-7-3.test.ts`.
+// dans `regression.test.ts` et `accord-prealable.test.ts`.
 //
 // La v9.7 a refondu la qualification. Un transfert ne se déduit plus de
 // l'hospitalisation du patient : il se déclare, par la raison principale puis par
@@ -15,10 +15,10 @@
 // Ces deux cas sont donc remplacés par les deux natures de transfert.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-3";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
 import { type Cas, rejouerLaMatrice } from "./matrice";
 import { moteurDeTest } from "./moteur";
-import { CHARGE_ETABLISSEMENT, DAP, PMT, PRO } from "./situations-v9-7-3";
+import { CHARGE_ETABLISSEMENT, DAP, PMT, PRO } from "./situations";
 
 const TRANSFERT = {
   p2_raison_principale:
@@ -96,7 +96,7 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.7 — la charge de l’établissement", () => {
+describe("la charge de l’établissement", () => {
   rejouerLaMatrice(matrice);
 
   // ARTICLE80-002 et ARTICLE80-003 de la v9.5.1 distinguaient deux transports à
@@ -111,7 +111,7 @@ describe("modèle v9.7 — la charge de l’établissement", () => {
 });
 
 // Les cas nommés de la matrice v9.7 sur ce sujet. Ils passent par les options du
-// livrable (`livrable-v9-7-3.ts`) plutôt que par notre vocabulaire : ce sont ses
+// livrable (`livrable.ts`) plutôt que par notre vocabulaire : ce sont ses
 // situations, et ses attendus.
 
 // Un transfert qualifié met le transport à la charge de l'établissement — c'est
@@ -152,7 +152,7 @@ const FAITS_EXIGES_EN_V9_7_3: Record<string, OptionsDuLivrable> = {
   },
 };
 
-describe("matrice v9.7 — l’Article 80 et ses exceptions", () => {
+describe("matrice du livrable — l’Article 80 et ses exceptions", () => {
   it("ARTICLE80-POSITIF — un transfert déclaré suffit", () => {
     const moteur = evaluerLeCas({ transfer: true });
     expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(
@@ -174,7 +174,7 @@ describe("matrice v9.7 — l’Article 80 et ses exceptions", () => {
 // mécanismes qu'il décrit — un Article 80 trop large, et un refus trop précoce —
 // sans avoir pu joindre les situations d'origine. Le guide demande de rejouer
 // les vraies dès qu'elles seront disponibles.
-describe("matrice v9.7 — les deux retours de Julien, reproduits", () => {
+describe("matrice du livrable — les deux retours de Julien, reproduits", () => {
   it("JULIEN-RETOUR-1 — une séance seule ne met pas le transport à la charge de l’établissement", () => {
     const moteur = evaluerLeCas({
       reason: "Séance de chimiothérapie",

@@ -25,9 +25,9 @@ import {
   PRO,
   PROCHE,
   VSL,
-} from "./situations-v9-7-3";
+} from "./situations";
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7-3`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations`.
 const matrice: Cas[] = [
   {
     id: "ALD-001",
@@ -148,7 +148,7 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.5.1 — le droit ouvert et le mode médical", () => {
+describe("le droit ouvert et le mode médical", () => {
   rejouerLaMatrice(matrice);
 });
 

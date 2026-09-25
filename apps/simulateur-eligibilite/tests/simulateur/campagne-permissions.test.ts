@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from "vitest";
 import { texte, vrai } from "../../front/simulateur/moteur";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-3";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
 
 const PERMISSION = "Permission temporaire de sortie";
 const S3141 = "prescription S3141";

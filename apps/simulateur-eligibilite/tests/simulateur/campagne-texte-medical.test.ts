@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { composerElementsMedicaux } from "../../front/outils-produit/beta/cerfa/elements-medicaux/composition";
 import { reponsesDe } from "../../front/outils-produit/beta/cerfa/reponses";
 import { moteur } from "../../front/simulateur/moteur";
-import { type OptionsDuLivrable, situationDuLivrable } from "./livrable-v9-7-3";
+import { type OptionsDuLivrable, situationDuLivrable } from "./livrable";
 
 const CLINIQUE: OptionsDuLivrable = {
   criterion: "p1_critere_brancardage_portage",

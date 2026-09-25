@@ -12,7 +12,7 @@ import type { Situation } from "publicodes";
 import { describe, expect, it } from "vitest";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { avecEntreesCalculees } from "../../front/simulateur/entrees-calculees";
-import { URGENCES } from "./situations-v9-7-3";
+import { URGENCES } from "./situations";
 
 const MAINTENANT = new Date("2026-09-08T10:00:00Z");
 

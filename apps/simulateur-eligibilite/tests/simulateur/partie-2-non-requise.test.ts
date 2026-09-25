@@ -22,7 +22,7 @@
 // qu'il faut alors réécrire.
 
 import { describe, expect, it } from "vitest";
-import { estApplicable, evalue } from "./situations-v9-7-3";
+import { estApplicable, evalue } from "./situations";
 
 // Les trois réponses qui concluaient la Partie 1 jusqu'en v9.5.1, exprimées dans
 // le vocabulaire de la v9.7 quand il en reste un. La permission ne se déclare

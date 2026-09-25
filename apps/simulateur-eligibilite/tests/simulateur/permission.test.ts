@@ -14,14 +14,14 @@
 // PERMISSION-SEUIL-*, PERMISSION-PATIENT.
 
 import { describe, expect, it } from "vitest";
-import { evaluerLeCas, type OptionsDuLivrable } from "./livrable-v9-7-3";
-import { CHARGE_ETABLISSEMENT, DAP, S3141 } from "./situations-v9-7-3";
+import { evaluerLeCas, type OptionsDuLivrable } from "./livrable";
+import { CHARGE_ETABLISSEMENT, DAP, S3141 } from "./situations";
 
 const PERMISSION: OptionsDuLivrable = {
   reason: "Permission temporaire de sortie",
 };
 
-describe("modèle v9.7 — la permission temporaire de sortie", () => {
+describe("la permission temporaire de sortie", () => {
   it("PERMISSION-S3141 — ouvre le droit sur son propre formulaire", () => {
     const moteur = evaluerLeCas(PERMISSION);
     expect(moteur.evaluate("cible_cas_final").nodeValue).toBe(S3141);

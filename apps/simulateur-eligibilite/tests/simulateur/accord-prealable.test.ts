@@ -18,7 +18,7 @@ import {
   PMT,
   PRO,
   type Reponses,
-} from "./situations-v9-7-3";
+} from "./situations";
 
 // Le fond des scénarios d'urgence : un VSL sur entrée d'hospitalisation, auquel
 // chaque cas ajoute son motif de DAP — ou n'en ajoute aucun.
@@ -44,7 +44,7 @@ const SERIE_50KM: Reponses = {
   p2_tranche_distance_trajet_aller: "'Plus de 50 km et jusqu’à 150 km inclus'",
 };
 
-// `null` retire la clé de la situation : voir `Reponses` dans `situations-v9-7-3`.
+// `null` retire la clé de la situation : voir `Reponses` dans `situations`.
 const matrice: Cas[] = [
   {
     id: "SERIE-001",
@@ -264,6 +264,6 @@ const matrice: Cas[] = [
   },
 ];
 
-describe("modèle v9.7 — l’accord préalable et le trajet", () => {
+describe("l’accord préalable et le trajet", () => {
   rejouerLaMatrice(matrice);
 });
