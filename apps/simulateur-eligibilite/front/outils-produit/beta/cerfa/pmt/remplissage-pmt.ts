@@ -35,7 +35,6 @@ import { dateSurLeChamp } from "../dates.ts";
 import { depuisLeMapping, premierVrai as premierVraiSur } from "../mapping.ts";
 import type { ÉtatCoché } from "../remplir-cerfa.ts";
 import { type Remplissage, type Tableau, écrit } from "../remplissage.ts";
-import type { Reponses } from "../reponses.ts";
 
 export const REMPLISSAGE_PMT: Tableau = {
   // ---- En-tête des deux volets : bénéficiaire, assuré, organisme ----------
@@ -90,7 +89,7 @@ export const REMPLISSAGE_PMT: Tableau = {
   "arrivée struct soins": mapping("arrivee_structure"),
   "arrivée autre lieu": mapping("arrivee_autre"),
   "transp aller-retour": mapping("aller_retour"),
-  "nbr transp": écrit(transportsItératifs), // décision 5 : dérivation conservée
+  "nbr transp": horsSérie(mapping("nombre")), // décision 5 : dérivation conservée
 
   // ---- ❹ Urgence, ❺ éléments médicaux, ❻ exonérations --------------------
   "Urg SAMU centre 15": mapping("urgence_appel15"),
@@ -156,18 +155,20 @@ function dateDeLaFeuille(id: string): Remplissage {
 }
 
 /**
- * La notice réserve « nombre de transports itératifs » aux transports répétés **ne
- * correspondant pas** à la définition du transport en série (≥ 4 sur deux mois,
- * chacun à plus de 50 km). Y reporter le compte d'une série remplirait une
- * rubrique que la notice interdit dans ce cas.
+ * La ligne `nombre` du mapping, qui laisse vide un trajet unique (son `when`,
+ * `cible_nombre_transports_document > 1`, TS973-13).
+ *
+ * La notice réserve en plus « nombre de transports itératifs » aux transports
+ * répétés **ne correspondant pas** à la définition du transport en série (≥ 4
+ * sur deux mois, chacun à plus de 50 km). Y reporter le compte d'une série
+ * remplirait une rubrique que la notice interdit dans ce cas.
  *
  * Le garde `CerfaNonApplicable` ne suffit pas à l'écarter : une série n'exige un
  * accord préalable que si l'ALD n'est pas validée, si bien qu'une série sous ALD
  * validée reste une prescription — et arrive ici. C'est une règle de la notice
  * papier, absente de la feuille, et la seule dérivation que ce tableau conserve.
  */
-function transportsItératifs(réponses: Reponses): string {
-  const nombre = réponses.valeur("cible_nombre_transports_document");
-  if (typeof nombre !== "number" || nombre <= 1) return "";
-  return réponses.vrai("p2_transport_en_serie") ? "" : String(nombre);
+function horsSérie(remplissage: Remplissage): Remplissage {
+  return (réponses) =>
+    réponses.vrai("p2_transport_en_serie") ? undefined : remplissage(réponses);
 }

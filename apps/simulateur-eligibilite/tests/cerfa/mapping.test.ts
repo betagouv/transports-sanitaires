@@ -38,7 +38,7 @@ const FORMULAIRES: ReadonlyArray<
 // règle du moteur ne la tranche (`date_prescription`, posée par
 // `date-de-prescription.ts`, hors moteur). Nommée ici plutôt que de laisser
 // passer un défaut en silence. `elements_medicaux` en sortait depuis la spec
-// 0005 : sa ligne porte `composition: "EM-1"` à la place d'une source.
+// 0005 : sa ligne porte `composition: "EM-2"` à la place d'une source.
 const APPLICATION_SANS_SOURCE = ["date_prescription"];
 
 const moteur = moteurDeTest(situationDe(seedParId("secretariat-prescription")));
@@ -86,13 +86,13 @@ describe.each(FORMULAIRES)("%s", (_nom, rubriques, lignes) => {
 
 it("EM-MAPPING-ET-CONTRAT-ALIGNES", () => {
   // Les lignes `elements_medicaux` du PMT et de la DAP portent bien
-  // `composition: "EM-1"` et `rendu: "texte"` — le S3141 n'a pas de ligne de
+  // `composition: "EM-2"` et `rendu: "texte"`. Le S3141 n'a pas de ligne de
   // ce nom, cf. `EM-S3141-SANS-RUBRIQUE`.
   for (const rubriques of [RUBRIQUES_PMT, RUBRIQUES_DAP]) {
     const laCase = rubriques
       .flatMap((rubrique) => rubrique.cases)
       .find((c) => c.id === "elements_medicaux");
-    expect(laCase?.composition).toBe("EM-1");
+    expect(laCase?.composition).toBe("EM-2");
     expect(laCase?.rendu).toBe("texte");
   }
 });
@@ -162,6 +162,16 @@ describe("depuisLeMapping", () => {
       RUBRIQUES_PMT,
       "beneficiaire_nom_prenom",
     );
+    expect(remplissage(réponses)).toMatchObject({
+      laisséÀ: "le prescripteur",
+    });
+  });
+
+  it("laisse l'adresse du bénéficiaire au prescripteur, jamais à l'adresse du trajet", () => {
+    // TS973-14 : rien ne doit copier l'adresse de départ ou d'arrivée dans
+    // l'adresse du bénéficiaire — la ligne n'a pas de source, quelle que soit
+    // la situation, y compris quand un lieu de trajet est renseigné.
+    const remplissage = depuisLeMapping(RUBRIQUES_PMT, "beneficiaire_adresse");
     expect(remplissage(réponses)).toMatchObject({
       laisséÀ: "le prescripteur",
     });

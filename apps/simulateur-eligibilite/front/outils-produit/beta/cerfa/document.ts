@@ -47,6 +47,16 @@ export type DocumentCerfa = {
   >;
 };
 
+/**
+ * Le texte médical tel que le prescripteur l'a révisé après un débordement, à
+ * côté du texte composé qu'il révisait. Les deux restent séparés des réponses
+ * de la simulation : la révision ne touche que le document.
+ */
+export type RevisionDuTexteMedical = {
+  readonly compose: string;
+  readonly revise: string;
+};
+
 export type OptionsGénération = {
   /**
    * Injectable pour les tests ; par défaut, l'asset servi par l'application. Le
@@ -54,6 +64,12 @@ export type OptionsGénération = {
    * doit pouvoir servir le bon gabarit sans deviner lequel on lui demande.
    */
   readonly chargerGabarit?: (document: DocumentCerfa) => Promise<ArrayBuffer>;
+  /**
+   * Remplace le texte médical composé, tant qu'il n'a pas changé. Si les
+   * réponses ont changé depuis, le texte composé n'est plus le même : la
+   * révision ne vaut plus, et c'est le nouveau texte qui est mesuré.
+   */
+  readonly revision?: RevisionDuTexteMedical;
 };
 
 /** Nom du fichier proposé au téléchargement, daté pour éviter les collisions. */
@@ -71,6 +87,8 @@ export function nomFichier(
  * Produit le CERFA pré-rempli pour `situation`.
  *
  * @throws {CerfaNonApplicable} si la situation ne conduit pas à ce formulaire.
+ * @throws {DebordementDuTexteMedical} si le texte médical ne tient pas dans sa
+ * rubrique.
  */
 export async function genererCerfa(
   document: DocumentCerfa,
@@ -83,7 +101,10 @@ export async function genererCerfa(
     import("./remplir-cerfa.ts"),
   ]);
 
-  const saisies = saisiesDepuisSituation(moteur, situation);
+  const saisies = avecRevision(
+    saisiesDepuisSituation(moteur, situation),
+    options.revision,
+  );
   const gabarit = await (options.chargerGabarit
     ? options.chargerGabarit(document)
     : document.chargerGabarit());
@@ -113,4 +134,20 @@ export async function gabaritDepuisLAsset(url: string): Promise<ArrayBuffer> {
     throw new Error(`Gabarit CERFA indisponible (HTTP ${réponse.status}).`);
   }
   return réponse.arrayBuffer();
+}
+
+// ---- implémentation ----
+
+// Une révision vide ne remplace rien : le Cerfa ne sort pas avec une rubrique
+// médicale vidée. Le texte composé, lui, déborde toujours.
+function avecRevision(
+  saisies: readonly Saisie[],
+  revision: RevisionDuTexteMedical | undefined,
+): readonly Saisie[] {
+  if (!revision || revision.revise.trim() === "") return saisies;
+  return saisies.map((saisie) =>
+    "texteMédical" in saisie && saisie.texteMédical === revision.compose
+      ? { champ: saisie.champ, texteMédical: revision.revise }
+      : saisie,
+  );
 }

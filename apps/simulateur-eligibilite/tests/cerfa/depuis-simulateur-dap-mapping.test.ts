@@ -5,7 +5,6 @@
 
 import { describe, expect, it } from "vitest";
 import { saisiesDepuisSituation } from "../../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { dateDePrescription } from "../../front/simulateur/secretariat/date-de-prescription.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
 import {
@@ -13,12 +12,13 @@ import {
   GABARIT_DAP,
   PROCHE_ACCOMPAGNANT,
   relire,
+  remplirApresRevision,
   situation,
 } from "./gabarit.ts";
 
 const depuisLaSituation = async (entrées: Record<string, string>) =>
   relire(
-    await remplirCerfa(
+    await remplirApresRevision(
       GABARIT_DAP,
       saisiesDepuisSituation(moteurDeTest(), situation(entrées)),
     ),
@@ -135,19 +135,21 @@ describe("saisiesDepuisSituation — cases branchées sur le mapping (0008)", ()
   });
 
   it("écrit « nom tra » depuis la cible du document, pas les transports prévus par le prescripteur", async () => {
-    // Bug corrigé n° 2 : une permission organisée en aller-retour différent, où
-    // les deux nombres divergent réellement — 3 prévus par le prescripteur,
-    // 5 couverts par cette DAP.
+    // Bug corrigé n° 2 : un aller-retour différent, où les deux nombres
+    // divergent réellement : 5 prévus par le prescripteur, 2 couverts par
+    // cette DAP. Jusqu'en v9.7.2, le test prenait 5 couverts pour 3 prévus. Le
+    // modèle v9.7.3 l'interdit (`p2_configuration_trajet_complete`), comme
+    // l'adaptateur de l'éditeur : le nombre couvert ne dépasse pas le total.
     const lu = await depuisLaSituation({
       p2_organisation_transports: "'aller-retour différent'",
-      p2_nombre_transports_couvert_simulation: "5",
-      p2_nombre_transports_prevus: "3",
+      p2_nombre_transports_couvert_simulation: "2",
+      p2_nombre_transports_prevus: "5",
       p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
       p2_justification_longue_distance:
         "'Plateau technique spécialisé indisponible à moins de 150 km.'",
       p2_depart_nom_lieu: "'Domicile du patient'",
     });
-    expect(lu["nom tra"]).toBe("5");
+    expect(lu["nom tra"]).toBe("2");
   });
 
   it("coche « ETM » en « /Oui » sur exonération vraie", async () => {

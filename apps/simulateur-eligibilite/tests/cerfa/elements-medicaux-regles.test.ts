@@ -1,5 +1,5 @@
 // Les fonctions pures de la composition des éléments d'ordre médical (contrat
-// EM-1, spec 0005) : dédoublonnage, cas particuliers, dates. Les parcours
+// EM-2, spec 0005) : dédoublonnage, cas particuliers, dates. Les parcours
 // complets, sur le moteur réel, sont dans `elements-medicaux-parcours.test.ts`.
 //
 // La plupart des cas d'ici passent par un `Reponses` de fabrication plutôt que

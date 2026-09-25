@@ -17,7 +17,7 @@ type Qui = "le prescripteur" | "le transporteur" | "la caisse";
  *
  *  - `{ texte }` / `{ coché }` / `{ texteMédical }` — le simulateur a déduit
  *    quoi y écrire, ce dernier étant composé puis mesuré plutôt qu'écrit tel
- *    quel (`depuisLeMapping` sur une case `composition: "EM-1"`) ;
+ *    quel (`depuisLeMapping` sur une case `composition: "EM-2"`) ;
  *  - `undefined` — il sait le déduire, mais cette situation ne l'appelle pas ;
  *  - `{ laisséÀ }` — il ne sait pas, et dit qui s'en chargera.
  *

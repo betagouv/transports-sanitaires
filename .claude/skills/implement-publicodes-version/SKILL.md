@@ -78,7 +78,7 @@ Les frontières naturelles d'une intégration, observées sur les précédentes 
 
 | Ticket | Ce qu'il porte | Bloqué par |
 |---|---|---|
-| Porter le modèle en v<version> | le modèle recopié, `VERSION`, le contrat de règles, les seeds, la recette renommée, les libellés recopiés : tout ce qu'il faut pour que la suite repasse | — |
+| Porter le modèle en v<version> | le modèle recopié, `VERSION`, le contrat de règles, les seeds, la recette portée, les libellés recopiés : tout ce qu'il faut pour que la suite repasse | — |
 | Porter la recette v<version> | les assertions neuves de la matrice livrée | le ticket précédent |
 | Rendre les contenus de la v<version> | ce que le contrat d'interface (`*.ui.yaml`) ajoute ou réécrit à l'écran | le ticket précédent |
 | Mettre à jour le README | le compte de règles et de cibles, les noms des fichiers de recette | tous les tickets de code |
@@ -166,7 +166,7 @@ du modèle est recopié à ces endroits :
 | `front/outils-produit/seeds/catalogue.ts` | les constantes de réponses (`AIDE_PROFESSIONNEL`, …) |
 | `front/outils-produit/beta/cerfa/reponses.ts` | `VALEURS_COMPAREES`, gardé par `tests/cerfa/remplissage.test.ts` |
 | `front/simulateur/secretariat/motifs-de-la-dap.ts` | les libellés du contrat d'interface |
-| `tests/simulateur/situations-v9-<version>.ts` | le vocabulaire des scénarios |
+| `tests/simulateur/situations.ts` | le vocabulaire des scénarios |
 | `tests/cerfa/gabarit.ts` | les situations de référence du CERFA |
 | les tests d'interface | les **regex** qui ciblent une question ou une réponse |
 
@@ -190,24 +190,37 @@ unique ajouté, ce que la réponse par défaut y déclenche.
 
 ### La recette portée
 
-Les fichiers de recette portent la version dans leur nom et sont **renommés à
-chaque intégration** (`git mv`), imports et commentaires recopiés à l'identique
-(y compris `matrice.ts`, qui n'est pas renommé mais importe les fichiers qui le
-sont). L'ensemble, après la v9.7.1 :
+Les fichiers de recette **ne portent pas la version** du modèle, ni dans leur
+nom, ni dans leurs `describe`/`it`. Un test qui passe vaut pour le modèle en
+cours, quel que soit son numéro : l'intégration met les attendus à jour, elle
+ne renomme rien. Seuls les identifiants du livrable gardent la leur
+(`CONV971-*`, `RETOURS972-*`, `V973-*`) : c'est leur nom chez l'éditeur. Ne
+pas les « monter » à la version courante. L'ensemble :
 
 ```
-tests/simulateur/situations-v<version>.ts          le vocabulaire partagé
-tests/simulateur/livrable-v<version>.ts            l'adaptateur options → réponses du livrable
-tests/simulateur/matrice.ts                        la forme d'un cas, et sa lecture
-tests/simulateur/regression-v<version>.test.ts     le droit ouvert et le mode médical
-tests/simulateur/article-80-v<version>.test.ts     la charge de l'établissement
-tests/simulateur/accord-prealable-v<version>.test.ts la série, la distance, le trajet
-tests/simulateur/familles-v<version>.test.ts       ce que le livrable décrit par un générateur
-tests/simulateur/grille-v<version>.test.ts         un produit croisé engendré
-tests/simulateur/matrice-nommee-v<version>.test.ts les cas nommés un par un
-tests/simulateur/motifs-dap-v<version>.test.ts     les motifs de DAP sans distance ni série
-tests/simulateur/permission-v<version>.test.ts     un sujet neuf, propre à sa version
+tests/simulateur/situations.ts             le vocabulaire partagé
+tests/simulateur/livrable.ts               l'adaptateur options → réponses du livrable
+tests/simulateur/matrice.ts                la forme d'un cas, et sa lecture
+tests/simulateur/regression.test.ts        le droit ouvert et le mode médical
+tests/simulateur/article-80.test.ts        la charge de l'établissement
+tests/simulateur/accord-prealable.test.ts  la série, la distance, le trajet
+tests/simulateur/familles.test.ts          ce que le livrable décrit par un générateur
+tests/simulateur/grille.test.ts            un produit croisé engendré
+tests/simulateur/matrice-nommee.test.ts    les cas nommés un par un
+tests/simulateur/motifs-dap.test.ts        les motifs de DAP sans distance ni série
+tests/simulateur/permission.test.ts        un sujet neuf, propre à sa version
+tests/simulateur/campagne-*.test.ts        la campagne de l'éditeur, une famille par fichier
 ```
+
+Depuis la v9.7.3, l'éditeur livre aussi une **campagne** (`tests/campagne-v973/`
+du paquet) : `ROUTE-*`, `PERM-*`, `DEC-*`, `DOC-*`, `TR-*`, plus les `V973-*` et
+`EM-*`. Elle se rejoue au moteur, une famille par fichier `campagne-*`. Un refus
+de `Session.submit()` s'y lit comme un résultat bloqué, un `field()` du payload
+par `depuisLeMapping` (`document-du-livrable.ts`). Les modifications après coup
+(`TR-*`) se rejouent en simulant ce que fait l'application
+(`aval-invalide.ts`, `invalidation-lieu.ts`), pas la session de
+l'éditeur. L'adaptateur migre les fixtures de la version précédente
+(`migration-du-livrable.ts`).
 
 Une version qui introduit un sujet entier (la convocation aérienne et son
 financement pour la v9.7.1) mérite ses propres fichiers plutôt que d'étirer un
@@ -234,13 +247,9 @@ La matrice est **séparée par sujet** et non par volume : à 300 lignes,
 `noExcessiveLinesPerFile` et `tests/architecture.test.ts` refusent le fichier,
 et le message dit pourquoi.
 
-**Le piège CI du renommage :** `.gitleaks.toml` exempte les fichiers de
-recette d'un motif qui ne suit pas toujours le nom réel de la version.
-`livrable-v[0-9]+-[0-9]+\.ts$` ne matchait pas `livrable-v9-7-1.ts` (trois
-segments, pas deux) : élargi en `livrable-v[0-9]+(-[0-9]+)+\.ts$` en v9.7.1.
-Vérifier, à chaque renommage, que l'exemption suit le nouveau nom — sans
-quoi gitleaks bloque la CI sur un faux positif au premier libellé qui
-ressemble à un secret.
+**Le piège CI de gitleaks :** `.gitleaks.toml` exempte `livrable.ts` de la
+règle `generic-api-key`, qui prend les noms de règles longs pour des clés. Un
+fichier qui recopie aussi des noms de règles en demande autant.
 
 ### Les gardes qui parlent
 
@@ -305,7 +314,7 @@ Une intégration apprend des choses que seul l'intégrateur voit :
 **Rien de tout cela ne se remonte de mémoire.** Ça s'écrit au moment où on le
 constate, dans un fichier, et ça part chez l'éditeur du modèle.
 
-Un fichier par sujet, dans `tmp/`, nommé `anomalie-v<version>-<sujet>.md`, et
+Un fichier par sujet, dans `tmp/<version>/anomalies/`, nommé `anomalie-v<version>-<sujet>.md`, et
 **écrit pour être envoyé tel quel** : le destinataire ne connaît ni notre code,
 ni nos tests. Sa structure :
 
@@ -313,6 +322,7 @@ ni nos tests. Sa structure :
 |---|---|
 | En-tête | le modèle concerné, les règles en cause, comment le constat est reproduit |
 | Le constat en une phrase | de quoi décider s'il faut lire la suite |
+| L'origine | où se trouve le problème, en un mot : `spec`, `publicodes` ou `app` (voir ci-dessous) |
 | Ce qui se passait avant | la version précédente, et pourquoi elle tenait |
 | Ce qui se passe maintenant | l'enchaînement, étape par étape |
 | Pourquoi cela nous arrête | la conséquence pour le prescripteur ou le patient, pas pour notre code |
@@ -320,6 +330,25 @@ ni nos tests. Sa structure :
 | Ce qu'on a constaté à l'exécution | les scénarios de la recette qui ont changé de résultat |
 | Ce qu'on a fait de notre côté | pour que l'éditeur sache ce qu'il défait s'il corrige |
 | La question | fermée, avec les pistes de correction : le choix lui revient |
+
+La référence, ce sont **uniquement les fichiers YAML et les documents
+`docs/*.md`** du livrable. Le code livré par l'éditeur (`src/*.mjs`) n'en fait
+pas partie : on ne le cite pas, on ne s'y compare pas, et un écart avec lui
+n'est pas une anomalie.
+
+L'origine dit à l'éditeur quelle pièce corriger :
+
+| Origine | Où est le problème | Exemple |
+|---|---|---|
+| `spec` | un ticket, un contrat (`docs/*.md`) ou le contrat d'interface (`*.ui.yaml`) | un ticket suppose une capacité que l'application n'a pas |
+| `publicodes` | les règles du modèle (`*.publicodes.flat-*.yaml`) | une règle accepte une réponse que le reste du livrable refuse |
+| `app` | notre application, qui s'écarte de la spec ou de publicodes | un écart que notre application assume |
+
+Quand deux pièces se contredisent, les nommer toutes les deux (`spec et publicodes`),
+et dire laquelle on a suivie. L'origine se complète de deux lignes : le
+comportement **attendu**, tel que la spec et publicodes le décrivent, et le
+comportement **observé dans notre application**. Sans elles, le lecteur ne
+sait pas si le problème est chez nous.
 
 Deux réflexes qui rendent ces constats utiles :
 

@@ -1,5 +1,5 @@
 // La composition des éléments d'ordre médical : réencodage TypeScript du
-// contrat EM-1 (`composeMedicalText`, `tmp/9.7.1/src/medical-text.mjs`), treize
+// contrat EM-2 (`composeMedicalText`, `tmp/9.7.3/src/medical-text.mjs`), douze
 // blocs assemblés dans un ordre fixe, jamais depuis un texte inventé — cf. la
 // décision 2 de la spec 0005 pour le choix de réencoder plutôt que charger le
 // module de l'éditeur.
@@ -7,19 +7,23 @@
 // Chaque bloc lit `Reponses`, jamais la situation brute : c'est le moteur qui
 // rend une question non applicable comme absente, à l'identique de
 // `adresseSurLaLigne` dans `mapping.ts` (décision 3 de la spec 0005).
+//
+// EM-2 (v9.7.3) sépare les blocs par « ; » au lieu d'un saut de ligne : le
+// moteur PDF garde le retour automatique à la ligne, la rubrique n'est plus
+// occupée par des lignes à moitié vides (TS973-12). Le bloc du type
+// d'hospitalisation a disparu avec `p2_type_hospitalisation` (ticket 10).
 
 import type { CleDeRegle } from "../../../../simulateur/contrat-regles-publicodes.ts";
 import type { Reponses } from "../reponses.ts";
 import { dateEtHeureDePermission, dateMedicale } from "./dates.ts";
 import { CRITERES_MEDICAUX, SEANCES } from "./libelles.ts";
 
-/** Les treize blocs, dans l'ordre du contrat, dédupliqués et joints par un `\n`. */
+/** Les douze blocs, dans l'ordre du contrat, dédupliqués et joints par « ; ». */
 export function composerElementsMedicaux(réponses: Reponses): string {
   const blocs = [
     blocTransfert(réponses),
     réponses.texte("cible_motif_medical_deplacement"),
     blocConvocation(réponses),
-    blocHospitalisation(réponses),
     ...blocsSeances(réponses),
     ...blocsCriteres(réponses),
     blocCentreRare(réponses),
@@ -36,8 +40,11 @@ export function composerElementsMedicaux(réponses: Reponses): string {
 
 type Bout = "depart" | "arrivee";
 
+// Le séparateur exact du contrat, espaces compris.
+const SEPARATEUR = " ; ";
+
 // Les quatre composants d'une adresse liée au trajet, dans l'ordre où
-// `boundAddress` (EM-1) les assemble.
+// `boundAddress` (EM-2) les assemble.
 const COMPOSANTS_ADRESSE: Record<
   Bout,
   readonly [CleDeRegle, CleDeRegle, CleDeRegle, CleDeRegle]
@@ -68,15 +75,6 @@ function blocTransfert(réponses: Reponses): string {
 function blocConvocation(réponses: Reponses): string {
   const type = réponses.texte("cible_convocation_type");
   return type === "" ? "" : `Déplacement lié à la convocation : ${type}`;
-}
-
-function blocHospitalisation(réponses: Reponses): string {
-  const raison = réponses.texte("p2_raison_principale");
-  const entreeOuSortie = [
-    "Entrée en hospitalisation",
-    "Sortie d’hospitalisation",
-  ].includes(raison);
-  return entreeOuSortie ? réponses.texte("p2_type_hospitalisation") : "";
 }
 
 function blocsSeances(réponses: Reponses): string[] {
@@ -219,7 +217,7 @@ function adresseLiée(
 
 function dédupliqués(blocs: readonly string[]): string {
   const nettoyés = blocs.map(nettoyé).filter((bloc) => bloc !== "");
-  return [...new Set(nettoyés)].join("\n");
+  return [...new Set(nettoyés)].join(SEPARATEUR);
 }
 
 function nettoyé(bloc: string): string {

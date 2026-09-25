@@ -59,6 +59,17 @@ describe("motifs de l’accord préalable", () => {
     afficher(seedParId("secretariat-prescription"));
     expect(screen.queryByRole("list", { name: /motif ou motifs/i })).toBeNull();
   });
+
+  it("aucun motif sur une orientation caisse, sans adresse à réclamer (TS973-02)", () => {
+    // Avion/bateau sans sous-situation Cerfa, sans aucune adresse de trajet :
+    // aucune DAP n'est produite, donc aucun motif ne doit s'afficher — et rien
+    // ne doit exiger une adresse pour le déterminer (contrat v9.7.3, guide
+    // développeur §5).
+    afficher(
+      seedParId("secretariat-convocation-orientation-caisse-sans-adresse"),
+    );
+    expect(screen.queryByRole("list", { name: /motif ou motifs/i })).toBeNull();
+  });
 });
 
 // ---- implémentation ----

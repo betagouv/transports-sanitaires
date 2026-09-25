@@ -17,8 +17,7 @@ export const PMT: DocumentCerfa = {
     "militaire d’invalidité, la date de prescription et les éléments " +
     "d’ordre médical, à relire",
   ceQuiResteASaisir:
-    "l’identité du patient et de l’assuré, celle du prescripteur, ainsi que " +
-    "l’annexe médicale, si le document en joint une, à signer",
+    "l’identité du patient et de l’assuré, et celle du prescripteur",
   chargerGabarit: () => gabaritDepuisLAsset(gabaritUrl),
   chargerSaisies: async () =>
     (await import("./depuis-simulateur.ts")).saisiesDepuisSituation,

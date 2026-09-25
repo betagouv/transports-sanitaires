@@ -207,3 +207,21 @@ doivent rester verts : c'est la preuve que la décision 2 ne modifie rien à l'�
 - **Engendrer les rubriques depuis le YAML documentaire.** Le paquet le porte, et une
   génération éviterait la recopie. Elle demanderait de charger un quatrième YAML au build
   et de traduire ses conditions. À rouvrir si la recopie se met à coûter, pas avant.
+
+## v9.7.3 : un seuil dans le `when` (TS973-13)
+
+La ligne `nombre` de la PMT porte `when: cible_nombre_transports_document > 1`.
+Une PMT pour un seul trajet laisse vide la rubrique des transports itératifs,
+comme toute prescription unique.
+
+Le `quand` gagne donc une cinquième forme, `{ regle, auDessusDe }` : un
+nombre strictement au-dessus d'un seuil. La checklist et le PDF lisent tous
+les deux cette ligne du mapping. Le nombre de la DAP et celui du S3141 n'ont
+pas ce seuil.
+
+Le PDF garde en plus la règle de la notice : pas de nombre itératif pour une
+série. La checklist, elle, l'affiche encore. C'est un écart antérieur à la
+v9.7.3.
+
+Chaque génération repart du gabarit vierge : aucune ancienne valeur ne passe
+d'un document à l'autre.

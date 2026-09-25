@@ -24,7 +24,8 @@ import {
   evalue,
   HOSPITALISATION,
   PRO,
-} from "./situations-v9-7-2";
+  URGENCES,
+} from "./situations";
 
 const PARCOURS_ADMINISTRATIF = {
   p1_autonomie: PRO,
@@ -147,6 +148,12 @@ const ARRIVEE = [
 //
 // Rien ne le montre à l'écran, la bibliothèque de formulaires ne dévoilant qu'un
 // pas à la fois : d'où ce test au ras du modèle.
+//
+// La v9.7.3 déduit le type du lieu d'arrivée pour une entrée en hospitalisation
+// (« Structure de soins », sans le redemander) : `PARCOURS_ADMINISTRATIF` en est
+// un cas, et `p2_trajet_arrivee` n'y est plus jamais applicable. Les saisies
+// d'arrivée attendent alors la complétude du départ, comme le fait
+// `p2_lieu_arrivee_type_effectif`, plutôt qu'une réponse au type.
 describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () => {
   const SANS_TYPE_DE_DEPART = {
     ...PARCOURS_ADMINISTRATIF,
@@ -166,20 +173,18 @@ describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () =>
     expect(estApplicable(apres, regle)).toBe(true);
   });
 
-  it.each(ARRIVEE)("%s attend le type du lieu d’arrivée", (regle) => {
-    const sansType = evalue({
+  it.each(ARRIVEE)("%s attend que le départ soit complet", (regle) => {
+    const departIncomplet = evalue({
       ...PARCOURS_ADMINISTRATIF,
-      p2_trajet_arrivee: null,
       ...Object.fromEntries(ARRIVEE.map((champ) => [champ, null])),
+      p2_depart_commune: null,
     });
-    expect(estApplicable(sansType, regle)).not.toBe(true);
-    // La base neutre répond au type et remplit les deux adresses.
+    expect(estApplicable(departIncomplet, regle)).not.toBe(true);
+    // Le départ complet suffit : le type d'arrivée est déduit, sans réponse.
     expect(estApplicable(evalue(PARCOURS_ADMINISTRATIF), regle)).toBe(true);
   });
 
-  it("ne pose le type du lieu d’arrivée qu’une fois le départ complet", () => {
-    // Le maillon qui tient la séquence : c'est lui, et non les six saisies
-    // d'arrivée, qui attend la complétude de la page de départ.
+  it("ne pose jamais le type du lieu d’arrivée : il est déduit d’une entrée en hospitalisation", () => {
     const departIncomplet = evalue({
       ...PARCOURS_ADMINISTRATIF,
       p2_depart_commune: null,
@@ -187,6 +192,35 @@ describe("saisies d'adresse — quand le modèle les ouvre (ADDRESS-005)", () =>
     expect(estApplicable(departIncomplet, "p2_trajet_arrivee")).not.toBe(true);
     expect(
       estApplicable(evalue(PARCOURS_ADMINISTRATIF), "p2_trajet_arrivee"),
-    ).toBe(true);
+    ).not.toBe(true);
+    expect(
+      evalue(PARCOURS_ADMINISTRATIF).evaluate("cible_lieu_arrivee_type")
+        .nodeValue,
+    ).toBe("Structure de soins");
+  });
+
+  // TS973-04 (famille AUD-ROUTE-URG-DEST) : même déduction pour une arrivée
+  // urgences, et les deux options qui déduisaient une autre destination
+  // (retour pénitentiaire, admission HAD) n'y sont plus proposées.
+  it("ne pose jamais le type du lieu d’arrivée : il est déduit d’un transport vers les urgences", () => {
+    const versLesUrgences = {
+      ...PARCOURS_ADMINISTRATIF,
+      ...URGENCES,
+    };
+    expect(
+      estApplicable(evalue(versLesUrgences), "p2_trajet_arrivee"),
+    ).not.toBe(true);
+    expect(
+      evalue(versLesUrgences).evaluate("cible_lieu_arrivee_type").nodeValue,
+    ).toBe("Structure de soins");
+    expect(
+      estApplicable(
+        evalue(versLesUrgences),
+        "p2_exception_retour_penitentiaire",
+      ),
+    ).not.toBe(true);
+    expect(
+      estApplicable(evalue(versLesUrgences), "p2_exception_admission_had"),
+    ).not.toBe(true);
   });
 });

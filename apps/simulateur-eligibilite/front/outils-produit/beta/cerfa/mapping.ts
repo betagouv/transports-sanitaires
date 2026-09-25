@@ -49,7 +49,7 @@ export function depuisLeMapping(
   état: ÉtatCoché = "On",
 ): Remplissage {
   const laCase = casesDeLaFeuille(rubriques, id);
-  if (laCase.composition === "EM-1") return composition();
+  if (laCase.composition === "EM-2") return composition();
   if (!laCase.source) return laisséÀ(laCase);
   const source = laCase.source;
   return (réponses) => {
@@ -134,7 +134,7 @@ function casesDeLaFeuille(
 // jamais — dans ce mapping, une ligne d'origine `publicodes` porte toujours
 // une `source` — mais un défaut nomme l'écart plutôt que de planter. Les
 // éléments d'ordre médical n'en passent plus par là depuis la spec 0005 :
-// `composition: "EM-1"` les intercepte avant, dans `depuisLeMapping`.
+// `composition: "EM-2"` les intercepte avant, dans `depuisLeMapping`.
 function laisséÀ(laCase: CaseDeFormulaire): Remplissage {
   const origine = origineDe(laCase);
   const raison =
@@ -149,7 +149,7 @@ function laisséÀ(laCase: CaseDeFormulaire): Remplissage {
 
 // Le texte médical se compose depuis les réponses, jamais depuis une règle
 // unique : `composerElementsMedicaux` lit les cibles et les questions du
-// contrat EM-1 (spec 0005). Une composition vide laisse le champ vierge,
+// contrat EM-2 (spec 0005). Une composition vide laisse le champ vierge,
 // comme un champ que le simulateur sait déduire mais que la situation
 // n'appelle pas.
 function composition(): Remplissage {

@@ -17,8 +17,13 @@ import {
   PDFTextField,
   StandardFonts,
 } from "pdf-lib";
-import { insererAnnexe, tientDansLaZone } from "./elements-medicaux/annexe.ts";
-import { planDImpression } from "./elements-medicaux/plan-d-impression.ts";
+import { DebordementDuTexteMedical } from "./elements-medicaux/debordement-du-texte-medical.ts";
+import {
+  TAILLE_DU_GABARIT,
+  TAILLE_MINIMALE_LISIBLE,
+  tailleQuiTient,
+  tientDansLaZone,
+} from "./elements-medicaux/mesure-de-la-zone.ts";
 
 /**
  * État d'export à écrire pour cocher un champ. Le « off » est toujours `/Off`.
@@ -47,8 +52,8 @@ export type ÉtatCoché =
 
 /**
  * Une valeur à écrire : un texte dans un champ nommé, une case à cocher, ou un
- * texte médical — composé, mesuré et éventuellement renvoyé à une annexe
- * plutôt qu'écrit tel quel (`écrireTexteMédical`, décision 5 de la spec 0005).
+ * texte médical, mesuré avant d'être écrit en entier (`écrireTexteMédical`,
+ * contrat EM-2).
  */
 export type Saisie = { readonly champ: string } & (
   | { readonly texte: string }
@@ -78,8 +83,10 @@ const MULTILIGNES_ROGNÉS: readonly string[] = ["adresse"];
  * Les champs de l'en-tête et de la prescription portent un widget sur chacun des
  * deux volets. Écrire une fois suffit donc, et les deux volets restent cohérents
  * par construction. Seuls `comm évent`, qui porte les éléments d'ordre médical, et
- * le bloc transporteur sont propres à un volet. `comm évent` et `elmedic` peuvent
- * en plus joindre une annexe : c'est `écrireTexteMédical` qui en décide.
+ * le bloc transporteur sont propres à un volet.
+ *
+ * @throws {DebordementDuTexteMedical} si le texte médical ne tient pas dans sa
+ * rubrique : aucun PDF n'est produit, plutôt qu'un texte coupé.
  */
 export async function remplirCerfa(
   gabarit: Uint8Array | ArrayBuffer,
@@ -88,21 +95,17 @@ export async function remplirCerfa(
 ): Promise<Uint8Array> {
   const document = await PDFDocument.load(gabarit);
   const formulaire = document.getForm();
-  const police = saisies.some((saisie) => "texteMédical" in saisie)
-    ? await document.embedFont(StandardFonts.Helvetica)
-    : undefined;
+  // `formulaire.updateFieldAppearances()` (plus bas) recompose l'apparence de
+  // tout champ écrit dans SA police par défaut, jamais dans celle déclarée par
+  // le gabarit : la mesure de débordement doit donc porter sur cette police-là,
+  // pas sur celle du `/DA` d'origine — cf. `réduireSiÇaDéborde`.
+  const police = await document.embedFont(StandardFonts.Helvetica);
 
   for (const saisie of saisies) {
     if ("coché" in saisie) cocher(formulaire, saisie.champ, saisie.coché);
-    else if ("texteMédical" in saisie) {
-      await écrireTexteMédical(
-        document,
-        formulaire,
-        police as PDFFont,
-        saisie.champ,
-        saisie.texteMédical,
-      );
-    } else écrire(formulaire, saisie.champ, saisie.texte);
+    else if ("texteMédical" in saisie)
+      écrireTexteMédical(formulaire, police, saisie.champ, saisie.texteMédical);
+    else écrire(formulaire, police, saisie.champ, saisie.texte);
   }
 
   // Sans cet appel, les valeurs sont bien dans le PDF, mais rien ne s'affiche tant
@@ -120,7 +123,12 @@ export async function remplirCerfa(
 
 type Formulaire = ReturnType<PDFDocument["getForm"]>;
 
-function écrire(formulaire: Formulaire, nom: string, texte: string): void {
+function écrire(
+  formulaire: Formulaire,
+  police: PDFFont,
+  nom: string,
+  texte: string,
+): void {
   const champ = formulaire.getField(nom);
   if (!(champ instanceof PDFTextField)) {
     throw new Error(`Le champ « ${nom} » n'est pas un champ texte.`);
@@ -136,36 +144,31 @@ function écrire(formulaire: Formulaire, nom: string, texte: string): void {
     );
   }
   champ.setText(valeur);
-  réduireSiÇaDéborde(champ, valeur);
+  réduireSiÇaDéborde(champ, police, valeur);
 }
 
 /**
- * Les deux gabarits écrivent en Courier 10 (`/Cour 10 Tf`), à taille fixe. Une
- * valeur composée, comme une adresse aplatie sur l'unique ligne que le formulaire
- * lui donne, dépasse le cadre : le PDF la porte entière, l'impression la rogne, et
- * rien ne le signale.
+ * Les gabarits déclarent Courier 10 (`/Cour 10 Tf`), mais `pdf-lib` recompose
+ * l'apparence de tout champ écrit dans sa police par défaut au moment de
+ * `formulaire.updateFieldAppearances()`, jamais dans celle du `/DA` d'origine —
+ * ici Helvetica, embarquée dans `remplirCerfa`. Une valeur composée, comme une
+ * adresse assemblée sur l'unique ligne que le formulaire lui donne, peut
+ * dépasser le cadre réel à 10 points, mesuré avec cette police réelle
+ * (`tientDansLaZone`, sur laquelle repose aussi la zone médicale).
  *
- * On passe alors en taille automatique, et `pdf-lib` recompose l'apparence à une
- * taille qui tient, dans sa police par défaut puisque Courier n'est pas des
- * siennes. On ne le fait que dans ce cas : en taille automatique partout, une
- * valeur courte grossirait jusqu'à la hauteur du cadre, et le document changerait
- * d'allure sans qu'on y gagne rien.
- *
- * Courier est à chasse fixe, chaque caractère occupant 0,6 cadratin, donc la
- * largeur se calcule sans rien mesurer. `tests/cerfa/remplissage.test.ts` vérifie
- * que les deux gabarits emploient bien cette police et cette taille.
+ * Provisoire : on descend directement à `TAILLE_MINIMALE_LISIBLE` plutôt que de
+ * chercher une taille intermédiaire, et sans garantir que tout y tienne — une
+ * prochaine spec doit encore trancher le comportement attendu quand même ce
+ * plancher ne suffit pas (TS973-14).
  */
-function réduireSiÇaDéborde(champ: PDFTextField, valeur: string): void {
-  const cadre = champ.acroField.getWidgets()[0]?.getRectangle();
-  if (!cadre) return;
-  const largeur = valeur.length * TAILLE_DU_GABARIT * AVANCE_COURIER;
-  if (largeur > cadre.width - 2 * MARGE_INTERNE) champ.setFontSize(0);
+function réduireSiÇaDéborde(
+  champ: PDFTextField,
+  police: PDFFont,
+  valeur: string,
+): void {
+  if (tientDansLaZone(champ, police, TAILLE_DU_GABARIT)(valeur)) return;
+  champ.setFontSize(TAILLE_MINIMALE_LISIBLE);
 }
-
-const TAILLE_DU_GABARIT = 10;
-const AVANCE_COURIER = 0.6;
-// La marge que pdf-lib laisse de chaque côté en composant l'apparence.
-const MARGE_INTERNE = 2;
 
 /**
  * Coche en imposant l'état d'export attendu.
@@ -211,46 +214,26 @@ function aplatir(texte: string): string {
 }
 
 /**
- * Écrit un texte médical selon son plan d'impression : le champ, ou le renvoi
- * à une annexe insérée juste après la page qui le porte. Jamais
- * `réduireSiÇaDéborde` sur cette zone (décision 6 de la spec 0005) : réduire
- * la police rendrait illisible un texte que le médecin-conseil doit lire.
+ * Écrit un texte médical en entier, s'il tient dans sa rubrique (contrat EM-2).
+ *
+ * Le cadre du gabarit est petit : une ligne et demie sur la PMT, qui passe à
+ * la ligne d'elle-même, une seule sur la DAP. La police descend jusqu'au
+ * plancher de lisibilité s'il le faut. Au-delà, rien n'est écrit plus petit ni
+ * coupé : le texte déborde, et le prescripteur le révise.
  */
-async function écrireTexteMédical(
-  document: PDFDocument,
+function écrireTexteMédical(
   formulaire: Formulaire,
   police: PDFFont,
   nom: string,
   texte: string,
-): Promise<void> {
+): void {
   const champ = formulaire.getField(nom);
   if (!(champ instanceof PDFTextField)) {
     throw new Error(`Le champ « ${nom} » n'est pas un champ texte.`);
   }
-  const plan = planDImpression(texte, tientDansLaZone(champ, police));
-  champ.setText(plan.texteDuChamp);
-  if (plan.annexe) {
-    await insererAnnexe(
-      document,
-      pageDuChamp(document, champ, nom),
-      plan.annexe,
-    );
-  }
-}
-
-// La page qui porte le widget du champ : c'est après elle, et non après un
-// numéro figé pour PMT ou DAP, que l'annexe s'insère — ce module ignore lequel
-// des deux gabarits il remplit.
-function pageDuChamp(
-  document: PDFDocument,
-  champ: PDFTextField,
-  nom: string,
-): number {
-  const référence = champ.acroField.getWidgets()[0]?.P();
-  const pages = document.getPages().map((page) => page.ref);
-  const index = référence ? pages.indexOf(référence) : -1;
-  if (index === -1) {
-    throw new Error(`Impossible de situer « ${nom} » sur une page.`);
-  }
-  return index;
+  const taille =
+    texte === "" ? TAILLE_DU_GABARIT : tailleQuiTient(champ, police, texte);
+  if (taille === undefined) throw new DebordementDuTexteMedical(texte);
+  champ.setText(texte);
+  champ.setFontSize(taille);
 }

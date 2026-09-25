@@ -21,7 +21,7 @@ const moteur = moteurDeTest();
 const COMPLETES = SEEDS.filter((seed) => !ouvreLeQuestionnaire(seed));
 const ARRETS = SEEDS.filter(ouvreLeQuestionnaire);
 
-describe("modèle v9.7 — le moteur confirme les attendus des seeds", () => {
+describe("le moteur confirme les attendus des seeds", () => {
   for (const seed of COMPLETES) {
     it(seed.id, () => {
       const { manquantes, ecarts } = evaluerSeed(moteur, seed);
@@ -35,7 +35,7 @@ describe("modèle v9.7 — le moteur confirme les attendus des seeds", () => {
   }
 });
 
-describe("modèle v9.7 — couverture des cas finaux", () => {
+describe("couverture des cas finaux", () => {
   // La v9.7 en compte sept, contre neuf en v9.5.1. Elle a retiré « SMUR »,
   // « bariatrique seul » et « prestation non prise en charge » — les trois
   // sorties directes de la Partie 1 —, et ajouté la prescription S3141, que la
@@ -62,7 +62,7 @@ describe("modèle v9.7 — couverture des cas finaux", () => {
   });
 });
 
-describe("modèle v9.7 — couverture des régimes de financement", () => {
+describe("couverture des régimes de financement", () => {
   it("les 5 régimes sont atteints par le catalogue", () => {
     // L'axe sur lequel se lit une non-conformité : un transport dont le régime
     // n'est pas « Assurance Maladie » ne doit pas lui être facturé. La v9.7 les

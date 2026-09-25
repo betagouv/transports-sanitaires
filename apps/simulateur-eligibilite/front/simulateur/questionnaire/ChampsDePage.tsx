@@ -3,12 +3,15 @@
 
 import type { Situation } from "publicodes";
 import { moteur, texte, vrai } from "../moteur";
+import { precisionMedicale } from "../precision-medicale";
 import { ChampDeFormulaire } from "./ChampDeFormulaire";
 import { faitsConnusDe } from "./faits-connus";
+import { lieuArriveeDeduit, lieuDepartDeduit } from "./lieu-deduit";
 import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
 import type { Champ, Reponses } from "./passation";
+import { saisieACorriger } from "./saisie-a-corriger";
 import { optionsVisiblesDe } from "./visibilite-des-options";
 
 type Props = {
@@ -27,31 +30,92 @@ export function ChampsDePage({
   const parId = new Map(champs.map((champ) => [champ.id, champ] as const));
   const groupesVus = new Set<string>();
 
-  return champs.map((champ) => {
-    const groupe = mosaiqueDe(champ.id);
-    if (!groupe)
-      return (
-        <ChampDeFormulaire
-          key={champ.id}
-          champ={champLibelleAdapte(champFiltre(champ, situation), situation)}
-          onChange={(valeur) => onReponse(champ.id, valeur)}
-        />
-      );
-    if (groupesVus.has(groupe.parentId)) return null;
-    groupesVus.add(groupe.parentId);
-    return (
-      <GroupeMosaique
-        key={groupe.parentId}
-        groupe={groupe}
-        parId={parId}
-        situation={situation}
-        onReponses={onReponses}
-      />
-    );
-  });
+  return (
+    <>
+      <FaitLieuDeduit champs={champs} situation={situation} />
+      {champs.map((champ) =>
+        rendreChamp(champ, {
+          parId,
+          groupesVus,
+          situation,
+          onReponse,
+          onReponses,
+        }),
+      )}
+    </>
+  );
 }
 
 // ---- implémentation ----
+
+type ContexteDeRendu = {
+  parId: Map<string, Champ>;
+  groupesVus: Set<string>;
+  situation: Situation<string>;
+  onReponse: (id: string, valeur: unknown) => void;
+  onReponses: (reponses: Reponses) => void;
+};
+
+// Une question simple rend son propre `ChampDeFormulaire` ; une option de
+// mosaïque ne rend le groupe qu'une fois, à sa première option rencontrée.
+function rendreChamp(champ: Champ, ctx: ContexteDeRendu) {
+  const { parId, groupesVus, situation, onReponse, onReponses } = ctx;
+  const groupe = mosaiqueDe(champ.id);
+  if (!groupe)
+    return (
+      <ChampDeFormulaire
+        key={champ.id}
+        champ={champLibelleAdapte(champFiltre(champ, situation), situation)}
+        onChange={(valeur) => onReponse(champ.id, valeur)}
+        erreur={saisieACorriger(champ.id, situation)}
+        precision={precisionMedicale(champ.id, situation)}
+      />
+    );
+  if (groupesVus.has(groupe.parentId)) return null;
+  groupesVus.add(groupe.parentId);
+  return (
+    <GroupeMosaique
+      key={groupe.parentId}
+      groupe={groupe}
+      parId={parId}
+      situation={situation}
+      onReponses={onReponses}
+    />
+  );
+}
+
+// TS973-11 : quand le type de lieu de la page (départ ou arrivée) est déduit
+// du parcours plutôt que répondu, `p2_trajet_depart`/`p2_trajet_arrivee`
+// devient inapplicable et cette page s'ouvre directement sur l'adresse. Sans
+// ce fait, rien ne dirait au prescripteur d'où vient le lieu qu'il complète.
+// Repéré par la présence de la saisie d'adresse plutôt que d'un identifiant
+// d'étape : `ChampsDePage` ne connaît que ses champs, pas `etapes.ts`.
+function FaitLieuDeduit({
+  champs,
+  situation,
+}: {
+  champs: readonly Champ[];
+  situation: Situation<string>;
+}) {
+  const surPageDepart = champs.some(
+    (champ) => champ.id === "p2_depart_adresse",
+  );
+  const surPageArrivee = champs.some(
+    (champ) => champ.id === "p2_arrivee_adresse",
+  );
+  if (!surPageDepart && !surPageArrivee) return null;
+  const moteurPositionne = moteur.setSituation(situation);
+  const fait = surPageDepart
+    ? lieuDepartDeduit(moteurPositionne)
+    : lieuArriveeDeduit(moteurPositionne);
+  if (!fait) return null;
+  return (
+    <p className="fr-text--bold">
+      Lieu {surPageDepart ? "de départ" : "d’arrivée"} : {fait.valeur} (déduit{" "}
+      {fait.origine}).
+    </p>
+  );
+}
 
 // Le modèle ne sait pas exclure une option d'une autre, ni en cacher une sous
 // condition — les possibilités du modèle sont des chaînes littérales, jamais
@@ -85,6 +149,8 @@ const LIBELLES_SELON_CONVOCATION: Record<string, string> = {
 };
 
 function champLibelleAdapte(champ: Champ, situation: Situation<string>): Champ {
+  const precise = precisionMedicale(champ.id, situation)?.libelle;
+  if (precise) return { ...champ, label: precise };
   const libelle = LIBELLES_SELON_CONVOCATION[champ.id];
   if (!libelle) return champ;
   if (!vrai(moteur.setSituation(situation), "p2_convocation")) return champ;

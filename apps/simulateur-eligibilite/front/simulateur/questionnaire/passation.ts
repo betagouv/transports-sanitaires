@@ -23,7 +23,8 @@ import type { Mosaique } from "./mosaique";
 import { mosaiqueDe } from "./mosaique";
 import { regleDeComplétude } from "./pagination";
 import { avecCalculs } from "./recalcul";
-import { avecReponse } from "./reponse-unique";
+import { avecReponse, avecReponses } from "./reponse-unique";
+import { saisieACorriger } from "./saisie-a-corriger";
 import { avecSuiteRevue } from "./suite-du-parcours";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
@@ -157,9 +158,11 @@ function actions({
 }: Contexte): Actions {
   return {
     repondre: (id, valeur) =>
-      setFormState(avecCalculs(avecReponse(formState, id, valeur))),
+      setFormState(
+        avecRecalcul(formState, (fs) => avecReponse(fs, id, valeur)),
+      ),
     repondrePlusieurs: (reponses) =>
-      setFormState(avecCalculs(avecReponses(formState, reponses))),
+      setFormState(avecRecalcul(formState, (fs) => avecReponses(fs, reponses))),
     avancer: () => {
       // Sécurité : ne jamais avancer (ni conclure le parcours) tant qu'une
       // question posée reste sans réponse — le bouton est déjà désactivé, ceci
@@ -180,6 +183,19 @@ function actions({
   };
 }
 
+// La situation précédente est capturée avant l'appel qui mute son argument
+// (`avecReponse`/`avecReponses` → `handleInputChange`, cf. AGENTS.md) :
+// `avecEntreesCalculees` en renvoie une copie, insensible à la mutation qui
+// suit. TS973-11 s'en sert pour invalider une adresse dont le lieu déduit a
+// changé de type entre les deux saisies (`recalcul.ts`).
+function avecRecalcul(
+  formState: FormState<string>,
+  produire: (formState: FormState<string>) => FormState<string>,
+): FormState<string> {
+  const precedente = avecEntreesCalculees(formState.situation);
+  return avecCalculs(produire(formState), precedente);
+}
+
 // Toute saisie relance l'avancement automatique — y compris au retour sur une
 // page déjà répondue, où il avait rendu la main au bouton « Suivant ».
 function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
@@ -197,18 +213,17 @@ function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
   };
 }
 
-// Ce qui manque encore pour quitter la page. Deux régimes, et le modèle décide
-// duquel relève la page : quand il porte une règle de complétude — les deux pages
-// d'adresse —, elle tranche à elle seule, y compris sur ce qui est facultatif ;
-// partout ailleurs, la page se quitte dès que chacune de ses questions a répondu.
-//
-// Cette distinction était naguère une liste de saisies facultatives tenue dans
-// `Secretariat.tsx` : l'application décidait de son côté que le complément
-// d'adresse et le pays n'étaient pas exigés. Le modèle le dit désormais lui-même.
+// Ce qui manque encore pour quitter la page. Une saisie en erreur la retient
+// toujours (`saisie-a-corriger.ts`). Sinon, deux régimes : quand l'étape porte
+// une règle de complétude du modèle, elle tranche seule, facultatif compris ;
+// partout ailleurs, la page se quitte dès que chacune de ses questions a
+// répondu. Le modèle dit lui-même ce qui est facultatif, l'application ne le
+// décide plus (le complément d'adresse et le pays, jadis dans `Secretariat.tsx`).
 function resteARepondre(
   champs: readonly Champ[],
   situation: Situation<string>,
 ): boolean {
+  if (champs.some((champ) => saisieACorriger(champ.id, situation))) return true;
   const complet = regleDeComplétude(champs.map((champ) => champ.id));
   if (complet === undefined) return resteUneQuestion(champs, situation);
   return moteur.setSituation(situation).evaluate(complet).nodeValue !== true;
@@ -244,16 +259,6 @@ function resteUneQuestion(
     groupesEvalues.add(m.parentId);
     return !repondue(m);
   });
-}
-
-// Applique plusieurs réponses booléennes en une passe. La mosaïque s'en sert
-// pour, à chaque clic, mettre à jour l'option touchée ET figer les autres
-// options du groupe (sinon indéfinies → le moteur les considère non répondues).
-function avecReponses(formState: FormState<string>, reponses: Reponses) {
-  let etat = formState;
-  for (const [id, valeur] of reponses)
-    etat = formBuilder.handleInputChange(etat, id, valeur);
-  return etat;
 }
 
 function conclure(

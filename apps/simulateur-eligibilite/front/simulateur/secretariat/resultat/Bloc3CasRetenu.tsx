@@ -3,6 +3,11 @@
 // listée que si la simulation l'a établie, d'où le moteur en paramètre.
 
 import { type moteur, vrai } from "../../moteur";
+import {
+  type FaitDeduit,
+  lieuArriveeDeduit,
+  lieuDepartDeduit,
+} from "../../questionnaire/lieu-deduit";
 import type { GroupeRetenu } from "../case-de-formulaire";
 import { type Article80, Article80CorpsMedical } from "./Article80";
 import { casesRetenues } from "./cases-documentaires";
@@ -40,6 +45,7 @@ export function Bloc3CasRetenu({
           doc={doc}
           datePrescription={datePrescription}
         />
+        <LieuxDeduits e={e} />
         <NoteCorpsMedical casFinal={casFinal} article80={article80} />
         {vrai(e, "cible_urgence_attestee") && (
           <NoteUrgenceCorpsMedical casFinal={casFinal} />
@@ -85,6 +91,25 @@ function ARecopierSurLeFormulaire({
   );
 }
 
+// TS973-11 : un lieu déduit du parcours s'affiche comme un fait, avec son
+// origine, et jamais comme une réponse du prescripteur. Libellés du contrat
+// v9.7.3 (`results.resultat_2.derived_facts` du YAML UI). Un lieu sans valeur
+// n'est pas déduit : sa question n'était pas encore ouverte (cas tranché avant
+// le trajet), et il n'y a rien à montrer.
+function LieuxDeduits({ e }: Pick<Props, "e">) {
+  const faits: [string, FaitDeduit | undefined][] = [
+    ["Type de lieu de départ", lieuDepartDeduit(e)],
+    ["Type de lieu de destination", lieuArriveeDeduit(e)],
+  ];
+  return faits.map(([libelle, fait]) =>
+    fait?.valeur ? (
+      <p key={libelle}>
+        <strong>{libelle} :</strong> {fait.valeur} (déduit {fait.origine})
+      </p>
+    ) : null,
+  );
+}
+
 // Libellé du cas retenu tel qu'attendu par le corps médical (plus explicite que
 // la valeur brute de `cas_final`).
 const CAS_RETENU: Record<string, string> = {
@@ -95,9 +120,11 @@ const CAS_RETENU: Record<string, string> = {
   "demande d’accord préalable": "DAP (Demande d’Accord Préalable)",
   "convocation ou avis d’audience":
     "Convocation ou avis d’audience valant prescription médicale de transport",
-  // Texte livré mot pour mot (contrat v9.7.2, `case_label`).
+  // Texte livré mot pour mot (contrat v9.7.3, `case_label`) — sans ancrage
+  // « convocation » depuis TS973-03, qui étend ce cas final à l'avion/bateau
+  // hors convocation.
   "orientation vers la caisse pour accord préalable":
-    "Convocation avec transport en avion ou bateau : orientation vers la caisse",
+    "Transport en avion ou bateau : orientation vers la caisse",
   "transport à la charge de l’établissement":
     "Transport à charge de l’établissement de santé",
   "permission de sortie sans motif médical":

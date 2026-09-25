@@ -11,7 +11,6 @@
 import { describe, expect, it } from "vitest";
 import { CerfaNonApplicable } from "../../front/outils-produit/beta/cerfa/cerfa-non-applicable.ts";
 import { saisiesDepuisSituation } from "../../front/outils-produit/beta/cerfa/dap/depuis-simulateur.ts";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa.ts";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue.ts";
 import { situationDe } from "../../front/outils-produit/seeds/seed.ts";
 import { moteurDeTest } from "../simulateur/moteur.ts";
@@ -20,6 +19,7 @@ import {
   GABARIT_DAP,
   HOSPITALISATION,
   relire,
+  remplirApresRevision,
   situation,
 } from "./gabarit.ts";
 
@@ -29,12 +29,12 @@ async function depuisLaSeed(id: string): Promise<Record<string, string>> {
     moteurDeTest(),
     situationDe(seedParId(id)),
   );
-  return relire(await remplirCerfa(GABARIT_DAP, saisies));
+  return relire(await remplirApresRevision(GABARIT_DAP, saisies));
 }
 
 const depuisLaSituation = async (entrées: Record<string, string>) =>
   relire(
-    await remplirCerfa(
+    await remplirApresRevision(
       GABARIT_DAP,
       saisiesDepuisSituation(moteurDeTest(), situation(entrées)),
     ),

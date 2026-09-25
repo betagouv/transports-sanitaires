@@ -176,17 +176,29 @@ describe("retour depuis une page de résultat", () => {
       if (screen.queryByRole("textbox", { name: /code postal/i })) break;
       await user.click(screen.getByRole("button", { name: /^précédent$/i }));
     }
+    // TS973-11 : « Entrée en hospitalisation » déduit le type du lieu
+    // d'arrivée plutôt que de le demander. Le fait apparaît ici, à la place
+    // de la question, avec son origine.
+    expect(
+      screen.getByText(/lieu d’arrivée : structure de soins \(déduit/i),
+    ).toBeInTheDocument();
+
     const codePostal = screen.getByRole("textbox", { name: /code postal/i });
     await user.clear(codePostal);
     await user.type(codePostal, "75004");
 
-    // Une page plus tôt : le type du lieu d'arrivée, qui doit rester au
-    // programme — elle ne « manque » plus au moteur, ce n'est pas une raison
-    // pour la retirer du parcours.
+    // Une page plus tôt : l'adresse de départ, qui doit rester au programme.
+    // Elle ne « manque » plus au moteur, ce n'est pas une raison pour la
+    // retirer du parcours. Le type du lieu d'arrivée n'est plus une page à
+    // part depuis qu'il est déduit (ci-dessus) : reculer d'un cran depuis
+    // l'adresse d'arrivée ramène directement à celle de départ.
     await user.click(screen.getByRole("button", { name: /^précédent$/i }));
     expect(
-      screen.getByRole("group", { name: /type de lieu d’arrivée/i }),
+      screen.getByRole("textbox", { name: /code postal/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/lieu d’arrivée : structure de soins \(déduit/i),
+    ).not.toBeInTheDocument();
 
     // Et l'on ressort par le même chemin : « Suivant », pas le bouton de fin.
     await user.click(screen.getByRole("button", { name: /^suivant$/i }));

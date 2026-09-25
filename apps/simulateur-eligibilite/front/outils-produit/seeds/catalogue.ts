@@ -296,8 +296,7 @@ export const SEEDS: readonly Seed[] = [
       p1_critere_brancardage_portage: "oui",
       ...CRITERE_AUCUN_DECOCHE,
       p2_raison_principale: "'Autre examen ou soin'",
-      p2_motif_detail: "'Autre - préciser'",
-      p2_motif_detail_autre: "'Bilan de suivi sans lien avec une ALD.'",
+      p2_motif_detail: "'Bilan de suivi sans lien avec une ALD.'",
     },
     attendu: {
       cible_transport_sanitaire_prescrit: "ambulance",
@@ -335,14 +334,15 @@ export const SEEDS: readonly Seed[] = [
     id: "secretariat-motif-texte-libre",
     libelle: "Secrétariat — motif en texte libre",
     description:
-      "Le motif se précise en texte libre plutôt que par une valeur de la " +
-      "liste : la composition des éléments d'ordre médical le recopie sans " +
-      "réécriture (spec 0005, parcours EM-PARCOURS-PMT-TEXTE-LIBRE).",
+      "Le motif se précise en texte libre : la composition des éléments " +
+      "d'ordre médical le recopie sans réécriture (spec 0005, parcours " +
+      "EM-PARCOURS-PMT-TEXTE-LIBRE). Depuis la v9.7.3, c'est la seule forme " +
+      "que prend `p2_motif_detail` — le détour par « Autre - préciser » " +
+      "n'existe plus dans le modèle.",
     outil: "secretariat",
     entrees: {
       p2_raison_principale: "'Autre examen ou soin'",
-      p2_motif_detail: "'Autre - préciser'",
-      p2_motif_detail_autre: "'IRM de contrôle du genou.'",
+      p2_motif_detail: "'IRM de contrôle du genou.'",
       p2_contexte_at_mp: "oui",
       p2_contexte_aucun: "non",
       p2_date_at_mp: "'2026-01-12'",
@@ -501,6 +501,102 @@ export const SEEDS: readonly Seed[] = [
     },
   },
   {
+    id: "secretariat-transfert-provisoire-radiotherapie",
+    libelle:
+      "Secrétariat — transfert provisoire pour une séance de radiothérapie",
+    description:
+      "L'exception radiothérapie réserve le financement par l'Assurance " +
+      "Maladie au transfert provisoire de moins de 48 heures (TS973-06, " +
+      "famille AUD-ROUTE-RADIO-DURATION) : le pendant favorable du transfert " +
+      "définitif, qui reste à la charge de l'établissement.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p1_m0_seance_radiotherapie: "oui",
+      p1_m0_aucun: "non",
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Provisoire'",
+      p2_transfert_motif_detail: "'Séance de radiothérapie'",
+      p2_exception_radiotherapie_moins_48h: "oui",
+      p2_exception_aucune: "non",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit:
+        "VSL (Véhicule Sanitaire Léger) ou taxi conventionné",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-transfert-exception-ehpad",
+    libelle: "Secrétariat : transfert vers un EHPAD sous exception",
+    description:
+      "L'exception EHPAD finance le transfert par l'Assurance Maladie dès que " +
+      "le départ ou l'arrivée déclaré est un EHPAD (TS973-07, famille " +
+      "AUD-ROUTE-EXCEPTION-PLACE). Le pendant valide des trajets sans EHPAD, " +
+      "que l'écran de résultat renvoie vers la réponse à corriger.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Définitif'",
+      p2_exception_ehpad: "oui",
+      p2_exception_aucune: "non",
+      p2_trajet_depart: "'Structure de soins'",
+      p2_depart_nom_lieu: "'CH de Rennes'",
+      p2_trajet_arrivee: "'EHPAD'",
+      p2_arrivee_nom_lieu: "'EHPAD Les Tilleuls'",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit: "ambulance",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
+    id: "secretariat-transfert-exception-usld",
+    libelle: "Secrétariat : transfert depuis une USLD sous exception",
+    description:
+      "Le sens inverse de l'exception EHPAD, pour une USLD : le départ déclaré " +
+      "suffit à justifier l'exception (TS973-07, famille " +
+      "AUD-ROUTE-EXCEPTION-PLACE).",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_raison_principale:
+        "'Transfert d’un patient hospitalisé vers un autre établissement de santé'",
+      p2_transfert_en_cours: "oui",
+      p2_nature_transfert: "'Définitif'",
+      p2_exception_usld: "oui",
+      p2_exception_aucune: "non",
+      p2_trajet_depart: "'USLD'",
+      p2_depart_nom_lieu: "'USLD du CH'",
+      p2_trajet_arrivee: "'Structure de soins'",
+      p2_arrivee_nom_lieu: "'CH de Rennes'",
+    },
+    attendu: {
+      cible_transport_sanitaire_prescrit: "ambulance",
+      cible_partie_2_requise: "oui",
+      cible_cas_final: "prescription médicale de transport",
+      cible_regime_financement: "Assurance Maladie",
+      cible_document_a_remettre_au_patient: "PMT S3138g",
+    },
+  },
+  {
     id: "secretariat-convocation",
     libelle: "Secrétariat — convocation ou avis d'audience",
     description:
@@ -596,6 +692,73 @@ export const SEEDS: readonly Seed[] = [
         "'Convocation du contrôle médical de l’Assurance Maladie.'",
       p2_convocation_avion_bateau: "oui",
       p2_convocation_aucune: "non",
+    },
+    attendu: {
+      cible_cas_final: "orientation vers la caisse pour accord préalable",
+      cible_regime_financement:
+        "Assurance Maladie - modalités à confirmer auprès de la caisse",
+      cible_document_a_remettre_au_patient:
+        "Synthèse pour démarche auprès de la caisse",
+    },
+  },
+  {
+    id: "secretariat-convocation-orientation-caisse-sans-adresse",
+    libelle:
+      "Secrétariat — convocation en avion, orientation caisse sans adresse (TS973-02)",
+    description:
+      "La même orientation caisse que ci-dessus, sans aucune adresse de trajet : " +
+      "aucune DAP n'est produite sur ce parcours, donc rien n'en réclame une. " +
+      "Verrouille TS973-02 : le verdict et les six motifs DAP (faux) se " +
+      "déterminent sans qu'une adresse soit jamais citée comme manquante.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_hygiene_desinfection: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_convocation_ou_avis_type:
+        "'Convocation du contrôle médical de l’Assurance Maladie.'",
+      p2_convocation_avion_bateau: "oui",
+      p2_convocation_aucune: "non",
+      p2_depart_nom_lieu: null,
+      p2_depart_adresse: null,
+      p2_depart_complement_adresse: null,
+      p2_depart_code_postal: null,
+      p2_depart_commune: null,
+      p2_depart_pays: null,
+      p2_arrivee_nom_lieu: null,
+      p2_arrivee_adresse: null,
+      p2_arrivee_complement_adresse: null,
+      p2_arrivee_code_postal: null,
+      p2_arrivee_commune: null,
+      p2_arrivee_pays: null,
+      p2_tranche_distance_trajet_aller: null,
+    },
+    attendu: {
+      cible_cas_final: "orientation vers la caisse pour accord préalable",
+      cible_regime_financement:
+        "Assurance Maladie - modalités à confirmer auprès de la caisse",
+      cible_document_a_remettre_au_patient:
+        "Synthèse pour démarche auprès de la caisse",
+    },
+  },
+  {
+    id: "secretariat-avion-orientation-caisse-hors-convocation",
+    libelle:
+      "Secrétariat — avion hors convocation, orientation vers la caisse (TS973-03)",
+    description:
+      "Famille AUD-AIR-ORIENTATION : un avion ou bateau de ligne régulière en " +
+      "« situations spéciales » (hors convocation), sans hospitalisation, ALD " +
+      "ni ATMP pour le rattacher à une sous-situation de DAP — la même " +
+      "orientation caisse que la convocation, mais sans qu'aucune convocation " +
+      "n'existe. Verrouille TS973-03 : le corps du verdict et le cas retenu ne " +
+      "doivent mentionner « convocation » à aucun moment.",
+    outil: "secretariat",
+    entrees: {
+      p1_autonomie: AIDE_PROFESSIONNEL,
+      p1_critere_brancardage_portage: "oui",
+      ...CRITERE_AUCUN_DECOCHE,
+      p2_special_avion_bateau: "oui",
+      p2_special_aucune: "non",
     },
     attendu: {
       cible_cas_final: "orientation vers la caisse pour accord préalable",
@@ -936,7 +1099,10 @@ export const SEEDS: readonly Seed[] = [
       p2_tranche_distance_trajet_aller: "'Plus de 150 km'",
       p2_justification_longue_distance:
         "'Plateau technique nécessaire indisponible à proximité.'",
-      p2_nombre_transports_permission_dap: "4",
+      // Deux trajets simples : la période de la base neutre (une permission
+      // le 20 janvier, un aller-retour par mois jusqu'au 31 mars) en permet
+      // trois au plus (TS973-09).
+      p2_nombre_transports_permission_dap: "2",
     },
     attendu: {
       cible_partie_2_requise: "oui",

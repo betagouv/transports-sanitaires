@@ -99,7 +99,7 @@ const URGENCE = {
 
 /**
  * Les raisons de déplacement et natures de transfert que la composition des
- * éléments d'ordre médical compare littéralement (contrat EM-1, spec 0005) :
+ * éléments d'ordre médical compare littéralement (contrat EM-2, spec 0005) :
  * elle ne lit pas de cible dédiée pour ces cas-là, contrairement à `MODE`,
  * `LIEU` et `URGENCE`.
  */

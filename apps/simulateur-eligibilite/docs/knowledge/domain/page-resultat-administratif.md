@@ -47,6 +47,55 @@ Le cas **Qualification complémentaire requise** est supprimé.
 
 ---
 
+## Quand aucun cas final n'est affichable
+
+Aucun document ne s'affiche tant que `cible_resultat_2_affichable` est faux.
+La page dit alors pourquoi, sans jamais parler de refus : le droit n'est pas
+encore tranché.
+
+| Cause | Ce que la page affiche |
+|---|---|
+| Une réponse manque | « Les informations recueillies ne suffisent pas encore », et un renvoi au questionnaire |
+| Une exception EHPAD ou USLD est cochée, mais ni le départ ni l'arrivée n'est de ce type | « Le trajet ne correspond pas à l'exception EHPAD » (ou USLD), les deux types de lieu déclarés, et les deux corrections possibles : choisir ce type pour un des lieux, ou retirer l'exception |
+
+La comparaison porte sur le **type de lieu déclaré**, jamais sur l'adresse.
+Aucun référentiel ne dit qu'une adresse est un EHPAD. Un type EHPAD choisi pour
+une adresse de domicile passe donc sans alerte. C'est aussi le cas dans
+l'adaptateur de référence de l'éditeur (v9.7.3, TS973-07).
+
+La comparaison porte sur le type **effectif**, déduit compris. Une admission HAD
+ou un retour pénitentiaire déduit le départ et l'arrivée, même si un autre type
+avait été répondu avant. Le message ne propose alors de choisir un type que pour
+un lieu encore répondu. Si les deux sont déduits, il ne propose que le retrait
+de l'exception.
+
+La page ne filtre pas les types de lieu proposés, contrairement à
+`allowedPlaces()` chez l'éditeur. Devant une contradiction, on ne sait pas si
+l'erreur est le lieu ou l'exception : c'est au prescripteur de trancher.
+
+L'arrivée incohérente avec un transport vers les urgences (TS973-04) bloque
+aussi le résultat, mais garde le message générique. L'arrivée y est déduite, et
+la question n'est plus posée : aucun message ne pourrait renvoyer vers une
+réponse que le prescripteur peut corriger.
+
+L'exception radiothérapie cochée sans séance déclarée en partie médicale
+(TS973-08) bloque aussi le résultat, avec le message générique. Cette
+contradiction n'est pas atteignable dans le parcours :
+
+- l'exception n'est proposée que si la Partie 1 déclare une séance ;
+- la Partie 1 est verrouillée dès l'entrée dans la Partie 2.
+
+Seules une seed ou le labo peuvent la produire. L'application ne coche jamais
+la séance à la place du prescripteur, même quand l'exception le laisserait
+supposer.
+
+L'éditeur prévoit une reprise médicale (`restartMedical()`) : elle rouvre la
+Partie 1 et efface toute la Partie 2. Elle n'est pas construite ici. Pour
+corriger une réponse médicale, le prescripteur fait une nouvelle simulation,
+qui efface aussi la Partie 2.
+
+---
+
 # Bloc 1 — Résultat final
 
 ## Cas Prescription Médicale de Transport
