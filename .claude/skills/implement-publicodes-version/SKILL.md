@@ -322,6 +322,7 @@ ni nos tests. Sa structure :
 |---|---|
 | En-tête | le modèle concerné, les règles en cause, comment le constat est reproduit |
 | Le constat en une phrase | de quoi décider s'il faut lire la suite |
+| L'origine | où se trouve le problème, en un mot : `spec`, `publicodes` ou `app` (voir ci-dessous) |
 | Ce qui se passait avant | la version précédente, et pourquoi elle tenait |
 | Ce qui se passe maintenant | l'enchaînement, étape par étape |
 | Pourquoi cela nous arrête | la conséquence pour le prescripteur ou le patient, pas pour notre code |
@@ -329,6 +330,20 @@ ni nos tests. Sa structure :
 | Ce qu'on a constaté à l'exécution | les scénarios de la recette qui ont changé de résultat |
 | Ce qu'on a fait de notre côté | pour que l'éditeur sache ce qu'il défait s'il corrige |
 | La question | fermée, avec les pistes de correction : le choix lui revient |
+
+L'origine dit à l'éditeur quelle pièce corriger :
+
+| Origine | Où est le problème | Exemple |
+|---|---|---|
+| `spec` | un ticket, un contrat (`docs/*.md`) ou le contrat d'interface (`*.ui.yaml`) | un ticket suppose une capacité que l'application n'a pas |
+| `publicodes` | les règles du modèle (`*.publicodes.flat-*.yaml`) | une règle accepte une réponse que le reste du livrable refuse |
+| `app` | du code applicatif : celui de référence de l'éditeur (`src/application.mjs`), ou le nôtre | une fonction de référence ignore une clé du contrat ; un écart que notre application assume |
+
+Quand deux pièces se contredisent, les nommer toutes les deux (`spec et app`),
+et dire laquelle on a suivie. L'origine se complète de deux lignes : le
+comportement **attendu**, tel que la spec et le modèle le décrivent, et le
+comportement **observé dans notre application**. Sans elles, le lecteur ne
+sait pas si le problème est chez nous.
 
 Deux réflexes qui rendent ces constats utiles :
 
