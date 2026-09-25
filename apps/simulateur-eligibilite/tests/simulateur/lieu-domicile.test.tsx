@@ -58,10 +58,10 @@ describe("un trajet ne relie jamais deux domiciles", () => {
       await user.click(screen.getByRole("button", { name: /^précédent$/i }));
     await user.click(screen.getByRole("radio", { name: /^domicile$/i }));
 
-    // De nouveau choix unique : la page avance seule vers l'adresse de départ,
-    // déjà remplie — son bouton « Suivant » est donc immédiatement actif.
-    await screen.findAllByRole("textbox");
-    await user.click(screen.getByRole("button", { name: /^suivant$/i }));
+    // De nouveau choix unique : la page avance seule vers l'adresse de départ.
+    // Changer le type de départ a effacé tout ce qui suit (TS973-16),
+    // l'adresse comprise : elle se ressaisit.
+    await remplirAdresse(user);
 
     const arriveeApres = await groupeTypeArrivee();
     expect(

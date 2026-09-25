@@ -48,24 +48,12 @@ export const ETAPES: readonly Etape[] = [
     champs: ["p2_raison_principale"],
   },
   {
-    id: "p2_contextes_complementaires",
-    livrable: "M1.2",
-    champs: [
-      "p2_contexte_at_mp",
-      "p2_contexte_engagement_maternite",
-      "p2_contexte_retour_penitentiaire",
-      "p2_contexte_centre_reference",
-      "p2_contexte_pension_militaire",
-      "p2_contexte_aucun",
-    ],
-    complet: "p2_contextes_complementaires_complet",
-  },
-  {
     id: "p2_transfert_en_cours",
     livrable: "A0.1",
     champs: ["p2_transfert_en_cours"],
   },
   { id: "p2_nature_transfert", champs: ["p2_nature_transfert"] },
+
   { id: "p2_permission_age", champs: ["p2_permission_age"] },
   {
     id: "p2_permission_debut_hospitalisation",
@@ -90,6 +78,21 @@ export const ETAPES: readonly Etape[] = [
       "p2_exception_aucune",
     ],
     complet: "p2_exceptions_assurance_maladie_complet",
+  },
+  // TS973-16 : les contextes après le transfert et ses exceptions, qui
+  // décident du financement.
+  {
+    id: "p2_contextes_complementaires",
+    livrable: "M1.2",
+    champs: [
+      "p2_contexte_at_mp",
+      "p2_contexte_engagement_maternite",
+      "p2_contexte_retour_penitentiaire",
+      "p2_contexte_centre_reference",
+      "p2_contexte_pension_militaire",
+      "p2_contexte_aucun",
+    ],
+    complet: "p2_contextes_complementaires_complet",
   },
   {
     id: "p2_convocation_ou_avis_type",
@@ -241,6 +244,18 @@ export const ETAPES: readonly Etape[] = [
   { id: "p2_htnm_nom", champs: ["p2_htnm_nom"] },
   { id: "p2_htnm_adresse", champs: ["p2_htnm_adresse"] },
 ];
+
+/**
+ * Les questions des étapes qui suivent celle de `champ`, dans l'ordre du
+ * parcours. Vide pour une question hors parcours.
+ */
+export function champsEnAval(champ: string): CleDeRegle[] {
+  const etape = etapeDe(champ);
+  if (!etape) return [];
+  return ETAPES.slice(rangDe(etape.id) + 1).flatMap((suivante) => [
+    ...suivante.champs,
+  ]);
+}
 
 /** L'étape qui pose cette question, si le parcours en connaît une. */
 export function etapeDe(champ: string): Etape | undefined {
