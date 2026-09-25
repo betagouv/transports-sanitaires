@@ -10,6 +10,7 @@ import { Mosaique } from "./Mosaique";
 import type { Mosaique as MosaiqueDesc } from "./mosaique";
 import { mosaiqueDe, valeurBool } from "./mosaique";
 import type { Champ, Reponses } from "./passation";
+import { saisieACorriger } from "./saisie-a-corriger";
 import { optionsVisiblesDe } from "./visibilite-des-options";
 
 type Props = {
@@ -65,6 +66,7 @@ function rendreChamp(champ: Champ, ctx: ContexteDeRendu) {
         key={champ.id}
         champ={champLibelleAdapte(champFiltre(champ, situation), situation)}
         onChange={(valeur) => onReponse(champ.id, valeur)}
+        erreur={saisieACorriger(champ.id, situation)}
       />
     );
   if (groupesVus.has(groupe.parentId)) return null;

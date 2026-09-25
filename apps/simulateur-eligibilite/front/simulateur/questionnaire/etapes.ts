@@ -211,6 +211,8 @@ export const ETAPES: readonly Etape[] = [
   {
     id: "p2_nombre_transports_permission_dap",
     champs: ["p2_nombre_transports_permission_dap"],
+    // TS973-09 : un total répondu ne suffit pas, il doit être valide.
+    complet: "p2_nombre_permission_dap_complet",
   },
   { id: "p2_date_at_mp", livrable: "A5.1", champs: ["p2_date_at_mp"] },
   {

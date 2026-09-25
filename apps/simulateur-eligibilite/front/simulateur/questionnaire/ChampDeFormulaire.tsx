@@ -16,11 +16,13 @@ import { libelleDeReponse } from "./libelle-de-reponse";
 type Props = {
   champ: EvaluatedFormElement & FormPageElementProp;
   onChange: (valeur: unknown) => void;
+  /** Ce qui ne va pas dans la saisie, affiché sous le champ (`saisie-a-corriger.ts`). */
+  erreur?: string;
 };
 
 // Le `champ` est passé déjà restreint à chaque sous-composant : c'est le
 // `switch` ci-dessous qui porte le narrowing de l'union, pas les composants.
-export function ChampDeFormulaire({ champ, onChange }: Props) {
+export function ChampDeFormulaire({ champ, onChange, erreur }: Props) {
   if (champ.hidden || !champ.applicable) return null;
 
   return (
@@ -29,7 +31,7 @@ export function ChampDeFormulaire({ champ, onChange }: Props) {
         <ChoixRadio champ={champ} onChange={onChange} />
       )}
       {champ.element === "input" && champ.type === "number" && (
-        <SaisieNombre champ={champ} onChange={onChange} />
+        <SaisieNombre champ={champ} onChange={onChange} erreur={erreur} />
       )}
       {champ.element === "input" && champ.type === "text" && (
         <SaisieTexte champ={champ} onChange={onChange} />
@@ -78,13 +80,25 @@ function ChoixRadio({ champ, onChange }: ChampProps<EvaluatedRadioGroup>) {
 // transports exige un entier d'au moins 1, la fréquence mensuelle d'une
 // permission en accepte cinq au plus. Les écrire en dur ferait accepter à l'écran
 // ce que le modèle rejette ensuite.
-function SaisieNombre({ champ, onChange }: ChampProps<EvaluatedNumberInput>) {
+//
+// Une erreur s'affiche sous la saisie sans la toucher : la valeur reste celle
+// tapée, à corriger par le prescripteur. Le champ reste alors modifiable. Sans
+// ça, `@publicodes/forms` le désactiverait : la garde du modèle à « non »
+// rend la saisie inutile aux cibles, donc désactivée, donc impossible à
+// corriger.
+function SaisieNombre({
+  champ,
+  onChange,
+  erreur,
+}: ChampProps<EvaluatedNumberInput> & Pick<Props, "erreur">) {
   const { min, max, pas } = bornesDeSaisie(champ.id);
   return (
     <Input
       label={champ.label}
+      state={erreur ? "error" : "default"}
+      stateRelatedMessage={erreur}
       hintText={champ.description}
-      disabled={champ.disabled}
+      disabled={champ.disabled && !erreur}
       classes={{ label: "fr-text--lead" }}
       style={{ maxWidth: "16rem" }}
       addon={

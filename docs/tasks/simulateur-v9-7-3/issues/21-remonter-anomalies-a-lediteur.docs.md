@@ -29,6 +29,15 @@ parcours. « Faire une nouvelle simulation » tient lieu de reprise médicale. L
 détail est dans `docs/knowledge/domain/page-resultat-administratif.md` de
 l'app.
 
+Un écart assumé au ticket 09, à signaler sans question : tant que le total
+d'une DAP de permission n'est pas répondu, l'application verse
+`p2_nombre_permission_dap_valide = oui`, là où `permissionDapCountValid()`
+rend `non`. Notre questionnaire suit les variables manquantes du moteur. Avec
+`non`, `p2_nombre_permission_dap_complet` s'arrête au premier faux et ne
+réclame plus jamais le total. Un total répondu est contrôlé comme chez
+l'éditeur. Le détail est dans `docs/knowledge/domain/total-dap-permission.md`
+de l'app.
+
 **Blocked by:** 19 (peut démarrer dès qu'un écart est constaté, sans attendre
 la fin des autres tickets)
 
