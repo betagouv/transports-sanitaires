@@ -167,3 +167,35 @@ administratif devient un besoin produit réel, `administrative_revision`
 le point de départ naturel. **À revérifier à chaque intégration** tant que
 l'éditeur écrit ses tickets depuis son propre adaptateur : la même
 hypothèse peut revenir sous un autre nom.
+
+## v9.7.3 : une fixture qui répond à une question que le parcours ne pose pas
+
+En portant la campagne de l'éditeur, huit cas `ROUTE-*` passaient sans rien
+vérifier. Notre adaptateur du livrable remplit toutes les réponses, y compris
+le type d'un lieu **déduit**, dont la question n'est jamais posée. Nos gardes
+calculées lisent la situation brute, et prennent cette réponse pour une
+réponse restée en arrière-plan. Le résultat était bloqué, et le helper de
+test sortait avant toute assertion.
+
+**Règle retenue** : une fixture rejouée au moteur retire les réponses que le
+parcours ne poserait pas (lieu déduit, date d'un contexte non déclaré,
+précision d'une autre raison). Côté application, une garde ne contrôle
+qu'une réponse que la situation demande. Et un helper de test n'a jamais de
+branche de sortie sans assertion : il vérifie le cas attendu, ou un refus
+« par une garde » (aucune variable manquante).
+
+## v9.7.3 : les anomalies remontées
+
+Dans `tmp/`, non versionnées, écrites au ticket 21 :
+
+| Fichier | Sujet | Question |
+|---|---|---|
+| `anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md` | TS973-18 suppose une session persistable | oui |
+| `anomalie-v9-7-3-completude-des-precisions-medicales.md` | la complétude compare des chaînes exactes, l'adaptateur replie | oui |
+| `anomalie-v9-7-3-suggestions-de-seances-du-transfert.md` | `session_suggestions` que `suggestionsFor()` ignore | oui |
+| `anomalie-v9-7-3-texte-medical-et-taille-des-champs.md` | EM-2 sans annexe face à des champs d'une ligne | oui |
+| `anomalie-v9-7-3-ecarts-d-integration-assumes.md` | reprise médicale, total DAP, fuseau, effacement en aval | à confirmer, écart par écart |
+
+Pour reproduire dans l'adaptateur de l'éditeur, copier le paquet hors de
+`tmp/` et lui monter un `node_modules` minimal (`publicodes`, `yaml`) par
+liens vers le magasin pnpm du dépôt. Le paquet livré ne les installe pas.
