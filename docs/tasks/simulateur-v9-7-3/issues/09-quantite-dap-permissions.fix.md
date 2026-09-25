@@ -9,6 +9,14 @@ silencieusement par un plafond.
 
 **Status:** ready-for-agent
 
+Le ticket 01 a câblé `p2_nombre_permission_dap_valide` avec un défaut
+permissif (`"oui"`, toute quantité acceptée — le comportement d'avant la
+v9.7.3) pour ne pas bloquer les autres scénarios. Le réencodage réel se base
+sur `permissionDapCapacity`/`permissionDapCountValid` (`src/application.mjs`,
+v9.7.3) : la capacité compatible avec la période, les semaines, le plafond
+mensuel et les sens couverts, puis la parité pour les allers-retours
+identiques.
+
 - [ ] Une permission du 4 au 6 septembre accepte 2 trajets, refuse 4 et 999
       (famille PERM-DAP-TOTAL-INCOMPATIBLE)
 - [ ] Des allers-retours identiques refusent un total impair (1, 3, 11)

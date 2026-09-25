@@ -414,6 +414,9 @@ p0_date_reference_yyyymmdd:
 p1_verrou_medical_valide:
   titre: p1_verrou_medical_valide
   description: Donnée technique calculée par le module de référence ; jamais une question.
+p2_qualification_declarations_valides:
+  titre: p2_qualification_declarations_valides
+  description: Donnée technique calculée par le module de référence ; jamais une question.
 p2_entree:
   titre: p2_entree
   toutes ces conditions:
@@ -468,151 +471,35 @@ p2_precision_motif_requise:
   - p2_raison_principale = 'Examen médical'
   - p2_raison_principale = 'Soin ou traitement autre qu’une séance de chimiothérapie, de radiothérapie ou de dialyse'
   - p2_raison_principale = 'Autre examen ou soin'
-p2_motif_detail:
-  titre: Précisez la consultation, l’examen ou le soin à l’origine du déplacement.
-  question: Précisez la consultation, l’examen ou le soin à l’origine du déplacement.
-  applicable si:
-    toutes ces conditions:
-    - p2_raison_coherente
-    - p2_precision_motif_requise
-  une possibilité:
-  - '''Consultation de cardiologie'''
-  - '''Consultation de neurologie'''
-  - '''Consultation d’oncologie'''
-  - '''Imagerie médicale'''
-  - '''Rééducation'''
-  - '''Séance de chimiothérapie'''
-  - '''Séance de radiothérapie'''
-  - '''Séance de dialyse en centre, notamment d’hémodialyse'''
-  - '''Autre - préciser'''
-p2_motif_detail_autre:
-  titre: Précisez la nature de l’examen, du soin ou de la consultation.
-  question: Précisez la nature de l’examen, du soin ou de la consultation.
-  applicable si: p2_motif_detail = 'Autre - préciser'
-  type: texte
-p2_motif_detail_complet:
-  titre: p2_motif_detail_complet
-  une de ces conditions:
-  - p2_precision_motif_requise = non
-  - toutes ces conditions:
-    - est défini: p2_motif_detail
-    - une de ces conditions:
-      - p2_motif_detail != 'Autre - préciser'
-      - toutes ces conditions:
-        - est applicable: p2_motif_detail_autre
-        - est défini: p2_motif_detail_autre
-        - p2_motif_detail_autre != ''
-    - une de ces conditions:
-      - p2_motif_detail != 'Séance de chimiothérapie'
-      - p1_m0_seance_chimiotherapie
-    - une de ces conditions:
-      - p2_motif_detail != 'Séance de radiothérapie'
-      - p1_m0_seance_radiotherapie
-    - une de ces conditions:
-      - p2_motif_detail != 'Séance de dialyse en centre, notamment d’hémodialyse'
-      - p1_m0_seance_dialyse_centre
 p2_entree_sortie:
   titre: p2_entree_sortie
   une de ces conditions:
   - p2_raison_principale = 'Entrée en hospitalisation'
   - p2_raison_principale = 'Sortie d’hospitalisation'
 p2_type_hospitalisation:
-  titre: Quel type d’hospitalisation est concerné ?
-  question: Quel type d’hospitalisation est concerné ?
-  applicable si:
-    toutes ces conditions:
-    - p2_raison_coherente
-    - p2_entree_sortie
+  titre: Ancien type d’hospitalisation
+  question: Ancien type d’hospitalisation
+  applicable si: non
   une possibilité:
   - '''Hospitalisation complète'''
   - '''Hospitalisation partielle'''
   - '''Hospitalisation ambulatoire'''
+p2_motif_detail_autre:
+  titre: Ancienne précision du motif
+  question: Ancienne précision du motif
+  applicable si: non
+  type: texte
+p2_transfert_motif_autre:
+  titre: Ancienne précision du transfert
+  question: Ancienne précision du transfert
+  applicable si: non
+  type: texte
 p2_permission:
   titre: p2_permission
   valeur: p2_raison_principale = 'Permission temporaire de sortie'
 p2_motif_complete:
   titre: p2_motif_complete
-  toutes ces conditions:
-  - p2_raison_coherente
-  - p2_motif_detail_complet
-  - une de ces conditions:
-    - p2_entree_sortie = non
-    - est défini: p2_type_hospitalisation
-p2_contexte_at_mp:
-  titre: Les soins ou examens sont en rapport avec un accident du travail ou une maladie professionnelle.
-  question: Les soins ou examens sont en rapport avec un accident du travail ou une maladie professionnelle.
-  applicable si: p2_motif_complete
-p2_contexte_engagement_maternite:
-  titre: Le transport relève du dispositif Engagement maternité.
-  question: Le transport relève du dispositif Engagement maternité.
-  applicable si: p2_motif_complete
-p2_contexte_retour_penitentiaire:
-  titre: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
-  question: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
-  applicable si: p2_motif_complete
-p2_contexte_centre_reference:
-  titre: Le transport prévoit un trajet vers un autre centre de référence dédié à la prise en charge de la maladie
-    rare du patient.
-  question: Le transport prévoit un trajet vers un autre centre de référence dédié à la prise en charge de la maladie
-    rare du patient.
-  applicable si: p2_motif_complete
-p2_contexte_pension_militaire:
-  titre: Les soins sont dispensés au titre d’une pension militaire d’invalidité.
-  question: Les soins sont dispensés au titre d’une pension militaire d’invalidité.
-  applicable si: p2_motif_complete
-p2_contexte_aucun:
-  titre: Aucune de ces situations
-  question: Aucune de ces situations
-  applicable si: p2_motif_complete
-p2_contextes_complementaires:
-  titre: Le déplacement est-il également réalisé dans l’un des contextes suivants ?
-  question: Le déplacement est-il également réalisé dans l’un des contextes suivants ?
-  applicable si: p2_motif_complete
-  mosaique:
-    type: selection
-    options:
-    - p2_contexte_at_mp
-    - p2_contexte_engagement_maternite
-    - p2_contexte_retour_penitentiaire
-    - p2_contexte_centre_reference
-    - p2_contexte_pension_militaire
-    option aucun: p2_contexte_aucun
-p2_contextes_complementaires_complet:
-  titre: p2_contextes_complementaires_complet
-  toutes ces conditions:
-  - une de ces conditions:
-    - p2_contexte_at_mp
-    - p2_contexte_at_mp = non
-  - une de ces conditions:
-    - p2_contexte_engagement_maternite
-    - p2_contexte_engagement_maternite = non
-  - une de ces conditions:
-    - p2_contexte_retour_penitentiaire
-    - p2_contexte_retour_penitentiaire = non
-  - une de ces conditions:
-    - p2_contexte_centre_reference
-    - p2_contexte_centre_reference = non
-  - une de ces conditions:
-    - p2_contexte_pension_militaire
-    - p2_contexte_pension_militaire = non
-  - une de ces conditions:
-    - p2_contexte_aucun
-    - p2_contexte_aucun = non
-  - une de ces conditions:
-    - p2_contexte_at_mp
-    - p2_contexte_engagement_maternite
-    - p2_contexte_retour_penitentiaire
-    - p2_contexte_centre_reference
-    - p2_contexte_pension_militaire
-    - p2_contexte_aucun
-  - une de ces conditions:
-    - p2_contexte_aucun = non
-    - toutes ces conditions:
-      - p2_contexte_at_mp = non
-      - p2_contexte_engagement_maternite = non
-      - p2_contexte_retour_penitentiaire = non
-      - p2_contexte_centre_reference = non
-      - p2_contexte_pension_militaire = non
+  valeur: p2_raison_coherente
 p2_contexte_hospitalisation:
   titre: p2_contexte_hospitalisation
   une de ces conditions:
@@ -625,7 +512,7 @@ p2_transfert_explicite:
 p2_transfert_question_requise:
   titre: p2_transfert_question_requise
   toutes ces conditions:
-  - p2_contextes_complementaires_complet
+  - p2_motif_complete
   - p2_permission = non
   - p2_entree_sortie = non
   - p2_transfert_explicite = non
@@ -649,7 +536,7 @@ p2_transfert_qualifie:
 p2_statut_complete:
   titre: p2_statut_complete
   toutes ces conditions:
-  - p2_contextes_complementaires_complet
+  - p2_motif_complete
   - une de ces conditions:
     - p2_transfert_question_requise = non
     - une de ces conditions:
@@ -670,51 +557,10 @@ p2_transfert_precision_requise:
   toutes ces conditions:
   - p2_transfert_explicite
   - p2_nature_transfert = 'Provisoire'
-p2_transfert_motif_detail:
-  titre: Quel examen ou soin motive ce transfert provisoire ?
-  question: Quel examen ou soin motive ce transfert provisoire ?
-  applicable si:
-    toutes ces conditions:
-    - p2_statut_complete
-    - p2_transfert_precision_requise
-  une possibilité:
-  - '''Imagerie médicale'''
-  - '''Rééducation'''
-  - '''Séance de chimiothérapie'''
-  - '''Séance de radiothérapie'''
-  - '''Séance de dialyse en centre, notamment d’hémodialyse'''
-  - '''Autre - préciser'''
-p2_transfert_motif_autre:
-  titre: Précisez l’examen ou le soin motivant le transfert.
-  question: Précisez l’examen ou le soin motivant le transfert.
-  applicable si: p2_transfert_motif_detail = 'Autre - préciser'
-  type: texte
-p2_transfert_precision_complete:
-  titre: p2_transfert_precision_complete
-  une de ces conditions:
-  - p2_transfert_precision_requise = non
-  - toutes ces conditions:
-    - est défini: p2_transfert_motif_detail
-    - une de ces conditions:
-      - p2_transfert_motif_detail != 'Autre - préciser'
-      - toutes ces conditions:
-        - est applicable: p2_transfert_motif_autre
-        - est défini: p2_transfert_motif_autre
-        - p2_transfert_motif_autre != ''
-    - une de ces conditions:
-      - p2_transfert_motif_detail != 'Séance de chimiothérapie'
-      - p1_m0_seance_chimiotherapie
-    - une de ces conditions:
-      - p2_transfert_motif_detail != 'Séance de radiothérapie'
-      - p1_m0_seance_radiotherapie
-    - une de ces conditions:
-      - p2_transfert_motif_detail != 'Séance de dialyse en centre, notamment d’hémodialyse'
-      - p1_m0_seance_dialyse_centre
 p2_transfert_complet:
   titre: p2_transfert_complet
   toutes ces conditions:
   - p2_statut_complete
-  - p2_transfert_precision_complete
   - une de ces conditions:
     - p2_transfert_qualifie = non
     - est défini: p2_nature_transfert
@@ -834,6 +680,20 @@ p2_permission_charge_etablissement:
   - une de ces conditions:
     - p2_permission_cadre = 'Motif thérapeutique'
     - p2_permission_cadre = 'Organisation de l’établissement'
+p2_retour_penitentiaire_possible:
+  titre: p2_retour_penitentiaire_possible
+  toutes ces conditions:
+  - p2_permission = non
+  - p2_raison_principale != 'Entrée en hospitalisation'
+  - p2_raison_principale != 'Transport vers un service d’urgences'
+p2_radiotherapie_exception_possible:
+  titre: p2_radiotherapie_exception_possible
+  toutes ces conditions:
+  - p2_nature_transfert = 'Provisoire'
+  - p1_m0_seance_radiotherapie
+p2_admission_had_exception_possible:
+  titre: p2_admission_had_exception_possible
+  valeur: p2_raison_principale != 'Transport vers un service d’urgences'
 p2_exception_aide_medicale_urgente:
   titre: Transport sanitaire réalisé dans le cadre de l’aide médicale urgente, .
   question: Transport sanitaire réalisé dans le cadre de l’aide médicale urgente, .
@@ -868,7 +728,10 @@ p2_exception_radiotherapie_moins_48h:
     ou un centre de santé.
   question: Transfert de moins de 48 heures pour une séance de radiothérapie dans une structure d’exercice libéral
     ou un centre de santé.
-  applicable si: *id002
+  applicable si:
+    toutes ces conditions:
+    - *id002
+    - p2_radiotherapie_exception_possible
 p2_exception_dialyse_domicile:
   titre: Transport d’un patient pratiquant la dialyse à domicile.
   question: Transport d’un patient pratiquant la dialyse à domicile.
@@ -878,7 +741,17 @@ p2_exception_admission_had:
     À Domicile).
   question: Transport d’un patient hospitalisé vers son domicile dans le cadre d’une admission en HAD (Hospitalisation
     À Domicile).
-  applicable si: *id002
+  applicable si:
+    toutes ces conditions:
+    - *id002
+    - p2_admission_had_exception_possible
+p2_exception_retour_penitentiaire:
+  titre: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
+  question: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
+  applicable si:
+    toutes ces conditions:
+    - *id002
+    - p2_retour_penitentiaire_possible
 p2_exception_aucune:
   titre: Aucune de ces situations
   question: Aucune de ces situations
@@ -900,6 +773,7 @@ p2_exceptions_assurance_maladie:
     - p2_exception_radiotherapie_moins_48h
     - p2_exception_dialyse_domicile
     - p2_exception_admission_had
+    - p2_exception_retour_penitentiaire
     option aucun: p2_exception_aucune
 p2_exceptions_assurance_maladie_complet:
   titre: p2_exceptions_assurance_maladie_complet
@@ -929,6 +803,9 @@ p2_exceptions_assurance_maladie_complet:
     - p2_exception_admission_had
     - p2_exception_admission_had = non
   - une de ces conditions:
+    - p2_exception_retour_penitentiaire
+    - p2_exception_retour_penitentiaire = non
+  - une de ces conditions:
     - p2_exception_aucune
     - p2_exception_aucune = non
   - une de ces conditions:
@@ -940,6 +817,7 @@ p2_exceptions_assurance_maladie_complet:
     - p2_exception_radiotherapie_moins_48h
     - p2_exception_dialyse_domicile
     - p2_exception_admission_had
+    - p2_exception_retour_penitentiaire
     - p2_exception_aucune
   - une de ces conditions:
     - p2_exception_aucune = non
@@ -952,6 +830,22 @@ p2_exceptions_assurance_maladie_complet:
       - p2_exception_radiotherapie_moins_48h = non
       - p2_exception_dialyse_domicile = non
       - p2_exception_admission_had = non
+      - p2_exception_retour_penitentiaire = non
+p2_exceptions_selection_coherente:
+  titre: p2_exceptions_selection_coherente
+  toutes ces conditions:
+  - une de ces conditions:
+    - p2_exception_radiotherapie_moins_48h = non
+    - p2_radiotherapie_exception_possible
+  - une de ces conditions:
+    - p2_exception_retour_penitentiaire = non
+    - p2_retour_penitentiaire_possible
+  - une de ces conditions:
+    - p2_exception_admission_had = non
+    - p2_admission_had_exception_possible
+  - une de ces conditions:
+    - p2_exception_retour_penitentiaire = non
+    - p2_exception_admission_had = non
 p2_exception_restant_assurance_maladie:
   titre: p2_exception_restant_assurance_maladie
   une de ces conditions:
@@ -963,14 +857,18 @@ p2_exception_restant_assurance_maladie:
   - p2_exception_radiotherapie_moins_48h
   - p2_exception_dialyse_domicile
   - p2_exception_admission_had
+  - p2_exception_retour_penitentiaire
 p2_article80_qualification_complete:
   titre: p2_article80_qualification_complete
   toutes ces conditions:
+  - p2_qualification_declarations_valides
   - p2_transfert_complet
   - p2_permission_complete
   - une de ces conditions:
     - p2_transfert_qualifie = non
-    - p2_exceptions_assurance_maladie_complet
+    - toutes ces conditions:
+      - p2_exceptions_assurance_maladie_complet
+      - p2_exceptions_selection_coherente
 p2_detenu_complet:
   titre: p2_detenu_complet
   valeur: oui
@@ -984,7 +882,6 @@ p2_transport_charge_etablissement:
     - toutes ces conditions:
       - p2_transfert_qualifie
       - p2_exception_restant_assurance_maladie = non
-      - p2_contexte_retour_penitentiaire = non
 p2_parcours_standard_applicable:
   titre: p2_parcours_standard_applicable
   toutes ces conditions:
@@ -992,12 +889,111 @@ p2_parcours_standard_applicable:
   - p2_detenu_complet
   - p2_transport_charge_etablissement = non
   - p2_permission_charge_patient = non
+p2_contexte_retour_penitentiaire_proposable:
+  titre: p2_contexte_retour_penitentiaire_proposable
+  toutes ces conditions:
+  - p2_retour_penitentiaire_possible
+  - p2_transfert_qualifie = non
+p2_contexte_at_mp:
+  titre: Les soins ou examens sont en rapport avec un accident du travail ou une maladie professionnelle.
+  question: Les soins ou examens sont en rapport avec un accident du travail ou une maladie professionnelle.
+  applicable si: p2_parcours_standard_applicable
+p2_contexte_engagement_maternite:
+  titre: Le transport relève du dispositif Engagement maternité.
+  question: Le transport relève du dispositif Engagement maternité.
+  applicable si: p2_parcours_standard_applicable
+p2_contexte_retour_penitentiaire:
+  titre: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
+  question: Le transport correspond à un retour vers un établissement pénitentiaire sur prescription médicale.
+  applicable si:
+    toutes ces conditions:
+    - p2_parcours_standard_applicable
+    - p2_contexte_retour_penitentiaire_proposable
+p2_contexte_centre_reference:
+  titre: Le transport prévoit un trajet vers un autre centre de référence dédié à la prise en charge de la maladie
+    rare du patient.
+  question: Le transport prévoit un trajet vers un autre centre de référence dédié à la prise en charge de la maladie
+    rare du patient.
+  applicable si: p2_parcours_standard_applicable
+p2_contexte_pension_militaire:
+  titre: Les soins sont dispensés au titre d’une pension militaire d’invalidité.
+  question: Les soins sont dispensés au titre d’une pension militaire d’invalidité.
+  applicable si: p2_parcours_standard_applicable
+p2_contexte_aucun:
+  titre: Aucune de ces situations
+  question: Aucune de ces situations
+  applicable si: p2_parcours_standard_applicable
+p2_contextes_complementaires:
+  titre: Le déplacement est-il également réalisé dans l’un des contextes suivants ?
+  question: Le déplacement est-il également réalisé dans l’un des contextes suivants ?
+  applicable si: p2_parcours_standard_applicable
+  mosaique:
+    type: selection
+    options:
+    - p2_contexte_at_mp
+    - p2_contexte_engagement_maternite
+    - p2_contexte_retour_penitentiaire
+    - p2_contexte_centre_reference
+    - p2_contexte_pension_militaire
+    option aucun: p2_contexte_aucun
+p2_contextes_complementaires_complet:
+  titre: p2_contextes_complementaires_complet
+  toutes ces conditions:
+  - une de ces conditions:
+    - p2_contexte_at_mp
+    - p2_contexte_at_mp = non
+  - une de ces conditions:
+    - p2_contexte_engagement_maternite
+    - p2_contexte_engagement_maternite = non
+  - une de ces conditions:
+    - p2_contexte_retour_penitentiaire
+    - p2_contexte_retour_penitentiaire = non
+  - une de ces conditions:
+    - p2_contexte_centre_reference
+    - p2_contexte_centre_reference = non
+  - une de ces conditions:
+    - p2_contexte_pension_militaire
+    - p2_contexte_pension_militaire = non
+  - une de ces conditions:
+    - p2_contexte_aucun
+    - p2_contexte_aucun = non
+  - une de ces conditions:
+    - p2_contexte_at_mp
+    - p2_contexte_engagement_maternite
+    - p2_contexte_retour_penitentiaire
+    - p2_contexte_centre_reference
+    - p2_contexte_pension_militaire
+    - p2_contexte_aucun
+  - une de ces conditions:
+    - p2_contexte_aucun = non
+    - toutes ces conditions:
+      - p2_contexte_at_mp = non
+      - p2_contexte_engagement_maternite = non
+      - p2_contexte_retour_penitentiaire = non
+      - p2_contexte_centre_reference = non
+      - p2_contexte_pension_militaire = non
+p2_contextes_selection_coherente:
+  titre: p2_contextes_selection_coherente
+  une de ces conditions:
+  - p2_contexte_retour_penitentiaire = non
+  - p2_contexte_retour_penitentiaire_proposable
+p2_contextes_valides:
+  titre: p2_contextes_valides
+  toutes ces conditions:
+  - p2_contextes_complementaires_complet
+  - p2_contextes_selection_coherente
+p2_retour_penitentiaire_effectif:
+  titre: p2_retour_penitentiaire_effectif
+  une de ces conditions:
+  - p2_exception_retour_penitentiaire
+  - p2_contexte_retour_penitentiaire
 p2_convocation_ou_avis_type:
   titre: Le déplacement est-il lié à l’un des cas réglementaires suivants ?
   question: Le déplacement est-il lié à l’un des cas réglementaires suivants ?
   applicable si:
     toutes ces conditions:
     - p2_parcours_standard_applicable
+    - p2_contextes_valides
     - p2_permission_speciale = non
   une possibilité:
   - '''Convocation du contrôle médical de l’Assurance Maladie.'''
@@ -1017,6 +1013,7 @@ p2_convocation:
   titre: p2_convocation
   toutes ces conditions:
   - p2_parcours_standard_applicable
+  - p2_contextes_valides
   - p2_permission_speciale = non
   - est défini: p2_convocation_ou_avis_type
   - p2_convocation_ou_avis_type != 'Aucun de ces cas.'
@@ -1110,65 +1107,22 @@ p2_collecte_qualification_document_applicable:
   titre: p2_collecte_qualification_document_applicable
   toutes ces conditions:
   - p2_parcours_standard_applicable
+  - p2_contextes_valides
   - une de ces conditions:
     - p2_permission_speciale
     - p2_convocation_ou_avis_type = 'Aucun de ces cas.'
     - p2_convocation_dap_applicable
-p2_transport_urgence:
-  titre: Le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur
-    ?
-  question: Le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur
-    ?
-  applicable si:
-    toutes ces conditions:
-    - une de ces conditions:
-      - p2_collecte_qualification_document_applicable
-      - p2_convocation_accord_prealable
-    - p2_exception_aide_medicale_urgente = non
-  une possibilité:
-  - '''Appel au SAMU - Centre 15'''
-  - '''Autre urgence médicale attestée'''
-  - '''Non'''
-cible_urgence_attestee:
-  titre: cible_urgence_attestee
-  une de ces conditions:
-  - p2_exception_aide_medicale_urgente
-  - p2_transport_urgence = 'Appel au SAMU - Centre 15'
-  - p2_transport_urgence = 'Autre urgence médicale attestée'
-p2_urgence_autre:
-  titre: p2_urgence_autre
-  une de ces conditions:
-  - p2_exception_aide_medicale_urgente
-  - p2_transport_urgence = 'Autre urgence médicale attestée'
-p2_urgence_autre_precision:
-  titre: Précisez la nature de l’urgence médicale attestée.
-  question: Précisez la nature de l’urgence médicale attestée.
-  applicable si:
-    toutes ces conditions:
-    - une de ces conditions:
-      - p2_collecte_qualification_document_applicable
-      - p2_convocation_accord_prealable
-    - p2_urgence_autre
-  type: texte
-p2_urgence_complete:
-  titre: p2_urgence_complete
+p2_situations_soins_specialises_possibles:
+  titre: p2_situations_soins_specialises_possibles
   toutes ces conditions:
-  - une de ces conditions:
-    - p2_exception_aide_medicale_urgente
-    - est défini: p2_transport_urgence
-  - une de ces conditions:
-    - p2_urgence_autre = non
-    - toutes ces conditions:
-      - est applicable: p2_urgence_autre_precision
-      - est défini: p2_urgence_autre_precision
-      - p2_urgence_autre_precision != ''
+  - p2_permission = non
+  - p2_raison_principale != 'Transport vers un service d’urgences'
 p2_special_avion_bateau:
   titre: Transport par avion ou bateau de ligne régulière
   question: Transport par avion ou bateau de ligne régulière
   applicable si:
     toutes ces conditions:
     - p2_collecte_qualification_document_applicable
-    - p2_urgence_complete
     - p2_convocation = non
     - p2_exception_avion_bateau = non
 p2_special_camsp_cmpp:
@@ -1176,15 +1130,20 @@ p2_special_camsp_cmpp:
     un CMPP (Centre Médico-Psycho-Pédagogique)
   question: Soins ou traitement d’un enfant ou adolescent dans un CAMSP (Centre d’Action Médico-Sociale Précoce)
     ou un CMPP (Centre Médico-Psycho-Pédagogique)
-  applicable si: &id003
+  applicable si:
     toutes ces conditions:
-    - p2_collecte_qualification_document_applicable
-    - p2_urgence_complete
-    - p2_convocation = non
+    - &id003
+      toutes ces conditions:
+      - p2_collecte_qualification_document_applicable
+      - p2_convocation = non
+    - p2_situations_soins_specialises_possibles
 p2_special_samsah:
   titre: Soins dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)
   question: Soins dans un SAMSAH (Service d’Accompagnement Médico-Social pour Adultes Handicapés)
-  applicable si: *id003
+  applicable si:
+    toutes ces conditions:
+    - *id003
+    - p2_situations_soins_specialises_possibles
 p2_special_aucune:
   titre: Aucune de ces situations
   question: Aucune de ces situations
@@ -1201,34 +1160,39 @@ p2_situations_speciales:
     - p2_special_samsah
     option aucun: p2_special_aucune
 p2_situations_speciales_complet:
+  titre: p2_situations_speciales_complet
   une de ces conditions:
+  - p2_convocation_dap_applicable
   - toutes ces conditions:
-    - p2_convocation_dap_applicable
-    - p2_urgence_complete
-  - toutes ces conditions:
-    - une de ces conditions:
-      - p2_exception_avion_bateau
+    - toutes ces conditions:
+      - une de ces conditions:
+        - p2_exception_avion_bateau
+        - une de ces conditions:
+          - p2_special_avion_bateau
+          - p2_special_avion_bateau = non
+      - une de ces conditions:
+        - p2_special_camsp_cmpp
+        - p2_special_camsp_cmpp = non
+      - une de ces conditions:
+        - p2_special_samsah
+        - p2_special_samsah = non
+      - une de ces conditions:
+        - p2_special_aucune
+        - p2_special_aucune = non
       - une de ces conditions:
         - p2_special_avion_bateau
-        - p2_special_avion_bateau = non
+        - p2_special_camsp_cmpp
+        - p2_special_samsah
+        - p2_special_aucune
+      - une de ces conditions:
+        - p2_special_aucune = non
+        - toutes ces conditions:
+          - p2_special_avion_bateau = non
+          - p2_special_camsp_cmpp = non
+          - p2_special_samsah = non
     - une de ces conditions:
-      - p2_special_camsp_cmpp
-      - p2_special_camsp_cmpp = non
-    - une de ces conditions:
-      - p2_special_samsah
-      - p2_special_samsah = non
-    - une de ces conditions:
-      - p2_special_aucune
-      - p2_special_aucune = non
-    - une de ces conditions:
-      - p2_special_avion_bateau
-      - p2_special_camsp_cmpp
-      - p2_special_samsah
-      - p2_special_aucune
-    - une de ces conditions:
-      - p2_special_aucune = non
+      - p2_situations_soins_specialises_possibles
       - toutes ces conditions:
-        - p2_special_avion_bateau = non
         - p2_special_camsp_cmpp = non
         - p2_special_samsah = non
 p2_nombre_transports_prevus:
@@ -1316,12 +1280,15 @@ p2_type_depart_deduit:
   titre: p2_type_depart_deduit
   une de ces conditions:
   - p2_exception_admission_had
-  - p2_contexte_retour_penitentiaire
+  - p2_retour_penitentiaire_effectif
+  - p2_raison_principale = 'Sortie d’hospitalisation'
 p2_type_arrivee_deduit:
   titre: p2_type_arrivee_deduit
   une de ces conditions:
   - p2_exception_admission_had
-  - p2_contexte_retour_penitentiaire
+  - p2_retour_penitentiaire_effectif
+  - p2_raison_principale = 'Entrée en hospitalisation'
+  - p2_raison_principale = 'Transport vers un service d’urgences'
 p2_trajet_depart:
   titre: Quel est le type de lieu de départ ?
   question: Quel est le type de lieu de départ ?
@@ -1348,7 +1315,11 @@ p2_depart_nom_lieu:
   titre: Nom du lieu
   question: Nom du lieu
   applicable si: &id004
-    est défini: p2_lieu_depart_type_effectif
+    toutes ces conditions:
+    - p2_collecte_qualification_document_applicable
+    - p2_configuration_trajet_complete
+    - est applicable: p2_lieu_depart_type_effectif
+    - est défini: p2_lieu_depart_type_effectif
   type: texte
 p2_depart_adresse:
   titre: Numéro et libellé de la voie
@@ -1435,15 +1406,21 @@ p2_lieu_arrivee_type_effectif:
     variations:
     - si: p2_exception_admission_had
       alors: '''Domicile'''
-    - si: p2_contexte_retour_penitentiaire
+    - si: p2_retour_penitentiaire_effectif
       alors: '''Établissement pénitentiaire'''
+    - si: p2_type_arrivee_deduit
+      alors: '''Structure de soins'''
     - sinon: p2_trajet_arrivee
   applicable si: p2_adresse_depart_obligatoire_complete
 p2_arrivee_nom_lieu:
   titre: Nom du lieu
   question: Nom du lieu
   applicable si: &id005
-    est défini: p2_lieu_arrivee_type_effectif
+    toutes ces conditions:
+    - p2_collecte_qualification_document_applicable
+    - p2_configuration_trajet_complete
+    - est applicable: p2_lieu_arrivee_type_effectif
+    - est défini: p2_lieu_arrivee_type_effectif
   type: texte
 p2_arrivee_adresse:
   titre: Numéro et libellé de la voie
@@ -1516,6 +1493,9 @@ p2_adresses_strictement_identiques:
 p2_types_lieux_valides:
   titre: p2_types_lieux_valides
   description: Donnée technique calculée par le module de référence ; jamais une question.
+p2_exceptions_trajet_valides:
+  titre: p2_exceptions_trajet_valides
+  description: Donnée technique calculée par le module de référence ; jamais une question.
 p2_adresses_obligatoires_completes:
   titre: p2_adresses_obligatoires_completes
   toutes ces conditions:
@@ -1523,6 +1503,7 @@ p2_adresses_obligatoires_completes:
   - p2_adresse_arrivee_obligatoire_complete
   - p2_adresses_strictement_identiques = non
   - p2_types_lieux_valides
+  - p2_exceptions_trajet_valides
 p2_tranche_distance_trajet_aller:
   titre: 'La distance du trajet aller entre les deux adresses renseignées est :'
   question: 'La distance du trajet aller entre les deux adresses renseignées est :'
@@ -1591,7 +1572,7 @@ p2_motif_ouvrant_droit:
   - p2_convocation_dap_applicable
   - p2_contexte_hospitalisation
   - p2_contexte_at_mp
-  - p2_contexte_retour_penitentiaire
+  - p2_retour_penitentiaire_effectif
   - p2_ald_ouvrant_droit
   - p1_critere_ambulance
   - p2_permission_speciale
@@ -1618,9 +1599,33 @@ p2_accord_prealable_requis:
   - p2_special_camsp_cmpp
   - p2_special_samsah
   - p2_contexte_engagement_maternite
+p2_avion_sous_situation_complete:
+  titre: p2_avion_sous_situation_complete
+  une de ces conditions:
+  - p2_avion_bateau_effectif = non
+  - p2_contexte_hospitalisation
+  - p2_ald_ouvrant_droit
+  - p2_contexte_at_mp
+  - p2_permission_speciale
+p2_avion_orientation_caisse:
+  titre: p2_avion_orientation_caisse
+  toutes ces conditions:
+  - p2_collecte_qualification_document_applicable
+  - p2_convocation = non
+  - p2_qualification_trajet_complete
+  - p2_motif_ouvrant_droit
+  - p2_avion_bateau_effectif
+  - p2_avion_sous_situation_complete = non
+p2_orientation_caisse:
+  titre: p2_orientation_caisse
+  une de ces conditions:
+  - p2_convocation_orientation_caisse
+  - p2_avion_orientation_caisse
 p2_document_dap_determine:
   titre: p2_document_dap_determine
   toutes ces conditions:
+  - p2_collecte_qualification_document_applicable
+  - p2_orientation_caisse = non
   - p2_qualification_trajet_complete
   - p2_motif_ouvrant_droit
   - p2_accord_prealable_requis
@@ -1653,14 +1658,120 @@ p2_non_eligible_motif_absent:
   toutes ces conditions:
   - p2_qualification_trajet_complete
   - p2_motif_ouvrant_droit = non
-p2_avion_sous_situation_complete:
-  titre: p2_avion_sous_situation_complete
+p2_urgence_a_qualifier:
+  titre: p2_urgence_a_qualifier
   une de ces conditions:
-  - p2_avion_bateau_effectif = non
-  - p2_contexte_hospitalisation
-  - p2_ald_ouvrant_droit
-  - p2_contexte_at_mp
-  - p2_permission_speciale
+  - p2_document_pmt_ou_dap_determine
+  - p2_orientation_caisse
+p2_transport_urgence:
+  titre: Le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur
+    ?
+  question: Le transport doit-il être réalisé en urgence pour un motif médical attesté par le médecin prescripteur
+    ?
+  applicable si:
+    toutes ces conditions:
+    - p2_urgence_a_qualifier
+    - p2_exception_aide_medicale_urgente = non
+  une possibilité:
+  - '''Appel au SAMU - Centre 15'''
+  - '''Autre urgence médicale attestée'''
+  - '''Non'''
+cible_urgence_attestee:
+  titre: cible_urgence_attestee
+  une de ces conditions:
+  - p2_exception_aide_medicale_urgente
+  - p2_transport_urgence = 'Appel au SAMU - Centre 15'
+  - p2_transport_urgence = 'Autre urgence médicale attestée'
+p2_urgence_autre:
+  titre: p2_urgence_autre
+  une de ces conditions:
+  - p2_exception_aide_medicale_urgente
+  - p2_transport_urgence = 'Autre urgence médicale attestée'
+p2_urgence_autre_precision:
+  titre: Précisez la nature de l’urgence médicale attestée.
+  question: Précisez la nature de l’urgence médicale attestée.
+  applicable si:
+    toutes ces conditions:
+    - p2_urgence_a_qualifier
+    - p2_urgence_autre
+  type: texte
+p2_urgence_complete:
+  titre: p2_urgence_complete
+  une de ces conditions:
+  - p2_urgence_a_qualifier = non
+  - toutes ces conditions:
+    - une de ces conditions:
+      - p2_exception_aide_medicale_urgente
+      - est défini: p2_transport_urgence
+    - une de ces conditions:
+      - p2_urgence_autre = non
+      - toutes ces conditions:
+        - est applicable: p2_urgence_autre_precision
+        - est défini: p2_urgence_autre_precision
+        - p2_urgence_autre_precision != ''
+p2_motif_detail:
+  titre: Précisez la consultation, l’examen ou le soin à l’origine du déplacement.
+  question: Précisez la consultation, l’examen ou le soin à l’origine du déplacement.
+  applicable si:
+    toutes ces conditions:
+    - p2_document_prescription_determine
+    - p2_precision_motif_requise
+  type: texte
+p2_transfert_motif_detail:
+  titre: Quel examen ou soin motive ce transfert provisoire ?
+  question: Quel examen ou soin motive ce transfert provisoire ?
+  applicable si:
+    toutes ces conditions:
+    - p2_document_prescription_determine
+    - p2_transfert_precision_requise
+  type: texte
+p2_motif_detail_complet:
+  titre: p2_motif_detail_complet
+  une de ces conditions:
+  - p2_precision_motif_requise = non
+  - toutes ces conditions:
+    - toutes ces conditions:
+      - est applicable: p2_motif_detail
+      - est défini: p2_motif_detail
+      - p2_motif_detail != ''
+    - p2_motif_detail != 'Autre - préciser'
+    - p2_motif_detail != 'Consultation médicale'
+    - p2_motif_detail != 'Examen médical'
+    - p2_motif_detail != 'Soin ou traitement autre qu’une séance de chimiothérapie, de radiothérapie ou de dialyse'
+    - p2_motif_detail != 'Autre examen ou soin'
+    - une de ces conditions:
+      - p2_motif_detail != 'Séance de chimiothérapie'
+      - p1_m0_seance_chimiotherapie
+    - une de ces conditions:
+      - p2_motif_detail != 'Séance de radiothérapie'
+      - p1_m0_seance_radiotherapie
+    - une de ces conditions:
+      - p2_motif_detail != 'Séance de dialyse en centre, notamment d’hémodialyse'
+      - p1_m0_seance_dialyse_centre
+p2_transfert_precision_complete:
+  titre: p2_transfert_precision_complete
+  une de ces conditions:
+  - p2_transfert_precision_requise = non
+  - toutes ces conditions:
+    - toutes ces conditions:
+      - est applicable: p2_transfert_motif_detail
+      - est défini: p2_transfert_motif_detail
+      - p2_transfert_motif_detail != ''
+    - p2_transfert_motif_detail != 'Autre - préciser'
+    - p2_transfert_motif_detail != 'Consultation médicale'
+    - p2_transfert_motif_detail != 'Examen médical'
+    - p2_transfert_motif_detail != 'Soin ou traitement autre qu’une séance de chimiothérapie, de radiothérapie ou
+      de dialyse'
+    - p2_transfert_motif_detail != 'Autre examen ou soin'
+    - une de ces conditions:
+      - p2_transfert_motif_detail != 'Séance de chimiothérapie'
+      - p1_m0_seance_chimiotherapie
+    - une de ces conditions:
+      - p2_transfert_motif_detail != 'Séance de radiothérapie'
+      - p1_m0_seance_radiotherapie
+    - une de ces conditions:
+      - p2_transfert_motif_detail != 'Séance de dialyse en centre, notamment d’hémodialyse'
+      - p1_m0_seance_dialyse_centre
 p2_nombre_transports_permission_dap:
   titre: Combien de trajets sont couverts par cette demande d’accord préalable ?
   question: Combien de trajets sont couverts par cette demande d’accord préalable ?
@@ -1669,12 +1780,17 @@ p2_nombre_transports_permission_dap:
     - p2_document_dap_determine
     - p2_permission_speciale
   type: nombre
+p2_nombre_permission_dap_valide:
+  titre: p2_nombre_permission_dap_valide
+  description: Donnée technique calculée par le module de référence ; jamais une question.
 p2_nombre_permission_dap_complet:
   titre: p2_nombre_permission_dap_complet
   une de ces conditions:
   - p2_document_dap_determine = non
   - p2_permission_speciale = non
-  - p2_nombre_transports_permission_dap >= 1
+  - toutes ces conditions:
+    - p2_nombre_transports_permission_dap >= 1
+    - p2_nombre_permission_dap_valide
 p2_date_at_mp:
   titre: Quelle est la date de l’accident du travail ou de la constatation médicale de la maladie professionnelle
     ?
@@ -2114,6 +2230,9 @@ p2_prescription_donnees_completes:
   titre: p2_prescription_donnees_completes
   toutes ces conditions:
   - p2_document_prescription_determine
+  - p2_urgence_complete
+  - p2_motif_detail_complet
+  - p2_transfert_precision_complete
   - p2_nombre_permission_dap_complet
   - p2_avion_sous_situation_complete
   - p2_date_at_mp_complete
@@ -2134,7 +2253,7 @@ cible_cas_final:
       alors: '''convocation ou avis d’audience'''
     - si:
         toutes ces conditions:
-        - p2_convocation_orientation_caisse
+        - p2_orientation_caisse
         - p2_urgence_complete
       alors: '''orientation vers la caisse pour accord préalable'''
     - si: p2_non_eligible_motif_absent
@@ -2155,7 +2274,10 @@ cible_cas_final:
         - p2_document_pmt_determine
       alors: '''prescription médicale de transport'''
     - sinon: non
-  applicable si: p2_entree
+  applicable si:
+    toutes ces conditions:
+    - p2_entree
+    - p2_qualification_declarations_valides
 cible_resultat_2_affichable:
   titre: cible_resultat_2_affichable
   une de ces conditions:
@@ -2469,23 +2591,15 @@ cible_convocation_type:
     - sinon: ''''''
 cible_orientation_caisse:
   titre: cible_orientation_caisse
-  valeur: p2_convocation_orientation_caisse
+  valeur: p2_orientation_caisse
 cible_motif_medical_deplacement:
   titre: cible_motif_medical_deplacement
   valeur:
     variations:
     - si: p2_precision_motif_requise
-      alors:
-        variations:
-        - si: p2_motif_detail = 'Autre - préciser'
-          alors: p2_motif_detail_autre
-        - sinon: p2_motif_detail
+      alors: p2_motif_detail
     - si: p2_transfert_precision_requise
-      alors:
-        variations:
-        - si: p2_transfert_motif_detail = 'Autre - préciser'
-          alors: p2_transfert_motif_autre
-        - sinon: p2_transfert_motif_detail
+      alors: p2_transfert_motif_detail
     - sinon: p2_raison_principale
 cible_mode_tap_ou_tpmr:
   titre: cible_mode_tap_ou_tpmr

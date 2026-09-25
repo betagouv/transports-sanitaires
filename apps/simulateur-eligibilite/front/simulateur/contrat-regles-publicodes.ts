@@ -163,6 +163,7 @@ export const QUESTIONS = [
   "p2_exception_ehpad",
   "p2_exception_had_hors_protocole",
   "p2_exception_radiotherapie_moins_48h",
+  "p2_exception_retour_penitentiaire",
   "p2_exception_usld",
   "p2_htnm_adresse",
   "p2_htnm_lieu",
@@ -173,7 +174,6 @@ export const QUESTIONS = [
   "p2_maternite_niveau",
   "p2_maternite_nom",
   "p2_motif_detail",
-  "p2_motif_detail_autre",
   "p2_nature_transfert",
   "p2_nombre_transports_couvert_simulation",
   "p2_nombre_transports_permission_dap",
@@ -213,19 +213,16 @@ export const QUESTIONS = [
   "p2_trajet_depart",
   "p2_tranche_distance_trajet_aller",
   "p2_transfert_en_cours",
-  "p2_transfert_motif_autre",
   "p2_transfert_motif_detail",
   "p2_transport_urgence",
-  "p2_type_hospitalisation",
   "p2_urgence_autre_precision",
 ] as const;
 
 /**
- * Les entrées que **l'application** calcule et verse au modèle : la date de
- * référence, le verrou médical, les durées et rangs de jour d'une permission, la
- * validité des formats d'adresse et la compatibilité des lieux.
- *
- * Le contrat d'interface les marque `owner: application`. Leur nom commence par
+ * Les entrées que **l'application** calcule et verse au modèle : dates et
+ * durées d'une permission, validité des formats et des lieux, cohérence des
+ * déclarations et des exceptions de trajet. Le contrat d'interface les marque
+ * `owner: application`. Leur nom commence par
  * `p1_` ou `p2_` comme celui d'une question, mais elles n'en sont pas une : les
  * poser au prescripteur reviendrait à lui demander de faire le calcul. Les tenir
  * dans une liste à part est ce qui empêche qu'un écran les affiche.
@@ -236,10 +233,13 @@ export const ENTREES_CALCULEES = [
   "p2_adresses_strictement_identiques",
   "p2_arrivee_format_valide",
   "p2_depart_format_valide",
+  "p2_exceptions_trajet_valides",
+  "p2_nombre_permission_dap_valide",
   "p2_permission_calendrier_valide",
   "p2_permission_dates_valides",
   "p2_permission_duree_heures",
   "p2_permission_rang_jour",
+  "p2_qualification_declarations_valides",
   "p2_types_lieux_valides",
   "p2_validations_documentaires",
 ] as const;

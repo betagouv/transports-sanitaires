@@ -86,8 +86,6 @@ export const ETAPES: readonly Etape[] = [
     champs: ["p2_raison_principale"],
   },
   { id: "p2_motif_detail", champs: ["p2_motif_detail"] },
-  { id: "p2_motif_detail_autre", champs: ["p2_motif_detail_autre"] },
-  { id: "p2_type_hospitalisation", champs: ["p2_type_hospitalisation"] },
   {
     id: "p2_contextes_complementaires",
     livrable: "M1.2",
@@ -108,7 +106,6 @@ export const ETAPES: readonly Etape[] = [
   },
   { id: "p2_nature_transfert", champs: ["p2_nature_transfert"] },
   { id: "p2_transfert_motif_detail", champs: ["p2_transfert_motif_detail"] },
-  { id: "p2_transfert_motif_autre", champs: ["p2_transfert_motif_autre"] },
   { id: "p2_permission_age", champs: ["p2_permission_age"] },
   {
     id: "p2_permission_debut_hospitalisation",
@@ -129,6 +126,7 @@ export const ETAPES: readonly Etape[] = [
       "p2_exception_radiotherapie_moins_48h",
       "p2_exception_dialyse_domicile",
       "p2_exception_admission_had",
+      "p2_exception_retour_penitentiaire",
       "p2_exception_aucune",
     ],
     complet: "p2_exceptions_assurance_maladie_complet",

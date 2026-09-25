@@ -37,8 +37,12 @@ describe("secrétariat — parcours administratif", () => {
     expect(screen.getByText(rappel)).toBeInTheDocument();
 
     await repondrePage(user, [[raison, /entrée en hospitalisation/i]]);
+    // La v9.7.3 retire le type d'hospitalisation (TS973-10) : la page suivante
+    // est directement les contextes complémentaires.
     expect(
-      await screen.findByRole("group", { name: /type d’hospitalisation/i }),
+      await screen.findByRole("group", {
+        name: /également réalisé dans l’un des contextes/i,
+      }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: raison })).toBeNull();
     expect(screen.queryByText(rappel)).toBeNull();
