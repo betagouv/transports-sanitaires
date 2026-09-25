@@ -314,7 +314,7 @@ Une intégration apprend des choses que seul l'intégrateur voit :
 **Rien de tout cela ne se remonte de mémoire.** Ça s'écrit au moment où on le
 constate, dans un fichier, et ça part chez l'éditeur du modèle.
 
-Un fichier par sujet, dans `tmp/`, nommé `anomalie-v<version>-<sujet>.md`, et
+Un fichier par sujet, dans `tmp/<version>/anomalies/`, nommé `anomalie-v<version>-<sujet>.md`, et
 **écrit pour être envoyé tel quel** : le destinataire ne connaît ni notre code,
 ni nos tests. Sa structure :
 

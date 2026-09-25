@@ -160,7 +160,7 @@ n'existe aucun cas où une session « v9.7.2 » serait rechargée sous
 mécanisme.** Construire une persistance et une révision qu'aucune
 fonctionnalité actuelle n'exploite est le genre d'abstraction spéculative
 que le dépôt évite ailleurs — mieux vaut l'anomalie remontée
-(`tmp/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`, non
+(`tmp/9.7.3/anomalies/anomalie-v9-7-3-revalidation-administrative-hors-perimetre.md`, non
 versionné) que du code mort. Si une reprise longue durée du volet
 administratif devient un besoin produit réel, `administrative_revision`
 (et son pendant clinique déjà présent, `clinical_criteria_revision`) sera
@@ -186,7 +186,7 @@ branche de sortie sans assertion : il vérifie le cas attendu, ou un refus
 
 ## v9.7.3 : les anomalies remontées
 
-Dans `tmp/`, non versionnées, écrites au ticket 21 :
+Dans `tmp/9.7.3/anomalies/`, non versionnées, écrites au ticket 21 :
 
 | Fichier | Sujet | Question |
 |---|---|---|
