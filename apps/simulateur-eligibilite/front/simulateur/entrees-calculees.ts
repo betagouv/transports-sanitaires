@@ -21,6 +21,7 @@ import type { CleDeRegle } from "./contrat-regles-publicodes";
 import { exceptionSansLieu } from "./exception-sans-lieu";
 import { lecteurs, texteBrut } from "./lecture-de-situation";
 import { causeDeRefus } from "./nombre-permission-dap";
+import { precisionsValides } from "./precision-medicale";
 
 /**
  * La situation, augmentée de ce que l'application calcule. Les valeurs déjà
@@ -56,7 +57,7 @@ export function avecEntreesCalculees(
     ),
     p2_exceptions_trajet_valides: oui(exceptionsTrajetValides(situation)),
     p2_nombre_permission_dap_valide: oui(causeDeRefus(situation) === undefined),
-    p2_validations_documentaires: "oui",
+    p2_validations_documentaires: oui(precisionsValides(situation)),
   };
 }
 

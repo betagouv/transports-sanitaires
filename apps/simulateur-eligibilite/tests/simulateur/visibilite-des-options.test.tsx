@@ -1,14 +1,17 @@
 // Trois options du contrat d'interface ne s'affichent que sous condition
 // (`option_visibility`) : les trois séances de « raison principale du
-// déplacement », de son détail et du détail d'un transfert restent masquées
-// tant que la Partie 1 ne les a pas déclarées. Le modèle ne sait pas cacher
-// une possibilité — c'est `ChampsDePage.tsx` qui filtre, table tenue dans
-// `visibilite-des-options.ts`.
+// déplacement » restent masquées tant que la Partie 1 ne les a pas déclarées.
+// Le modèle ne sait pas cacher une possibilité : c'est `ChampsDePage.tsx` qui
+// filtre, table tenue dans `visibilite-des-options.ts`.
+//
+// Le détail du motif et celui d'un transfert sont des saisies directes depuis
+// la v9.7.3 (TS973-15) : le même filtre s'applique à leurs suggestions.
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { emettrePassation } from "../../front/simulateur/passation";
+import { precisionMedicale } from "../../front/simulateur/precision-medicale";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { allerAuGroupe, PARTIE_1_AMBULANCE } from "./parcours";
 
@@ -64,30 +67,16 @@ describe("les trois séances ne s'affichent que si la Partie 1 les a déclarées
     ).not.toBeInTheDocument();
   });
 
-  it("le même filtrage s'applique au détail du motif", async () => {
-    const user = await ouvrirLaRaisonPrincipale({
-      p1_m0_seance_radiotherapie: "oui",
-      p1_m0_aucun: "non",
-    });
-    await user.click(
-      within(screen.getByRole("group", { name: RAISON })).getByRole("radio", {
-        name: /^consultation médicale$/i,
-      }),
-    );
-
-    const detail = await screen.findByRole("group", {
-      name: /précisez la consultation/i,
-    });
-    expect(
-      within(detail).getByRole("radio", { name: RADIOTHERAPIE }),
-    ).toBeInTheDocument();
-    expect(
-      within(detail).queryByRole("radio", { name: CHIMIOTHERAPIE }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(detail).queryByRole("radio", { name: DIALYSE }),
-    ).not.toBeInTheDocument();
-  }, 40_000);
+  it("le même filtrage s'applique aux suggestions du détail d'un transfert", () => {
+    const suggestions =
+      precisionMedicale("p2_transfert_motif_detail", {
+        p1_m0_seance_radiotherapie: "oui",
+        p1_m0_seance_chimiotherapie: "non",
+        p1_m0_seance_dialyse_centre: "non",
+      })?.suggestions ?? [];
+    expect(suggestions).toContain("Séance de radiothérapie");
+    expect(suggestions.join()).not.toMatch(/chimiothérapie|dialyse/i);
+  });
 });
 
 // ---- implémentation ----
