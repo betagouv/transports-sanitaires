@@ -1,12 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
+import { initAnalytics } from "../../front/analytics/matomo";
 import { BASE_NEUTRE } from "../../front/outils-produit/seeds/base-neutre";
 import { emettrePassation } from "../../front/simulateur/passation";
 import { Secretariat } from "../../front/simulateur/secretariat/Secretariat";
 import { PARTIE_1_AMBULANCE, repondrePage, terminerParcours } from "./parcours";
 
-beforeEach(() => sessionStorage.clear());
+beforeEach(() => {
+  sessionStorage.clear();
+  window._paq = [];
+  initAnalytics({ enabled: true, url: "https://matomo.test/", siteId: "275" });
+  window._paq = []; // isole les événements des commandes d'amorçage
+});
 
 // Les situations partent de la base neutre du catalogue de seeds : une réponse
 // oubliée y laisserait des cibles indécises, et le résultat final vide.
@@ -271,5 +277,13 @@ describe("secrétariat — parcours administratif", () => {
     expect(
       screen.getByRole("heading", { name: /document à imprimer/i }),
     ).toBeInTheDocument();
+    // La traduction `cible_cas_final` → slug (`Secretariat.tsx`) émet le bon
+    // évènement à la conclusion — le référentiel lui-même est testé dans
+    // `tests/analytics/`, pas ici.
+    expect(window._paq?.at(-1)).toEqual([
+      "trackEvent",
+      "simulateur",
+      "secretariat:resultat:prescription_medicale_transport",
+    ]);
   }, 40_000);
 });

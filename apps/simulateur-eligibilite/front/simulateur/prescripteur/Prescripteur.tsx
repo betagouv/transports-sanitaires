@@ -11,7 +11,7 @@
 import type { FormState } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
-import { trackResultat } from "../../analytics/evenements";
+import { NomEvenement, trackEvenement } from "../../analytics/evenements";
 import { CIBLES_MEDICALES } from "../cibles-du-parcours";
 import { moteur, texte } from "../moteur";
 import { Parcours } from "../questionnaire/Parcours";
@@ -103,6 +103,24 @@ const RAPPEL_ALLER_RETOUR = {
     "Si les besoins du patient diffèrent entre l’aller et le retour, réalisez une évaluation pour chaque sens.",
 } as const;
 
+// Traduit `cible_resultat_medical` (une phrase publicodes) vers le slug du
+// référentiel analytics — `evenements.ts` ne connaît pas cette cible, cette
+// table reste ici. Une phrase absente (montée de version du modèle) retombe
+// sur `indetermine` plutôt que de faire échouer le parcours pour un souci
+// d'analytics.
+const SLUG_RESULTAT_MEDICAL: Record<
+  string,
+  keyof typeof NomEvenement.prescripteur.resultat
+> = {
+  "véhicule personnel": "vp",
+  "transport en commun terrestre": "tp_terrestre",
+  ambulance: "ambulance",
+  "véhicule personnel ou transport en commun": "vp_ou_tp",
+  "VSL (Véhicule Sanitaire Léger) ou taxi conventionné": "vsl_ou_taxi",
+  "VSL (Véhicule Sanitaire Léger) TPMR (Transport de Personnes à Mobilité Réduite) ou taxi conventionné TPMR (Transport de Personnes à Mobilité Réduite)":
+    "vsl_ou_tpmr_ou_taxi_tpmr",
+};
+
 function EvaluationMedicale({
   etatInitial,
   panneauOutilsProduit,
@@ -126,10 +144,12 @@ function EvaluationMedicale({
         traceDebug={traceDebug}
         onTermine={(s, etat) => {
           onTermine(s, etat);
-          trackResultat(
-            texte(moteur.setSituation(s), "cible_resultat_medical"),
-            "prescripteur",
+          const resultat = texte(
+            moteur.setSituation(s),
+            "cible_resultat_medical",
           );
+          const slug = SLUG_RESULTAT_MEDICAL[resultat] ?? "indetermine";
+          trackEvenement(NomEvenement.prescripteur.resultat[slug]);
         }}
       />
       {panneauOutilsProduit}

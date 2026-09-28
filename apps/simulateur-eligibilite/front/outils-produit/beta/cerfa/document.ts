@@ -18,6 +18,7 @@
 
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
+import type { Formulaire } from "../../../analytics/evenements";
 import type { Saisie } from "./remplir-cerfa.ts";
 
 export type DocumentCerfa = {
@@ -27,8 +28,13 @@ export type DocumentCerfa = {
   readonly titre: string;
   /** Numéro CERFA, tel qu'il figure sur le document. */
   readonly numero: string;
-  /** Racine du nom de fichier proposé au téléchargement. */
-  readonly fichier: string;
+  /**
+   * Racine du nom de fichier proposé au téléchargement, et identifiant du
+   * formulaire pour l'analytics (`NomEvenement.secretariat.cerfaTelecharge`,
+   * dans `analytics/evenements.ts`) : un CERFA de plus s'ajoute aux deux à la
+   * fois.
+   */
+  readonly fichier: Formulaire;
   /**
    * Libellé du bouton, écrit en toutes lettres plutôt que composé : « télécharger
    * la prescription » et « télécharger la demande » ne s'accordent pas de la même

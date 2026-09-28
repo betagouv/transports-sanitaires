@@ -6,9 +6,15 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
+import { initAnalytics } from "../../front/analytics/matomo";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 
-beforeEach(() => sessionStorage.clear());
+beforeEach(() => {
+  sessionStorage.clear();
+  window._paq = [];
+  initAnalytics({ enabled: true, url: "https://matomo.test/", siteId: "275" });
+  window._paq = []; // isole les événements des commandes d'amorçage
+});
 
 // Le parcours médical tient en quatre pages au plus : Q1 (autonomie et besoins),
 // puis Q1.1 (aides et conditions particulières) **seulement** si Q1 établit un
@@ -199,6 +205,14 @@ describe("prescripteur — parcours médical", () => {
     expect(screen.getAllByText(/véhicule personnel/i).length).toBeGreaterThan(
       0,
     );
+    // La traduction `cible_resultat_medical` → slug (`Prescripteur.tsx`) émet
+    // le bon évènement à la conclusion — le référentiel lui-même est testé
+    // dans `tests/analytics/`, pas ici.
+    expect(window._paq?.at(-1)).toEqual([
+      "trackEvent",
+      "simulateur",
+      "prescripteur:resultat:vp",
+    ]);
   });
 
   it("une aide menant au VSL fait poser la question du transport partagé", async () => {

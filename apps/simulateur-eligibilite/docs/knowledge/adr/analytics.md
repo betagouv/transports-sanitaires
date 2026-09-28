@@ -85,6 +85,36 @@ par configuration, sans réécriture.
 **Conséquences.** Tant que le sujet RGPD n'est pas tranché, la collecte
 individuelle sans bandeau est une réserve de conformité explicite (R-4).
 
+### ADR-4 — Référentiel figé des noms d'évènement, jamais composés
+
+**Décision.** Le nom de chaque évènement Matomo est une valeur fixe d'un
+référentiel unique (`front/analytics/evenements.ts`, `NomEvenement`), jamais
+composé à la volée par concaténation de chaîne. Ce module n'interprète aucune
+donnée métier — ni l'outil, ni le statut d'un résultat, ni le formulaire d'un
+CERFA : c'est l'appelant qui choisit l'entrée à émettre, via
+`trackEvenement(nom)`. Un nom qui n'est pas une valeur exacte du référentiel
+ne compile pas.
+
+**Pourquoi.** Composer un nom à l'exécution (`${outil}:${action}`,
+`resultat:${statut}`) rend le vocabulaire ingrepable — aucun symbole ne
+correspond au nom réellement envoyé à Matomo — et ne protège d'aucune valeur
+incohérente. `cible_cas_final` et `cible_resultat_medical`, deux cibles
+publicodes dont la valeur est une phrase d'affichage (jusqu'à 152 caractères
+pour l'une d'elles, VSL/TPMR), aggravaient le problème : les utiliser telles
+quelles comme nom d'évènement aurait rendu les rapports Matomo dépendants du
+phrasé exact du modèle, livré par l'éditeur et sujet à reformulation sans
+changement de sens.
+
+**Conséquences.** `outil` (`prescripteur`/`secretariat`) et, pour un résultat,
+un **slug court** font désormais partie du nom lui-même — voir §4 pour la
+liste complète. Le slug est traduit depuis la phrase publicodes par
+l'appelant, pas par le référentiel (`SLUG_CAS_FINAL` dans `Secretariat.tsx`,
+`SLUG_RESULTAT_MEDICAL` dans `Prescripteur.tsx`) ; une phrase absente de la
+table (montée de version du modèle) retombe sur le slug `indetermine` plutôt
+que de faire échouer le parcours pour un souci d'analytics. Les CERFA suivent
+le même principe : `formulaire` (typé `Formulaire`, réutilisé par
+`DocumentCerfa.fichier`) fait partie du nom, un par document produit.
+
 ## 3. Architecture cible
 
 ```mermaid
@@ -111,7 +141,11 @@ cookie, ce qui convient à une mesure d'audience sans bandeau.
 
 Événements `trackEvent` émis par le traceur, en catégorie `simulateur`, portant le
 `prescripteurRef` en Nom. Ce nom est absent si le parcours a démarré sans identité
-pseudonymisée.
+pseudonymisée. Le nom d'action est une valeur fixe du référentiel
+`NomEvenement` (`front/analytics/evenements.ts`, ADR-4) — jamais composé à
+l'exécution.
+
+**Parcours**, un jeu par outil (`prescripteur:…` / `secretariat:…`) :
 
 | Action | Valeur | Moment du parcours |
 |---|---|---|
@@ -119,7 +153,43 @@ pseudonymisée.
 | `simulation_step` | `stepIndex` | passage à l'étape suivante |
 | `simulation_complete` | — | affichage de la page de résultat |
 | `simulation_abandon` | `lastStep` | départ (onglet quitté) sans avoir atteint le résultat |
-| `resultat:<statut>` | — | génération du résultat, le statut étant encodé dans l'action |
+
+**Résultat** (`secretariat:resultat:<slug>`), un slug par valeur de
+`cible_cas_final` — traduction dans `Secretariat.tsx` :
+
+| Slug | Phrase `cible_cas_final` |
+|---|---|
+| `transport_charge_etablissement` | transport à la charge de l'établissement |
+| `permission_sans_motif_medical` | permission de sortie sans motif médical |
+| `convocation_ou_avis_audience` | convocation ou avis d'audience |
+| `orientation_caisse_accord_prealable` | orientation vers la caisse pour accord préalable |
+| `non_eligible_am` | non éligible à une prise en charge par l'Assurance Maladie |
+| `prescription_s3141` | prescription S3141 |
+| `demande_accord_prealable` | demande d'accord préalable |
+| `prescription_medicale_transport` | prescription médicale de transport |
+| `indetermine` | règle inapplicable (`sinon: non`) — ne devrait pas survenir en usage normal |
+
+**Résultat** (`prescripteur:resultat:<slug>`), un slug par valeur de
+`cible_resultat_medical` — traduction dans `Prescripteur.tsx` :
+
+| Slug | Phrase `cible_resultat_medical` |
+|---|---|
+| `vp` | véhicule personnel |
+| `tp_terrestre` | transport en commun terrestre |
+| `ambulance` | ambulance |
+| `vp_ou_tp` | véhicule personnel ou transport en commun |
+| `vsl_ou_taxi` | VSL (Véhicule Sanitaire Léger) ou taxi conventionné |
+| `vsl_ou_tpmr_ou_taxi_tpmr` | VSL (Véhicule Sanitaire Léger) TPMR (…) ou taxi conventionné TPMR (…) |
+| `indetermine` | règle inapplicable (`sinon: non`) — ne devrait pas survenir en usage normal |
+
+**CERFA** (`secretariat:cerfa_telecharge:<formulaire>`), un par document,
+émis uniquement par le secrétariat (seul outil qui expose le téléchargement) :
+
+| Formulaire | Document |
+|---|---|
+| `prescription-medicale-transport` | prescription médicale de transport (PMT) |
+| `demande-accord-prealable` | demande d'accord préalable (DAP) |
+| `prescription-permission-sortie` | prescription pour permission de sortie (S3141) |
 
 - **Interdits** : les réponses détaillées du formulaire, toute PII, toute donnée
   patient.
@@ -144,7 +214,8 @@ pseudonymisée.
 
 1. **Matomo funnel.** ✅ **Fait** (`front/analytics/`, site 275,
    `https://stats.beta.gouv.fr/`). Le traceur est instrumenté dans le simulateur,
-   avec 5 événements portant le `prescripteurRef` en Nom. Il est amorcé au boot en
+   avec le référentiel d'événements de l'ADR-4, portant le `prescripteurRef` en
+   Nom. Il est amorcé au boot en
    cookieless (`disableCookies`), et lit le `prescripteurRef` en session à
    l'émission de chaque événement, ce pseudonyme étant renseigné après
    l'identification. Il est gardé par le consentement (ADR-3) et par un gating
