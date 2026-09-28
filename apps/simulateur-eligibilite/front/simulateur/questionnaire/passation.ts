@@ -11,6 +11,7 @@ import type {
 import { FormBuilder } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type RefObject, useEffect, useState } from "react";
+import type { Outil } from "../../app/outil";
 import { avecEntreesCalculees } from "../entrees-calculees";
 import { moteur } from "../moteur";
 import type { AvancementAutomatique } from "./avancement-automatique";
@@ -35,8 +36,9 @@ export type Champ = EvaluatedFormElement & FormPageElementProp;
 export type Reponses = Array<[string, boolean | undefined]>;
 
 export type Options = {
-  // Étiquette analytics de l'outil émetteur (`prescripteur` / `secretariat`).
-  outil: string;
+  // Étiquette analytics de l'outil émetteur — fait aussi partie du nom des
+  // évènements Matomo, voir `NomEvenement` dans `analytics/evenements.ts`.
+  outil: Outil;
   // Règles cibles : leur graphe de dépendances détermine les questions posées.
   cibles: readonly string[];
   // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions

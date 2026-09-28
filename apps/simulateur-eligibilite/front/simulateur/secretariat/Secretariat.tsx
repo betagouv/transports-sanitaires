@@ -9,7 +9,7 @@
 import type { FormState } from "@publicodes/forms";
 import type { Situation } from "publicodes";
 import { type ReactNode, useState } from "react";
-import { trackResultat } from "../../analytics/evenements";
+import { NomEvenement, trackEvenement } from "../../analytics/evenements";
 import {
   CIBLES_ADMINISTRATIVES,
   CIBLES_MEDICALES,
@@ -188,6 +188,26 @@ const RAPPEL_PORTEE_ADMINISTRATIVE = {
     "Les réponses apportées dans cette partie déterminent le régime de prise en charge et le document à utiliser. Elles ne peuvent pas modifier le mode de transport validé par le prescripteur.",
 } as const;
 
+// Traduit `cible_cas_final` (une phrase publicodes) vers le slug du référentiel
+// analytics — `evenements.ts` ne connaît pas cette cible, cette table reste ici.
+// Une phrase absente (montée de version du modèle) retombe sur `indetermine`
+// plutôt que de faire échouer le parcours pour un souci d'analytics.
+const SLUG_CAS_FINAL: Record<
+  string,
+  keyof typeof NomEvenement.secretariat.resultat
+> = {
+  "transport à la charge de l’établissement": "transport_charge_etablissement",
+  "permission de sortie sans motif médical": "permission_sans_motif_medical",
+  "convocation ou avis d’audience": "convocation_ou_avis_audience",
+  "orientation vers la caisse pour accord préalable":
+    "orientation_caisse_accord_prealable",
+  "non éligible à une prise en charge par l’Assurance Maladie":
+    "non_eligible_am",
+  "prescription S3141": "prescription_s3141",
+  "demande d’accord préalable": "demande_accord_prealable",
+  "prescription médicale de transport": "prescription_medicale_transport",
+};
+
 // Partie 2 du questionnaire : la Partie 1 étant déjà répondue, `Parcours` ne
 // pose que les questions administratives — et bascule droit au résultat quand le
 // cas était déjà tranché en Partie 1.
@@ -215,10 +235,9 @@ function Qualification({
         traceDebug={traceDebug}
         onTermine={(s, etat) => {
           onTermine(s, etat);
-          trackResultat(
-            texte(moteur.setSituation(s), "cible_cas_final"),
-            "secretariat",
-          );
+          const casFinal = texte(moteur.setSituation(s), "cible_cas_final");
+          const slug = SLUG_CAS_FINAL[casFinal] ?? "indetermine";
+          trackEvenement(NomEvenement.secretariat.resultat[slug]);
         }}
       />
     </>

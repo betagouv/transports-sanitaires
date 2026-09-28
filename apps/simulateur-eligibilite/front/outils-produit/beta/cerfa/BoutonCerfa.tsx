@@ -8,7 +8,7 @@
 import type Engine from "publicodes";
 import type { Situation } from "publicodes";
 import { useState } from "react";
-import { trackCerfaTelecharge } from "../../../analytics/evenements";
+import { NomEvenement, trackEvenement } from "../../../analytics/evenements";
 import type {
   DocumentCerfa,
   OptionsGénération,
@@ -155,7 +155,7 @@ async function genererEtTelecharger(
       await genererCerfa(document, moteur, situation, options),
       nomFichier(document),
     );
-    trackCerfaTelecharge(document.fichier);
+    trackEvenement(NomEvenement.secretariat.cerfaTelecharge[document.fichier]);
     return { statut: "parti" };
   } catch (cause) {
     if (cause instanceof DebordementDuTexteMedical)

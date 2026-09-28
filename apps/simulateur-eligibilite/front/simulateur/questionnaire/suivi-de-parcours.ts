@@ -5,12 +5,8 @@
 // mesuré ni le moment où chaque événement part.
 
 import { type RefObject, useEffect, useRef } from "react";
-import {
-  trackSimulationAbandon,
-  trackSimulationComplete,
-  trackSimulationStart,
-  trackSimulationStep,
-} from "../../analytics/evenements";
+import { NomEvenement, trackEvenement } from "../../analytics/evenements";
+import type { Outil } from "../../app/outil";
 
 export type SuiviDeParcours = {
   /** Le parcours s'est-il conclu ? Sans lui, l'abandon partirait même après. */
@@ -20,10 +16,12 @@ export type SuiviDeParcours = {
 };
 
 export function useSuiviDeParcours(
-  outil: string,
+  outil: Outil,
   current: number,
   actif: boolean,
 ): SuiviDeParcours {
+  // Noms résolus une fois : raccourcit chaque appel ci-dessous.
+  const nom = NomEvenement[outil];
   const termine = useRef(false);
   // Refs pour éviter les valeurs périmées dans le gestionnaire : déclarer
   // `actif` et `outil` en dépendances rejouerait `simulation_start` à chaque
@@ -34,9 +32,10 @@ export function useSuiviDeParcours(
   // biome-ignore lint/correctness/useExhaustiveDependencies: amorçage unique au montage
   useEffect(() => {
     if (!actif) return;
-    trackSimulationStart(outil);
+    trackEvenement(nom.simulationStart);
     const onLeave = () => {
-      if (!termine.current) trackSimulationAbandon(currentRef.current, outil);
+      if (!termine.current)
+        trackEvenement(nom.simulationAbandon, currentRef.current);
     };
     window.addEventListener("pagehide", onLeave);
     return () => window.removeEventListener("pagehide", onLeave);
@@ -44,10 +43,10 @@ export function useSuiviDeParcours(
 
   return {
     termine,
-    etapeFranchie: (page) => trackSimulationStep(page, outil),
+    etapeFranchie: (page) => trackEvenement(nom.simulationStep, page),
     parcoursConclu: () => {
       termine.current = true;
-      trackSimulationComplete(outil);
+      trackEvenement(nom.simulationComplete);
     },
   };
 }
