@@ -103,6 +103,18 @@ describe("POST /api/rattachement-pseudonymise", () => {
     expect(JSON.stringify(ctx)).not.toContain(selection.serviceId);
   });
 
+  it("ignore une identité envoyée par un client obsolète, sans la renvoyer", async () => {
+    const { status, body: ctx } = await post("/api/rattachement-pseudonymise", {
+      ...selection,
+      prescripteurId: "prescripteur_hors_liste",
+      nom: "Dupont",
+      prenom: "Marie",
+    });
+    expect(status).toBe(200);
+    expect(Object.keys(ctx).sort()).toEqual(["etabRef", "serviceRef", "v"]);
+    expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie|prescripteur/i);
+  });
+
   it("est déterministe pour une même sélection", async () => {
     const a = await post("/api/rattachement-pseudonymise", selection);
     const b = await post("/api/rattachement-pseudonymise", selection);

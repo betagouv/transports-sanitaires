@@ -69,8 +69,9 @@ export function chargerMatomo(url: string): void {
 }
 
 /**
- * Émet un événement quand le traceur est activé, en portant le
- * rattachement pseudonymisé courant, lu en session. Voir `initAnalytics` pour le cycle de vie.
+ * Émet un événement quand le traceur est activé, en portant le rattachement
+ * pseudonymisé courant, lu en session. Voir `initAnalytics` pour le cycle de
+ * vie.
  */
 export function emettre(action: string, valeur?: number): void {
   if (!etat.enabled) return;

@@ -9,7 +9,7 @@
 //   Etablissements   : Id2 (Int, « Id » métier), Nom (Text)
 //   Services_Unites  : Id2, Nom, Etablissement (Ref:Etablissements)
 //
-// Les identifiants opaques de l'identité saisie, `etabId` et `serviceId`, sont la
+// Les identifiants opaques du rattachement saisi, `etabId` et `serviceId`, sont la
 // colonne Id2, par choix produit. Les colonnes de référence stockent le rowId
 // interne Grist de la ligne cible, et non son Id2. On résout donc l'Id2 en rowId
 // avant de filtrer les enfants.
@@ -74,7 +74,7 @@ async function services(doc: DocGrist, etabId: string): Promise<Service[]> {
 // connexion suivante, il apparaît dans la liste. C'est idempotent, la
 // déduplication se faisant sur le nom normalisé, et sans effet pour une sélection
 // issue des listes. Voir
-// docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
+// docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
 async function enrichir(
   doc: DocGrist,
   saisie: RattachementSaisi,

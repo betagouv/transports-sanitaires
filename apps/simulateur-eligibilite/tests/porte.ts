@@ -15,13 +15,13 @@ async function choisir(user: User, label: RegExp, option: string) {
   await user.selectOptions(select, option);
 }
 
-/** Remplit un rattachement ordinaire — aucun outil produit déverrouillé. */
+/** Remplit un rattachement ordinaire, sans outil produit déverrouillé. */
 export async function remplirRattachement(user: User) {
   await choisir(user, /Établissement/, "CHU Grenoble Alpes");
   await choisir(user, /Nom du service/, "Cardiologie");
 }
 
-/** Remplit un rattachement sur le service n° 4 — outils produit déverrouillés. */
+/** Remplit un rattachement sur le service n° 4, outils produit déverrouillés. */
 export async function remplirRattachementProduit(user: User) {
   await choisir(user, /Établissement/, "Libéral / CNAM / CPAM / Autre");
   await choisir(user, /Nom du service/, "Transport Sanitaire");

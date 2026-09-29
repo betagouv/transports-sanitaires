@@ -13,7 +13,7 @@ import {
 } from "../../shared/referentiel.ts";
 import { demarrer, postTo, SECRET } from "./serveur-de-test.ts";
 
-describe("POST /api/rattachement-pseudonymise — enrichissement du référentiel (service « Autre »)", () => {
+describe("POST /api/rattachement-pseudonymise : enrichissement du référentiel (service « Autre »)", () => {
   // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
   const appels: RattachementSaisi[] = [];
   const referentiel: Referentiel = {
@@ -89,7 +89,7 @@ describe("POST /api/rattachement-pseudonymise — enrichissement du référentie
 
 // Mode debug : `pseudonymesEnClair` renvoie les refs en clair (valeur préfixée)
 // au lieu du HMAC, pour lire directement les buckets dans Matomo en phase de test.
-describe("POST /api/rattachement-pseudonymise — mode debug (refs en clair)", () => {
+describe("POST /api/rattachement-pseudonymise : mode debug (refs en clair)", () => {
   let base: string;
   let close: () => Promise<void>;
   beforeAll(

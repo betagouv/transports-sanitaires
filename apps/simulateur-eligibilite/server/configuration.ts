@@ -125,8 +125,8 @@ function sansGrist(): undefined {
 }
 
 // Mode debug (phase de test) : renvoie les refs en clair au lieu du HMAC pour les
-// lire directement dans Matomo. ⚠️ Révèle des données brutes (dont nom/prénom) —
-// à n'activer que hors production.
+// lire directement dans Matomo. ⚠️ Révèle les identifiants bruts du
+// référentiel : à n'activer que hors production.
 function enClair(actif: boolean): boolean {
   if (actif) {
     console.warn(

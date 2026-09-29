@@ -1,5 +1,5 @@
 // Encadré des **outils produit** : la galerie de seeds et le mode test des règles
-// (labo). Partagé par les écrans qui les proposent — l'écran-porte de rattachement
+// (labo). Partagé par les écrans qui les proposent, l'écran-porte de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
@@ -54,11 +54,9 @@ export function OutilsProduit({ children }: { children: ReactNode }) {
 /** Bouton d'un outil produit. Même apparence pour tous : aucun n'est « l'action ». */
 export function BoutonOutil({
   onClick,
-  disabled,
   children,
 }: {
   onClick: () => void;
-  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -66,7 +64,6 @@ export function BoutonOutil({
       type="button"
       className="fr-btn fr-btn--tertiary fr-btn--sm"
       onClick={onClick}
-      disabled={disabled}
     >
       {children}
     </button>

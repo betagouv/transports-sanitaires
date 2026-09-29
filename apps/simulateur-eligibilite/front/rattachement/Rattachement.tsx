@@ -1,5 +1,5 @@
 // Écran-porte de rattachement (établissement et service) : étape préalable
-// **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md —
+// **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
 // validation il remonte le `RattachementSaisi` brut à `onValide` (c'est la porte,
@@ -7,7 +7,6 @@
 // vers le simulateur). Le référentiel par défaut est le snapshot factice
 // (dev / tests) ; en production App injecte le client HTTP.
 
-import type { ReactNode } from "react";
 import {
   type Referentiel,
   snapshotReferentiel,
@@ -20,7 +19,7 @@ import { useSaisieRattachement } from "./saisie-rattachement";
 /**
  * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
  * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
- * `onValide` — le rattachement est obligatoire quelle que soit la destination
+ * `onValide` : le rattachement est obligatoire quelle que soit la destination
  * (ADR-1), et il n'y a donc qu'un seul endroit qui pseudonymise.
  */
 export type AccesRattachement = {
@@ -152,7 +151,7 @@ function EntreesDansLApplication({
 // Les deux outils produit sont côte à côte, hors des actions nominales. Ils
 // n'apparaissent qu'une fois le service n° 4 choisi, ce qui complète la saisie :
 // y entrer reste une entrée dans l'application, elle passe par la porte. Les
-// situations de la galerie vivent dans `seeds/`, pas dans cet écran — les y
+// situations de la galerie vivent dans `seeds/`, pas dans cet écran : les y
 // égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({
   onEntrer,
@@ -179,8 +178,6 @@ type ListeProps = {
   valeur: string;
   options: Array<{ id: string; libelle: string }>;
   onChange: (valeur: string) => void;
-  // Options supplémentaires ajoutées après la liste (ex. « hors liste »).
-  children?: ReactNode;
 };
 
 function ListeDeroulante({
@@ -190,7 +187,6 @@ function ListeDeroulante({
   valeur,
   options,
   onChange,
-  children,
 }: ListeProps) {
   return (
     <div className="fr-select-group">
@@ -211,7 +207,6 @@ function ListeDeroulante({
             {option.libelle}
           </option>
         ))}
-        {children}
       </select>
     </div>
   );

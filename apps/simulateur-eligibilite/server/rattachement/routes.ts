@@ -1,6 +1,6 @@
 // Router de la feature **rattachement** (backend) : lecture du référentiel
-// (établissement / service) + pseudonymisation du rattachement saisi. Monté sous `/api` par `server/app.ts`. Voir
-// docs/knowledge/adr/identification.md — ADR-5.
+// (établissement, service) et pseudonymisation du rattachement saisi. Monté sous
+// `/api` par `server/app.ts`. Voir docs/knowledge/adr/identification.md, ADR-5.
 //
 // Prend le `Referentiel` et le secret en paramètres pour rester testable sans
 // mock (les tests injectent le snapshot).
@@ -26,10 +26,7 @@ export function rattachementRoutes(
       res.json(await referentiel.listerEtablissements());
     }),
   );
-  router.get(
-    "/services",
-    handle(lister("etabId", (id) => referentiel.listerServices(id))),
-  );
+  router.get("/services", handle(servicesDe(referentiel)));
   router.post(
     "/rattachement-pseudonymise",
     handle(rattacher(referentiel, secret, pseudonymesEnClair)),
@@ -41,7 +38,7 @@ export function rattachementRoutes(
 // ---- implémentation ----
 
 // Pseudonymise le rattachement saisi (refs HMAC). Reçoit la saisie brute, renvoie
-// l'objet refs en JSON — le secret HMAC ne quitte jamais le serveur. Le front
+// l'objet refs en JSON : le secret HMAC ne quitte jamais le serveur. Le front
 // garde ces refs en mémoire pour Matomo.
 function rattacher(
   referentiel: Referentiel,
@@ -59,26 +56,22 @@ function rattacher(
   };
 }
 
-// Les services d'un établissement, les prescripteurs d'un service : même forme —
-// un identifiant parent obligatoire en query, la liste filtrée en réponse.
-function lister(
-  parametre: string,
-  charger: (valeur: string) => Promise<unknown>,
-) {
+// Les services d'un établissement : l'établissement est obligatoire en query.
+function servicesDe(referentiel: Referentiel) {
   return async (req: Request, res: Response) => {
-    const valeur = String(req.query[parametre] ?? "");
-    if (!valeur) {
-      res.status(400).json({ error: `${parametre} requis` });
+    const etabId = String(req.query.etabId ?? "");
+    if (!etabId) {
+      res.status(400).json({ error: "etabId requis" });
       return;
     }
-    res.json(await charger(valeur));
+    res.json(await referentiel.listerServices(etabId));
   };
 }
 
-// Alimente le référentiel avec les éventuelles saisies libres (service « autre »,
-// prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
-// d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
-// Voir docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
+// Alimente le référentiel avec l'éventuel service saisi sous « Autre ».
+// **Best-effort** : un échec d'écriture ne doit jamais bloquer l'accès au
+// simulateur (dégradation gracieuse). Voir
+// docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
 async function enrichir(referentiel: Referentiel, saisie: RattachementSaisi) {
   try {
     await referentiel.enrichirDepuisSaisie?.(saisie);

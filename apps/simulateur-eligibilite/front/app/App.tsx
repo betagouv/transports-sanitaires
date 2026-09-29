@@ -1,6 +1,6 @@
 // Racine de l'app : **écran-porte** de rattachement devant les simulateurs.
 // Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
-// rattachement s'affiche — impossible de simuler sans s'être rattaché (voir
+// rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
 // docs/knowledge/adr/identification.md — ADR-1).
 //
 // À la validation, on convertit le rattachement saisi en rattachement

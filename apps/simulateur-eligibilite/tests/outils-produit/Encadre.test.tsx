@@ -25,7 +25,7 @@ const ENCADRE = { name: "Outils produit" } as const;
 const GALERIE = { name: "Galerie de seeds" } as const;
 const LABO = { name: "Mode test des règles" } as const;
 
-describe("encadré des outils produit — écran de rattachement", () => {
+describe("encadré des outils produit, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
     const user = userEvent.setup();
     render(

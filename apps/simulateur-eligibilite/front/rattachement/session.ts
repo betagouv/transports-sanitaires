@@ -1,4 +1,5 @@
-// Le rattachement pseudonymisé pour la durée de la session : rangé par l'écran-porte, relue par le traceur d'analytics à chaque événement.
+// Le rattachement pseudonymisé pour la durée de la session : rangé par
+// l'écran-porte, relu par le traceur d'analytics à chaque événement.
 
 import type { RattachementPseudonymise } from "../../shared/rattachement-pseudonymise";
 
@@ -14,6 +15,6 @@ export function rattachementEnSession(): RattachementPseudonymise | null {
 
 // ---- implémentation ----
 
-// En mémoire uniquement (pas de localStorage) — voir
-// docs/knowledge/adr/identification.md — ADR-4.
+// En mémoire uniquement (pas de localStorage), voir
+// docs/knowledge/adr/identification.md, ADR-4.
 let rattachementCourant: RattachementPseudonymise | null = null;

@@ -219,7 +219,7 @@ trois outils produit. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
   référentiel, `front/outils-produit/deverrouillage.ts`) ;
-- le même moment : ils sont atteints **après** l'identification.
+- le même moment : ils sont atteints **après** le rattachement.
 
 La galerie et le labo partagent en plus le même panneau. Les traces n'y sont pas :
 elles se lisent sous l'écran qu'elles décrivent, pas dans un encadré d'entrées.

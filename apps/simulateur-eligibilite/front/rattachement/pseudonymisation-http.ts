@@ -1,10 +1,10 @@
-// Client de l'API `POST /api/rattachement-pseudonymise` : convertit le rattachement
-// saisi en rattachement pseudonymisé (refs HMAC), calculé **côté serveur** (le secret n'est
-// jamais exposé au front). Same-origin, aucun CORS.
+// Client de l'API `POST /api/rattachement-pseudonymise` : convertit le
+// rattachement saisi en rattachement pseudonymisé (refs HMAC), calculé **côté
+// serveur** (le secret n'est jamais exposé au front). Same-origin, aucun CORS.
 //
 // En cas d'échec (API indisponible), renvoie `null` : le rattachement a bien eu
 // lieu, on entre dans le simulateur, mais le suivi analytics par service est
-// perdu pour cette session (dégradation gracieuse — voir App.tsx).
+// perdu pour cette session (dégradation gracieuse, voir App.tsx).
 
 import {
   estRattachementPseudonymise,

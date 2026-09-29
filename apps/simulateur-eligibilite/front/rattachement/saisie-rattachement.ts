@@ -87,7 +87,7 @@ function useListes(referentiel: Referentiel, etabId: string) {
 }
 
 // Changer un champ invalide ce qui en dépend : un service ne survit pas au
-// changement d'établissement, ni le service saisi au changement de service.
+// changement d'établissement, ni `serviceLibre` au changement de service.
 function avecAvalEfface(champs: Champs, modifie: keyof Champs): Champs {
   const aval = AVAL[modifie];
   if (!aval) return champs;
@@ -95,7 +95,7 @@ function avecAvalEfface(champs: Champs, modifie: keyof Champs): Champs {
 }
 
 // L'établissement est toujours porté ; le service n'a de sens qu'une fois
-// choisi, et le service saisi qu'une fois la branche « Autre » empruntée.
+// choisi, et `serviceLibre` qu'une fois la branche « Autre » empruntée.
 function construireSaisie(
   champs: Champs,
   serviceEstAutre: boolean,

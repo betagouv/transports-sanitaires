@@ -20,7 +20,7 @@ export interface Referentiel {
    * Enrichit le référentiel avec le service saisi sous « Autre ». C'est
    * optionnel : seule la source Grist l'implémente, le client HTTP du front
    * n'écrivant jamais. Voir
-   * docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
+   * docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
    */
   enrichirDepuisSaisie?(saisie: RattachementSaisi): Promise<void>;
 }
