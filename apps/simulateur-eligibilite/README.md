@@ -24,23 +24,21 @@ flowchart LR
 
     subgraph back["Backend (Node/Express)"]
         Ref["Référentiel"]
-        Pseudo["Pseudonymisation"]
     end
 
     Grist[("Grist")]
     Matomo[("Matomo")]
     Patient(["Document complété,<br/>signé, remis au patient"])
 
-    Ident -->|"consulte"| Ref
-    Ident -->|"pseudonymise le rattachement"| Pseudo
+    Ident -->|"consulte, déclare un service « Autre »"| Ref
     Ident -->|"rattachement validé"| simu
-    Ident -->|"refs pseudonymisées"| Analytics
+    Ident -->|"id du service"| Analytics
     Presc -->|"passation (situation P1)"| Secr
     Presc -->|"événements"| Analytics
     Secr -->|"événements"| Analytics
     Secr -->|"situation, si le cas final ouvre un CERFA"| Cerfa
     Cerfa -->|"PDF téléchargé"| Patient
-    Ref -->|"lit"| Grist
+    Ref -->|"lit, complète"| Grist
     Analytics -->|"envoie"| Matomo
 
     classDef nominatif stroke-dasharray:4
@@ -89,26 +87,22 @@ jamais exposées au front.
 | --- | --- | --- | --- | --- |
 | `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services). Jamais exposée au front. |
 | `GRIST_DOC_URL` | serveur | non | doc Grist du projet | Base API du doc Grist (`server/referentiel.ts`). |
-| `PSEUDONYMISATION_SECRET` | serveur | **prod** | secret de dev **non sécurisé** | Secret HMAC pseudonymisant l'établissement et le service envoyés à Matomo. **Dédié** (≠ `GRIST_API_KEY`). Générer : `openssl rand -hex 32`. |
-| `PSEUDONYMISATION_EN_CLAIR` | serveur | non | HMAC (pseudonymisé) | Debug : renvoie les refs **en clair** (préfixées) au lieu du HMAC, pour les lire dans Matomo. ⚠️ Révèle les identifiants bruts du référentiel : **jamais en production**. |
 | `VITE_MATOMO_ENABLED` | front | non | `false` (traceur no-op) | Active le tracking Matomo. Actif d'office en build de prod ; à mettre à `true` pour tester en local. |
 | `VITE_MATOMO_URL` | front | non | instance mutualisée beta.gouv | URL de l'instance Matomo. |
 | `VITE_MATOMO_SITE_ID` | front | non | `275` | Identifiant du site Matomo. |
 
-Les deux variables marquées **prod** n'ont pas de valeur par défaut : leur repli est un
-référentiel inventé et un secret que tout le monde peut lire, ce qui n'a de sens que sur
-un poste de développement. En production — `NODE_ENV=production`, ce que pose Scalingo —
+La variable marquée **prod** n'a pas de valeur par défaut : son repli est un
+référentiel inventé, ce qui n'a de sens que sur un poste de développement. En production — `NODE_ENV=production`, ce que pose Scalingo —
 `server/configuration.ts` refuse donc de rendre une configuration incomplète : le serveur
 s'arrête au démarrage, avant d'ouvrir son port, sur la liste de ce qui cloche.
 
 ```
 [simulateur] Démarrage impossible — configuration invalide :
   - GRIST_API_KEY : sans valeur par défaut, elle doit être posée en production
-  - PSEUDONYMISATION_SECRET : sans valeur par défaut, elle doit être posée en production
 ```
 
 La règle est portée par un schéma **zod** : un socle de variables à défaut, et une variante
-de production où ces deux-là sont exigées. Le schéma valide aussi la forme de ce qui est
+de production où la clé Grist est exigée. Le schéma valide aussi la forme de ce qui est
 posé — `PORT=quatre-mille` ou une `GRIST_DOC_URL` qui n'est pas une URL arrêtent le
 démarrage de la même manière, plutôt que d'échouer plus tard et ailleurs. Une variable
 posée mais vide (`GRIST_API_KEY=` dans un `.env` recopié) compte pour absente. Les autres
@@ -118,7 +112,7 @@ variables ont un défaut documenté ci-dessus : elles ne bloquent jamais le dém
 ## Structure (feature-first)
 
 Il y a trois racines de *runtime* : `front/`, le front bundlé par Vite, `server/`, le
-backend Node qui détient la clé Grist et le secret, et `shared/`, le contrat commun.
+backend Node qui détient la clé Grist, et `shared/`, le contrat commun.
 Chacune est organisée par feature.
 
 ```
@@ -126,8 +120,8 @@ shared/                  le contrat front ⇄ back, source unique des types part
 server/                  le backend Node, barrière de sécurité : les secrets vivent ici
                          et ne sont jamais bundlés. Bootstrap, composition,
                          configuration lue une fois et refusée si elle manque en prod.
-  rattachement/          LA feature backend : les routes `/api`, la source Grist du
-                         référentiel, la pseudonymisation
+  rattachement/          LA feature backend : les routes `/api` et la source Grist du
+                         référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   app/                   l'amorçage, l'écran-porte, le choix de l'outil
   rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
@@ -275,9 +269,8 @@ Scalingo construit et sert cette app, et déploie depuis `main`.
    lancée dans le sous-dossier n'y aurait accès à aucun des deux. Elle installerait des
    versions non verrouillées. Le réglage à tenir côté Scalingo est `PROJECT_DIR`, qui doit
    rester *vide*.
-4. **Tenir les deux variables de production**, `GRIST_API_KEY` et
-   `PSEUDONYMISATION_SECRET`. Elles n'ont pas de défaut, et le serveur refuse de démarrer
-   sans elles (cf. [Configuration](#configuration)).
+4. **Tenir la variable de production**, `GRIST_API_KEY`. Elle n'a pas de défaut, et le
+   serveur refuse de démarrer sans elle (cf. [Configuration](#configuration)).
 5. **Relire le pied de page en production.** Il annonce la version de l'app, le sha du
    commit livré et la version des règles.
 

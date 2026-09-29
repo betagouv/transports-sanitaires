@@ -13,8 +13,6 @@ import { choisirReferentiel } from "./rattachement/referentiel-source.ts";
 const configuration = configurationOuArret();
 
 const app = creerApp(choisirReferentiel(configuration.grist), {
-  secret: configuration.secret,
-  pseudonymesEnClair: configuration.pseudonymesEnClair,
   dossierDist: dossierDist(),
 });
 

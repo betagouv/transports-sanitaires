@@ -22,7 +22,6 @@ function setup() {
   render(
     <App
       referentiel={snapshotReferentiel}
-      pseudonymiser={async () => null}
       chargerGabarit={async () => GABARIT.buffer.slice(0) as ArrayBuffer}
     />,
   );

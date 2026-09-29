@@ -1,7 +1,7 @@
 // Ce que le formulaire de rattachement collecte, et comment savoir qu'il est
-// complet. Ce sont des identifiants métier bruts, et cette forme n'atteint jamais
-// le simulateur : le backend la convertit en rattachement pseudonymisé. Voir
-// server/rattachement/pseudonymisation.ts et l'ADR-4.
+// complet. Ce sont les identifiants du référentiel Grist : le front les garde en
+// session et envoie l'id du service à Matomo, le backend s'en sert pour enrichir
+// le référentiel. Voir l'ADR-4 de docs/knowledge/adr/identification.md.
 
 // Le workflow est linéaire, décrit au §4 de docs/knowledge/adr/identification.md :
 //   établissement → service. Le service « Autre » est une entrée du référentiel
@@ -40,7 +40,7 @@ export const normalise = (s: string): string =>
 /**
  * Vrai quand la branche saisie est complète. Il est partagé entre le front, qui
  * s'en sert pour activer le bouton de validation, et le backend, qui valide avec
- * lui `POST /api/rattachement-pseudonymise`.
+ * lui `POST /api/rattachement`.
  */
 export function saisieComplete(saisie: RattachementSaisi): boolean {
   if (!rempli(saisie.etabId)) return false;

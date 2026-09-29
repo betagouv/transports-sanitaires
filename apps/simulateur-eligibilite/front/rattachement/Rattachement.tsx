@@ -2,9 +2,8 @@
 // **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
-// validation il remonte le `RattachementSaisi` brut à `onValide` (c'est la porte,
-// App.tsx, qui le convertit en rattachement pseudonymisé via l'API et bascule
-// vers le simulateur). Le référentiel par défaut est le snapshot factice
+// validation il remonte le `RattachementSaisi` à `onValide` (c'est la porte,
+// App.tsx, qui le range en session et bascule vers le simulateur). Le référentiel par défaut est le snapshot factice
 // (dev / tests) ; en production App injecte le client HTTP.
 
 import {
@@ -20,7 +19,7 @@ import { useSaisieRattachement } from "./saisie-rattachement";
  * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
  * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
  * `onValide` : le rattachement est obligatoire quelle que soit la destination
- * (ADR-1), et il n'y a donc qu'un seul endroit qui pseudonymise.
+ * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
  */
 export type AccesRattachement = {
   destination: "simulateur" | "galerie" | "labo";

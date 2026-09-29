@@ -6,16 +6,9 @@ import {
   initAnalytics,
 } from "../../front/analytics/matomo";
 import { rangerRattachement } from "../../front/rattachement/session";
-import {
-  type RattachementPseudonymise,
-  VERSION,
-} from "../../shared/rattachement-pseudonymise";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
-const rattachement: RattachementPseudonymise = {
-  etabRef: "eRef",
-  serviceRef: "sRef",
-  v: VERSION,
-};
+const rattachement: RattachementSaisi = { etabId: "7", serviceId: "42" };
 
 const config = { enabled: true, url: "https://matomo.test/", siteId: "275" };
 
@@ -25,12 +18,12 @@ beforeEach(() => {
 });
 
 describe("construireEvenement", () => {
-  it("porte le serviceRef en Nom d'événement", () => {
+  it("porte l'id du service en Nom d'événement", () => {
     expect(construireEvenement(rattachement, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
-      "sRef",
+      "42",
     ]);
   });
 
@@ -39,8 +32,25 @@ describe("construireEvenement", () => {
       "trackEvent",
       "simulateur",
       "simulation_step",
-      "sRef",
+      "42",
       2,
+    ]);
+  });
+
+  it("service saisi sous « Autre » : le Nom reste l'id de l'entrée « Autre »", () => {
+    // Le service libre ne part jamais : il n'est connu que de Grist, qui en fait
+    // un vrai service pour la visite suivante.
+    const autre: RattachementSaisi = {
+      etabId: "7",
+      serviceId: "99",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
+    };
+    expect(construireEvenement(autre, "simulation_start")).toEqual([
+      "trackEvent",
+      "simulateur",
+      "simulation_start",
+      "99",
     ]);
   });
 
@@ -102,13 +112,13 @@ describe("initAnalytics", () => {
     expect(window._paq).toContainEqual(["trackPageView"]);
   });
 
-  it("émet en portant le rattachement pseudonymisé de la session", () => {
+  it("émet en portant le service rattaché en session", () => {
     initAnalytics(config);
     rangerRattachement(rattachement); // connu après le rattachement, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
     emettre("simulation_start");
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "simulation_start", "sRef"],
+      ["trackEvent", "simulateur", "simulation_start", "42"],
     ]);
   });
 

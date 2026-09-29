@@ -2,16 +2,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { NomEvenement, trackEvenement } from "../../front/analytics/evenements";
 import { initAnalytics } from "../../front/analytics/matomo";
 import { rangerRattachement } from "../../front/rattachement/session";
-import {
-  type RattachementPseudonymise,
-  VERSION,
-} from "../../shared/rattachement-pseudonymise";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
-const rattachement: RattachementPseudonymise = {
-  etabRef: "eRef",
-  serviceRef: "sRef",
-  v: VERSION,
-};
+const rattachement: RattachementSaisi = { etabId: "7", serviceId: "42" };
 
 beforeEach(() => {
   window._paq = [];
@@ -21,13 +14,13 @@ beforeEach(() => {
 });
 
 describe("référentiel des évènements", () => {
-  it("émet le nom fixe de l'évènement, avec le serviceRef de la session", () => {
+  it("émet le nom fixe de l'évènement, avec le service de la session", () => {
     rangerRattachement(rattachement);
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     trackEvenement(NomEvenement.prescripteur.simulationStep, 3);
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "prescripteur:simulation_start", "sRef"],
-      ["trackEvent", "simulateur", "prescripteur:simulation_step", "sRef", 3],
+      ["trackEvent", "simulateur", "prescripteur:simulation_start", "42"],
+      ["trackEvent", "simulateur", "prescripteur:simulation_step", "42", 3],
     ]);
   });
 

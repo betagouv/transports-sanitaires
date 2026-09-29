@@ -74,7 +74,7 @@ Découpage **par fonctionnalité**, à l'intérieur de trois racines :
 | Racine | Ce que c'est |
 |---|---|
 | `front/` | le navigateur, bundlé par Vite |
-| `server/` | le backend, qui détient les secrets |
+| `server/` | le backend, qui détient la clé Grist |
 | `shared/` | le contrat front ⇄ back, chargé des deux côtés |
 
 À lire à côté :

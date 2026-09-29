@@ -14,7 +14,7 @@ import {
 
 startReactDsfr({ defaultColorScheme: "system" });
 
-// Amorce le traceur au boot (cookieless). Le serviceRef n'est connu qu'après le
+// Amorce le traceur au boot (cookieless). Le service n'est connu qu'après le
 // rattachement : il est renseigné en session par la porte (App) et lu au moment
 // d'émettre chaque événement.
 const analyticsConfig = configDepuisEnv();

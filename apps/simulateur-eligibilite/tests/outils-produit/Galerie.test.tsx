@@ -118,12 +118,7 @@ describe("galerie branchée sur l'App", () => {
     // le résultat médical, et « Précédent » doit y ramener — quel que soit ce
     // qu'a conclu la Partie 1, et quelle que soit la façon d'être arrivé là.
     const user = userEvent.setup({ delay: null });
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     await ouvrirGalerie(user);
     // La v9.5.1 employait ici une seed tranchée dès la Partie 1 — l'urgence
@@ -159,12 +154,7 @@ describe("galerie branchée sur l'App", () => {
 
   it("ouvre une seed de Partie 1 sur la page de résultat médical", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     await ouvrirGalerie(user);
     const seed = seedParId("prescripteur-ambulance");
@@ -192,12 +182,7 @@ describe("galerie branchée sur l'App", () => {
 
   it("ouvre une seed de Partie 2 sur la page de résultat final", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     await ouvrirGalerie(user);
     const seed = seedParId("secretariat-accord-prealable-distance");
@@ -222,12 +207,7 @@ describe("galerie branchée sur l'App", () => {
 
   it("est aussi accessible depuis le début du parcours, et sait revenir", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
     await seRattacherProduit(user);
 
     await user.click(screen.getByRole("button", GALERIE));

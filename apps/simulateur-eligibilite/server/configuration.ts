@@ -1,16 +1,14 @@
 // La configuration du serveur, lue et validée une fois au démarrage.
 //
-// Deux variables n'ont pas de valeur par défaut : `GRIST_API_KEY`, qui donne
-// accès au référentiel, et `PSEUDONYMISATION_SECRET`, qui signe les refs
-// envoyées à Matomo. En développement, leur absence se replie sur un référentiel
-// factice et un secret public — c'est ce qui permet de lancer l'app sans secret.
-// En production ce repli serait un mensonge : le serveur servirait des
-// établissements inventés et signerait avec un secret que tout le monde peut
-// lire. Là, on arrête le démarrage.
+// Une variable n'a pas de valeur par défaut : `GRIST_API_KEY`, qui donne accès au
+// référentiel. En développement, son absence se replie sur un référentiel factice,
+// ce qui permet de lancer l'app sans secret. En production ce repli serait un
+// mensonge : le serveur servirait des établissements inventés. Là, on arrête le
+// démarrage.
 //
 // Le schéma zod est donc double : le même socle de variables à défaut, et une
-// variante de production où ces deux-là sont exigées. C'est lui qui porte la
-// règle — ce fichier ne l'énonce pas deux fois.
+// variante de production où la clé est exigée. C'est lui qui porte la règle, ce
+// fichier ne l'énonce pas deux fois.
 //
 // Voir le README § « Configuration » et docs/knowledge/adr/identification.md —
 // ADR-5.
@@ -23,10 +21,6 @@ export type AccesGrist = { docUrl: string; cleApi: string };
 
 export type Configuration = {
   port: number;
-  /** Secret HMAC pseudonymisant l'établissement et le service. */
-  secret: string;
-  /** Debug : refs Matomo en clair au lieu du HMAC. Jamais en production. */
-  pseudonymesEnClair: boolean;
   /** Accès au doc Grist ; absent ⇒ référentiel snapshot factice (dev/CI). */
   grist: AccesGrist | undefined;
 };
@@ -54,8 +48,6 @@ export function lireConfiguration(env: Env = process.env): Configuration {
   const variables = lu.data;
   return {
     port: variables.PORT,
-    secret: variables.PSEUDONYMISATION_SECRET ?? secretDeDeveloppement(),
-    pseudonymesEnClair: enClair(variables.PSEUDONYMISATION_EN_CLAIR),
     grist: variables.GRIST_API_KEY
       ? { cleApi: variables.GRIST_API_KEY, docUrl: variables.GRIST_DOC_URL }
       : sansGrist(),
@@ -78,22 +70,16 @@ const VARIABLES = z.object({
   GRIST_DOC_URL: z
     .url({ error: "doit être une URL" })
     .default(DOC_URL_PAR_DEFAUT),
-  PSEUDONYMISATION_EN_CLAIR: z
-    .string()
-    .default("")
-    .transform((flag) => ["true", "1", "oui"].includes(flag.toLowerCase())),
   GRIST_API_KEY: z.string().optional(),
-  PSEUDONYMISATION_SECRET: z.string().optional(),
 });
 
-// En production, les deux variables sans défaut deviennent exigées. Le reste du
-// schéma ne bouge pas : c'est la seule différence entre les deux environnements.
+// En production, la variable sans défaut devient exigée. Le reste du schéma ne
+// bouge pas : c'est la seule différence entre les deux environnements.
 const SANS_DEFAUT =
   "sans valeur par défaut, elle doit être posée en production";
 
 const EN_PRODUCTION = VARIABLES.extend({
   GRIST_API_KEY: z.string({ error: SANS_DEFAUT }),
-  PSEUDONYMISATION_SECRET: z.string({ error: SANS_DEFAUT }),
 });
 
 // Scalingo fournit `PORT` et pose `NODE_ENV=production`. C'est donc lui qui
@@ -110,28 +96,9 @@ function sansValeursVides(env: Env): Env {
   return Object.fromEntries(remplies.map(([nom, brut]) => [nom, brut?.trim()]));
 }
 
-function secretDeDeveloppement(): string {
-  console.warn(
-    "[simulateur] PSEUDONYMISATION_SECRET absente — secret de dev (non sécurisé).",
-  );
-  return "dev-secret-non-securise";
-}
-
 function sansGrist(): undefined {
   console.warn(
     "[simulateur] GRIST_API_KEY absente — référentiel snapshot (dev/fallback).",
   );
   return undefined;
-}
-
-// Mode debug (phase de test) : renvoie les refs en clair au lieu du HMAC pour les
-// lire directement dans Matomo. ⚠️ Révèle les identifiants bruts du
-// référentiel : à n'activer que hors production.
-function enClair(actif: boolean): boolean {
-  if (actif) {
-    console.warn(
-      "[simulateur] PSEUDONYMISATION_EN_CLAIR active — refs Matomo en clair (debug, hors prod).",
-    );
-  }
-  return actif;
 }

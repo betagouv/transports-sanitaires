@@ -20,9 +20,7 @@ const TRACE_RESULTAT = /^Debug — résultat médical/;
 beforeEach(() => sessionStorage.clear());
 
 function afficher() {
-  render(
-    <App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />,
-  );
+  render(<App referentiel={snapshotReferentiel} />);
   return userEvent.setup({ delay: null });
 }
 

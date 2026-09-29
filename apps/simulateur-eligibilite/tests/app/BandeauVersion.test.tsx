@@ -67,12 +67,7 @@ describe("bandeau de version", () => {
 
   it("accompagne le simulateur, pas l'écran-porte", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     // Le rattachement n'est pas le produit : rien ne l'encombre.
     expect(screen.queryByRole("contentinfo")).toBeNull();

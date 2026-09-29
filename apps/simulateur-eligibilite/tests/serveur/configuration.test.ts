@@ -4,8 +4,8 @@
 // n'ont donc rien à simuler, ils décrivent des déploiements possibles. Ce qu'ils
 // gardent est la promesse tenue à l'exploitant : en production, une variable sans
 // valeur par défaut arrête le démarrage au lieu de laisser tourner un serveur qui
-// sert un référentiel factice ou signe avec un secret public. Et, schéma zod
-// oblige, une variable présente mais mal formée l'arrête aussi.
+// sert un référentiel factice. Et, schéma zod oblige, une variable présente mais
+// mal formée l'arrête aussi.
 
 import { describe, expect, it } from "vitest";
 import {
@@ -14,49 +14,44 @@ import {
 } from "../../server/configuration.ts";
 
 const PROD = { NODE_ENV: "production" };
-const SECRET = "secret-de-prod";
 const CLE = "cle-grist";
-const COMPLET = {
-  ...PROD,
-  GRIST_API_KEY: CLE,
-  PSEUDONYMISATION_SECRET: SECRET,
-};
+const COMPLET = { ...PROD, GRIST_API_KEY: CLE };
 
 describe("configuration du serveur en production", () => {
-  it("refuse de démarrer et nomme les variables manquantes", () => {
+  it("refuse de démarrer et nomme la variable manquante", () => {
     expect(() => lireConfiguration(PROD)).toThrow(ErreurDeConfiguration);
     try {
       lireConfiguration(PROD);
     } catch (erreur) {
       expect((erreur as ErreurDeConfiguration).variables).toEqual([
         "GRIST_API_KEY",
-        "PSEUDONYMISATION_SECRET",
       ]);
     }
   });
 
-  it("les nomme toutes, pas seulement la première", () => {
-    const message = () => lireConfiguration(PROD);
-    expect(message).toThrow(/GRIST_API_KEY/);
-    expect(message).toThrow(/PSEUDONYMISATION_SECRET/);
-  });
-
   it("tient une variable posée mais vide pour absente", () => {
-    const vide = { ...COMPLET, PSEUDONYMISATION_SECRET: "  " };
-    expect(() => lireConfiguration(vide)).toThrow(/PSEUDONYMISATION_SECRET/);
+    const vide = { ...COMPLET, GRIST_API_KEY: "  " };
+    expect(() => lireConfiguration(vide)).toThrow(/GRIST_API_KEY/);
   });
 
-  it("démarre dès que les deux sont fournies", () => {
+  it("démarre dès que la clé Grist est fournie", () => {
     const config = lireConfiguration(COMPLET);
-    expect(config.secret).toBe(SECRET);
     expect(config.grist?.cleApi).toBe(CLE);
+  });
+
+  it("n'exige plus de secret de pseudonymisation", () => {
+    // Un ancien déploiement peut encore la porter : elle est ignorée, sans erreur.
+    const config = lireConfiguration({
+      ...COMPLET,
+      PSEUDONYMISATION_SECRET: "reste-d-un-ancien-deploiement",
+    });
+    expect(config).not.toHaveProperty("secret");
   });
 
   it("laisse leur défaut aux variables qui en ont un", () => {
     const config = lireConfiguration(COMPLET);
     expect(config.port).toBe(3000);
     expect(config.grist?.docUrl).toMatch(/^https:\/\/grist\./);
-    expect(config.pseudonymesEnClair).toBe(false);
   });
 });
 
@@ -83,10 +78,9 @@ describe("variables mal formées", () => {
 });
 
 describe("configuration du serveur hors production", () => {
-  it("se replie sur le snapshot et le secret de dev", () => {
+  it("se replie sur le snapshot", () => {
     const config = lireConfiguration({});
     expect(config.grist).toBeUndefined();
-    expect(config.secret).toBeTruthy();
   });
 
   it("prend l'accès Grist quand la clé est là", () => {
@@ -94,13 +88,11 @@ describe("configuration du serveur hors production", () => {
       GRIST_API_KEY: CLE,
       GRIST_DOC_URL: "https://grist.example/api/docs/abc",
       PORT: "4000",
-      PSEUDONYMISATION_EN_CLAIR: "oui",
     });
     expect(config.grist).toEqual({
       cleApi: CLE,
       docUrl: "https://grist.example/api/docs/abc",
     });
     expect(config.port).toBe(4000);
-    expect(config.pseudonymesEnClair).toBe(true);
   });
 });

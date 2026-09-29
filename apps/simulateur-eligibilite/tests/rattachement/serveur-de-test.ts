@@ -6,15 +6,10 @@ import type { AddressInfo } from "node:net";
 import { creerApp } from "../../server/app.ts";
 import type { Referentiel } from "../../shared/referentiel.ts";
 
-export const SECRET = "secret-de-test";
-
 export type AppDeTest = { base: string; close: () => Promise<void> };
 
-export async function demarrer(
-  referentiel: Referentiel,
-  pseudonymesEnClair = false,
-): Promise<AppDeTest> {
-  const app = creerApp(referentiel, { secret: SECRET, pseudonymesEnClair });
+export async function demarrer(referentiel: Referentiel): Promise<AppDeTest> {
+  const app = creerApp(referentiel);
   const srv = await new Promise<Server>((resolve) => {
     // Express 5 passe une éventuelle erreur au callback : on ne la propage pas
     // dans `resolve`, qui n'attend rien.
@@ -36,10 +31,16 @@ export async function postTo(base: string, path: string, body: unknown) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return { status: res.status, body: await res.json() };
+  return { status: res.status, body: await corpsJson(res) };
 }
 
 export async function getFrom(base: string, path: string) {
   const res = await fetch(base + path);
   return { status: res.status, body: await res.json() };
+}
+
+// Une réponse 204 n'a pas de corps : `res.json()` y lèverait.
+async function corpsJson(res: Response) {
+  const texte = await res.text();
+  return texte ? JSON.parse(texte) : undefined;
 }

@@ -1,9 +1,10 @@
 // Router de la feature **rattachement** (backend) : lecture du référentiel
-// (établissement, service) et pseudonymisation du rattachement saisi. Monté sous
-// `/api` par `server/app.ts`. Voir docs/knowledge/adr/identification.md, ADR-5.
+// (établissement, service) et réception du rattachement saisi, qui peut l'enrichir.
+// Monté sous `/api` par `server/app.ts`. Voir docs/knowledge/adr/identification.md,
+// ADR-5.
 //
-// Prend le `Referentiel` et le secret en paramètres pour rester testable sans
-// mock (les tests injectent le snapshot).
+// Prend le `Referentiel` en paramètre pour rester testable sans mock (les tests
+// injectent le snapshot).
 
 import express, { type Request, type Response, type Router } from "express";
 import {
@@ -11,13 +12,8 @@ import {
   saisieComplete,
 } from "../../shared/rattachement-saisi.ts";
 import type { Referentiel } from "../../shared/referentiel.ts";
-import { pseudonymiser } from "./pseudonymisation.ts";
 
-export function rattachementRoutes(
-  referentiel: Referentiel,
-  secret: string,
-  pseudonymesEnClair = false,
-): Router {
+export function rattachementRoutes(referentiel: Referentiel): Router {
   const router = express.Router();
 
   router.get(
@@ -27,24 +23,16 @@ export function rattachementRoutes(
     }),
   );
   router.get("/services", handle(servicesDe(referentiel)));
-  router.post(
-    "/rattachement-pseudonymise",
-    handle(rattacher(referentiel, secret, pseudonymesEnClair)),
-  );
+  router.post("/rattachement", handle(rattacher(referentiel)));
 
   return router;
 }
 
 // ---- implémentation ----
 
-// Pseudonymise le rattachement saisi (refs HMAC). Reçoit la saisie brute, renvoie
-// l'objet refs en JSON : le secret HMAC ne quitte jamais le serveur. Le front
-// garde ces refs en mémoire pour Matomo.
-function rattacher(
-  referentiel: Referentiel,
-  secret: string,
-  pseudonymesEnClair: boolean,
-) {
+// Reçoit le rattachement saisi pour en tirer ce qui manque au référentiel. Rien à
+// renvoyer : le front a déjà tout ce qu'il lui faut, et n'attend pas la réponse.
+function rattacher(referentiel: Referentiel) {
   return async (req: Request, res: Response) => {
     const saisie = (req.body ?? {}) as RattachementSaisi;
     if (!saisieComplete(saisie)) {
@@ -52,7 +40,7 @@ function rattacher(
       return;
     }
     await enrichir(referentiel, saisie);
-    res.json(pseudonymiser(secret, saisie, pseudonymesEnClair));
+    res.status(204).end();
   };
 }
 

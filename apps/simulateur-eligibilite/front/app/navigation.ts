@@ -2,8 +2,8 @@
 // de rattachement, les deux écrans d'outils produit qui s'y superposent, et
 // l'outil du simulateur affiché derrière.
 //
-// Le rattachement pseudonymisé, lui, ne transite pas par ici : `rattacher` le
-// range en session et ne retient que le booléen d'accès aux outils produit.
+// Le rattachement, lui, ne transite pas par ici : la porte le range en session,
+// et `rattacher` ne retient que le booléen d'accès aux outils produit.
 
 import type { Situation } from "publicodes";
 import { useState } from "react";

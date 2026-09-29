@@ -5,14 +5,12 @@
 // GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { empreinte } from "../../server/rattachement/pseudonymisation.ts";
 import { snapshotReferentiel } from "../../shared/referentiel.ts";
 import {
   type AppDeTest,
   demarrer,
   getFrom,
   postTo,
-  SECRET,
 } from "./serveur-de-test.ts";
 
 let app: AppDeTest;
@@ -79,65 +77,25 @@ describe("non-indexation par les moteurs", () => {
   });
 });
 
-describe("POST /api/rattachement-pseudonymise", () => {
+describe("POST /api/rattachement", () => {
   const selection = {
     etabId: "e_chu_grenoble",
     serviceId: "s_grenoble_cardio",
   };
 
-  it("pseudonymise l'établissement et le service seuls, sans identifiant brut", async () => {
-    const { status, body: ctx } = await post(
-      "/api/rattachement-pseudonymise",
-      selection,
-    );
-    expect(status).toBe(200);
-
-    expect(Object.keys(ctx).sort()).toEqual(["etabRef", "serviceRef", "v"]);
-    expect(ctx.v).toBe(3);
-
-    // Les refs sont le HMAC de la valeur **préfixée par sa nature** — jamais l'id brut.
-    expect(ctx.etabRef).toBe(empreinte(SECRET, `etab:${selection.etabId}`));
-    expect(ctx.serviceRef).toBe(
-      empreinte(SECRET, `service:${selection.serviceId}`),
-    );
-    expect(JSON.stringify(ctx)).not.toContain(selection.serviceId);
+  it("accepte le rattachement sans rien renvoyer", async () => {
+    const { status, body } = await post("/api/rattachement", selection);
+    expect(status).toBe(204);
+    expect(body).toBeUndefined();
   });
 
-  it("ignore une identité envoyée par un client obsolète, sans la renvoyer", async () => {
-    const { status, body: ctx } = await post("/api/rattachement-pseudonymise", {
-      ...selection,
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Dupont",
-      prenom: "Marie",
-    });
-    expect(status).toBe(200);
-    expect(Object.keys(ctx).sort()).toEqual(["etabRef", "serviceRef", "v"]);
-    expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie|prescripteur/i);
-  });
-
-  it("est déterministe pour une même sélection", async () => {
-    const a = await post("/api/rattachement-pseudonymise", selection);
-    const b = await post("/api/rattachement-pseudonymise", selection);
-    expect(a.body).toEqual(b.body);
-  });
-
-  it("service « Autre » : serviceRef reste l'id référentiel, le service saisi ne sort pas", async () => {
-    const { status, body: ctx } = await post("/api/rattachement-pseudonymise", {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_autre",
-      serviceEstAutre: true,
-      serviceLibre: "Néphrologie",
-    });
-    expect(status).toBe(200);
-    // Le serviceRef reste l'id « Autre » du référentiel (le vrai service n'a pas
-    // encore d'id à ce stade) ; l'analytics est buckettée sous « Autre » à la 1ʳᵉ
-    // visite, puis sous le vrai service ensuite.
-    expect(ctx.serviceRef).toBe(empreinte(SECRET, "service:s_grenoble_autre"));
-    expect(JSON.stringify(ctx)).not.toMatch(/néphrologie/i);
+  it("n'expose plus la pseudonymisation", async () => {
+    const { status } = await post("/api/identite-pseudonymisee", selection);
+    expect(status).toBe(404);
   });
 
   it("service « Autre » sans service réel saisi → 400 (saisie obligatoire)", async () => {
-    const { status, body } = await post("/api/rattachement-pseudonymise", {
+    const { status, body } = await post("/api/rattachement", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
       serviceEstAutre: true,
@@ -147,7 +105,7 @@ describe("POST /api/rattachement-pseudonymise", () => {
   });
 
   it("refuse une sélection incomplète", async () => {
-    const { status, body } = await post("/api/rattachement-pseudonymise", {
+    const { status, body } = await post("/api/rattachement", {
       etabId: "e_chu_grenoble",
       // service manquant
     });

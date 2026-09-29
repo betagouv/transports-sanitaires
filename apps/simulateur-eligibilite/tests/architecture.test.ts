@@ -29,9 +29,9 @@ describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
     expect(
       franchissements(["front"], commencePar("server/")),
-      "Le serveur détient la clé Grist et le secret de pseudonymisation. Un " +
-        "seul import suffirait à les faire entrer dans le bundle servi au " +
-        "navigateur. Passe par une route `/api`.",
+      "Le serveur détient la clé Grist. Un seul import suffirait à la " +
+        "faire entrer dans le bundle servi au navigateur. Passe par une " +
+        "route `/api`.",
     ).toEqual([]);
   });
 

@@ -3,24 +3,17 @@ import {
   rangerRattachement,
   rattachementEnSession,
 } from "../../front/rattachement/session";
-import {
-  type RattachementPseudonymise,
-  VERSION,
-} from "../../shared/rattachement-pseudonymise";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
-const rattachement: RattachementPseudonymise = {
-  etabRef: "eRef",
-  serviceRef: "sRef",
-  v: VERSION,
-};
+const rattachement: RattachementSaisi = { etabId: "7", serviceId: "42" };
 
-describe("session rattachement pseudonymisé", () => {
+describe("session de rattachement", () => {
   it("conserve le rattachement renseigné", () => {
     rangerRattachement(rattachement);
     expect(rattachementEnSession()).toEqual(rattachement);
   });
 
-  it("accepte l'absence de rattachement (échec de l'API)", () => {
+  it("n'a rien tant que personne ne s'est rattaché", () => {
     rangerRattachement(null);
     expect(rattachementEnSession()).toBeNull();
   });

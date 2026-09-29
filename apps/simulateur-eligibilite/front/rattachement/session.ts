@@ -1,15 +1,16 @@
-// Le rattachement pseudonymisé pour la durée de la session : rangé par
-// l'écran-porte, relu par le traceur d'analytics à chaque événement.
+// Le rattachement pour la durée de la session : rangé par l'écran-porte, relu par
+// le traceur d'analytics à chaque événement.
 
-import type { RattachementPseudonymise } from "../../shared/rattachement-pseudonymise";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
 export function rangerRattachement(
-  rattachement: RattachementPseudonymise | null,
+  rattachement: RattachementSaisi | null,
 ): void {
   rattachementCourant = rattachement;
 }
 
-export function rattachementEnSession(): RattachementPseudonymise | null {
+/** `null` tant que personne ne s'est rattaché. */
+export function rattachementEnSession(): RattachementSaisi | null {
   return rattachementCourant;
 }
 
@@ -17,4 +18,4 @@ export function rattachementEnSession(): RattachementPseudonymise | null {
 
 // En mémoire uniquement (pas de localStorage), voir
 // docs/knowledge/adr/identification.md, ADR-4.
-let rattachementCourant: RattachementPseudonymise | null = null;
+let rattachementCourant: RattachementSaisi | null = null;

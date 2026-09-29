@@ -143,12 +143,7 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
 describe("App câble les outils produit", () => {
   it("les reproposent au début du parcours après un rattachement service n° 4", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     await seRattacherProduit(user);
 
@@ -159,12 +154,7 @@ describe("App câble les outils produit", () => {
 
   it("ne les propose pas après un rattachement ordinaire", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
     await remplirRattachement(user);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();

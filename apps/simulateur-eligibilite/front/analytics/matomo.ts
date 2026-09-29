@@ -2,7 +2,7 @@
 // et mise en forme d'un `trackEvent`. Le vocabulaire mesuré, lui, est dans
 // `evenements.ts`. Ce fichier ne sait pas ce que le produit compte.
 
-import type { RattachementPseudonymise } from "../../shared/rattachement-pseudonymise";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import { rattachementEnSession } from "../rattachement/session";
 
 declare global {
@@ -69,8 +69,8 @@ export function chargerMatomo(url: string): void {
 }
 
 /**
- * Émet un événement quand le traceur est activé, en portant le rattachement
- * pseudonymisé courant, lu en session. Voir `initAnalytics` pour le cycle de
+ * Émet un événement quand le traceur est activé, en portant le service rattaché,
+ * lu en session. Voir `initAnalytics` pour le cycle de
  * vie.
  */
 export function emettre(action: string, valeur?: number): void {
@@ -80,20 +80,21 @@ export function emettre(action: string, valeur?: number): void {
 
 /**
  * Construit un événement Matomo `trackEvent` : une catégorie constante, l'action,
- * puis le `serviceRef` en Nom s'il existe, et une valeur numérique optionnelle.
+ * puis l'id Grist du service en Nom s'il existe, et une valeur numérique
+ * optionnelle. Le service libre saisi sous « Autre » ne part jamais : le Nom reste
+ * l'id de l'entrée « Autre ».
  *
  * L'instance mutualisée beta.gouv n'offre pas de custom dimension, c'est le risque
- * R-8. Le `serviceRef` pseudonymisé, décrit par l'ADR-4 d'identification.md, est
- * donc porté en propriété d'événement, faute de mieux. La fonction est exportée
- * pour les tests.
+ * R-8. Le service est donc porté en propriété d'événement, faute de mieux. La
+ * fonction est exportée pour les tests.
  */
 export function construireEvenement(
-  rattachement: RattachementPseudonymise | null,
+  rattachement: RattachementSaisi | null,
   action: string,
   valeur?: number,
 ): unknown[] {
   const evenement: unknown[] = ["trackEvent", CATEGORY, action];
-  const nom = rattachement?.serviceRef;
+  const nom = rattachement?.serviceId;
   if (nom !== undefined) evenement.push(nom);
   if (valeur !== undefined) {
     if (nom === undefined) evenement.push(""); // Matomo : le Nom précède la Valeur
