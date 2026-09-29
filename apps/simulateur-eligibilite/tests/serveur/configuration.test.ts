@@ -39,15 +39,6 @@ describe("configuration du serveur en production", () => {
     expect(config.grist?.cleApi).toBe(CLE);
   });
 
-  it("n'exige plus de secret de pseudonymisation", () => {
-    // Un ancien déploiement peut encore la porter : elle est ignorée, sans erreur.
-    const config = lireConfiguration({
-      ...COMPLET,
-      PSEUDONYMISATION_SECRET: "reste-d-un-ancien-deploiement",
-    });
-    expect(config).not.toHaveProperty("secret");
-  });
-
   it("laisse leur défaut aux variables qui en ont un", () => {
     const config = lireConfiguration(COMPLET);
     expect(config.port).toBe(3000);

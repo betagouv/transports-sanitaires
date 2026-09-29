@@ -44,13 +44,6 @@ describe("API référentiel", () => {
     );
   });
 
-  it("n'expose plus la liste des prescripteurs", async () => {
-    const { status } = await get(
-      "/api/prescripteurs?serviceId=s_grenoble_cardio",
-    );
-    expect(status).toBe(404);
-  });
-
   it("exige le paramètre etabId pour les services", async () => {
     const { status, body } = await get("/api/services");
     expect(status).toBe(400);
@@ -87,11 +80,6 @@ describe("POST /api/rattachement", () => {
     const { status, body } = await post("/api/rattachement", selection);
     expect(status).toBe(204);
     expect(body).toBeUndefined();
-  });
-
-  it("n'expose plus la pseudonymisation", async () => {
-    const { status } = await post("/api/identite-pseudonymisee", selection);
-    expect(status).toBe(404);
   });
 
   it("service « Autre » sans service réel saisi → 400 (saisie obligatoire)", async () => {

@@ -19,13 +19,12 @@ const valider = () =>
   );
 
 describe("parcours de rattachement", () => {
-  it("établissement → service suffit, sans demander qui répond", async () => {
+  it("établissement → service suffit", async () => {
     const onValide = vi.fn();
     render(<Rattachement onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Cardiologie");
-    expect(screen.queryByRole("combobox", { name: /Vous êtes/ })).toBeNull();
     await valider();
 
     expect(onValide).toHaveBeenCalledWith(

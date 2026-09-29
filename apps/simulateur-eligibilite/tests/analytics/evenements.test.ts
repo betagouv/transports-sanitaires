@@ -83,7 +83,7 @@ describe("référentiel des évènements", () => {
     ]);
   });
 
-  it("émet sans Nom si le rattachement n'a pas fourni de ref", () => {
+  it("émet sans Nom tant que personne ne s'est rattaché", () => {
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     expect(window._paq).toEqual([
       ["trackEvent", "simulateur", "prescripteur:simulation_start"],
