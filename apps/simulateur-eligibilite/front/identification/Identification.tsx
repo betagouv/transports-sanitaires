@@ -8,7 +8,6 @@
 // le snapshot factice (dev / tests) ; en production App injecte le client HTTP.
 
 import type { ReactNode } from "react";
-import { PRESCRIPTEUR_HORS_LISTE } from "../../shared/identite-saisie";
 import {
   type Referentiel,
   snapshotReferentiel,
@@ -55,7 +54,9 @@ export function Identification({
 
   return (
     <EcranPleinePage etroit>
-      <h1 className="fr-h3">Commencez par vous identifier</h1>
+      <h1 className="fr-h3">
+        Commencez par renseigner votre établissement et votre service
+      </h1>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -81,8 +82,6 @@ function FormulaireProgressif({ saisie }: ChampsProps) {
       <ChampEtablissement saisie={saisie} />
       <ChampService saisie={saisie} />
       <ChampServiceLibre saisie={saisie} />
-      <ChampPrescripteur saisie={saisie} />
-      <ChampsIdentiteLibre saisie={saisie} />
     </>
   );
 }
@@ -126,42 +125,6 @@ function ChampServiceLibre({ saisie }: ChampsProps) {
   );
 }
 
-function ChampPrescripteur({ saisie }: ChampsProps) {
-  if (!saisie.serviceChoisi) return null;
-  return (
-    <ListeDeroulante
-      id="prescripteur"
-      libelle="Vous êtes"
-      invite="Sélectionnez"
-      valeur={saisie.champs.prescripteurId}
-      options={saisie.prescripteurs}
-      onChange={(v) => saisie.modifier("prescripteurId", v)}
-    >
-      <option value={PRESCRIPTEUR_HORS_LISTE}>{OPTION_HORS_LISTE}</option>
-    </ListeDeroulante>
-  );
-}
-
-function ChampsIdentiteLibre({ saisie }: ChampsProps) {
-  if (!saisie.identiteLibre) return null;
-  return (
-    <>
-      <ChampTexte
-        id="nom"
-        libelle="Votre nom"
-        valeur={saisie.champs.nom}
-        onChange={(v) => saisie.modifier("nom", v)}
-      />
-      <ChampTexte
-        id="prenom"
-        libelle="Votre prénom"
-        valeur={saisie.champs.prenom}
-        onChange={(v) => saisie.modifier("prenom", v)}
-      />
-    </>
-  );
-}
-
 // Les deux sorties de cet écran — le simulateur, et les outils produit pour le
 // service n° 4 — sont des entrées dans l'application, et passent donc par le
 // même `onValide` (ADR-1).
@@ -181,31 +144,27 @@ function EntreesDansLApplication({
           Accéder au simulateur
         </button>
       </div>
-      {saisie.outilsProduit && (
-        <PanneauOutils valide={saisie.valide} onEntrer={onEntrer} />
-      )}
+      {saisie.outilsProduit && <PanneauOutils onEntrer={onEntrer} />}
     </>
   );
 }
 
 // Les deux outils produit sont côte à côte, hors des actions nominales. Ils
-// restent désactivés tant que l'identification n'est pas complète : y entrer
-// reste une entrée dans l'application, elle passe par la porte. Les situations
-// de la galerie vivent dans `seeds/`, pas dans cet écran — les y égrener en
-// boutons ne passait pas l'échelle.
+// n'apparaissent qu'une fois le service n° 4 choisi, ce qui complète la saisie :
+// y entrer reste une entrée dans l'application, elle passe par la porte. Les
+// situations de la galerie vivent dans `seeds/`, pas dans cet écran — les y
+// égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({
-  valide,
   onEntrer,
 }: {
-  valide: boolean;
   onEntrer: (destination: AccesIdentification["destination"]) => void;
 }) {
   return (
     <OutilsProduit>
-      <BoutonOutil onClick={() => onEntrer("galerie")} disabled={!valide}>
+      <BoutonOutil onClick={() => onEntrer("galerie")}>
         Galerie de seeds
       </BoutonOutil>
-      <BoutonOutil onClick={() => onEntrer("labo")} disabled={!valide}>
+      <BoutonOutil onClick={() => onEntrer("labo")}>
         Mode test des règles
       </BoutonOutil>
     </OutilsProduit>
@@ -284,5 +243,3 @@ function ChampTexte({
     </div>
   );
 }
-
-const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";

@@ -5,7 +5,6 @@
 
 import type {
   Etablissement,
-  Prescripteur,
   Referentiel,
   Service,
 } from "../../shared/referentiel";
@@ -14,10 +13,6 @@ export const referentielHttp: Referentiel = {
   listerEtablissements: () => recuperer<Etablissement[]>("/api/etablissements"),
   listerServices: (etabId) =>
     recuperer<Service[]>(`/api/services?etabId=${encoder(etabId)}`),
-  listerPrescripteurs: (serviceId) =>
-    recuperer<Prescripteur[]>(
-      `/api/prescripteurs?serviceId=${encoder(serviceId)}`,
-    ),
 };
 
 // ---- implémentation ----

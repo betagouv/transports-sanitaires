@@ -64,7 +64,7 @@ describe("encadré des outils produit — écran d'identification", () => {
     expect(encadre).not.toContainElement(acceder);
   });
 
-  it("garde les outils désactivés tant que l'identification est incomplète", async () => {
+  it("n'apparaît qu'une fois l'établissement et le service choisis", async () => {
     // Y entrer reste une entrée dans l'application : elle passe par la porte
     // (ADR-1), quelle que soit la destination.
     const user = userEvent.setup();
@@ -77,13 +77,13 @@ describe("encadré des outils produit — écran d'identification", () => {
       name: "Libéral / CNAM / CPAM / Autre",
     });
     await user.selectOptions(select, "Libéral / CNAM / CPAM / Autre");
+    expect(screen.queryByRole("region", ENCADRE)).toBeNull();
+
     const service = screen.getByRole("combobox", { name: /Nom du service/ });
     await screen.findByRole("option", { name: "Transport Sanitaire" });
     await user.selectOptions(service, "Transport Sanitaire");
-
-    // Le prescripteur n'est pas encore renseigné.
-    expect(screen.getByRole("button", GALERIE)).toBeDisabled();
-    expect(screen.getByRole("button", LABO)).toBeDisabled();
+    expect(screen.getByRole("button", GALERIE)).toBeEnabled();
+    expect(screen.getByRole("button", LABO)).toBeEnabled();
   });
 
   it("remonte la destination choisie avec l'identité et l'accès", async () => {
@@ -97,7 +97,7 @@ describe("encadré des outils produit — écran d'identification", () => {
     await user.click(screen.getByRole("button", LABO));
 
     expect(onValide).toHaveBeenCalledWith(
-      expect.objectContaining({ nom: "Durand" }),
+      { etabId: "e_liberal_cnam", serviceId: "s_transport_sanitaire" },
       {
         destination: "labo",
         outilsProduit: true,

@@ -31,10 +31,6 @@ export function identificationRoutes(
     "/services",
     handle(lister("etabId", (id) => referentiel.listerServices(id))),
   );
-  router.get(
-    "/prescripteurs",
-    handle(lister("serviceId", (id) => referentiel.listerPrescripteurs(id))),
-  );
   router.post(
     "/identite-pseudonymisee",
     handle(identifier(referentiel, secret, pseudonymesEnClair)),

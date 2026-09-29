@@ -3,15 +3,11 @@
 // le simulateur : le backend la convertit en identité pseudonymisée. Voir
 // server/identification/pseudonymisation.ts et l'ADR-4.
 
-/** Valeur sentinelle (hors référentiel) choisie dans la liste des prescripteurs. */
-export const PRESCRIPTEUR_HORS_LISTE = "prescripteur_hors_liste";
-
 // Le workflow est linéaire, décrit au §4 de docs/knowledge/adr/identification.md :
-//   établissement → service → prescripteur (réel | « hors liste » → nom/prénom).
-// Le service « Autre » est une entrée du référentiel comme les autres, une par
-// établissement, avec ses propres prescripteurs et la même option « hors liste ».
-// Les prescripteurs sans établissement de rattachement, en libéral, à la CNAM ou à
-// la CPAM, sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre ».
+//   établissement → service. Le service « Autre » est une entrée du référentiel
+// comme les autres, une par établissement. Les prescripteurs sans établissement
+// de rattachement, en libéral, à la CNAM ou à la CPAM, sélectionnent
+// l'établissement « Libéral / CNAM / CPAM / Autre ».
 export type IdentiteSaisie = {
   /** id établissement du référentiel. */
   etabId: string;
@@ -26,23 +22,17 @@ export type IdentiteSaisie = {
   serviceEstAutre?: boolean;
   /**
    * Service ou unité réel, saisi quand `serviceEstAutre` vaut vrai. Il est
-   * obligatoire dans cette branche. Le backend crée ou réutilise ce vrai service et
-   * y rattache le prescripteur, au lieu de « Autre », pour qu'à la connexion
-   * suivante il soit listé sous son service réel.
+   * obligatoire dans cette branche. Le backend crée ou réutilise ce vrai service,
+   * pour qu'à la connexion suivante il soit listé sous son nom réel.
    */
   serviceLibre?: string;
-  /** id prescripteur du référentiel, ou `PRESCRIPTEUR_HORS_LISTE`. */
-  prescripteurId?: string;
-  /** si prescripteur hors liste : identité libre. */
-  nom?: string;
-  prenom?: string;
 };
 
 /**
  * Normalise un texte libre, sa casse et ses espaces superflus, pour que des saisies
- * quasi identiques tombent dans le même bucket. Il est partagé entre la
- * pseudonymisation, qui en fait un HMAC, et la déduplication des saisies libres
- * écrites dans le référentiel Grist.
+ * quasi identiques désignent la même chose. Il sert à la déduplication des
+ * services écrits dans le référentiel Grist et à la reconnaissance du service
+ * produit.
  */
 export const normalise = (s: string): string =>
   s.trim().replace(/\s+/g, " ").toLowerCase();
@@ -55,15 +45,10 @@ export const normalise = (s: string): string =>
 export function saisieComplete(saisie: IdentiteSaisie): boolean {
   if (!rempli(saisie.etabId)) return false;
 
-  // établissement → service → prescripteur requis
+  // établissement → service requis
   if (!rempli(saisie.serviceId)) return false;
   // service « Autre » → saisie du service/unité réel obligatoire
   if (saisie.serviceEstAutre && !rempli(saisie.serviceLibre)) return false;
-  if (!rempli(saisie.prescripteurId)) return false;
-  if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-    // prescripteur hors liste → identité libre
-    return rempli(saisie.nom) && rempli(saisie.prenom);
-  }
   return true;
 }
 

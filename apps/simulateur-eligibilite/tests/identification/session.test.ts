@@ -11,7 +11,6 @@ import {
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",
   serviceRef: "sRef",
-  prescripteurRef: "pRef",
   v: VERSION,
 };
 

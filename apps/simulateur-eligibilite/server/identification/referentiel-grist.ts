@@ -1,40 +1,30 @@
 // Implémentation `Referentiel` au-dessus d'un doc Grist.
 //
 // Voir l'ADR-5 et le §5 de docs/knowledge/adr/identification.md. Ce module vit côté
-// serveur uniquement : il détient la clé Grist, jamais exposée au navigateur, et ne
-// renvoie que des données filtrées. Les noms de prescripteurs ne sortent que pour
-// le service demandé, jamais l'annuaire complet. L'accès HTTP lui-même est dans
-// `lignes-grist.ts`.
+// serveur uniquement : il détient la clé Grist, jamais exposée au navigateur. Il ne
+// lit ni n'écrit la table des prescripteurs, qui reste dans Grist pour l'admin.
+// L'accès HTTP lui-même est dans `lignes-grist.ts`.
 //
 // Modèle Grist (identifiants de tables/colonnes réels, assainis par Grist) :
 //   Etablissements   : Id2 (Int, « Id » métier), Nom (Text)
 //   Services_Unites  : Id2, Nom, Etablissement (Ref:Etablissements)
-//   Prescripteurs    : Id2, Nom, Prenom, Service_Unite (Ref:Services_Unites)
 //
-// Les identifiants opaques de l'identité saisie, `etabId`, `serviceId` et
-// `prescripteurId`, sont la colonne Id2, par choix produit. Les colonnes de
-// référence stockent le rowId interne Grist de la ligne cible, et non son Id2. On
-// résout donc l'Id2 en rowId avant de filtrer les enfants.
+// Les identifiants opaques de l'identité saisie, `etabId` et `serviceId`, sont la
+// colonne Id2, par choix produit. Les colonnes de référence stockent le rowId
+// interne Grist de la ligne cible, et non son Id2. On résout donc l'Id2 en rowId
+// avant de filtrer les enfants.
 
 import {
   type IdentiteSaisie,
   normalise,
-  PRESCRIPTEUR_HORS_LISTE,
 } from "../../shared/identite-saisie.ts";
 import type {
   Etablissement,
-  Prescripteur,
   Referentiel,
   Service,
 } from "../../shared/referentiel.ts";
 import type { DocGrist } from "./lignes-grist.ts";
-import {
-  creerLigne,
-  lignes,
-  majLigne,
-  ouvrirDoc,
-  texte,
-} from "./lignes-grist.ts";
+import { creerLigne, lignes, ouvrirDoc, texte } from "./lignes-grist.ts";
 
 export type GristConfig = {
   /** Base API du doc, ex. https://…/api/docs/<docId> */
@@ -50,7 +40,6 @@ export function creerReferentielGrist({
   return {
     listerEtablissements: () => etablissements(doc),
     listerServices: (etabId) => services(doc, etabId),
-    listerPrescripteurs: (serviceId) => prescripteurs(doc, serviceId),
     enrichirDepuisSaisie: (saisie) => enrichir(doc, saisie),
   };
 }
@@ -80,78 +69,17 @@ async function services(doc: DocGrist, etabId: string): Promise<Service[]> {
     .filter((s) => s.id && s.libelle);
 }
 
-async function prescripteurs(
-  doc: DocGrist,
-  serviceId: string,
-): Promise<Prescripteur[]> {
-  const rowId = await rowIdDeId2(doc, TABLE.services, serviceId);
-  if (rowId == null) return [];
-  const trouvees = await lignes(doc, TABLE.prescripteurs, {
-    [COL.refService]: [rowId],
-  });
-  return trouvees
-    .map((r) => ({
-      id: texte(r.fields[COL.id]),
-      libelle:
-        `${texte(r.fields[COL.prenom])} ${texte(r.fields[COL.nom])}`.trim(),
-    }))
-    .filter((p) => p.id && p.libelle);
-}
-
-// Écrit les saisies libres dans le référentiel, avec la colonne
-// `Origine=formulaire`. C'est idempotent, la déduplication se faisant sur le nom et
-// le prénom normalisés, et sans effet pour une sélection issue des listes. Voir
+// Service « Autre » avec un vrai service saisi : on crée ou on réutilise ce
+// service sous l'établissement, avec la colonne `Origine=formulaire`. À la
+// connexion suivante, il apparaît dans la liste. C'est idempotent, la
+// déduplication se faisant sur le nom normalisé, et sans effet pour une sélection
+// issue des listes. Voir
 // docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
 async function enrichir(doc: DocGrist, saisie: IdentiteSaisie): Promise<void> {
-  if (saisie.serviceEstAutre && saisie.serviceLibre?.trim()) {
-    return rattacherAuServiceReel(doc, saisie, saisie.serviceLibre);
-  }
-  // Prescripteur hors liste, sous un service réel, y compris « Autre » sans
-  // service saisi : on le crée sous le service sélectionné.
-  if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-    if (!saisie.serviceId || !saisie.nom || !saisie.prenom) return;
-    const serviceRowId = await rowIdDeId2(
-      doc,
-      TABLE.services,
-      saisie.serviceId,
-    );
-    if (serviceRowId == null) return;
-    await assurerPrescripteur(doc, serviceRowId, saisie.nom, saisie.prenom);
-  }
-  // Sinon, la sélection vient des listes et il n'y a rien à écrire.
-}
-
-// Service « Autre » avec un vrai service saisi : on crée ou on réutilise ce
-// service sous l'établissement, puis on y rattache le prescripteur au lieu de
-// « Autre ». À la connexion suivante, il apparaît alors sous son service réel. Voir
-// la spec.
-async function rattacherAuServiceReel(
-  doc: DocGrist,
-  saisie: IdentiteSaisie,
-  serviceLibre: string,
-): Promise<void> {
+  if (!saisie.serviceEstAutre || !saisie.serviceLibre?.trim()) return;
   const etabRowId = await rowIdDeId2(doc, TABLE.etablissements, saisie.etabId);
   if (etabRowId == null) return;
-  const serviceRowId = await assurerService(doc, etabRowId, serviceLibre);
-
-  if (saisie.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-    // Nouveau prescripteur : on le crée directement sous le vrai service.
-    if (!saisie.nom || !saisie.prenom) return;
-    await assurerPrescripteur(doc, serviceRowId, saisie.nom, saisie.prenom);
-    return;
-  }
-  // Prescripteur déjà listé sous « Autre » : on le déplace vers son vrai service,
-  // en mettant à jour sa référence de service.
-  if (!saisie.prescripteurId) return;
-  const prescRowId = await rowIdDeId2(
-    doc,
-    TABLE.prescripteurs,
-    saisie.prescripteurId,
-  );
-  if (prescRowId == null) return;
-  await majLigne(doc, TABLE.prescripteurs, prescRowId, {
-    [COL.refService]: serviceRowId,
-  });
+  await assurerService(doc, etabRowId, saisie.serviceLibre);
 }
 
 // Résout un Id2 métier vers le rowId interne Grist de la table donnée.
@@ -197,45 +125,15 @@ async function assurerService(
   });
 }
 
-// Réutilise le prescripteur homonyme (Nom+Prénom normalisés) du service, sinon le crée.
-async function assurerPrescripteur(
-  doc: DocGrist,
-  serviceRowId: number,
-  nom: string,
-  prenom: string,
-): Promise<number> {
-  const cn = normalise(nom);
-  const cp = normalise(prenom);
-  const existants = await lignes(doc, TABLE.prescripteurs, {
-    [COL.refService]: [serviceRowId],
-  });
-  const deja = existants.find(
-    (r) =>
-      normalise(texte(r.fields[COL.nom])) === cn &&
-      normalise(texte(r.fields[COL.prenom])) === cp,
-  );
-  if (deja) return deja.id;
-  return creerLigne(doc, TABLE.prescripteurs, {
-    [COL.id]: await prochainId2(doc, TABLE.prescripteurs),
-    [COL.nom]: nom.trim(),
-    [COL.prenom]: prenom.trim(),
-    [COL.refService]: serviceRowId,
-    [COL.origine]: ORIGINE_FORMULAIRE,
-  });
-}
-
 const TABLE = {
   etablissements: "Etablissements",
   services: "Services_Unites",
-  prescripteurs: "Prescripteurs",
 } as const;
 
 const COL = {
   id: "Id2",
   nom: "Nom",
-  prenom: "Prenom",
   refEtablissement: "Etablissement",
-  refService: "Service_Unite",
   origine: "Origine",
 } as const;
 

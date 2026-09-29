@@ -1,22 +1,20 @@
-// Contrat partagé entre le front et le back pour l'identité pseudonymisée du
-// prescripteur. C'est la source unique de sa forme et de sa version : le backend la
-// produit, le front la valide et la consomme. Voir l'ADR-4 de
-// docs/knowledge/adr/identification.md.
+// Contrat partagé entre le front et le back pour l'identité pseudonymisée :
+// l'établissement et le service, jamais la personne. C'est la source unique de sa
+// forme et de sa version : le backend la produit, le front la valide et la
+// consomme. Voir l'ADR-4 de docs/knowledge/adr/identification.md.
 
-export const VERSION = 2 as const;
+export const VERSION = 3 as const;
 
 // Les `*Ref` sont des pseudonymes HMAC calculés côté serveur. Ils ne sont pas
-// réversibles sans le secret, et ne portent jamais l'identifiant brut, le nom ni le
-// RPPS. Le front ne fait que les forwarder à Matomo, voir analytics.md.
+// réversibles sans le secret, et ne portent jamais l'identifiant brut. Le front ne
+// fait que les forwarder à Matomo, voir analytics.md.
 //
-// Elles sont optionnelles, parce que selon la branche d'identification certaines
-// n'existent pas : « autre service » n'a pas de prescripteur, « non rattaché » n'a
-// pas de service. L'analytics n'utilise que `prescripteurRef`, et son absence donne
-// un événement sans Nom, voir `front/analytics/matomo.ts`.
+// Elles sont optionnelles pour qu'une réponse partielle reste lisible.
+// L'analytics n'utilise que `serviceRef`, et son absence donne un événement sans
+// Nom, voir `front/analytics/matomo.ts`.
 export type IdentitePseudonymisee = {
   etabRef?: string;
   serviceRef?: string;
-  prescripteurRef?: string;
   v: typeof VERSION;
 };
 
@@ -30,7 +28,6 @@ export function estIdentitePseudonymisee(
   return (
     candidat.v === VERSION &&
     refOk(candidat.etabRef) &&
-    refOk(candidat.serviceRef) &&
-    refOk(candidat.prescripteurRef)
+    refOk(candidat.serviceRef)
   );
 }

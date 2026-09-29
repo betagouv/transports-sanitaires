@@ -2,9 +2,7 @@
 // d'être **derrière** l'identification (parcours, galerie de seeds, labo).
 //
 // Deux identités : une ordinaire, et une sur le service n° 4 (« Transport
-// Sanitaire »), seul à déverrouiller les outils produit. Ce service n'a aucun
-// prescripteur dans le référentiel snapshot : on y passe donc par « Je ne suis pas
-// dans la liste », comme en production.
+// Sanitaire »), seul à déverrouiller les outils produit.
 
 import { screen } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
@@ -21,16 +19,12 @@ async function choisir(user: User, label: RegExp, option: string) {
 export async function remplirIdentite(user: User) {
   await choisir(user, /Établissement/, "CHU Grenoble Alpes");
   await choisir(user, /Nom du service/, "Cardiologie");
-  await choisir(user, /Vous êtes/, "Dr Amina Berger");
 }
 
 /** Remplit une identité sur le service n° 4 — outils produit déverrouillés. */
 export async function remplirIdentiteProduit(user: User) {
   await choisir(user, /Établissement/, "Libéral / CNAM / CPAM / Autre");
   await choisir(user, /Nom du service/, "Transport Sanitaire");
-  await choisir(user, /Vous êtes/, "Je ne suis pas dans la liste");
-  await user.type(screen.getByRole("textbox", { name: "Votre nom" }), "Durand");
-  await user.type(screen.getByRole("textbox", { name: "Votre prénom" }), "Léa");
 }
 
 const acceder = (user: User) =>

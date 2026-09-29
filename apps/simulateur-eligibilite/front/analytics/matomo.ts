@@ -21,16 +21,13 @@ export type AnalyticsConfig = {
 
 /**
  * Résout la configuration depuis l'environnement. Le traceur n'est activé qu'en
- * build de prod, ou avec `VITE_MATOMO_ENABLED=true` pour tester en local, et
- * seulement si le consentement est accordé. En phase expérimentale, l'ADR-3 le
- * donne par défaut et sans bandeau ; c'est ici le point de décision isolé où
- * brancher un vrai bandeau.
+ * build de prod, ou avec `VITE_MATOMO_ENABLED=true` pour tester en local. Il ne
+ * demande aucun consentement : la mesure, agrégée par service, reste dans
+ * l'exemption CNIL (ADR-3 d'analytics.md).
  */
 export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
-  const consentement = true; // ADR-3 — à remplacer par la gestion du consentement
-  const activable = env.PROD === true || env.VITE_MATOMO_ENABLED === "true";
   return {
-    enabled: activable && consentement,
+    enabled: env.PROD === true || env.VITE_MATOMO_ENABLED === "true",
     url: env.VITE_MATOMO_URL || DEFAULT_URL,
     siteId: env.VITE_MATOMO_SITE_ID || DEFAULT_SITE_ID,
   };
@@ -39,14 +36,15 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
 /**
  * Configure le traceur. S'il est activé, on empile les commandes d'amorçage dans
  * `_paq`, avant le chargement de matomo.js qui traitera la file. La fonction est
- * appelée au boot, avant l'identification : l'identité prescripteur n'est pas
- * connue ici, elle est lue en session au moment d'émettre chaque événement, voir
- * `emettre`. Elle n'injecte pas le script tiers, c'est le rôle de `chargerMatomo`,
- * appelé séparément, ce qui garde les tests sans effet de bord réseau.
+ * appelée au boot, avant l'identification : le service n'est pas connu ici, il
+ * est lu en session au moment d'émettre chaque événement, voir `emettre`. Elle
+ * n'injecte pas le script tiers, c'est le rôle de `chargerMatomo`, appelé
+ * séparément, ce qui garde les tests sans effet de bord réseau.
  *
  * Le traceur est cookieless (`disableCookies`), parce que l'app tourne dans
  * l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
- * mesure d'audience se veut sans bandeau.
+ * mesure d'audience se veut sans bandeau. L'IP, elle, s'anonymise côté instance
+ * Matomo, pas ici : l'API JS n'a pas de commande pour ça.
  */
 export function initAnalytics(config: AnalyticsConfig): void {
   etat = { enabled: config.enabled };
@@ -81,12 +79,11 @@ export function emettre(action: string, valeur?: number): void {
 
 /**
  * Construit un événement Matomo `trackEvent` : une catégorie constante, l'action,
- * puis le `prescripteurRef` en Nom s'il existe, et une valeur numérique
- * optionnelle.
+ * puis le `serviceRef` en Nom s'il existe, et une valeur numérique optionnelle.
  *
  * L'instance mutualisée beta.gouv n'offre pas de custom dimension, c'est le risque
- * R-8. Le `prescripteurRef` pseudonymisé, décrit par l'ADR-4 d'identification.md,
- * est donc porté en propriété d'événement, faute de mieux. La fonction est exportée
+ * R-8. Le `serviceRef` pseudonymisé, décrit par l'ADR-4 d'identification.md, est
+ * donc porté en propriété d'événement, faute de mieux. La fonction est exportée
  * pour les tests.
  */
 export function construireEvenement(
@@ -95,7 +92,7 @@ export function construireEvenement(
   valeur?: number,
 ): unknown[] {
   const evenement: unknown[] = ["trackEvent", CATEGORY, action];
-  const nom = identite?.prescripteurRef;
+  const nom = identite?.serviceRef;
   if (nom !== undefined) evenement.push(nom);
   if (valeur !== undefined) {
     if (nom === undefined) evenement.push(""); // Matomo : le Nom précède la Valeur

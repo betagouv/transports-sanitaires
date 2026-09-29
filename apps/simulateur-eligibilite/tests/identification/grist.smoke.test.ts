@@ -6,8 +6,8 @@
 //   GRIST_API_KEY=$(grep -E '^GRIST_API_KEY=' .env | cut -d= -f2-) pnpm test
 //
 // Assertions volontairement structurelles (le référentiel est maintenu à la main
-// et évolue) : on vérifie la forme et l'enchaînement établissement → service →
-// prescripteur, pas des libellés figés.
+// et évolue) : on vérifie la forme et l'enchaînement établissement → service, pas
+// des libellés figés.
 
 import { describe, expect, it } from "vitest";
 import { lireConfiguration } from "../../server/configuration.ts";
@@ -27,19 +27,14 @@ describe.skipIf(!cleApi)("référentiel Grist (smoke)", () => {
     }
   });
 
-  it("enchaîne établissement → services → prescripteurs", async () => {
+  it("enchaîne établissement → services", async () => {
     const [etab] = await ref.listerEtablissements();
     if (!etab) return; // référentiel vide : rien à vérifier
     const services = await ref.listerServices(etab.id);
     expect(Array.isArray(services)).toBe(true);
-
-    const [service] = services;
-    if (!service) return;
-    const prescripteurs = await ref.listerPrescripteurs(service.id);
-    expect(Array.isArray(prescripteurs)).toBe(true);
-    for (const p of prescripteurs) {
-      expect(p.id).toBeTruthy();
-      expect(p.libelle).toBeTruthy();
+    for (const s of services) {
+      expect(s.id).toBeTruthy();
+      expect(s.libelle).toBeTruthy();
     }
   });
 });

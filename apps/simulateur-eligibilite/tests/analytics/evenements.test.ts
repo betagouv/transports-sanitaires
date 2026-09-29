@@ -10,7 +10,6 @@ import {
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",
   serviceRef: "sRef",
-  prescripteurRef: "pRef",
   v: VERSION,
 };
 
@@ -22,13 +21,13 @@ beforeEach(() => {
 });
 
 describe("référentiel des évènements", () => {
-  it("émet le nom fixe de l'évènement, avec le prescripteurRef de la session", () => {
+  it("émet le nom fixe de l'évènement, avec le serviceRef de la session", () => {
     rangerIdentite(identite);
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     trackEvenement(NomEvenement.prescripteur.simulationStep, 3);
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "prescripteur:simulation_start", "pRef"],
-      ["trackEvent", "simulateur", "prescripteur:simulation_step", "pRef", 3],
+      ["trackEvent", "simulateur", "prescripteur:simulation_start", "sRef"],
+      ["trackEvent", "simulateur", "prescripteur:simulation_step", "sRef", 3],
     ]);
   });
 

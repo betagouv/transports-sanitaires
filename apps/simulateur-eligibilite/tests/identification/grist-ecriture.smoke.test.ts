@@ -10,7 +10,7 @@
 //     pnpm test grist-ecriture
 //
 // Vérifie l'idempotence : deux enrichissements identiques ne doivent créer qu'une
-// seule ligne (dédup sur Nom/Prénom normalisés).
+// seule ligne (dédup sur le Nom normalisé).
 
 import { describe, expect, it } from "vitest";
 import { lireConfiguration } from "../../server/configuration.ts";
@@ -25,41 +25,15 @@ describe.skipIf(!actif)(
   () => {
     const ref = choisirReferentiel(lireConfiguration().grist);
 
-    it("crée un prescripteur hors liste puis le déduplique (service Libéral)", async () => {
-      const marqueur = `TEST-${Date.now()}`;
-      // Établissement « Libéral / CNAM / CPAM / Autre » (Id2=11) → service « Libéral »
-      // (Id2=3) → prescripteur hors liste : plus de branche « non rattaché » dédiée.
-      const sel = {
-        etabId: "11",
-        serviceId: "3",
-        prescripteurId: "prescripteur_hors_liste" as const,
-        nom: marqueur,
-        prenom: "Smoke",
-      };
-
-      // 1er appel : crée. 2e appel identique : doit réutiliser (pas de doublon).
-      await ref.enrichirDepuisSaisie!(sel);
-      await ref.enrichirDepuisSaisie!(sel);
-
-      // Service « Libéral » (Id2=3). La nouvelle saisie doit apparaître exactement 1 fois.
-      const prescripteurs = await ref.listerPrescripteurs("3");
-      const trouves = prescripteurs.filter((p) => p.libelle.includes(marqueur));
-      expect(trouves).toHaveLength(1);
-    });
-
-    it("service « Autre » : crée le vrai service + son prescripteur, puis déduplique", async () => {
+    it("service « Autre » : crée le vrai service, puis le déduplique", async () => {
       const marqueur = `TEST-SVC-${Date.now()}`;
       // Établissement « Libéral / CNAM / CPAM / Autre » (Id2=11) → service « Autre » :
-      // on saisit un vrai service (`serviceLibre`) → il est créé sous l'établissement,
-      // et le prescripteur hors liste y est rattaché (pas à « Autre »).
+      // on saisit un vrai service (`serviceLibre`) → il est créé sous l'établissement.
       const sel = {
         etabId: "11",
         serviceId: "0", // id « Autre » non utilisé par la branche serviceEstAutre
         serviceEstAutre: true as const,
         serviceLibre: marqueur,
-        prescripteurId: "prescripteur_hors_liste" as const,
-        nom: "Smoke",
-        prenom: "Autre",
       };
 
       await ref.enrichirDepuisSaisie!(sel);
@@ -69,11 +43,6 @@ describe.skipIf(!actif)(
       const services = await ref.listerServices("11");
       const svc = services.filter((s) => s.libelle === marqueur);
       expect(svc).toHaveLength(1);
-
-      // Le prescripteur est rattaché à ce vrai service, une seule fois.
-      const prescripteurs = await ref.listerPrescripteurs(svc[0]!.id);
-      const trouves = prescripteurs.filter((p) => p.libelle.includes("Smoke"));
-      expect(trouves).toHaveLength(1);
     });
   },
 );

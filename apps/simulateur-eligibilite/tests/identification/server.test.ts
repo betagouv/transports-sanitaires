@@ -46,15 +46,11 @@ describe("API référentiel", () => {
     );
   });
 
-  it("ne renvoie les prescripteurs que pour le service demandé", async () => {
-    const { status, body } = await get(
+  it("n'expose plus la liste des prescripteurs", async () => {
+    const { status } = await get(
       "/api/prescripteurs?serviceId=s_grenoble_cardio",
     );
-    expect(status).toBe(200);
-    expect(body).toEqual([
-      { id: "p_grenoble_cardio_1", libelle: "Dr Amina Berger" },
-      { id: "p_grenoble_cardio_2", libelle: "Dr Louis Fontaine" },
-    ]);
+    expect(status).toBe(404);
   });
 
   it("exige le paramètre etabId pour les services", async () => {
@@ -87,32 +83,24 @@ describe("POST /api/identite-pseudonymisee", () => {
   const selection = {
     etabId: "e_chu_grenoble",
     serviceId: "s_grenoble_cardio",
-    prescripteurId: "p_grenoble_cardio_1",
   };
 
-  it("renvoie une identité pseudonymisée (refs HMAC préfixées), sans identifiant brut", async () => {
+  it("pseudonymise l'établissement et le service seuls, sans identifiant brut", async () => {
     const { status, body: ctx } = await post(
       "/api/identite-pseudonymisee",
       selection,
     );
     expect(status).toBe(200);
 
-    expect(Object.keys(ctx).sort()).toEqual([
-      "etabRef",
-      "prescripteurRef",
-      "serviceRef",
-      "v",
-    ]);
-    expect(ctx.v).toBe(2);
+    expect(Object.keys(ctx).sort()).toEqual(["etabRef", "serviceRef", "v"]);
+    expect(ctx.v).toBe(3);
 
     // Les refs sont le HMAC de la valeur **préfixée par sa nature** — jamais l'id brut.
-    expect(ctx.prescripteurRef).toBe(
-      empreinte(SECRET, `prescripteur:${selection.prescripteurId}`),
-    );
+    expect(ctx.etabRef).toBe(empreinte(SECRET, `etab:${selection.etabId}`));
     expect(ctx.serviceRef).toBe(
       empreinte(SECRET, `service:${selection.serviceId}`),
     );
-    expect(JSON.stringify(ctx)).not.toContain(selection.prescripteurId);
+    expect(JSON.stringify(ctx)).not.toContain(selection.serviceId);
   });
 
   it("est déterministe pour une même sélection", async () => {
@@ -121,47 +109,19 @@ describe("POST /api/identite-pseudonymisee", () => {
     expect(a.body).toEqual(b.body);
   });
 
-  it("branche libre (hors liste) : identité HMAC, jamais le nom en clair", async () => {
-    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Dupont",
-      prenom: "Marie",
-    });
-    expect(status).toBe(200);
-    expect(ctx.prescripteurRef).toBe(
-      empreinte(SECRET, "identite:dupont|marie"),
-    );
-    // normalisation (casse/espaces) → même bucket
-    const variante = await post("/api/identite-pseudonymisee", {
-      etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "  DUPONT ",
-      prenom: "Marie",
-    });
-    expect(variante.body.prescripteurRef).toBe(ctx.prescripteurRef);
-    expect(JSON.stringify(ctx)).not.toMatch(/dupont|marie/i);
-  });
-
-  it("service « Autre » : serviceRef (id référentiel) + prescripteurRef (identité si hors liste)", async () => {
+  it("service « Autre » : serviceRef reste l'id référentiel, le service saisi ne sort pas", async () => {
     const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
       serviceEstAutre: true,
       serviceLibre: "Néphrologie",
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Durand",
-      prenom: "Léa",
     });
     expect(status).toBe(200);
     // Le serviceRef reste l'id « Autre » du référentiel (le vrai service n'a pas
     // encore d'id à ce stade) ; l'analytics est buckettée sous « Autre » à la 1ʳᵉ
-    // visite, puis sous le vrai service ensuite. Voir la spec.
+    // visite, puis sous le vrai service ensuite.
     expect(ctx.serviceRef).toBe(empreinte(SECRET, "service:s_grenoble_autre"));
-    expect(ctx.prescripteurRef).toBe(empreinte(SECRET, "identite:durand|léa"));
-    expect(JSON.stringify(ctx)).not.toMatch(/durand|léa|néphrologie/i);
+    expect(JSON.stringify(ctx)).not.toMatch(/néphrologie/i);
   });
 
   it("service « Autre » sans service réel saisi → 400 (saisie obligatoire)", async () => {
@@ -169,9 +129,6 @@ describe("POST /api/identite-pseudonymisee", () => {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
       serviceEstAutre: true,
-      prescripteurId: "prescripteur_hors_liste",
-      nom: "Durand",
-      prenom: "Léa",
     });
     expect(status).toBe(400);
     expect(body.error).toMatch(/incompl/);
@@ -180,8 +137,7 @@ describe("POST /api/identite-pseudonymisee", () => {
   it("refuse une sélection incomplète", async () => {
     const { status, body } = await post("/api/identite-pseudonymisee", {
       etabId: "e_chu_grenoble",
-      serviceId: "s_grenoble_cardio",
-      // prescripteur manquant
+      // service manquant
     });
     expect(status).toBe(400);
     expect(body.error).toMatch(/incompl/);

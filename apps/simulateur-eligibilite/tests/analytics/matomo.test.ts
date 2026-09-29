@@ -14,7 +14,6 @@ import {
 const identite: IdentitePseudonymisee = {
   etabRef: "eRef",
   serviceRef: "sRef",
-  prescripteurRef: "pRef",
   v: VERSION,
 };
 
@@ -26,12 +25,12 @@ beforeEach(() => {
 });
 
 describe("construireEvenement", () => {
-  it("porte le prescripteurRef en Nom d'événement", () => {
+  it("porte le serviceRef en Nom d'événement", () => {
     expect(construireEvenement(identite, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
-      "pRef",
+      "sRef",
     ]);
   });
 
@@ -40,7 +39,7 @@ describe("construireEvenement", () => {
       "trackEvent",
       "simulateur",
       "simulation_step",
-      "pRef",
+      "sRef",
       2,
     ]);
   });
@@ -109,7 +108,7 @@ describe("initAnalytics", () => {
     window._paq = []; // isole les événements des commandes d'amorçage
     emettre("simulation_start");
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "simulation_start", "pRef"],
+      ["trackEvent", "simulateur", "simulation_start", "sRef"],
     ]);
   });
 
