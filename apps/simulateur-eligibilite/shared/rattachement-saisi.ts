@@ -1,14 +1,14 @@
-// Ce que le formulaire d'identification collecte, et comment savoir qu'il est
+// Ce que le formulaire de rattachement collecte, et comment savoir qu'il est
 // complet. Ce sont des identifiants métier bruts, et cette forme n'atteint jamais
-// le simulateur : le backend la convertit en identité pseudonymisée. Voir
-// server/identification/pseudonymisation.ts et l'ADR-4.
+// le simulateur : le backend la convertit en rattachement pseudonymisé. Voir
+// server/rattachement/pseudonymisation.ts et l'ADR-4.
 
 // Le workflow est linéaire, décrit au §4 de docs/knowledge/adr/identification.md :
 //   établissement → service. Le service « Autre » est une entrée du référentiel
 // comme les autres, une par établissement. Les prescripteurs sans établissement
 // de rattachement, en libéral, à la CNAM ou à la CPAM, sélectionnent
 // l'établissement « Libéral / CNAM / CPAM / Autre ».
-export type IdentiteSaisie = {
+export type RattachementSaisi = {
   /** id établissement du référentiel. */
   etabId: string;
   /** id service du référentiel (« Autre » compris). */
@@ -40,9 +40,9 @@ export const normalise = (s: string): string =>
 /**
  * Vrai quand la branche saisie est complète. Il est partagé entre le front, qui
  * s'en sert pour activer le bouton de validation, et le backend, qui valide avec
- * lui `POST /api/identite-pseudonymisee`.
+ * lui `POST /api/rattachement-pseudonymise`.
  */
-export function saisieComplete(saisie: IdentiteSaisie): boolean {
+export function saisieComplete(saisie: RattachementSaisi): boolean {
   if (!rempli(saisie.etabId)) return false;
 
   // établissement → service requis

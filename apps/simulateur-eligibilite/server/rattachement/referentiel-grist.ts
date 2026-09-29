@@ -15,9 +15,9 @@
 // avant de filtrer les enfants.
 
 import {
-  type IdentiteSaisie,
   normalise,
-} from "../../shared/identite-saisie.ts";
+  type RattachementSaisi,
+} from "../../shared/rattachement-saisi.ts";
 import type {
   Etablissement,
   Referentiel,
@@ -75,7 +75,10 @@ async function services(doc: DocGrist, etabId: string): Promise<Service[]> {
 // déduplication se faisant sur le nom normalisé, et sans effet pour une sélection
 // issue des listes. Voir
 // docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
-async function enrichir(doc: DocGrist, saisie: IdentiteSaisie): Promise<void> {
+async function enrichir(
+  doc: DocGrist,
+  saisie: RattachementSaisi,
+): Promise<void> {
   if (!saisie.serviceEstAutre || !saisie.serviceLibre?.trim()) return;
   const etabRowId = await rowIdDeId2(doc, TABLE.etablissements, saisie.etabId);
   if (etabRowId == null) return;

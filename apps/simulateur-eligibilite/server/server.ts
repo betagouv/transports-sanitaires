@@ -1,5 +1,5 @@
 // Point d'entrée du serveur (production / dev) du simulateur : sert le front
-// (build Vite) et l'API référentiel/identité en same-origin.
+// (build Vite) et l'API référentiel/rattachement en same-origin.
 //
 // Il ne lit plus l'environnement lui-même : `configuration.ts` le fait, et refuse
 // de rendre une configuration incomplète en production.
@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerApp } from "./app.ts";
 import { type Configuration, lireConfiguration } from "./configuration.ts";
-import { choisirReferentiel } from "./identification/referentiel-source.ts";
+import { choisirReferentiel } from "./rattachement/referentiel-source.ts";
 
 const configuration = configurationOuArret();
 

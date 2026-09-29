@@ -62,7 +62,7 @@ aucune app.
 
 | App | Ce que c'est |
 |---|---|
-| `apps/simulateur-eligibilite` | Le produit. Simulateur d'éligibilité au transport sanitaire : règles publicodes, front React/DSFR, backend Express, identification du prescripteur, remplissage du CERFA. |
+| `apps/simulateur-eligibilite` | Le produit. Simulateur d'éligibilité au transport sanitaire : règles publicodes, front React/DSFR, backend Express, rattachement à un établissement et un service, remplissage du CERFA. |
 | `apps/data-analyzer` | L'ETL qui calcule la part des trajets réalisés via les plateformes. Code public, **données et fournisseurs privés**. |
 | `apps/glossaire-notion` | Une extension de navigateur qui affiche le glossaire tenu dans Notion. |
 
@@ -101,7 +101,7 @@ L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi :
 | `Engine` | publicodes |
 
 Tout le reste est du vocabulaire métier et se lit en français : `moteur`,
-`regles`, `passation`, `casesRetenues`, `identiteEnSession`.
+`regles`, `passation`, `casesRetenues`, `rattachementEnSession`.
 
 *Gardé par* `tests/lisibilite.test.ts › les identifiants sont en français`. Sa
 liste `TOLERES` autorise les exceptions. L'y ajouter est une décision, pas un

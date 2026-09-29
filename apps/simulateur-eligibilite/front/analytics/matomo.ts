@@ -2,8 +2,8 @@
 // et mise en forme d'un `trackEvent`. Le vocabulaire mesuré, lui, est dans
 // `evenements.ts`. Ce fichier ne sait pas ce que le produit compte.
 
-import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
-import { identiteEnSession } from "../identification/session";
+import type { RattachementPseudonymise } from "../../shared/rattachement-pseudonymise";
+import { rattachementEnSession } from "../rattachement/session";
 
 declare global {
   interface Window {
@@ -36,7 +36,7 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
 /**
  * Configure le traceur. S'il est activé, on empile les commandes d'amorçage dans
  * `_paq`, avant le chargement de matomo.js qui traitera la file. La fonction est
- * appelée au boot, avant l'identification : le service n'est pas connu ici, il
+ * appelée au boot, avant le rattachement : le service n'est pas connu ici, il
  * est lu en session au moment d'émettre chaque événement, voir `emettre`. Elle
  * n'injecte pas le script tiers, c'est le rôle de `chargerMatomo`, appelé
  * séparément, ce qui garde les tests sans effet de bord réseau.
@@ -69,12 +69,12 @@ export function chargerMatomo(url: string): void {
 }
 
 /**
- * Émet un événement quand le traceur est activé, en portant l'identité
- * pseudonymisée courante, lue en session. Voir `initAnalytics` pour le cycle de vie.
+ * Émet un événement quand le traceur est activé, en portant le
+ * rattachement pseudonymisé courant, lu en session. Voir `initAnalytics` pour le cycle de vie.
  */
 export function emettre(action: string, valeur?: number): void {
   if (!etat.enabled) return;
-  filePaq().push(construireEvenement(identiteEnSession(), action, valeur));
+  filePaq().push(construireEvenement(rattachementEnSession(), action, valeur));
 }
 
 /**
@@ -87,12 +87,12 @@ export function emettre(action: string, valeur?: number): void {
  * pour les tests.
  */
 export function construireEvenement(
-  identite: IdentitePseudonymisee | null,
+  rattachement: RattachementPseudonymise | null,
   action: string,
   valeur?: number,
 ): unknown[] {
   const evenement: unknown[] = ["trackEvent", CATEGORY, action];
-  const nom = identite?.serviceRef;
+  const nom = rattachement?.serviceRef;
   if (nom !== undefined) evenement.push(nom);
   if (valeur !== undefined) {
     if (nom === undefined) evenement.push(""); // Matomo : le Nom précède la Valeur

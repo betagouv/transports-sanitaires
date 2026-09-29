@@ -5,17 +5,17 @@
 // injecté (double capturant, ou snapshot), ce que l'app partagée ne permet pas.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { empreinte } from "../../server/identification/pseudonymisation.ts";
-import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
+import { empreinte } from "../../server/rattachement/pseudonymisation.ts";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi.ts";
 import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel.ts";
 import { demarrer, postTo, SECRET } from "./serveur-de-test.ts";
 
-describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (service « Autre »)", () => {
+describe("POST /api/rattachement-pseudonymise — enrichissement du référentiel (service « Autre »)", () => {
   // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
-  const appels: IdentiteSaisie[] = [];
+  const appels: RattachementSaisi[] = [];
   const referentiel: Referentiel = {
     ...snapshotReferentiel,
     async enrichirDepuisSaisie(sel) {
@@ -38,7 +38,11 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
       serviceEstAutre: true,
       serviceLibre: "Néphrologie",
     };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
+    const { status } = await postTo(
+      base,
+      "/api/rattachement-pseudonymise",
+      sel,
+    );
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -46,7 +50,11 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
   it("appelle quand même l'enrichissement pour une sélection issue des listes (no-op côté source)", async () => {
     // La route délègue toujours ; c'est la source (Grist) qui décide de ne rien écrire.
     const sel = { etabId: "e_chu_grenoble", serviceId: "s_grenoble_cardio" };
-    const { status } = await postTo(base, "/api/identite-pseudonymisee", sel);
+    const { status } = await postTo(
+      base,
+      "/api/rattachement-pseudonymise",
+      sel,
+    );
     expect(status).toBe(200);
     expect(appels).toEqual([sel]);
   });
@@ -61,7 +69,7 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
     try {
       const { status, body: ctx } = await postTo(
         baseKo,
-        "/api/identite-pseudonymisee",
+        "/api/rattachement-pseudonymise",
         {
           etabId: "e_chu_grenoble",
           serviceId: "s_grenoble_autre",
@@ -81,7 +89,7 @@ describe("POST /api/identite-pseudonymisee — enrichissement du référentiel (
 
 // Mode debug : `pseudonymesEnClair` renvoie les refs en clair (valeur préfixée)
 // au lieu du HMAC, pour lire directement les buckets dans Matomo en phase de test.
-describe("POST /api/identite-pseudonymisee — mode debug (refs en clair)", () => {
+describe("POST /api/rattachement-pseudonymise — mode debug (refs en clair)", () => {
   let base: string;
   let close: () => Promise<void>;
   beforeAll(
@@ -92,7 +100,7 @@ describe("POST /api/identite-pseudonymisee — mode debug (refs en clair)", () =
   it("renvoie les refs en clair (valeur préfixée), pas le HMAC", async () => {
     const { status, body: ctx } = await postTo(
       base,
-      "/api/identite-pseudonymisee",
+      "/api/rattachement-pseudonymise",
       { etabId: "e_chu_grenoble", serviceId: "s_grenoble_cardio" },
     );
     expect(status).toBe(200);

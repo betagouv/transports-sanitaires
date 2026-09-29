@@ -1,12 +1,12 @@
-// L'état du formulaire d'identification : les deux listes en cascade chargées
+// L'état du formulaire de rattachement : les deux listes en cascade chargées
 // depuis le référentiel, les champs saisis, et ce qu'on en déduit — saisie
 // complète, service « Autre », accès aux outils produit.
 
 import { useEffect, useState } from "react";
 import {
-  type IdentiteSaisie,
+  type RattachementSaisi,
   saisieComplete,
-} from "../../shared/identite-saisie";
+} from "../../shared/rattachement-saisi";
 import type {
   Etablissement,
   Referentiel,
@@ -20,13 +20,13 @@ type Champs = {
   serviceLibre: string;
 };
 
-export type SaisieIdentite = {
+export type SaisieRattachement = {
   etablissements: Etablissement[];
   services: Service[];
   champs: Champs;
   modifier: (champ: keyof Champs, valeur: string) => void;
-  // Identité saisie telle qu'elle partira à `onValide`, et si elle est complète.
-  saisie: IdentiteSaisie;
+  // Rattachement saisi tel qu'il partira à `onValide`, et s'il est complet.
+  saisie: RattachementSaisi;
   valide: boolean;
   etabChoisi: boolean;
   // « Autre » sélectionné → saisie du service/unité réel obligatoire.
@@ -35,7 +35,9 @@ export type SaisieIdentite = {
   outilsProduit: boolean;
 };
 
-export function useSaisieIdentite(referentiel: Referentiel): SaisieIdentite {
+export function useSaisieRattachement(
+  referentiel: Referentiel,
+): SaisieRattachement {
   const [champs, setChamps] = useState<Champs>(CHAMPS_VIDES);
   const listes = useListes(referentiel, champs.etabId);
   const service = listes.services.find((s) => s.id === champs.serviceId);
@@ -97,8 +99,8 @@ function avecAvalEfface(champs: Champs, modifie: keyof Champs): Champs {
 function construireSaisie(
   champs: Champs,
   serviceEstAutre: boolean,
-): IdentiteSaisie {
-  const saisie: IdentiteSaisie = { etabId: champs.etabId };
+): RattachementSaisi {
+  const saisie: RattachementSaisi = { etabId: champs.etabId };
   if (!champs.etabId || !champs.serviceId) return saisie;
   saisie.serviceId = champs.serviceId;
   if (serviceEstAutre) {

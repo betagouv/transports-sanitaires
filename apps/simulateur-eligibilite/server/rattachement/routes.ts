@@ -1,6 +1,5 @@
-// Router de la feature **identification** (backend) : lecture du référentiel
-// (établissement / service / prescripteur) + pseudonymisation de l'identité
-// saisie. Monté sous `/api` par `server/app.ts`. Voir
+// Router de la feature **rattachement** (backend) : lecture du référentiel
+// (établissement / service) + pseudonymisation du rattachement saisi. Monté sous `/api` par `server/app.ts`. Voir
 // docs/knowledge/adr/identification.md — ADR-5.
 //
 // Prend le `Referentiel` et le secret en paramètres pour rester testable sans
@@ -8,13 +7,13 @@
 
 import express, { type Request, type Response, type Router } from "express";
 import {
-  type IdentiteSaisie,
+  type RattachementSaisi,
   saisieComplete,
-} from "../../shared/identite-saisie.ts";
+} from "../../shared/rattachement-saisi.ts";
 import type { Referentiel } from "../../shared/referentiel.ts";
 import { pseudonymiser } from "./pseudonymisation.ts";
 
-export function identificationRoutes(
+export function rattachementRoutes(
   referentiel: Referentiel,
   secret: string,
   pseudonymesEnClair = false,
@@ -32,8 +31,8 @@ export function identificationRoutes(
     handle(lister("etabId", (id) => referentiel.listerServices(id))),
   );
   router.post(
-    "/identite-pseudonymisee",
-    handle(identifier(referentiel, secret, pseudonymesEnClair)),
+    "/rattachement-pseudonymise",
+    handle(rattacher(referentiel, secret, pseudonymesEnClair)),
   );
 
   return router;
@@ -41,18 +40,18 @@ export function identificationRoutes(
 
 // ---- implémentation ----
 
-// Pseudonymise l'identité saisie (refs HMAC). Reçoit la saisie brute, renvoie
+// Pseudonymise le rattachement saisi (refs HMAC). Reçoit la saisie brute, renvoie
 // l'objet refs en JSON — le secret HMAC ne quitte jamais le serveur. Le front
 // garde ces refs en mémoire pour Matomo.
-function identifier(
+function rattacher(
   referentiel: Referentiel,
   secret: string,
   pseudonymesEnClair: boolean,
 ) {
   return async (req: Request, res: Response) => {
-    const saisie = (req.body ?? {}) as IdentiteSaisie;
+    const saisie = (req.body ?? {}) as RattachementSaisi;
     if (!saisieComplete(saisie)) {
-      res.status(400).json({ error: "sélection d'identification incomplète" });
+      res.status(400).json({ error: "sélection de rattachement incomplète" });
       return;
     }
     await enrichir(referentiel, saisie);
@@ -80,7 +79,7 @@ function lister(
 // prescripteur hors liste, exercice libéral/CNAM). **Best-effort** : un échec
 // d'écriture ne doit jamais bloquer l'accès au simulateur (dégradation gracieuse).
 // Voir docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
-async function enrichir(referentiel: Referentiel, saisie: IdentiteSaisie) {
+async function enrichir(referentiel: Referentiel, saisie: RattachementSaisi) {
   try {
     await referentiel.enrichirDepuisSaisie?.(saisie);
   } catch (err) {

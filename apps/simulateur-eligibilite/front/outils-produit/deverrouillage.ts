@@ -1,7 +1,7 @@
 // Qui voit les outils produit (mode test des règles, galerie de seeds, traces de
 // debug) : le service choisi à l'écran-porte, et rien d'autre.
 
-import { normalise } from "../../shared/identite-saisie";
+import { normalise } from "../../shared/rattachement-saisi";
 
 /** Vrai quand le service sélectionné déverrouille les outils produit. */
 export function estServiceProduit(service: {

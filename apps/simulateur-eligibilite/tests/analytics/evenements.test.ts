@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { NomEvenement, trackEvenement } from "../../front/analytics/evenements";
 import { initAnalytics } from "../../front/analytics/matomo";
-import { rangerIdentite } from "../../front/identification/session";
+import { rangerRattachement } from "../../front/rattachement/session";
 import {
-  type IdentitePseudonymisee,
+  type RattachementPseudonymise,
   VERSION,
-} from "../../shared/identite-pseudonymisee";
+} from "../../shared/rattachement-pseudonymise";
 
-const identite: IdentitePseudonymisee = {
+const rattachement: RattachementPseudonymise = {
   etabRef: "eRef",
   serviceRef: "sRef",
   v: VERSION,
@@ -15,14 +15,14 @@ const identite: IdentitePseudonymisee = {
 
 beforeEach(() => {
   window._paq = [];
-  rangerIdentite(null);
+  rangerRattachement(null);
   initAnalytics({ enabled: true, url: "https://matomo.test/", siteId: "275" });
   window._paq = []; // isole les événements des commandes d'amorçage
 });
 
 describe("référentiel des évènements", () => {
   it("émet le nom fixe de l'évènement, avec le serviceRef de la session", () => {
-    rangerIdentite(identite);
+    rangerRattachement(rattachement);
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     trackEvenement(NomEvenement.prescripteur.simulationStep, 3);
     expect(window._paq).toEqual([
@@ -90,7 +90,7 @@ describe("référentiel des évènements", () => {
     ]);
   });
 
-  it("émet sans Nom si l'identification n'a pas fourni de ref", () => {
+  it("émet sans Nom si le rattachement n'a pas fourni de ref", () => {
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     expect(window._paq).toEqual([
       ["trackEvent", "simulateur", "prescripteur:simulation_start"],

@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
 import { BandeauVersion } from "../../front/app/BandeauVersion";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { sIdentifier } from "../porte";
+import { seRattacher } from "../porte";
 
 // Le pied de page dit quelle version, quel code et quel modèle un utilisateur a
 // sous les yeux. Ses trois valeurs sont figées par Vite à la construction : ce
@@ -74,10 +74,10 @@ describe("bandeau de version", () => {
       />,
     );
 
-    // L'identification n'est pas le produit : rien ne l'encombre.
+    // Le rattachement n'est pas le produit : rien ne l'encombre.
     expect(screen.queryByRole("contentinfo")).toBeNull();
 
-    await sIdentifier(user);
+    await seRattacher(user);
     expect(screen.getByRole("contentinfo")).toHaveTextContent(/^Version /);
   });
 });

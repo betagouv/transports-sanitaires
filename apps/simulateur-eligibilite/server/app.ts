@@ -1,5 +1,5 @@
 // App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
-// identification, référentiel et identité pseudonymisée, sous `/api`, puis sert le
+// rattachement, référentiel et rattachement pseudonymisé, sous `/api`, puis sert le
 // front construit par Vite en same-origin. Voir l'ADR-5 de
 // docs/knowledge/adr/identification.md.
 //
@@ -9,10 +9,10 @@
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";
-import { identificationRoutes } from "./identification/routes.ts";
+import { rattachementRoutes } from "./rattachement/routes.ts";
 
 export type AppOptions = {
-  /** Secret de pseudonymisation (HMAC) de l'identité prescripteur. */
+  /** Secret de pseudonymisation (HMAC) de l'établissement et du service. */
   secret: string;
   /**
    * Mode debug : renvoie les refs en clair au lieu du HMAC (lecture directe dans
@@ -31,10 +31,7 @@ export function creerApp(
   app.use(express.json());
   interdireIndexation(app);
 
-  app.use(
-    "/api",
-    identificationRoutes(referentiel, secret, pseudonymesEnClair),
-  );
+  app.use("/api", rattachementRoutes(referentiel, secret, pseudonymesEnClair));
   // Toute autre route sous /api rend un 404 JSON, pour éviter de servir
   // index.html.
   app.use("/api", (_req, res) => {

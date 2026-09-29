@@ -14,9 +14,9 @@ import {
 
 startReactDsfr({ defaultColorScheme: "system" });
 
-// Amorce le traceur au boot (cookieless). Le prescripteurRef n'est connu qu'après
-// l'étape d'identification : il est renseigné en session par la porte (App) et lu
-// au moment d'émettre chaque événement.
+// Amorce le traceur au boot (cookieless). Le serviceRef n'est connu qu'après le
+// rattachement : il est renseigné en session par la porte (App) et lu au moment
+// d'émettre chaque événement.
 const analyticsConfig = configDepuisEnv();
 initAnalytics(analyticsConfig);
 if (analyticsConfig.enabled) chargerMatomo(analyticsConfig.url);

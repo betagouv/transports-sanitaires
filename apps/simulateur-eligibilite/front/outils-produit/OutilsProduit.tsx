@@ -1,5 +1,5 @@
 // Encadré des **outils produit** : la galerie de seeds et le mode test des règles
-// (labo). Partagé par les écrans qui les proposent — l'écran-porte d'identification
+// (labo). Partagé par les écrans qui les proposent — l'écran-porte de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont

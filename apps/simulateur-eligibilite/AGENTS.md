@@ -13,8 +13,9 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 - `@publicodes/forms`, dont le `FormBuilder` engendre le formulaire à partir des
   règles.
 
-Le parcours commence par un **écran-porte d'identification du prescripteur
-obligatoire** (`front/identification/`, référentiel Grist). Le tout est servi par
+Le parcours commence par un **écran-porte de rattachement
+obligatoire** : établissement et service, sans identifier la personne
+(`front/rattachement/`, référentiel Grist). Le tout est servi par
 un **backend Node/Express** (`server/` : le front et `/api/*`) déployé sur
 **Scalingo**. Ce n'est pas un site statique.
 
@@ -199,7 +200,7 @@ d'une version à l'autre.
   un référentiel injecté.
 
 Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/moteur.ts`,
-`simulateur/parcours.ts`, `identification/serveur-de-test.ts`.
+`simulateur/parcours.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
 [`front/outils-produit/seeds/catalogue.ts`](front/outils-produit/seeds/catalogue.ts),

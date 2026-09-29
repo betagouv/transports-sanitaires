@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { lireConfiguration } from "../../server/configuration.ts";
-import { choisirReferentiel } from "../../server/identification/referentiel-source.ts";
+import { choisirReferentiel } from "../../server/rattachement/referentiel-source.ts";
 
 const cleApi = process.env.GRIST_API_KEY?.trim();
 

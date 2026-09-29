@@ -1,11 +1,11 @@
-// Écran-porte d'identification du prescripteur : étape préalable **obligatoire**
-// au simulateur (voir docs/knowledge/adr/identification.md — ADR-1). Formulaire à
-// **révélation progressive** : chaque réponse dévoile la suite selon la branche
-// (workflow §4). Composant de pure sélection ; à la validation il remonte la
-// `IdentiteSaisie` brute à `onValide` (c'est la porte, App.tsx, qui la convertit
-// en identité pseudonymisée via l'API et bascule vers le simulateur). Le
-// référentiel par défaut est
-// le snapshot factice (dev / tests) ; en production App injecte le client HTTP.
+// Écran-porte de rattachement (établissement et service) : étape préalable
+// **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md —
+// ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
+// suite selon la branche (workflow §4). Composant de pure sélection ; à la
+// validation il remonte le `RattachementSaisi` brut à `onValide` (c'est la porte,
+// App.tsx, qui le convertit en rattachement pseudonymisé via l'API et bascule
+// vers le simulateur). Le référentiel par défaut est le snapshot factice
+// (dev / tests) ; en production App injecte le client HTTP.
 
 import type { ReactNode } from "react";
 import {
@@ -14,16 +14,16 @@ import {
 } from "../../shared/referentiel";
 import { EcranPleinePage } from "../app/EcranPleinePage";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
-import type { SaisieIdentite } from "./saisie-identite";
-import { useSaisieIdentite } from "./saisie-identite";
+import type { SaisieRattachement } from "./saisie-rattachement";
+import { useSaisieRattachement } from "./saisie-rattachement";
 
 /**
- * Ce que la validation emporte, en plus de l'identité saisie : l'écran à ouvrir et
+ * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
  * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
- * `onValide` — l'identification est obligatoire quelle que soit la destination
+ * `onValide` — le rattachement est obligatoire quelle que soit la destination
  * (ADR-1), et il n'y a donc qu'un seul endroit qui pseudonymise.
  */
-export type AccesIdentification = {
+export type AccesRattachement = {
   destination: "simulateur" | "galerie" | "labo";
   /** Le service sélectionné déverrouille les outils produit (service n° 4). */
   outilsProduit: boolean;
@@ -32,18 +32,18 @@ export type AccesIdentification = {
 type Props = {
   referentiel?: Referentiel;
   onValide: (
-    saisie: SaisieIdentite["saisie"],
-    acces: AccesIdentification,
+    saisie: SaisieRattachement["saisie"],
+    acces: AccesRattachement,
   ) => void;
 };
 
-export function Identification({
+export function Rattachement({
   referentiel = snapshotReferentiel,
   onValide,
 }: Props) {
-  const saisie = useSaisieIdentite(referentiel);
+  const saisie = useSaisieRattachement(referentiel);
 
-  const entrer = (destination: AccesIdentification["destination"]) => {
+  const entrer = (destination: AccesRattachement["destination"]) => {
     if (saisie.valide) {
       onValide(saisie.saisie, {
         destination,
@@ -72,7 +72,7 @@ export function Identification({
 
 // ---- implémentation ----
 
-type ChampsProps = { saisie: SaisieIdentite };
+type ChampsProps = { saisie: SaisieRattachement };
 
 // Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
 // que leur branche n'est pas empruntée (workflow §4).
@@ -132,7 +132,7 @@ function EntreesDansLApplication({
   saisie,
   onEntrer,
 }: ChampsProps & {
-  onEntrer: (destination: AccesIdentification["destination"]) => void;
+  onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
     <>
@@ -157,7 +157,7 @@ function EntreesDansLApplication({
 function PanneauOutils({
   onEntrer,
 }: {
-  onEntrer: (destination: AccesIdentification["destination"]) => void;
+  onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
     <OutilsProduit>

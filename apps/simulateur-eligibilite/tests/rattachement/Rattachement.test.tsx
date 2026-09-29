@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Identification } from "../../front/identification/Identification";
+import { Rattachement } from "../../front/rattachement/Rattachement";
 
 async function choisir(labelSelect: RegExp, optionLabel: string) {
   const select = screen.getByRole("combobox", { name: labelSelect });
@@ -14,10 +14,10 @@ const valider = () =>
     screen.getByRole("button", { name: "Accéder au simulateur" }),
   );
 
-describe("parcours d'identification", () => {
+describe("parcours de rattachement", () => {
   it("établissement → service suffit, sans demander qui répond", async () => {
     const onValide = vi.fn();
-    render(<Identification onValide={onValide} />);
+    render(<Rattachement onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Cardiologie");
@@ -31,7 +31,7 @@ describe("parcours d'identification", () => {
   });
 
   it("annonce ce qui est demandé : l'établissement et le service", () => {
-    render(<Identification onValide={vi.fn()} />);
+    render(<Rattachement onValide={vi.fn()} />);
 
     expect(
       screen.getByRole("heading", {
@@ -42,7 +42,7 @@ describe("parcours d'identification", () => {
 
   it("propose les outils produit seulement pour le service « Transport Sanitaire »", async () => {
     // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
-    render(<Identification onValide={vi.fn()} />);
+    render(<Rattachement onValide={vi.fn()} />);
 
     const labo = { name: "Mode test des règles" };
 
@@ -62,7 +62,7 @@ describe("parcours d'identification", () => {
     // Le prescripteur sans établissement de rattachement passe par
     // l'établissement fourre-tout du référentiel.
     const onValide = vi.fn();
-    render(<Identification onValide={onValide} />);
+    render(<Rattachement onValide={onValide} />);
 
     await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
     await choisir(/Nom du service/, "Libéral");
@@ -76,7 +76,7 @@ describe("parcours d'identification", () => {
 
   it("service « Autre » → vrai service saisi", async () => {
     const onValide = vi.fn();
-    render(<Identification onValide={onValide} />);
+    render(<Rattachement onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
@@ -98,7 +98,7 @@ describe("parcours d'identification", () => {
   });
 
   it("service « Autre » : validation désactivée tant que le service réel n'est pas saisi", async () => {
-    render(<Identification onValide={vi.fn()} />);
+    render(<Rattachement onValide={vi.fn()} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
@@ -117,7 +117,7 @@ describe("parcours d'identification", () => {
   });
 
   it("trie les listes déroulantes par ordre alphabétique", async () => {
-    render(<Identification onValide={vi.fn()} />);
+    render(<Rattachement onValide={vi.fn()} />);
 
     // Établissements : « Centre hospitalier de Chambéry » avant « CHU Grenoble
     // Alpes » avant « Clinique Belledonne » (tri insensible à la casse).
@@ -155,7 +155,7 @@ describe("parcours d'identification", () => {
   });
 
   it("désactive la validation tant que la branche est incomplète", async () => {
-    render(<Identification onValide={vi.fn()} />);
+    render(<Rattachement onValide={vi.fn()} />);
 
     expect(
       screen.getByRole("button", { name: "Accéder au simulateur" }),

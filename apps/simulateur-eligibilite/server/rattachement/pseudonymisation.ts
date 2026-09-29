@@ -1,13 +1,13 @@
-// Transforme l'identité saisie en refs à sens unique, pour l'API
-// `POST /api/identite-pseudonymisee`. Voir l'ADR-4 de
+// Transforme le rattachement saisi en refs à sens unique, pour l'API
+// `POST /api/rattachement-pseudonymise`. Voir l'ADR-4 de
 // docs/knowledge/adr/identification.md.
 
 import { createHmac } from "node:crypto";
 import {
-  type IdentitePseudonymisee,
+  type RattachementPseudonymise,
   VERSION,
-} from "../../shared/identite-pseudonymisee.ts";
-import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
+} from "../../shared/rattachement-pseudonymise.ts";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi.ts";
 
 /**
  * Pseudonymise l'établissement et le service saisis. Ils partent en pseudonymes à
@@ -20,21 +20,21 @@ import type { IdentiteSaisie } from "../../shared/identite-saisie.ts";
  */
 export function pseudonymiser(
   secret: string,
-  saisie: IdentiteSaisie,
+  saisie: RattachementSaisi,
   enClair = false,
-): IdentitePseudonymisee {
-  const identite: IdentitePseudonymisee = { v: VERSION };
+): RattachementPseudonymise {
+  const rattachement: RattachementPseudonymise = { v: VERSION };
   if (saisie.etabId) {
-    identite.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
+    rattachement.etabRef = empreinte(secret, `etab:${saisie.etabId}`, enClair);
   }
   if (saisie.serviceId) {
-    identite.serviceRef = empreinte(
+    rattachement.serviceRef = empreinte(
       secret,
       `service:${saisie.serviceId}`,
       enClair,
     );
   }
-  return identite;
+  return rattachement;
 }
 
 /**

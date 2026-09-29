@@ -23,7 +23,7 @@ export type AccesGrist = { docUrl: string; cleApi: string };
 
 export type Configuration = {
   port: number;
-  /** Secret HMAC pseudonymisant l'identité prescripteur. */
+  /** Secret HMAC pseudonymisant l'établissement et le service. */
   secret: string;
   /** Debug : refs Matomo en clair au lieu du HMAC. Jamais en production. */
   pseudonymesEnClair: boolean;

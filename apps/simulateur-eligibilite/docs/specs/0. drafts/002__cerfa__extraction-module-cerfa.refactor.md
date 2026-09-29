@@ -58,7 +58,7 @@ discussion :
 Questions ouvertes, à trancher avant la spec :
 
 1. Nouvel emplacement : `front/cerfa/`, racine à part entière au même niveau
-   que `front/simulateur/`, `front/identification/`, `front/outils-produit/ ?
+   que `front/simulateur/`, `front/rattachement/`, `front/outils-produit/ ?
    Autre chose ?
 2. La garde d'accès (service n° 4 du référentiel, atteint seulement après
    identification) reste-t-elle, ou l'extraction change-t-elle aussi ce

@@ -1,7 +1,7 @@
 // Le référentiel établissement / service : son interface, et le jeu de données
 // factices qui sert de défaut quand aucune source réelle n'est branchée.
 
-import type { IdentiteSaisie } from "./identite-saisie.ts";
+import type { RattachementSaisi } from "./rattachement-saisi.ts";
 
 export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
@@ -10,7 +10,7 @@ export type Service = { id: string; libelle: string };
  * L'accès est masqué derrière cette interface, décrite au §5 de
  * docs/knowledge/adr/identification.md, pour pouvoir substituer la source sans
  * toucher les composants consommateurs. C'est aujourd'hui le client HTTP
- * same-origin `front/identification/referentiel-http.ts` vers le backend Grist, et
+ * same-origin `front/rattachement/referentiel-http.ts` vers le backend Grist, et
  * demain peut-être FINESS.
  */
 export interface Referentiel {
@@ -22,7 +22,7 @@ export interface Referentiel {
    * n'écrivant jamais. Voir
    * docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
    */
-  enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
+  enrichirDepuisSaisie?(saisie: RattachementSaisi): Promise<void>;
 }
 
 /**

@@ -1,6 +1,6 @@
-// Contrat partagé entre le front et le back pour l'identité pseudonymisée :
+// Contrat partagé entre le front et le back pour le rattachement pseudonymisé :
 // l'établissement et le service, jamais la personne. C'est la source unique de sa
-// forme et de sa version : le backend la produit, le front la valide et la
+// forme et de sa version : le backend le produit, le front le valide et le
 // consomme. Voir l'ADR-4 de docs/knowledge/adr/identification.md.
 
 export const VERSION = 3 as const;
@@ -12,16 +12,16 @@ export const VERSION = 3 as const;
 // Elles sont optionnelles pour qu'une réponse partielle reste lisible.
 // L'analytics n'utilise que `serviceRef`, et son absence donne un événement sans
 // Nom, voir `front/analytics/matomo.ts`.
-export type IdentitePseudonymisee = {
+export type RattachementPseudonymise = {
   etabRef?: string;
   serviceRef?: string;
   v: typeof VERSION;
 };
 
-/** Valide la forme d'une identité pseudonymisée reçue de `POST /api/identite-pseudonymisee`. */
-export function estIdentitePseudonymisee(
+/** Valide la forme d'un rattachement pseudonymisé reçu de `POST /api/rattachement-pseudonymise`. */
+export function estRattachementPseudonymise(
   valeur: unknown,
-): valeur is IdentitePseudonymisee {
+): valeur is RattachementPseudonymise {
   if (typeof valeur !== "object" || valeur === null) return false;
   const candidat = valeur as Record<string, unknown>;
   const refOk = (ref: unknown) => ref === undefined || typeof ref === "string";

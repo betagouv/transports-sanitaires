@@ -4,15 +4,16 @@ Aide un prescripteur hospitalier à déterminer, par un questionnaire guidé, si
 transport d'un patient est pris en charge par l'Assurance Maladie, et ce qu'il doit faire
 en conséquence : quel document établir — prescription médicale de transport, série de
 transports, accord préalable — et quel mode de transport est justifié. Les règles
-d'éligibilité encodent la réglementation en vigueur. Le parcours débute par une
-identification du prescripteur, qui est obligatoire.
+d'éligibilité encodent la réglementation en vigueur. Le parcours débute par un
+rattachement obligatoire à un établissement et à un service, sans identifier la
+personne.
 
 ## Fonctionnement
 
 ```mermaid
 flowchart LR
     subgraph front["Front (navigateur)"]
-        Ident["Identification"]
+        Ident["Rattachement<br/>établissement + service"]
         subgraph simu["Simulateur — un moteur, deux outils"]
             Presc["Prescripteur<br/>Partie 1 → résultat médical"]
             Secr["Secrétariat<br/>Partie 2 → cas final"]
@@ -31,8 +32,8 @@ flowchart LR
     Patient(["Document complété,<br/>signé, remis au patient"])
 
     Ident -->|"consulte"| Ref
-    Ident -->|"pseudonymise l'identité"| Pseudo
-    Ident -->|"identité validée"| simu
+    Ident -->|"pseudonymise le rattachement"| Pseudo
+    Ident -->|"rattachement validé"| simu
     Ident -->|"refs pseudonymisées"| Analytics
     Presc -->|"passation (situation P1)"| Secr
     Presc -->|"événements"| Analytics
@@ -86,7 +87,7 @@ jamais exposées au front.
 
 | Variable | Portée | Requis | Défaut / si absente | Usage |
 | --- | --- | --- | --- | --- |
-| `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services/prescripteurs). Jamais exposée au front. |
+| `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services). Jamais exposée au front. |
 | `GRIST_DOC_URL` | serveur | non | doc Grist du projet | Base API du doc Grist (`server/referentiel.ts`). |
 | `PSEUDONYMISATION_SECRET` | serveur | **prod** | secret de dev **non sécurisé** | Secret HMAC pseudonymisant le contexte prescripteur envoyé à Matomo. **Dédié** (≠ `GRIST_API_KEY`). Générer : `openssl rand -hex 32`. |
 | `PSEUDONYMISATION_EN_CLAIR` | serveur | non | HMAC (pseudonymisé) | Debug : renvoie les refs prescripteur **en clair** (préfixées) au lieu du HMAC, pour les lire dans Matomo. ⚠️ Révèle nom/prénom bruts — **jamais en production**. |
@@ -125,13 +126,13 @@ shared/                  le contrat front ⇄ back, source unique des types part
 server/                  le backend Node, barrière de sécurité : les secrets vivent ici
                          et ne sont jamais bundlés. Bootstrap, composition,
                          configuration lue une fois et refusée si elle manque en prod.
-  identification/        LA feature backend : les routes `/api`, la source Grist du
+  rattachement/          LA feature backend : les routes `/api`, la source Grist du
                          référentiel, la pseudonymisation
 front/                   le front, bundlé par Vite
   app/                   l'amorçage, l'écran-porte, le choix de l'outil
-  identification/        LA feature de l'écran-porte, miroir de server/identification/ :
+  rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
-                         l'API, l'identité en mémoire de session (ADR-4)
+                         l'API, le rattachement en mémoire de session (ADR-4)
   simulateur/            LES deux outils, sur un socle commun. La racine ne porte que le
                          socle non-visuel : le contrat de règles, le moteur publicodes
                          et ses lectures typées, la couture entre les deux parties.

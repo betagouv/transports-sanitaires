@@ -5,7 +5,7 @@
 // GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { empreinte } from "../../server/identification/pseudonymisation.ts";
+import { empreinte } from "../../server/rattachement/pseudonymisation.ts";
 import { snapshotReferentiel } from "../../shared/referentiel.ts";
 import {
   type AppDeTest,
@@ -79,7 +79,7 @@ describe("non-indexation par les moteurs", () => {
   });
 });
 
-describe("POST /api/identite-pseudonymisee", () => {
+describe("POST /api/rattachement-pseudonymise", () => {
   const selection = {
     etabId: "e_chu_grenoble",
     serviceId: "s_grenoble_cardio",
@@ -87,7 +87,7 @@ describe("POST /api/identite-pseudonymisee", () => {
 
   it("pseudonymise l'établissement et le service seuls, sans identifiant brut", async () => {
     const { status, body: ctx } = await post(
-      "/api/identite-pseudonymisee",
+      "/api/rattachement-pseudonymise",
       selection,
     );
     expect(status).toBe(200);
@@ -104,13 +104,13 @@ describe("POST /api/identite-pseudonymisee", () => {
   });
 
   it("est déterministe pour une même sélection", async () => {
-    const a = await post("/api/identite-pseudonymisee", selection);
-    const b = await post("/api/identite-pseudonymisee", selection);
+    const a = await post("/api/rattachement-pseudonymise", selection);
+    const b = await post("/api/rattachement-pseudonymise", selection);
     expect(a.body).toEqual(b.body);
   });
 
   it("service « Autre » : serviceRef reste l'id référentiel, le service saisi ne sort pas", async () => {
-    const { status, body: ctx } = await post("/api/identite-pseudonymisee", {
+    const { status, body: ctx } = await post("/api/rattachement-pseudonymise", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
       serviceEstAutre: true,
@@ -125,7 +125,7 @@ describe("POST /api/identite-pseudonymisee", () => {
   });
 
   it("service « Autre » sans service réel saisi → 400 (saisie obligatoire)", async () => {
-    const { status, body } = await post("/api/identite-pseudonymisee", {
+    const { status, body } = await post("/api/rattachement-pseudonymise", {
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_autre",
       serviceEstAutre: true,
@@ -135,7 +135,7 @@ describe("POST /api/identite-pseudonymisee", () => {
   });
 
   it("refuse une sélection incomplète", async () => {
-    const { status, body } = await post("/api/identite-pseudonymisee", {
+    const { status, body } = await post("/api/rattachement-pseudonymise", {
       etabId: "e_chu_grenoble",
       // service manquant
     });

@@ -4,7 +4,7 @@
 // Il permet au produit (PM) de **tester en autonomie** une nouvelle version du
 // fichier de règles, sans passer par un développeur ni un déploiement. Rien n'est
 // déployé, rien ne fuite aux autres utilisateurs. L'accès est **gardé** derrière
-// l'identification, comme celui de la galerie de seeds : voir
+// le rattachement, comme celui de la galerie de seeds : voir
 // `../deverrouillage.ts`.
 
 import yaml from "js-yaml";

@@ -5,7 +5,7 @@ import { App } from "../../front/app/App";
 import { SEEDS, seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { GalerieSeeds } from "../../front/outils-produit/seeds/GalerieSeeds";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { remplirIdentiteProduit, sIdentifierProduit } from "../porte";
+import { remplirRattachementProduit, seRattacherProduit } from "../porte";
 
 // La galerie est le point d'entrée dev du catalogue de seeds : elle doit montrer
 // **toutes** les seeds, dire pour chacune si le moteur chargé confirme ses
@@ -14,11 +14,11 @@ import { remplirIdentiteProduit, sIdentifierProduit } from "../porte";
 const GALERIE = { name: "Galerie de seeds" } as const;
 
 /**
- * Ouvre la galerie depuis l'écran-porte. L'identification est obligatoire quelle que
+ * Ouvre la galerie depuis l'écran-porte. Le rattachement est obligatoire quelle que
  * soit la destination : le bouton la valide **et** ouvre la galerie.
  */
 async function ouvrirGalerie(user: ReturnType<typeof userEvent.setup>) {
-  await remplirIdentiteProduit(user);
+  await remplirRattachementProduit(user);
   await user.click(screen.getByRole("button", GALERIE));
 }
 
@@ -228,7 +228,7 @@ describe("galerie branchée sur l'App", () => {
         pseudonymiser={async () => null}
       />,
     );
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     await user.click(screen.getByRole("button", GALERIE));
     expect(

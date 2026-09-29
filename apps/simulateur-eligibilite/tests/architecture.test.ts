@@ -59,14 +59,11 @@ describe("frontières de runtime", () => {
 describe("invariants métier", () => {
   it("le simulateur ignore qui prescrit", () => {
     expect(
-      franchissements(
-        ["front/simulateur"],
-        commencePar("front/identification/"),
-      ),
+      franchissements(["front/simulateur"], commencePar("front/rattachement/")),
       "Le moteur d'éligibilité raisonne sur une situation médicale, jamais " +
         "sur une identité (docs/knowledge/adr/identification.md). L'analytics, " +
-        "lui, est admis : il lit l'identité en session de son côté, sans la " +
-        "faire transiter ici.",
+        "lui, est admis : il lit le rattachement en session de son côté, sans " +
+        "le faire transiter ici.",
     ).toEqual([]);
   });
 

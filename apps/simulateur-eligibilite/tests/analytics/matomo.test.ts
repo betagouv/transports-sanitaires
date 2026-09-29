@@ -5,13 +5,13 @@ import {
   emettre,
   initAnalytics,
 } from "../../front/analytics/matomo";
-import { rangerIdentite } from "../../front/identification/session";
+import { rangerRattachement } from "../../front/rattachement/session";
 import {
-  type IdentitePseudonymisee,
+  type RattachementPseudonymise,
   VERSION,
-} from "../../shared/identite-pseudonymisee";
+} from "../../shared/rattachement-pseudonymise";
 
-const identite: IdentitePseudonymisee = {
+const rattachement: RattachementPseudonymise = {
   etabRef: "eRef",
   serviceRef: "sRef",
   v: VERSION,
@@ -21,12 +21,12 @@ const config = { enabled: true, url: "https://matomo.test/", siteId: "275" };
 
 beforeEach(() => {
   window._paq = [];
-  rangerIdentite(null);
+  rangerRattachement(null);
 });
 
 describe("construireEvenement", () => {
   it("porte le serviceRef en Nom d'événement", () => {
-    expect(construireEvenement(identite, "simulation_start")).toEqual([
+    expect(construireEvenement(rattachement, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
@@ -35,7 +35,7 @@ describe("construireEvenement", () => {
   });
 
   it("place la valeur après le Nom", () => {
-    expect(construireEvenement(identite, "simulation_step", 2)).toEqual([
+    expect(construireEvenement(rattachement, "simulation_step", 2)).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_step",
@@ -44,7 +44,7 @@ describe("construireEvenement", () => {
     ]);
   });
 
-  it("sans identité : pas de Nom, valeur précédée d'un Nom vide", () => {
+  it("sans rattachement : pas de Nom, valeur précédée d'un Nom vide", () => {
     expect(construireEvenement(null, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
@@ -102,9 +102,9 @@ describe("initAnalytics", () => {
     expect(window._paq).toContainEqual(["trackPageView"]);
   });
 
-  it("émet en portant l'identité pseudonymisée de la session", () => {
+  it("émet en portant le rattachement pseudonymisé de la session", () => {
     initAnalytics(config);
-    rangerIdentite(identite); // identité connue après l'identification, avant les événements
+    rangerRattachement(rattachement); // connu après le rattachement, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
     emettre("simulation_start");
     expect(window._paq).toEqual([

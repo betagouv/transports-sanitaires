@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
 import { snapshotReferentiel } from "../../shared/referentiel";
 
-// La porte : impossible d'atteindre le simulateur sans s'être identifié. On
+// La porte : impossible d'atteindre le simulateur sans s'être rattaché. On
 // injecte le référentiel snapshot et une pseudonymisation factice (pas de backend
 // en test).
 function setup() {
@@ -21,10 +21,10 @@ async function choisir(labelSelect: RegExp, optionLabel: string) {
   await userEvent.selectOptions(select, optionLabel);
 }
 
-describe("écran-porte d'identification", () => {
-  it("affiche l'identification d'abord, pas le formulaire", () => {
+describe("écran-porte de rattachement", () => {
+  it("affiche le rattachement d'abord, pas le formulaire", () => {
     setup();
-    // Pas de titre (app en iframe) : l'écran d'identification se reconnaît à son
+    // Pas de titre (app en iframe) : l'écran de rattachement se reconnaît à son
     // premier champ, et le formulaire du simulateur est absent.
     expect(
       screen.getByRole("combobox", { name: /Établissement/ }),

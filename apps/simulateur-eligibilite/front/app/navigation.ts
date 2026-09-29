@@ -1,27 +1,27 @@
 // Où l'on se trouve dans l'application, et comment on en change : la porte
-// d'identification, les deux écrans d'outils produit qui s'y superposent, et
+// de rattachement, les deux écrans d'outils produit qui s'y superposent, et
 // l'outil du simulateur affiché derrière.
 //
-// L'identité pseudonymisée, elle, ne transite pas par ici : `identifier` la
+// Le rattachement pseudonymisé, lui, ne transite pas par ici : `rattacher` le
 // range en session et ne retient que le booléen d'accès aux outils produit.
 
 import type { Situation } from "publicodes";
 import { useState } from "react";
-import type { AccesIdentification } from "../identification/Identification";
 import {
   ouvreLeQuestionnaire,
   type Seed,
   situationDe,
 } from "../outils-produit/seeds/seed";
+import type { AccesRattachement } from "../rattachement/Rattachement";
 import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import type { Outil } from "./outil";
 
-type Ecran = "identification" | "galerie" | "labo" | "simulateur";
+type Ecran = "rattachement" | "galerie" | "labo" | "simulateur";
 
 export type Navigation = {
   ecran: Ecran;
   outil: Outil;
-  // Le service identifié déverrouille-t-il les outils produit (service n° 4) ?
+  // Le service choisi déverrouille-t-il les outils produit (service n° 4) ?
   // Retenu à la validation pour pouvoir les reproposer au début du parcours —
   // c'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
   outilsProduit: boolean;
@@ -31,12 +31,12 @@ export type Navigation = {
   // Remontée à chaque nouvelle simulation pour remonter (remount) l'outil et
   // repartir d'un parcours vierge.
   cle: number;
-  // Les outils produit s'ouvrent **après** la porte : on entre identifié,
+  // Les outils produit s'ouvrent **après** la porte : on entre rattaché,
   // quelle que soit la destination.
-  identifier: (acces: AccesIdentification) => void;
+  rattacher: (acces: AccesRattachement) => void;
   // Ouvre la seed choisie sur l'écran qu'elle déclare : sa page de résultat en
   // sautant le questionnaire, ou le questionnaire lui-même là où elle s'arrête.
-  // L'identification, elle, a déjà eu lieu : on n'arrive ici que par la porte.
+  // Le rattachement, lui, a déjà eu lieu : on n'arrive ici que par la porte.
   ouvrirSeed: (seed: Seed) => void;
   ouvrirGalerie: () => void;
   fermerOutil: () => void;
@@ -52,7 +52,7 @@ export type Navigation = {
 // (initialiseur paresseux de `useState`), pas à chaque passage.
 export function useNavigation(outilInitial: () => Outil): Navigation {
   const [etat, setEtat] = useState<Etat>(() => ({
-    ecran: "identification",
+    ecran: "rattachement",
     outil: outilInitial(),
     outilsProduit: false,
     situationDev: null,
@@ -85,7 +85,7 @@ function actions(
   modifier: (partiel: Partial<Etat>) => void,
 ): Actions {
   return {
-    identifier: (acces) =>
+    rattacher: (acces) =>
       modifier({ ecran: ecranDe(acces), outilsProduit: acces.outilsProduit }),
     ouvrirSeed: (seed) => ouvrirLaSeed(seed, etat, modifier),
     ouvrirGalerie: () => modifier({ ecran: "galerie" }),
@@ -139,7 +139,7 @@ function ouvrirLaSeed(
   });
 }
 
-function ecranDe(acces: AccesIdentification): Ecran {
+function ecranDe(acces: AccesRattachement): Ecran {
   if (acces.destination === "galerie") return "galerie";
   if (acces.destination === "labo") return "labo";
   return "simulateur";

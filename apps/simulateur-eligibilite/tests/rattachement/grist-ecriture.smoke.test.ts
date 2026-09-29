@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 import { lireConfiguration } from "../../server/configuration.ts";
-import { choisirReferentiel } from "../../server/identification/referentiel-source.ts";
+import { choisirReferentiel } from "../../server/rattachement/referentiel-source.ts";
 
 const actif =
   process.env.GRIST_ECRITURE_TEST === "1" &&
