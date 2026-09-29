@@ -7,6 +7,94 @@ commit lui-même.
 Le simulateur affiche en bas de page la version qu'il exécute, le commit déployé
 et la version du modèle de règles.
 
+## [0.4.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.4.0) — 29 septembre 2026
+
+Trois montées du modèle d'éligibilité, de la v9.7.0 à la v9.7.3, et
+l'intégration complète du mapping documentaire de la v9.7 sur les trois Cerfa.
+57 commits depuis la 0.3.0.
+
+### TL;DR
+
+- Le modèle passe de la v9.7.0 à la v9.7.3 en trois pas (v9.7.1, v9.7.2, v9.7.3), chacun rejoué sur sa propre recette.
+- Les tableaux de remplissage du PMT, de la DAP et du S3141 (nouveau, jamais produit jusqu'ici) lisent tous le mapping documentaire de la v9.7 : préremplissage, checklist du Bloc 3 et PDF partagent désormais la même source.
+- Une convocation longue distance ou aérienne peut désormais orienter vers la caisse pour accord préalable, un huitième cas final.
+- Toute réponse modifiée efface systématiquement les réponses en aval, et les lieux déduits s'affichent au lieu d'être redemandés, jusque dans le Résultat 2.
+- Les 21 tickets de l'intégration v9.7.3 sont clos : contradictions bloquées (EHPAD/USLD, radiothérapie, retour pénitentiaire...), ordre du parcours aligné sur le contrat, adresses et texte médical lisibles sur les PDF.
+- La documentation du dépôt passe en divulgation progressive (docs/knowledge/), et les évènements Matomo portent un nom fixe, vérifié à la compilation.
+- La suite de tests passe de 791 à 1531 tests (4 ignorés).
+
+### ✨ Nouveautés
+
+- [0b078e3](https://github.com/betagouv/transports-sanitaires/commit/0b078e3) : fait porter l'origine du mapping documentaire (publicodes, application, externe, manuel) à chaque case du Bloc 3, ce qui prépare le branchement des tableaux de remplissage sur la même feuille.
+- [df20ee0](https://github.com/betagouv/transports-sanitaires/commit/df20ee0) : complète la transcription des trois Cerfa dans le mapping documentaire — les lignes manquantes (en-tête bénéficiaire, organisme, adresses, prescripteur, signature...) rejoignent celles déjà lues.
+- [d78b321](https://github.com/betagouv/transports-sanitaires/commit/d78b321) : fait lire le préremplissage CERFA depuis le mapping documentaire plutôt que sa propre logique — il suit désormais les mêmes cases que la checklist.
+- [91172c9](https://github.com/betagouv/transports-sanitaires/commit/91172c9) : branche le tableau de remplissage du PMT sur le mapping documentaire — neuf champs jusque-là marqués « hors modèle » se remplissent réellement (mode, ALD, exonérations, dates d'accident...).
+- [e28996a](https://github.com/betagouv/transports-sanitaires/commit/e28996a) : branche le tableau de remplissage de la DAP sur le mapping documentaire, et corrige au passage deux cases qui lisaient la mauvaise réponse.
+- [20bb572](https://github.com/betagouv/transports-sanitaires/commit/20bb572) : branche le tableau de remplissage du S3141 sur le mapping documentaire — ce troisième document, jusqu'ici jamais produit, se génère désormais.
+- [118db3e](https://github.com/betagouv/transports-sanitaires/commit/118db3e) : porte le modèle en v9.7.1 — une convocation longue distance ou aérienne peut désormais orienter vers la caisse pour accord préalable, un huitième cas final.
+- [1fe9ead](https://github.com/betagouv/transports-sanitaires/commit/1fe9ead) : adapte au cas d'une convocation les libellés du nombre de transports et de la justification de distance.
+- [63c0b86](https://github.com/betagouv/transports-sanitaires/commit/63c0b86) : donne au patient la marche à suivre de l'orientation vers la caisse — contacter la caisse, garder la convocation et la synthèse.
+- [5d77a41](https://github.com/betagouv/transports-sanitaires/commit/5d77a41) : fait reposer la mosaïque de caractéristiques d'une convocation (distance, avion, bateau) quand le trajet change réellement, plutôt que de garder des caractéristiques établies pour un autre trajet.
+- [3edd51c](https://github.com/betagouv/transports-sanitaires/commit/3edd51c) : compose enfin les éléments d'ordre médical du PMT et de la DAP, obligatoires sur la prescription — le motif et la justification de la DAP ne se recopient plus à la main.
+- [7911a2f](https://github.com/betagouv/transports-sanitaires/commit/7911a2f) : porte le modèle en v9.7.2, un correctif qui répare l'attente d'accord préalable sur la branche « orientation vers la caisse », restée muette jusque-là.
+- [4947187](https://github.com/betagouv/transports-sanitaires/commit/4947187) : rend les textes validés par le porteur pour l'orientation vers la caisse (reste à charge, cas retenu, points à vérifier), qui remplacent les textes provisoires de la v9.7.1.
+- [1a43d30](https://github.com/betagouv/transports-sanitaires/commit/1a43d30) : remplace le texte qui mélangeait asepsie et désinfection du véhicule par un texte distinguant les deux, sur les deux pages de résultat.
+- [f80cbbd](https://github.com/betagouv/transports-sanitaires/commit/f80cbbd) : signale dans la mosaïque de convocation quand le transport aérien ou maritime est déjà connu par ailleurs, et masque l'option devenue redondante.
+- [fe3d69e](https://github.com/betagouv/transports-sanitaires/commit/fe3d69e) : porte le modèle en v9.7.3 — trois questions retirées, une nouvelle (retour pénitentiaire), et les lieux déduits absorbés dans le modèle.
+- [fd0a965](https://github.com/betagouv/transports-sanitaires/commit/fd0a965) : contextualise le résultat de l'orientation vers la caisse pour un avion/bateau hors convocation — « Votre déplacement » remplace « Votre convocation » quand aucune convocation n'existe.
+- [61f44cd](https://github.com/betagouv/transports-sanitaires/commit/61f44cd) : affiche un lieu déduit (arrivée en structure de soins, par exemple) au lieu de le redemander, et invalide l'adresse devenue incompatible quand le motif change.
+- [c8182fb](https://github.com/betagouv/transports-sanitaires/commit/c8182fb) : montre au Résultat 2 chaque lieu déduit, avec son origine, pour que le prescripteur les vérifie avant impression.
+- [528f16f](https://github.com/betagouv/transports-sanitaires/commit/528f16f) : imprime désormais le texte médical intégral dans le volet 1 du Cerfa, sans annexe, et le propose à révision quand il déborde du cadre.
+- [5ee6d61](https://github.com/betagouv/transports-sanitaires/commit/5ee6d61) : efface systématiquement les réponses en aval d'une réponse modifiée, quelle que soit la question, conformément au contrat d'interface.
+
+### 🐛 Corrections
+
+- [f37133c](https://github.com/betagouv/transports-sanitaires/commit/f37133c) : monte js-yaml en 4.3.2, qui corrige une vulnérabilité de déni de service par CPU signalée par l'audit de sécurité.
+- [7d49444](https://github.com/betagouv/transports-sanitaires/commit/7d49444) : retire l'option « Domicile » de l'arrivée dès que le départ l'a déjà prise, un trajet domicile-domicile étant interdit.
+- [c2978ba](https://github.com/betagouv/transports-sanitaires/commit/c2978ba) : réaffiche l'adresse déjà saisie (rue, code postal, ville) quand sa page revient après un retour en arrière — elle ne montrait plus que le complément et le pays.
+- [028b128](https://github.com/betagouv/transports-sanitaires/commit/028b128) : affiche la raison principale du déplacement en radios quelle que soit sa taille, plutôt qu'en liste déroulante au-delà de dix réponses, et masque trois options tant qu'elles ne sont pas déclarées en Partie 1.
+- [c7f61cf](https://github.com/betagouv/transports-sanitaires/commit/c7f61cf) : verrouille par un test qu'un avion/bateau sans sous-situation Cerfa ne réclame aucune adresse de trajet.
+- [94e0f53](https://github.com/betagouv/transports-sanitaires/commit/94e0f53) : bloque cinq combinaisons contradictoires de raison de déplacement et de lieu d'arrivée (EHPAD, USLD, établissement pénitentiaire...) restées passantes malgré le modèle v9.7.3.
+- [05fcefd](https://github.com/betagouv/transports-sanitaires/commit/05fcefd) : verrouille par des tests les garde-fous déjà en place sur un retour pénitentiaire incompatible avec le contexte déclaré.
+- [b4a907c](https://github.com/betagouv/transports-sanitaires/commit/b4a907c) : agrandit la police minimale d'une adresse trop longue sur les PDF, illisible à l'impression faute de plancher.
+- [d042f2f](https://github.com/betagouv/transports-sanitaires/commit/d042f2f) : referme une faille qui laissait passer l'exception radiothérapie sur un transfert définitif, malgré son masquage à l'écran.
+- [b81a820](https://github.com/betagouv/transports-sanitaires/commit/b81a820) : bloque la génération d'un PMT quand une exception EHPAD ou USLD est cochée sans lieu de ce type sur le trajet, et explique au prescripteur laquelle des deux réponses corriger.
+- [3cd44e4](https://github.com/betagouv/transports-sanitaires/commit/3cd44e4) : verrouille par des tests que l'exception radiothérapie reste réservée à une séance déclarée en Partie 1.
+- [fdb0dc1](https://github.com/betagouv/transports-sanitaires/commit/fdb0dc1) : borne le nombre de trajets d'une DAP de permission à ce que sa période autorise réellement, au lieu d'accepter n'importe quel total.
+- [d7454fb](https://github.com/betagouv/transports-sanitaires/commit/d7454fb) : n'affiche plus « Nombre de transports itératifs : 1 » sur la checklist d'une PMT à trajet unique, cohérent avec ce que le PDF laisse vide.
+
+### ♻️ Sous le capot
+
+- [2fa2452](https://github.com/betagouv/transports-sanitaires/commit/2fa2452) : sort les frais à prévoir d'un refus de Bloc1Resultat.tsx, qui frôlait la limite de 300 lignes.
+- [51ed317](https://github.com/betagouv/transports-sanitaires/commit/51ed317) : sort l'orientation vers la caisse de Bloc1Resultat et EtapesPatient dans son propre fichier, pour la même raison.
+- [c43aed5](https://github.com/betagouv/transports-sanitaires/commit/c43aed5) : réorganise secretariat/ en dossiers dédiés (résultat, rubriques du mapping) plutôt qu'un seul niveau plat.
+- [4dbe26b](https://github.com/betagouv/transports-sanitaires/commit/4dbe26b) : fait saisir directement les précisions médicales (motif, détail d'un transfert) plutôt que de les choisir dans une liste, avec un contrôle qui bloque un libellé générique ou un texte trop long.
+- [438e2ea](https://github.com/betagouv/transports-sanitaires/commit/438e2ea) : pose les exceptions et contextes complémentaires d'un transfert après sa qualification, dans l'ordre du contrat d'interface, plutôt qu'avant.
+- [0906abc](https://github.com/betagouv/transports-sanitaires/commit/0906abc) : pose l'urgence après le trajet et la distance, comme le veut le contrat d'interface v9.7.3.
+- [94b23bd](https://github.com/betagouv/transports-sanitaires/commit/94b23bd) : fige le nom de chaque évènement Matomo (outil et statut compris) dans un référentiel vérifié à la compilation, au lieu de le composer à l'exécution.
+
+### ✅ Tests
+
+- [772f633](https://github.com/betagouv/transports-sanitaires/commit/772f633) : couvre les neuf champs du PMT nouvellement branchés sur le mapping documentaire.
+- [6eb5b64](https://github.com/betagouv/transports-sanitaires/commit/6eb5b64) : couvre les quatre champs de la DAP nouvellement branchés sur le mapping documentaire.
+- [20f7ee6](https://github.com/betagouv/transports-sanitaires/commit/20f7ee6) : couvre les 46 champs du S3141 nouvellement branchés sur le mapping documentaire.
+- [702af81](https://github.com/betagouv/transports-sanitaires/commit/702af81) : étend la couverture de l'orientation caisse au parcours hors convocation (avion/bateau en situation spéciale).
+- [0a05ac1](https://github.com/betagouv/transports-sanitaires/commit/0a05ac1) : porte la recette de la v9.7.1 — convocation, financement et asepsie, quatre suites transposées du livrable.
+- [c378ec4](https://github.com/betagouv/transports-sanitaires/commit/c378ec4) : porte la recette de la v9.7.2 — les suites qui vérifient le correctif de l'attente d'accord préalable.
+- [6d3fe1d](https://github.com/betagouv/transports-sanitaires/commit/6d3fe1d) : porte la recette complète de la v9.7.3, campagne de l'éditeur comprise — `pnpm verifier` passe pour la première fois depuis le début de l'intégration.
+- [4370ac0](https://github.com/betagouv/transports-sanitaires/commit/4370ac0) : retire la version du modèle des noms et des titres de la recette, qui datait inutilement des fichiers valables pour tout modèle qui passe leurs tests.
+
+### 📝 Documentation
+
+- [76e2f68](https://github.com/betagouv/transports-sanitaires/commit/76e2f68) : documente dans l'AGENTS.md où vit le mapping documentaire et sa correspondance id vers règle.
+- [ae6302d](https://github.com/betagouv/transports-sanitaires/commit/ae6302d) : documente dans l'AGENTS.md la composition des éléments d'ordre médical.
+- [28935d1](https://github.com/betagouv/transports-sanitaires/commit/28935d1) : met le README à l'heure de la v9.7.1.
+- [c04bd72](https://github.com/betagouv/transports-sanitaires/commit/c04bd72) : met le README à l'heure de la v9.7.2.
+- [de56a41](https://github.com/betagouv/transports-sanitaires/commit/de56a41) : réorganise toute la documentation du dépôt en docs/knowledge/, à divulgation progressive — un agent ne charge plus tout le contenu quand la tâche n'en a besoin que d'une partie.
+- [782edb4](https://github.com/betagouv/transports-sanitaires/commit/782edb4) : ébauche la spec d'extraction d'un module cerfa.
+- [98900e3](https://github.com/betagouv/transports-sanitaires/commit/98900e3) : renomme le skill d'intégration d'une version du modèle, qui délègue désormais la découpe en tickets à /to-tasks puis /implement.
+- [4ae0afa](https://github.com/betagouv/transports-sanitaires/commit/4ae0afa) : met le README à l'heure de la v9.7.3 — 324 règles, 76 cibles, et le tableau des fichiers de recette par version.
+
 ## [0.3.0](https://github.com/betagouv/transports-sanitaires/releases/tag/simulateur-eligibilite%400.3.0) — 10 septembre 2026
 
 La montée du modèle d'éligibilité de la v9.5.1 à la v9.7.0, et le passage du
