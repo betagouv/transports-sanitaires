@@ -2,6 +2,10 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { Rattachement } from "../../front/rattachement/Rattachement";
+import {
+  type Referentiel,
+  snapshotReferentiel,
+} from "../../shared/referentiel";
 
 async function choisir(labelSelect: RegExp, optionLabel: string) {
   const select = screen.getByRole("combobox", { name: labelSelect });
@@ -166,5 +170,53 @@ describe("parcours de rattachement", () => {
     expect(
       screen.getByRole("button", { name: "Accéder au simulateur" }),
     ).toBeDisabled();
+  });
+});
+
+describe("référentiel indisponible : rattachement dégradé « Autre / Autre »", () => {
+  const enPanne = async () => {
+    throw new Error("référentiel indisponible");
+  };
+
+  it("laisse entrer sans établissement ni service quand la liste des établissements ne charge pas", async () => {
+    const onValide = vi.fn();
+    const referentiel: Referentiel = {
+      ...snapshotReferentiel,
+      listerEtablissements: enPanne,
+    };
+    render(<Rattachement referentiel={referentiel} onValide={onValide} />);
+
+    expect(
+      await screen.findByText(/momentanément indisponible/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: /Établissement/ }),
+    ).toBeNull();
+    await valider();
+
+    expect(onValide).toHaveBeenCalledWith(
+      { etabId: "autre", serviceId: "autre" },
+      { destination: "simulateur", outilsProduit: false },
+    );
+  });
+
+  it("bascule aussi quand les services de l'établissement choisi ne chargent pas", async () => {
+    const onValide = vi.fn();
+    const referentiel: Referentiel = {
+      ...snapshotReferentiel,
+      listerServices: enPanne,
+    };
+    render(<Rattachement referentiel={referentiel} onValide={onValide} />);
+
+    await choisir(/Établissement/, "CHU Grenoble Alpes");
+    expect(
+      await screen.findByText(/momentanément indisponible/),
+    ).toBeInTheDocument();
+    await valider();
+
+    expect(onValide).toHaveBeenCalledWith(
+      { etabId: "autre", serviceId: "autre" },
+      { destination: "simulateur", outilsProduit: false },
+    );
   });
 });

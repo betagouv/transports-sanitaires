@@ -7,17 +7,20 @@ import {
   rattachementEnSession,
 } from "../../front/rattachement/session";
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
-import { snapshotReferentiel } from "../../shared/referentiel";
+import {
+  type Referentiel,
+  snapshotReferentiel,
+} from "../../shared/referentiel";
 
 // La porte : impossible d'atteindre le simulateur sans s'être rattaché. On
 // injecte le référentiel snapshot et une déclaration qui capture ce qui partirait
 // au serveur (pas de backend en test).
-function setup() {
+function setup(referentiel: Referentiel = snapshotReferentiel) {
   const user = userEvent.setup();
   const declarations: RattachementSaisi[] = [];
   render(
     <App
-      referentiel={snapshotReferentiel}
+      referentiel={referentiel}
       declarer={(saisie) => declarations.push(saisie)}
     />,
   );
@@ -93,5 +96,24 @@ describe("écran-porte de rattachement", () => {
       },
     ]);
     expect(rattachementEnSession()?.serviceId).toBe("s_grenoble_autre");
+  });
+
+  it("référentiel indisponible : entre quand même, rattaché à « Autre / Autre »", async () => {
+    const { user, declarations } = setup({
+      ...snapshotReferentiel,
+      listerEtablissements: async () => {
+        throw new Error("Grist indisponible");
+      },
+    });
+
+    await screen.findByText(/momentanément indisponible/);
+    await acceder(user);
+
+    expect(await simulateurMonte()).toBeInTheDocument();
+    expect(rattachementEnSession()).toEqual({
+      etabId: "autre",
+      serviceId: "autre",
+    });
+    expect(declarations).toEqual([]);
   });
 });

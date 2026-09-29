@@ -3,7 +3,9 @@
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
 // validation il remonte le `RattachementSaisi` à `onValide` (c'est la porte,
-// App.tsx, qui le range en session et bascule vers le simulateur). Le référentiel par défaut est le snapshot factice
+// App.tsx, qui le range en session et bascule vers le simulateur). Si le
+// référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
+// dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
 // (dev / tests) ; en production App injecte le client HTTP.
 
 import {
@@ -73,14 +75,27 @@ export function Rattachement({
 type ChampsProps = { saisie: SaisieRattachement };
 
 // Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
-// que leur branche n'est pas empruntée (workflow §4).
+// que leur branche n'est pas empruntée (workflow §4). Sans référentiel, il n'y a
+// rien à choisir : l'écran le dit, et la saisie est le rattachement dégradé.
 function FormulaireProgressif({ saisie }: ChampsProps) {
+  if (saisie.indisponible) return <ReferentielIndisponible />;
   return (
     <>
       <ChampEtablissement saisie={saisie} />
       <ChampService saisie={saisie} />
       <ChampServiceLibre saisie={saisie} />
     </>
+  );
+}
+
+function ReferentielIndisponible() {
+  return (
+    <div className="fr-alert fr-alert--warning fr-alert--sm fr-mb-2w">
+      <p>
+        La liste des établissements est momentanément indisponible. Vous pouvez
+        tout de même accéder au simulateur.
+      </p>
+    </div>
   );
 }
 

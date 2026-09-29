@@ -112,7 +112,8 @@ function Galerie({ navigation }: { navigation: Navigation }) {
 }
 
 // L'écran-porte. Seul un service saisi sous « Autre » apprend quelque chose au
-// référentiel : c'est le seul cas déclaré au serveur.
+// référentiel : c'est le seul cas déclaré au serveur. Le rattachement dégradé
+// « Autre / Autre » n'en fait pas partie, le référentiel étant alors injoignable.
 function Porte({
   referentiel,
   declarer,

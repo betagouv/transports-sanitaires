@@ -1,6 +1,6 @@
 // L'état du formulaire de rattachement : les deux listes en cascade chargées
-// depuis le référentiel, les champs saisis, et ce qu'on en déduit — saisie
-// complète, service « Autre », accès aux outils produit.
+// depuis le référentiel, les champs saisis, et ce qu'on en déduit : saisie
+// complète, service « Autre », accès aux outils produit, référentiel indisponible.
 
 import { useEffect, useState } from "react";
 import {
@@ -23,6 +23,9 @@ type Champs = {
 export type SaisieRattachement = {
   etablissements: Etablissement[];
   services: Service[];
+  // Une des listes n'a pas pu se charger : la saisie devient le rattachement
+  // dégradé « Autre / Autre », complet d'office.
+  indisponible: boolean;
   champs: Champs;
   modifier: (champ: keyof Champs, valeur: string) => void;
   // Rattachement saisi tel qu'il partira à `onValide`, et s'il est complet.
@@ -42,7 +45,9 @@ export function useSaisieRattachement(
   const listes = useListes(referentiel, champs.etabId);
   const service = listes.services.find((s) => s.id === champs.serviceId);
   const serviceEstAutre = estAutre(service?.libelle ?? "");
-  const saisie = construireSaisie(champs, serviceEstAutre);
+  const saisie = listes.indisponible
+    ? RATTACHEMENT_DEGRADE
+    : construireSaisie(champs, serviceEstAutre);
 
   return {
     ...listes,
@@ -63,15 +68,18 @@ export function useSaisieRattachement(
 
 // Les deux listes déroulantes : celle des services se recharge quand
 // l'établissement change, et se vide immédiatement pour ne jamais afficher les
-// entrées du précédent le temps de l'aller-retour réseau.
+// entrées du précédent le temps de l'aller-retour réseau. Un échec de l'une ou
+// l'autre marque le référentiel indisponible.
 function useListes(referentiel: Referentiel, etabId: string) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [indisponible, setIndisponible] = useState(false);
 
   useEffect(() => {
     referentiel
       .listerEtablissements()
-      .then((l) => setEtablissements(triParLibelle(l)));
+      .then((l) => setEtablissements(triParLibelle(l)))
+      .catch(() => setIndisponible(true));
   }, [referentiel]);
 
   useEffect(() => {
@@ -79,11 +87,12 @@ function useListes(referentiel: Referentiel, etabId: string) {
     if (etabId) {
       referentiel
         .listerServices(etabId)
-        .then((l) => setServices(triParLibelle(l)));
+        .then((l) => setServices(triParLibelle(l)))
+        .catch(() => setIndisponible(true));
     }
   }, [referentiel, etabId]);
 
-  return { etablissements, services };
+  return { etablissements, services, indisponible };
 }
 
 // Changer un champ invalide ce qui en dépend : un service ne survit pas au
@@ -126,6 +135,13 @@ function triParLibelle<T extends { libelle: string }>(liste: T[]): T[] {
     return a.libelle.localeCompare(b.libelle, "fr", { sensitivity: "base" });
   });
 }
+
+// Le rattachement de repli quand le référentiel ne répond pas : l'utilisateur
+// entre quand même, et l'analytics range sa visite sous « autre ».
+const RATTACHEMENT_DEGRADE: RattachementSaisi = {
+  etabId: "autre",
+  serviceId: "autre",
+};
 
 const CHAMPS_VIDES: Champs = {
   etabId: "",
