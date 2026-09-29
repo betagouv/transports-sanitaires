@@ -7,13 +7,13 @@
 > voir [identification.md](./identification.md).
 >
 > **Mise à jour 2026-09-29, mesure par service, sans bandeau.** Le Nom d'événement
-> porte désormais le `serviceRef` et non plus le `prescripteurRef`, retiré avec
-> l'identification individuelle. Cela **révise** l'ADR-2 (découpage par service) et
+> porte désormais l'id Grist du service, en clair, et non plus le `prescripteurRef`
+> pseudonymisé, retiré avec l'identification individuelle. Cela **révise** l'ADR-2 (découpage par service) et
 > l'ADR-3 (plus de drapeau de consentement), et **lève** la réserve RGPD R-4 : la mesure
 > redevient une mesure d'audience agrégée, dans l'exemption de consentement CNIL. Le
 > risque R-7 devient sans objet. Deux points restent à tenir : l'anonymisation de l'IP,
 > qui se règle sur l'instance Matomo et non dans le code (R-10), et les très petits
-> services, où un `serviceRef` peut désigner une ou deux personnes (R-11).
+> services, où un id de service peut désigner une ou deux personnes (R-11).
 
 ## 1. Contexte & objectifs
 
@@ -25,15 +25,16 @@ On veut suivre le parcours de simulation :
 - le nombre de résultats éligibles et non éligibles par service.
   ~~par prescripteur~~ (jusqu'au 2026-09-29).
 
-Le découpage par service s'appuie sur le `serviceRef`, un pseudonyme HMAC fourni par
-l'étape de rattachement et gardé en mémoire de session (cf.
+Le découpage par service s'appuie sur l'id du service dans le référentiel Grist,
+fourni par l'étape de rattachement et gardé en mémoire de session (cf.
 [identification.md, ADR-4](./identification.md)). Le simulateur a un backend, pour le
 rattachement, mais l'analytics part directement du navigateur vers Matomo. Aucun
 backend applicatif ne collecte les événements.
 
 **Invariant** : aucune donnée patient, aucune PII et aucune réponse détaillée du
-formulaire ne part vers l'analytics. Seuls transitent un identifiant opaque de service
-(`serviceRef`) et des compteurs d'événements.
+formulaire ne part vers l'analytics. Seuls transitent l'id d'un service du référentiel
+et des compteurs d'événements. Le service libre saisi sous « Autre » n'en fait pas
+partie.
 
 ## 2. Décisions (ADR)
 
@@ -59,28 +60,31 @@ mains (voir R-10).
 
 ### ADR-2 - Découpage par service via propriété d'événement (~~par prescripteur~~)
 
-**Décision (révisée 2026-09-29).** Le `serviceRef` est porté en propriété d'événement
-Matomo : chaque `trackEvent` a ce pseudonyme pour Nom, avec `simulateur` en catégorie
-et le type d'événement en action. C'est un `HMAC-SHA256(id, secret)`, calculé côté
-backend et gardé en mémoire de session ; l'identifiant brut ne circule pas (voir
-[identification.md, ADR-4](./identification.md)). Le reporting utilise le rapport
-Événements, en Catégorie puis Action puis Nom, et la segmentation
-`eventName == <serviceRef>`. ~~Le Nom portait le `prescripteurRef`, pseudonyme d'un
-prescripteur nommé.~~
+**Décision (révisée 2026-09-29).** L'id Grist du service est porté en propriété
+d'événement Matomo : chaque `trackEvent` l'a pour Nom, avec `simulateur` en catégorie
+et le type d'événement en action. Un service saisi sous « Autre » donne l'id de
+l'entrée « Autre » de son établissement, et le rattachement dégradé, quand le
+référentiel ne répond pas, donne `autre` (voir
+[identification.md, ADR-4 et §4](./identification.md)). Le reporting utilise le
+rapport Événements, en Catégorie puis Action puis Nom, et la segmentation
+`eventName == <id du service>`. ~~Le Nom portait le `prescripteurRef`, un
+`HMAC-SHA256` calculé côté backend sur l'identité d'un prescripteur nommé.~~
 
 **Pourquoi.** L'instance mutualisée beta.gouv n'expose pas les custom dimensions,
 le plugin ou les droits n'étant pas disponibles (R-8). Les propriétés d'événement
 donnent le découpage entre éligibles et non éligibles par service, sans
-configuration admin ni backend de croisement. `etabRef` n'est pas transmis : on le
-dérive du service via le référentiel, lors d'une ré-identification contrôlée. Le
-service suffit au pilotage du produit, et ne désigne pas une personne.
+configuration admin ni backend de croisement. L'établissement n'est pas transmis : il
+se déduit du service via le référentiel. Le service suffit au pilotage du produit, et
+ne désigne pas une personne. Il part en clair : sans personne à masquer, un
+pseudonyme n'apportait plus rien (voir [identification.md, ADR-4](./identification.md)).
 
-**Conséquences.** `serviceRef` est opaque et non réversible sans le secret. Une
-ré-identification du service se fait hors Matomo, via le référentiel. Si les custom
+**Conséquences.** Le nom d'un service se lit dans Grist à partir de son id, sans
+secret. Qui a accès au Matomo mutualisé peut, avec le référentiel, savoir quels
+établissements utilisent l'outil. Si les custom
 dimensions deviennent disponibles, on pourra les ajouter sans changer le transport
 actuel. Les données collectées avant le 2026-09-29 portent encore un
-`prescripteurRef` en Nom ; leur purge relève de la gouvernance des données, hors de
-ce document.
+`prescripteurRef` en Nom et ne se raccordent pas aux nouvelles ; leur purge relève de
+la gouvernance des données, hors de ce document.
 
 ### ADR-3 - Mesure sans bandeau de consentement (~~initialisation derrière un flag de consentement~~)
 
@@ -145,13 +149,13 @@ le même principe : `formulaire` (typé `Formulaire`, réutilisé par
 flowchart TB
     subgraph simu["App simulateur (dans l'iframe CMS)"]
         parcours["Parcours de simulation<br/>(formulaire + résultat)"]
-        traceur["Traceur d'analytics, cookieless<br/>(serviceRef en Nom d'événement)"]
+        traceur["Traceur d'analytics, cookieless<br/>(id du service en Nom d'événement)"]
         parcours -->|"événements de parcours"| traceur
     end
     matomo[("Matomo<br/>(mutualisé beta.gouv, IP anonymisée par l'instance)")]
 
-    rattachement["rattachement établissement/service<br/>(refs pseudonymisées en mémoire de session)"] --> traceur
-    traceur -->|"événements (Nom = serviceRef)"| matomo
+    rattachement["rattachement établissement/service<br/>(en mémoire de session)"] --> traceur
+    traceur -->|"événements (Nom = id du service)"| matomo
 ```
 
 ~~Un composant de gestion du consentement autorisait l'initialisation du traceur.~~
@@ -165,9 +169,9 @@ Matomo n'a pas de commande pour anonymiser l'IP : c'est un réglage de l'instanc
 
 ## 4. Spécification des événements
 
-Événements `trackEvent` émis par le traceur, en catégorie `simulateur`, portant le
-`serviceRef` en Nom. Ce nom est absent si le parcours a démarré sans rattachement
-pseudonymisé (API indisponible). Le nom d'action est une valeur fixe du référentiel
+Événements `trackEvent` émis par le traceur, en catégorie `simulateur`, portant l'id
+Grist du service en Nom, ou `autre` pour un rattachement dégradé. ~~Ce nom était absent
+si le parcours avait démarré sans rattachement pseudonymisé (API indisponible).~~ Le nom d'action est une valeur fixe du référentiel
 `NomEvenement` (`front/analytics/evenements.ts`, ADR-4) — jamais composé à
 l'exécution.
 
@@ -220,7 +224,7 @@ l'exécution.
 - **Interdits** : les réponses détaillées du formulaire, toute PII, toute donnée
   patient.
 - **Reporting** : le rapport Événements (Catégorie, Action, Nom) et la segmentation
-  `eventName == <serviceRef>` donnent les éligibles et non éligibles par service,
+  `eventName == <id du service>` donnent les éligibles et non éligibles par service,
   ainsi que le taux d'abandon par étape.
 
 ## 5. RGPD & consentement
@@ -242,16 +246,16 @@ l'exécution.
 1. **Matomo funnel.** ✅ **Fait** (`front/analytics/`, site 275,
    `https://stats.beta.gouv.fr/`). Le traceur est instrumenté dans le simulateur,
    avec le référentiel d'événements de l'ADR-4. Il est amorcé au boot en cookieless
-   (`disableCookies`), et lit le pseudonyme en session à l'émission de chaque
-   événement, ce pseudonyme étant renseigné après le rattachement. Il est gardé par
+   (`disableCookies`), et lit le service en session à l'émission de chaque
+   événement, ce service étant renseigné après le rattachement. Il est gardé par
    un gating dev/prod : actif en build de prod, ou en local avec
    `VITE_MATOMO_ENABLED=true`, et sans effet sinon. Reste à configurer les Funnels
    côté Matomo si nécessaire.
 2. **Mesure par service, sans bandeau.** ✅ **Fait (2026-09-29)**. Le Nom d'événement
-   porte le `serviceRef`, le drapeau de consentement est retiré. *Reste : vérifier
+   porte l'id Grist du service, en clair, le drapeau de consentement est retiré. *Reste : vérifier
    l'anonymisation de l'IP sur l'instance (R-10).*
 
-Prérequis : l'écran-porte fournit le `serviceRef` (cf.
+Prérequis : l'écran-porte fournit le service (cf.
 [identification.md](./identification.md), incréments 1–2 et 6).
 
 ## 7. Risques & validations en attente
@@ -262,7 +266,7 @@ Prérequis : l'écran-porte fournit le `serviceRef` (cf.
 | ~~**R-7**~~ | ~~Couverture partielle du KPI par prescripteur si un bandeau devient nécessaire.~~ **Sans objet (2026-09-29)** : plus de bandeau, plus de KPI par prescripteur. | résolu |
 | **R-8** | Instance mutualisée beta.gouv : les custom dimensions sont indisponibles, ce que l'ADR-2 contourne en passant par une propriété d'événement. Restent à confirmer la disponibilité des Funnels et les quotas. | partiellement tranché |
 | **R-10** | **Anonymisation de l'IP** : l'exemption CNIL l'exige, et elle se règle sur l'instance Matomo (Administration → Confidentialité), pas dans le code. À confirmer auprès des admins de stats.beta.gouv.fr pour le site 275. | conformité, **à vérifier avant la release** |
-| **R-11** | **Très petits services** : dans un service d'une ou deux personnes, le `serviceRef` désigne de fait des individus. Réserve mineure, acceptée sans traitement dans le code. | conformité |
+| **R-11** | **Très petits services** : dans un service d'une ou deux personnes, l'id du service désigne de fait des individus. Réserve mineure, acceptée sans traitement dans le code. | conformité |
 
 ## 8. Vérification
 

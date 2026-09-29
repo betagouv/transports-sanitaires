@@ -44,10 +44,13 @@ avoir à ressaisir.
 - **Aucune personne dans Grist.** ~~Le nom et le prénom d'un prescripteur hors liste
   étaient écrits en clair dans la table `Prescripteurs`.~~ Depuis le 2026-09-29, l'app
   n'écrit plus aucune donnée de personne, et ne lit plus cette table.
-- **Analytics.** Le `serviceRef` reste calculé sur l'id « Autre » du référentiel, le
-  vrai service n'ayant pas encore d'id au moment de la pseudonymisation. La première
-  visite est donc comptée sous « Autre », les suivantes sous le vrai service. C'est un
-  décrochage mineur, assumé.
+- **Sans attente.** Le front déclare le service saisi (`POST /api/rattachement`) et
+  entre dans le simulateur sans attendre la réponse. Seul ce cas est déclaré : un
+  service choisi dans la liste n'apprend rien au référentiel.
+- **Analytics.** Matomo reçoit l'id de l'entrée « Autre » du référentiel, le vrai
+  service n'ayant pas encore d'id à la validation. La première visite est donc
+  comptée sous « Autre », les suivantes sous le vrai service. C'est un décrochage
+  mineur, assumé.
 
 ## Ce qui s'écrit
 

@@ -11,15 +11,17 @@
 > **Mise à jour 2026-09-29, release officielle, rattachement sans identité.**
 > L'écran-porte ne demande plus **qui** réalise la simulation : plus de liste de
 > prescripteurs, plus de nom ni de prénom saisis. Il ne reste que l'établissement et
-> le service. Cela **révise** l'ADR-3 (on ne déclare plus son identité), l'ADR-4 (les
-> refs perdent `prescripteurRef`, le contrat passe en `v: 3`) et l'ADR-5 (le
-> référentiel lu par l'app se limite aux établissements et aux services). La raison :
-> le `prescripteurRef` rendait le suivi Matomo quasi nominatif, donc soumis à un
-> bandeau de consentement, ce qui bloquait la release officielle (voir
+> le service. Cela **révise** l'ADR-3 (on ne déclare plus son identité), l'ADR-4 (plus
+> de pseudonymisation : sans personne à masquer, le HMAC n'avait plus d'objet, et les
+> identifiants du référentiel restent en clair) et l'ADR-5 (le référentiel lu par l'app
+> se limite aux établissements et aux services, et le backend ne détient plus que la
+> clé Grist). La raison : le `prescripteurRef` rendait le suivi Matomo quasi nominatif,
+> donc soumis à un bandeau de consentement, ce qui bloquait la release officielle (voir
 > [analytics.md](./analytics.md), ADR-3). Le mot « identification » est réservé à une
 > éventuelle authentification individuelle future ; l'étape actuelle s'appelle
 > **rattachement**. Le nom de ce fichier est conservé, parce que tout le dépôt le cite.
-> Les risques R-6 et R-9 deviennent sans objet.
+> Les risques R-6 et R-9 deviennent sans objet. Si le référentiel ne répond pas,
+> l'écran laisse désormais entrer avec un rattachement dégradé « Autre / Autre » (§4).
 >
 > **Mise à jour 2026-07-08, fusion des apps.** L'identification et le simulateur ont un
 > temps été conçus comme **deux apps séparées** : une SPA d'identification en iframe, une
@@ -37,8 +39,8 @@
 
 Le simulateur d'éligibilité (React 19 + Vite + DSFR, moteur `publicodes`) est servi par
 un **backend Node/Express**, en une seule app sur **Scalingo**. Le rattachement impose
-en effet de détenir des secrets côté serveur, la clé Grist et le secret de
-pseudonymisation. Le simulateur a donc quitté GitHub Pages.
+en effet de détenir un secret côté serveur, la clé Grist (~~et le secret de
+pseudonymisation, retiré le 2026-09-29~~). Le simulateur a donc quitté GitHub Pages.
 
 On **rattache l'utilisateur en amont** du parcours, en une étape obligatoire : on ne
 peut pas simuler sans avoir déclaré son **établissement** et son **service/unité**.
@@ -54,7 +56,7 @@ Contraintes :
   officiel n'est branché à ce stade.
 - On veut limiter l'empreinte serveur : **un seul** backend minimal, sur une plateforme
   managée (Scalingo), qui sert le front et l'API là où un serveur est incontournable,
-  c'est-à-dire pour l'accès Grist et le secret de pseudonymisation (cf. ADR-5).
+  c'est-à-dire pour l'accès Grist (cf. ADR-5).
 
 **Invariant** : le rattachement ne doit jamais entrer dans le moteur `publicodes`
 (`regles/regles.publicodes`), qui ne contient que la logique métier d'éligibilité. Des
@@ -76,8 +78,7 @@ déployable. Le rattachement reste isolé du moteur (ADR-6) et derrière l'inter
 `Referentiel`, donc une migration FINESS reste possible sans toucher le simulateur.
 
 **Conséquences.** Il n'y a plus de passage de contexte inter-app : la sélection est
-convertie en refs par l'API (`POST /api/rattachement-pseudonymise`) et gardée en mémoire
-(voir ADR-4). L'écran de rattachement et le formulaire du simulateur cohabitent dans la
+gardée en mémoire (voir ADR-4). L'écran de rattachement et le formulaire du simulateur cohabitent dans la
 même app, avec des steppers distincts.
 
 ### ADR-2 - Intégration par iframe dans le CMS
@@ -110,46 +111,49 @@ mesure agrégée par service reste dans l'exemption CNIL (voir
 [analytics.md](./analytics.md), ADR-3). La déclaration reste suffisante et simple.
 
 **Conséquences.** L'usurpation déclarative d'un établissement ou d'un service reste
-possible, et le contexte transmis n'a aucune valeur probante (voir ADR-4). Une
+possible, et le rattachement n'a aucune valeur probante (voir ADR-4). Une
 authentification individuelle (ProConnect, AgentConnect) reste possible plus tard ;
 elle serait une étape **distincte** du rattachement, appelée identification, et non
 une extension de celui-ci.
 
-### ADR-4 - Rattachement pseudonymisé : refs, en mémoire (~~fragment d'URL~~)
+### ADR-4 - Rattachement en mémoire, identifiants en clair (~~refs pseudonymisées~~, ~~fragment d'URL~~)
 
-**Décision (révisée 2026-09-29).** À la validation, le backend construit un
-rattachement pseudonymisé (`v: 3`), fait des refs `{ etabRef, serviceRef }`.
-~~Identité pseudonymisée `v: 2`, faite de `{ etabRef, serviceRef, prescripteurRef }`.~~
-Chaque ref est un **`HMAC-SHA256(id, secret)`** tronqué à 128 bits et encodé en
-base64url, calculé sur les identifiants opaques du référentiel. Aucun identifiant brut,
-aucun nom, aucune donnée patient n'y figure. Le front envoie la sélection à
-`POST /api/rattachement-pseudonymise` (~~`/api/identite-pseudonymisee`~~), le backend
-renvoie l'objet refs en JSON, et le front le garde en mémoire de session. Le secret vit
-côté serveur, dans une variable d'environnement dédiée `PSEUDONYMISATION_SECRET`,
-distincte de la clé Grist. ~~Le contexte était transmis au simulateur via le fragment
+**Décision (révisée 2026-09-29).** À la validation, le front garde en mémoire de session
+le rattachement saisi, fait des identifiants du référentiel
+(`{ etabId, serviceId, serviceEstAutre?, serviceLibre? }`), et l'id du service part
+tel quel à Matomo. Aucun nom, aucune donnée patient n'y figure. Seul un service saisi
+sous « Autre » est déclaré au serveur (`POST /api/rattachement`), sans attendre la
+réponse, pour qu'il l'ajoute à Grist.
+~~Le backend construisait une identité pseudonymisée `v: 2`, faite de refs
+`{ etabRef, serviceRef, prescripteurRef }` : chacune un `HMAC-SHA256(id, secret)`
+tronqué à 128 bits, renvoyé par `POST /api/identite-pseudonymisee`, avec un secret dédié
+`PSEUDONYMISATION_SECRET`.~~ ~~Le contexte était transmis au simulateur via le fragment
 d'URL `#ctx=<base64url>` ; la fusion l'a rendu inutile.~~
 
-**Pourquoi.** Le suivi Matomo n'a besoin que d'un jeton stable et opaque par service.
-Il n'a pas besoin de l'identifiant brut, énumérable et re-liable au référentiel. Un HMAC
-à sens unique donne un pseudonyme non réversible et non forgeable sans le secret. Le
-calculer côté serveur est indispensable : un keyed-hash côté client exposerait la clé
-dans le bundle. Le rattachement pseudonymisé n'est pas signé, la déclaration n'ayant
-pas de valeur probante (ADR-3) et une signature donnant alors une fausse garantie.
+**Pourquoi.** Le HMAC protégeait une personne, le prescripteur. Sans elle, il ne
+masquait plus que des organisations : ce n'était plus une pseudonymisation au sens du
+RGPD, qui ne vise que des données personnelles, et l'exemption CNIL de la mesure
+d'audience ne l'exige pas (voir [analytics.md](./analytics.md), ADR-3). Il ne réglait
+pas non plus le cas des très petits services (R-11 d'analytics.md) : un HMAC
+déterministe désigne toujours le même service. Il coûtait en revanche un secret à
+tenir, une route, un mode « en clair » pour le debug, et des rapports Matomo illisibles
+sans table de correspondance. Un id Grist se retrouve dans le référentiel sans secret.
 
-**Conséquences.** Les refs restent en mémoire, sans `localStorage` ni URL, et le
-`serviceRef` est forwardé à Matomo (voir [analytics.md](./analytics.md)). Le front
-n'inverse jamais le HMAC. La ré-identification d'un `serviceRef` vers son service se fait
-hors Matomo, via le référentiel, de façon contrôlée. Faire tourner le secret
-re-bucketise tous les services.
+**Conséquences.** Le rattachement reste en mémoire, sans `localStorage` ni URL. Qui a
+accès au Matomo mutualisé de beta.gouv peut, avec le référentiel, savoir quels
+établissements utilisent l'outil : c'est accepté. Le rattachement n'est pas signé, la
+déclaration n'ayant pas de valeur probante (ADR-3). Les évènements émis avant la
+release portent encore des refs HMAC et ne se raccordent pas aux nouveaux.
 
 ### ADR-5 - Référentiel dans Grist, lu par le backend de l'app fusionnée
 
 **Décision (révisée 2026-09-29).** Le référentiel établissement/service est maintenu à
 la main dans Grist. L'app simulateur, rattachement et simulation compris, est une app
 unique servie par un backend Node/Express hébergé sur Scalingo. Ce backend sert le front
-React construit par Vite et expose une API same-origin qui détient la clé Grist et le
-secret de pseudonymisation : `/api/etablissements|services` pour le référentiel filtré,
-et `POST /api/rattachement-pseudonymise` pour les refs pseudonymisées.
+React construit par Vite et expose une API same-origin qui détient la clé Grist :
+`/api/etablissements|services` pour le référentiel filtré, et `POST /api/rattachement`
+pour ajouter un service saisi sous « Autre ». ~~`POST /api/identite-pseudonymisee`
+renvoyait les refs pseudonymisées.~~
 ~~`/api/prescripteurs` exposait les prescripteurs d'un service.~~ La table des
 prescripteurs reste dans Grist pour l'admin, mais l'app ne la lit ni ne l'écrit plus.
 ~~Ce backend appartenait à une app d'identification distincte ; le simulateur restait
@@ -164,11 +168,11 @@ seul déployable.
 
 **Conséquences.** Le simulateur quitte GitHub Pages pour Scalingo et n'est plus
 entièrement statique, puisqu'il a un backend. C'est le prix du rattachement
-obligatoire. Le workflow GitHub Pages est supprimé. La clé Grist et
-`PSEUDONYMISATION_SECRET` vivent en variables d'environnement Scalingo, et le serveur
-refuse de démarrer sans elles en production : leur repli — référentiel factice, secret
-public — n'est bon que pour un poste de développement, et le servir en production
-donnerait un simulateur silencieusement faux. Le front et ses tests sont préservés :
+obligatoire. Le workflow GitHub Pages est supprimé. La clé Grist vit en variable
+d'environnement Scalingo, et le serveur refuse de démarrer sans elle en production :
+son repli, un référentiel factice, n'est bon que pour un poste de développement, et le
+servir en production donnerait un simulateur silencieusement faux.
+~~`PSEUDONYMISATION_SECRET` était exigée de la même façon.~~ Le front et ses tests sont préservés :
 l'interface `Referentiel` (§5) a un client HTTP same-origin et garde le snapshot factice
 en défaut, pour le dev et les tests. Grist reste l'outil d'admin. Voir §5 pour le
 modèle et §6 pour l'accès.
@@ -185,16 +189,16 @@ flowchart TB
     cms["CMS « Sites Conformes »<br/>(origine tierce) — page d'atterrissage"]
     subgraph scalingo["App simulateur — Scalingo (ADR-5)"]
         front["Front React (DSFR)<br/>Écran-porte de rattachement (établissement, service)<br/>→ puis simulateur (publicodes)"]
-        api["Backend Node/Express<br/>sert le front + API référentiel + /api/rattachement-pseudonymise<br/>détient la clé Grist et le secret HMAC"]
+        api["Backend Node/Express<br/>sert le front + API référentiel + POST /api/rattachement<br/>détient la clé Grist"]
         analytics["Traceur analytics<br/>(cookieless — voir analytics.md)"]
     end
     grist[("Grist : référentiel<br/>établissement / service<br/>(admin à la main)")]
     matomo[("Matomo<br/>(mutualisé beta.gouv)")]
 
     cms -->|"embarque toute l'app en iframe (ADR-2)"| front
-    front -->|"référentiel filtré + POST /api/rattachement-pseudonymise (same-origin)"| api
+    front -->|"référentiel filtré + service « Autre » déclaré (same-origin)"| api
     api -->|"REST (clé API, server-to-server)"| grist
-    front -->|"refs en mémoire de session (ADR-4)"| analytics
+    front -->|"rattachement en mémoire de session (ADR-4)"| analytics
     analytics -.-> matomo
 ```
 
@@ -203,11 +207,11 @@ Composants :
 | Composant | Nature | Statut |
 |---|---|---|
 | `apps/simulateur-eligibilite` | **App unique** : front React (rattachement + simulateur) + backend Node/Express, sur **Scalingo** | modifié (fusion, puis rattachement) |
-| API référentiel + rattachement pseudonymisé | Endpoints du backend détenant la clé Grist + le secret HMAC | modifié (plus de prescripteurs) |
+| API référentiel + déclaration du rattachement | Endpoints du backend détenant la clé Grist | modifié (plus de prescripteurs ni de pseudonymisation) |
 | Grist | Base managée, admin à la main | config |
 | ~~`apps/identification`~~ | ~~app séparée~~ | **supprimé (fusionné)** |
 
-## 4. Workflow de rattachement & refs pseudonymisées
+## 4. Workflow de rattachement (~~& refs pseudonymisées~~)
 
 Le workflow est linéaire, dans un formulaire à révélation progressive :
 
@@ -230,25 +234,22 @@ Les prescripteurs sans établissement de rattachement, en libéral, à la CNAM o
 sélectionnent l'établissement « Libéral / CNAM / CPAM / Autre » du référentiel et suivent
 le même workflow. La branche « non rattaché » dédiée a été supprimée le 2026-07-21.
 
-- **Transport** : la réponse JSON de `POST /api/rattachement-pseudonymise`, en
-  same-origin. Il n'y a plus de fragment d'URL depuis la fusion.
-- **Construction** : côté backend. Il reçoit la sélection
-  (`{ etabId, serviceId, serviceEstAutre?, serviceLibre? }`), valide sa complétude avec
-  une règle partagée entre front et back, et renvoie l'objet refs. Le secret HMAC ne
-  quitte jamais le serveur.
-- **Schéma** :
-  ```json
-  { "etabRef": "…", "serviceRef": "…", "v": 3 }
-  ```
-  Chaque ref vaut `base64url(HMAC-SHA256("<nature>:<valeur>", SECRET)[:16])`. La valeur
-  est préfixée par sa nature (`etab:`, `service:`) pour éviter toute collision entre deux
-  identifiants. `serviceRef` est toujours un id de référentiel, « Autre » compris.
-  ~~Le texte libre nom/prénom était normalisé puis passé au HMAC sous la forme
-  `identite:<nom>|<prenom>`, et `prescripteurRef` était toujours présent (`v: 2`).~~
-- **Interdits** : l'identifiant brut du référentiel, tout nom de personne, tout
-  identifiant patient et toute donnée de santé.
-- **Cycle de vie** : les refs sont reçues à la validation, conservées en mémoire de
-  session (sans `localStorage`) et lues par le traceur au moment d'émettre chaque
+Si le référentiel ne répond pas, liste des établissements ou des services d'un
+établissement, l'écran le dit et laisse entrer avec le **rattachement dégradé**
+`{ etabId: "autre", serviceId: "autre" }`. Le simulateur reste accessible quand Grist
+tombe, et l'analytics range ces visites sous « autre ».
+
+- **Saisie** : `{ etabId, serviceId, serviceEstAutre?, serviceLibre? }`, des
+  identifiants du référentiel. Sa complétude se juge par une règle partagée entre le
+  front et le back.
+- **Déclaration** : seul un service « Autre » part au serveur, par
+  `POST /api/rattachement`, sans attente. Le serveur l'ajoute à Grist et répond 204.
+  ~~La sélection partait à `POST /api/identite-pseudonymisee`, qui renvoyait des refs
+  HMAC `{ etabRef, serviceRef, prescripteurRef, v: 2 }`.~~
+- **Interdits** : tout nom de personne, tout identifiant patient et toute donnée de
+  santé. Le service libre saisi sous « Autre » ne part jamais à Matomo.
+- **Cycle de vie** : le rattachement est rangé à la validation, conservé en mémoire de
+  session (sans `localStorage`) et lu par le traceur au moment d'émettre chaque
   événement.
 
 ## 5. Modèle du référentiel (Grist)
@@ -313,9 +314,11 @@ d'`allow-top-navigation-by-user-activation` ni d'un repli `postMessage`. Restent
 5. **(futur) Migration FINESS.** Une nouvelle implémentation derrière l'interface
    référentiel (§5). ~~Migration RPPS~~ : sans objet depuis le retrait du prescripteur.
 6. **Retrait de l'identification individuelle.** ✅ **Fait (2026-09-29)**. L'écran-porte
-   ne demande plus que l'établissement et le service, les refs passent en `v: 3` sans
-   `prescripteurRef`, l'app ne lit ni n'écrit plus la table des prescripteurs, et le
-   vocabulaire du code devient « rattachement ».
+   ne demande plus que l'établissement et le service, la pseudonymisation et son secret
+   disparaissent, l'app ne lit ni n'écrit plus la table des prescripteurs, un
+   rattachement dégradé couvre la panne du référentiel, et le vocabulaire du code
+   devient « rattachement ». *Reste : retirer `PSEUDONYMISATION_SECRET` et
+   `PSEUDONYMISATION_EN_CLAIR` de Scalingo, désormais ignorées.*
 
 Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md).
 
@@ -326,7 +329,7 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 | **R-1** | **Coopération Sites Conformes** : le `sandbox` de l'iframe et la CSP `frame-src`. Sans cela, pas d'embarquement possible. **Bloquant.** | à valider avec l'éditeur **avant de coder l'intégration** |
 | **R-2** | Choix d'hébergement Grist, entre grist.com et self-hosted. L'app fusionnée, front et backend, est sur Scalingo faute de FaaS (cf. ADR-5). | décision infra |
 | **R-3** | Fraîcheur du référentiel : le backend lit Grist en direct, ce qui convient. Ne pas retomber sur un snapshot figé si le maintien à la main doit rester visible immédiatement. | conception backend |
-| **R-5** | Le rattachement pseudonymisé n'est pas signé, donc l'usurpation déclarative d'un établissement ou d'un service reste possible. Acceptable tant que la mesure n'a pas de valeur probante. | sécurité |
+| **R-5** | Le rattachement n'est pas signé, donc l'usurpation déclarative d'un établissement ou d'un service reste possible. Acceptable tant que la mesure n'a pas de valeur probante. | sécurité |
 | ~~**R-6**~~ | ~~PII de prescripteurs : jamais dans un bundle statique public ni dans un doc Grist public ; noms et prénoms saisis passés au HMAC côté serveur.~~ **Sans objet (2026-09-29)** : l'app ne manipule plus aucun nom de personne. | résolu |
 | ~~**R-9**~~ | ~~Branche « autre service » sans identité.~~ **Résolu (2026-07-08)**, puis **sans objet (2026-09-29)** : plus aucune branche ne capture d'identité. | résolu |
 

@@ -20,8 +20,8 @@ _Avoid_: le confondre avec l'ancien prescripteur du référentiel, une personne
 nommée choisie dans une liste. Celui-là a disparu de l'écran-porte ; ce qui reste
 s'appelle l'outil ou le parcours prescripteur, jamais une identité.
 
-**Ref**:
-Pseudonyme HMAC à sens unique d'un élément du référentiel (établissement, service),
-calculé côté serveur et transmis à l'analytics. Non réversible sans le secret.
-_Avoid_: identifiant, id. Ce sont les identifiants bruts du référentiel, qui ne
-sortent jamais tels quels.
+**Rattachement dégradé**:
+Le rattachement « Autre / Autre » donné d'office quand le référentiel ne répond pas.
+L'utilisateur entre quand même dans le simulateur, et l'analytics range sa visite
+sous « autre ».
+_Avoid_: rattachement vide, anonyme. Il est bien là, simplement non renseigné.
