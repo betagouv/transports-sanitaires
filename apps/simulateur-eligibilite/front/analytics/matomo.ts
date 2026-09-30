@@ -5,10 +5,10 @@
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import { rattachementEnSession } from "../rattachement/session";
 import {
-  type ChoixStatistiques,
+  type ChoixAnalytics,
   type OptionsDuPont,
-  suivreChoixStatistiques,
-} from "./choix-statistiques";
+  suivreChoixAnalytics,
+} from "./choix-analytics";
 
 declare global {
   interface Window {
@@ -48,7 +48,7 @@ export type OptionsDuTraceur = OptionsDuPont & {
 
 /**
  * Configure le traceur, appelé au boot. S'il est activé, il attend le choix de
- * l'utilisateur, que le CMS tient (voir `choix-statistiques.ts`) : rien n'est
+ * l'utilisateur, que le CMS tient (voir `choix-analytics.ts`) : rien n'est
  * mesuré ni chargé avant. Au suivi, il amorce `_paq` et charge matomo.js ; au
  * refus, il ne charge rien.
  *
@@ -62,7 +62,7 @@ export function initAnalytics(
   const courant: Etat = { config, charger, choix: "en-attente", enAttente: [] };
   etat = courant;
   if (!config.enabled) return;
-  suivreChoixStatistiques((choix) => {
+  suivreChoixAnalytics((choix) => {
     if (etat === courant) appliquer(courant, choix);
   }, pont);
 }
@@ -143,7 +143,7 @@ const DEFAULT_SITE_ID = "275";
 type Etat = {
   config: AnalyticsConfig;
   charger: (url: string) => void;
-  choix: ChoixStatistiques | "en-attente";
+  choix: ChoixAnalytics | "en-attente";
   // Les événements émis avant le choix, rejoués au suivi.
   enAttente: unknown[][];
   // Le traceur a été amorcé, et matomo.js chargé.
@@ -160,7 +160,7 @@ let etat: Etat = {
 // Au premier suivi, amorce le traceur ; à chaque suivi, rejoue ce qui attendait.
 // Un refus jette l'attente, et `emettre` n'émet plus rien : matomo.js ne mesure
 // rien de lui-même (ni liens sortants, ni téléchargements), ce blocage suffit.
-function appliquer(courant: Etat, choix: ChoixStatistiques) {
+function appliquer(courant: Etat, choix: ChoixAnalytics) {
   const attente = courant.enAttente;
   courant.enAttente = [];
   courant.choix = choix;

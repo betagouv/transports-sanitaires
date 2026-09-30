@@ -3,7 +3,7 @@
 // choix sur son domaine, et le transmet par `postMessage`. Le script qui répond
 // côté CMS est versionné dans `cms/`. Voir docs/knowledge/adr/analytics.md, ADR-5.
 
-export type ChoixStatistiques = "suivi" | "refus";
+export type ChoixAnalytics = "suivi" | "refus";
 
 export type OptionsDuPont = {
   /** La page qui embarque l'app (défaut : `window.parent`). */
@@ -21,8 +21,8 @@ export type OptionsDuPont = {
  * Seule la page parente est écoutée. Son origine n'est pas vérifiée : le message
  * ne porte aucune donnée, et ne fait qu'arrêter ou reprendre notre propre mesure.
  */
-export function suivreChoixStatistiques(
-  surChoix: (choix: ChoixStatistiques) => void,
+export function suivreChoixAnalytics(
+  surChoix: (choix: ChoixAnalytics) => void,
   { parent = window.parent, delaiMs = DELAI_MS }: OptionsDuPont = {},
 ): void {
   if (parent === window) {
@@ -52,7 +52,7 @@ const CHOIX = "statistiques-simulateur:choix";
 // l'iframe demande.
 const DELAI_MS = 1000;
 
-function lireChoix(data: unknown): ChoixStatistiques | null {
+function lireChoix(data: unknown): ChoixAnalytics | null {
   if (typeof data !== "object" || data === null) return null;
   const message = data as { type?: unknown; suivi?: unknown };
   if (message.type !== CHOIX || typeof message.suivi !== "boolean") return null;

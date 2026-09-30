@@ -4,7 +4,7 @@
 // page du CMS. Ce script y ajoute le bouton, garde le choix sur le domaine du CMS
 // et le transmet au simulateur par `postMessage`, quand celui-ci le demande puis à
 // chaque changement. Le protocole est celui de
-// `front/analytics/choix-statistiques.ts`. Voir docs/knowledge/adr/analytics.md,
+// `front/analytics/choix-analytics.ts`. Voir docs/knowledge/adr/analytics.md,
 // ADR-5.
 //
 // À coller dans Sites Conformes : Paramètres → Scripts personnalisés → « Scripts
@@ -27,7 +27,7 @@ const abonnes = [];
 
 window.addEventListener("message", (e) => {
   if (e.origin !== ORIGINE_SIMULATEUR) return;
-  if (!e.data || e.data.type !== "statistiques-simulateur:demande") return;
+  if (e.data?.type !== "statistiques-simulateur:demande") return;
   if (!abonnes.includes(e.source)) abonnes.push(e.source);
   prevenir(e.source);
 });

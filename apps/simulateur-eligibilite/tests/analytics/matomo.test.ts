@@ -130,7 +130,7 @@ describe("initAnalytics", () => {
 });
 
 // L'app vit dans une iframe du CMS, qui tient l'opt-out : le traceur attend son
-// choix avant de mesurer quoi que ce soit (voir choix-statistiques.test.ts pour
+// choix avant de mesurer quoi que ce soit (voir choix-analytics.test.ts pour
 // le pont lui-même).
 describe("mesure selon le choix transmis par le CMS", () => {
   function pageParente() {

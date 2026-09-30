@@ -5,9 +5,9 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  type ChoixStatistiques,
-  suivreChoixStatistiques,
-} from "../../front/analytics/choix-statistiques";
+  type ChoixAnalytics,
+  suivreChoixAnalytics,
+} from "../../front/analytics/choix-analytics";
 
 function pageParente() {
   const iframe = document.createElement("iframe");
@@ -22,9 +22,9 @@ function pageParente() {
   return { parent, demandes, repondre };
 }
 
-function suivre(options: Parameters<typeof suivreChoixStatistiques>[1]) {
-  const choix: ChoixStatistiques[] = [];
-  suivreChoixStatistiques((c) => choix.push(c), options);
+function suivre(options: Parameters<typeof suivreChoixAnalytics>[1]) {
+  const choix: ChoixAnalytics[] = [];
+  suivreChoixAnalytics((c) => choix.push(c), options);
   return choix;
 }
 
