@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   configDepuisEnv,
   construireEvenement,
@@ -126,5 +126,97 @@ describe("initAnalytics", () => {
     initAnalytics({ ...config, enabled: false });
     emettre("simulation_start");
     expect(window._paq).toEqual([]);
+  });
+});
+
+// L'app vit dans une iframe du CMS, qui tient l'opt-out : le traceur attend son
+// choix avant de mesurer quoi que ce soit (voir choix-statistiques.test.ts pour
+// le pont lui-même).
+describe("mesure selon le choix transmis par le CMS", () => {
+  function pageParente() {
+    const iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    const parent = iframe.contentWindow as Window;
+    const choisir = (suivi: boolean) =>
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "statistiques-simulateur:choix", suivi },
+          source: parent,
+        }),
+      );
+    return { parent, choisir };
+  }
+
+  // Le chargeur de matomo.js est remplacé par un relevé des chargements
+  // demandés : les tests ne touchent pas au réseau.
+  let chargements: string[] = [];
+  const demarrerDansLIframe = () => {
+    const page = pageParente();
+    chargements = [];
+    initAnalytics(config, {
+      parent: page.parent,
+      delaiMs: 60_000,
+      charger: (url) => chargements.push(url),
+    });
+    return page;
+  };
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("attend le choix avant la moindre mesure", () => {
+    demarrerDansLIframe();
+    emettre("simulation_start");
+    expect(window._paq).toEqual([]);
+    expect(chargements).toEqual([]);
+  });
+
+  it("une fois le suivi accepté, amorce le traceur puis rejoue ce qui attendait", () => {
+    const { choisir } = demarrerDansLIframe();
+    emettre("simulation_start");
+    choisir(true);
+
+    expect(window._paq?.at(0)).toEqual(["disableCookies"]);
+    expect(window._paq?.at(-2)).toEqual(["trackPageView"]);
+    expect(window._paq?.at(-1)).toEqual([
+      "trackEvent",
+      "simulateur",
+      "simulation_start",
+    ]);
+    expect(chargements).toEqual(["https://matomo.test/"]);
+  });
+
+  it("sur refus, ne charge pas Matomo et n'envoie rien", () => {
+    const { choisir } = demarrerDansLIframe();
+    emettre("simulation_start");
+    choisir(false);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([]);
+    expect(chargements).toEqual([]);
+  });
+
+  it("un refus en cours de session arrête la mesure", () => {
+    const { choisir } = demarrerDansLIframe();
+    choisir(true);
+    window._paq = [];
+    choisir(false);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([]);
+  });
+
+  it("une réactivation reprend la mesure", () => {
+    const { choisir } = demarrerDansLIframe();
+    choisir(true);
+    choisir(false);
+    window._paq = [];
+    choisir(true);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([
+      ["trackEvent", "simulateur", "simulation_step", "", 1],
+    ]);
   });
 });

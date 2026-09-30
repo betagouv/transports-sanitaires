@@ -14,12 +14,11 @@ import {
 
 startReactDsfr({ defaultColorScheme: "system" });
 
-// Amorce le traceur au boot (cookieless). Le service n'est connu qu'après le
-// rattachement : il est renseigné en session par la porte (App) et lu au moment
-// d'émettre chaque événement.
-const analyticsConfig = configDepuisEnv();
-initAnalytics(analyticsConfig);
-if (analyticsConfig.enabled) chargerMatomo(analyticsConfig.url);
+// Prépare le traceur au boot (cookieless) : il demande au CMS le choix de
+// l'utilisateur, et ne charge Matomo qu'au suivi. Le service n'est connu qu'après
+// le rattachement : il est renseigné en session par la porte (App) et lu au
+// moment d'émettre chaque événement.
+initAnalytics(configDepuisEnv(), { charger: chargerMatomo });
 
 const racine = document.getElementById("root");
 if (!racine) throw new Error("Élément #root absent de index.html.");

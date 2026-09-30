@@ -4,6 +4,11 @@
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import { rattachementEnSession } from "../rattachement/session";
+import {
+  type ChoixStatistiques,
+  type OptionsDuPont,
+  suivreChoixStatistiques,
+} from "./choix-statistiques";
 
 declare global {
   interface Window {
@@ -33,32 +38,36 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
   };
 }
 
-/**
- * Configure le traceur. S'il est activé, on empile les commandes d'amorçage dans
- * `_paq`, avant le chargement de matomo.js qui traitera la file. La fonction est
- * appelée au boot, avant le rattachement : le service n'est pas connu ici, il
- * est lu en session au moment d'émettre chaque événement, voir `emettre`. Elle
- * n'injecte pas le script tiers, c'est le rôle de `chargerMatomo`, appelé
- * séparément, ce qui garde les tests sans effet de bord réseau.
- *
- * Le traceur est cookieless (`disableCookies`), parce que l'app tourne dans
- * l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
- * mesure d'audience se veut sans bandeau. L'IP, elle, s'anonymise côté instance
- * Matomo, pas ici : l'API JS n'a pas de commande pour ça.
- */
-export function initAnalytics(config: AnalyticsConfig): void {
-  etat = { enabled: config.enabled };
-  if (!config.enabled) return;
+export type OptionsDuTraceur = OptionsDuPont & {
+  /**
+   * Charge le script tiers au premier suivi. Rien par défaut : `Main.tsx` passe
+   * `chargerMatomo`, ce qui garde les tests sans effet de bord réseau.
+   */
+  charger?: (url: string) => void;
+};
 
-  const paq = filePaq();
-  paq.push(["disableCookies"]);
-  paq.push(["setTrackerUrl", `${config.url}matomo.php`]);
-  paq.push(["setSiteId", config.siteId]);
-  paq.push(["enableLinkTracking"]);
-  paq.push(["trackPageView"]);
+/**
+ * Configure le traceur, appelé au boot. S'il est activé, il attend le choix de
+ * l'utilisateur, que le CMS tient (voir `choix-statistiques.ts`) : rien n'est
+ * mesuré ni chargé avant. Au suivi, il amorce `_paq` et charge matomo.js ; au
+ * refus, il ne charge rien.
+ *
+ * Le service n'est pas connu ici : il est lu en session au moment d'émettre
+ * chaque événement, voir `emettre`.
+ */
+export function initAnalytics(
+  config: AnalyticsConfig,
+  { charger = () => {}, ...pont }: OptionsDuTraceur = {},
+): void {
+  const courant: Etat = { config, charger, choix: "en-attente", enAttente: [] };
+  etat = courant;
+  if (!config.enabled) return;
+  suivreChoixStatistiques((choix) => {
+    if (etat === courant) appliquer(courant, choix);
+  }, pont);
 }
 
-/** Injecte le script matomo.js. Idempotent. */
+/** Injecte le script matomo.js, qui traitera la file. Idempotent. */
 export function chargerMatomo(url: string): void {
   if (document.getElementById("matomo-js")) return;
   const script = document.createElement("script");
@@ -69,13 +78,19 @@ export function chargerMatomo(url: string): void {
 }
 
 /**
- * Émet un événement quand le traceur est activé, en portant le service rattaché,
- * lu en session. Voir `initAnalytics` pour le cycle de
- * vie.
+ * Émet un événement quand le traceur est activé et que l'utilisateur n'a pas
+ * refusé, en portant le service rattaché, lu en session. Tant que le choix n'est
+ * pas connu, l'événement attend. Voir `initAnalytics` pour le cycle de vie.
  */
 export function emettre(action: string, valeur?: number): void {
-  if (!etat.enabled) return;
-  filePaq().push(construireEvenement(rattachementEnSession(), action, valeur));
+  if (!etat.config.enabled || etat.choix === "refus") return;
+  const evenement = construireEvenement(
+    rattachementEnSession(),
+    action,
+    valeur,
+  );
+  if (etat.choix === "en-attente") etat.enAttente.push(evenement);
+  else filePaq().push(evenement);
 }
 
 /**
@@ -112,8 +127,6 @@ type Env = {
   VITE_MATOMO_SITE_ID?: string;
 };
 
-let etat: { enabled: boolean } = { enabled: false };
-
 // Unique point de création de la file. Le tag la remplace par un objet actif quand
 // matomo.js se charge, et tout ce qui a été empilé avant est rejoué.
 function filePaq(): unknown[][] {
@@ -126,3 +139,48 @@ const CATEGORY = "simulateur";
 // suivi, `_paq` et matomo.js, et non par le Tag Manager.
 const DEFAULT_URL = "https://stats.beta.gouv.fr/";
 const DEFAULT_SITE_ID = "275";
+
+type Etat = {
+  config: AnalyticsConfig;
+  charger: (url: string) => void;
+  choix: ChoixStatistiques | "en-attente";
+  // Les événements émis avant le choix, rejoués au suivi.
+  enAttente: unknown[][];
+  // Le traceur a été amorcé, et matomo.js chargé.
+  amorce?: boolean;
+};
+
+let etat: Etat = {
+  config: { enabled: false, url: DEFAULT_URL, siteId: DEFAULT_SITE_ID },
+  charger: () => {},
+  choix: "en-attente",
+  enAttente: [],
+};
+
+// Au premier suivi, amorce le traceur ; à chaque suivi, rejoue ce qui attendait.
+// Un refus jette l'attente, et `emettre` n'émet plus rien : matomo.js ne mesure
+// rien de lui-même (ni liens sortants, ni téléchargements), ce blocage suffit.
+function appliquer(courant: Etat, choix: ChoixStatistiques) {
+  const attente = courant.enAttente;
+  courant.enAttente = [];
+  courant.choix = choix;
+  if (choix === "refus") return;
+  if (!courant.amorce) amorcer(courant);
+  const paq = filePaq();
+  for (const evenement of attente) paq.push(evenement);
+}
+
+// Le traceur est cookieless (`disableCookies`), parce que l'app tourne dans
+// l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
+// mesure d'audience se veut sans bandeau. L'IP, elle, s'anonymise côté instance
+// Matomo, pas ici : l'API JS n'a pas de commande pour ça.
+function amorcer(courant: Etat) {
+  const { url, siteId } = courant.config;
+  const paq = filePaq();
+  paq.push(["disableCookies"]);
+  paq.push(["setTrackerUrl", `${url}matomo.php`]);
+  paq.push(["setSiteId", siteId]);
+  paq.push(["trackPageView"]);
+  courant.charger(url);
+  courant.amorce = true;
+}
