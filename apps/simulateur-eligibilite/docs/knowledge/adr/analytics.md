@@ -1,10 +1,17 @@
 # Architecture : Analytics de parcours
 
-> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-29
+> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-30
 >
 > Suivi analytique du parcours dans le simulateur d'éligibilité.
 > Repose sur le rattachement établissement/service fourni par l'écran-porte :
 > voir [identification.md](./identification.md).
+>
+> **Mise à jour 2026-09-30, opt-out dans le pied de page du CMS.** L'exemption CNIL
+> demande d'informer l'utilisateur et de le laisser s'opposer à la mesure. L'opt-out
+> vit dans le pied de page de Sites Conformes, hors de notre iframe, et le choix est
+> transmis au simulateur par `postMessage` (ADR-5). Le traceur attend ce choix avant
+> de mesurer, et ne suit plus les liens sortants. Le texte d'information reste à
+> publier sur le CMS (R-12).
 >
 > **Mise à jour 2026-09-29, mesure par service, sans bandeau.** Le Nom d'événement
 > porte désormais l'id Grist du service, en clair, et non plus le `prescripteurRef`
@@ -107,6 +114,7 @@ revient, pourvu que les conditions techniques tiennent :
 | Pas de suivi individuel | Nom d'événement = service, jamais une personne (voir R-11) |
 | Pas de recoupement avec d'autres traitements | Instance Matomo dédiée aux produits beta.gouv, aucun export croisé |
 | Adresse IP anonymisée | Réglage de l'instance Matomo, à vérifier (R-10) |
+| Information et droit d'opposition | Opt-out dans le pied de page du CMS (ADR-5) ; texte d'information à publier (R-12) |
 
 **Conséquences.** Plus de bandeau, et la couverture de la mesure est complète. La
 réserve R-4 est levée, à la condition R-10 près. ~~Tant que le sujet RGPD n'est pas
@@ -143,15 +151,53 @@ que de faire échouer le parcours pour un souci d'analytics. Les CERFA suivent
 le même principe : `formulaire` (typé `Formulaire`, réutilisé par
 `DocumentCerfa.fichier`) fait partie du nom, un par document produit.
 
+### ADR-5 - Opt-out tenu par le CMS, transmis à l'iframe par `postMessage`
+
+**Décision (2026-09-30).** L'opt-out est un bouton du pied de page de Sites Conformes,
+ajouté par un script que le CMS exécute sur toutes ses pages. Ce script garde le
+choix sur le domaine du CMS et le transmet au simulateur par `postMessage` : quand
+l'iframe le demande au démarrage, puis à chaque changement. Le traceur n'émet rien et
+ne charge pas matomo.js tant que le choix n'est pas connu. Sur refus, il ne charge
+rien ; sur un refus en cours de session, il cesse d'émettre. Sans réponse de la page
+parente dans un court délai (app ouverte hors du CMS, script absent), la mesure suit
+son cours. Le script du CMS est versionné dans ce dépôt et testé comme le reste.
+
+**Pourquoi.** L'opt-out se place dans le pied de page du CMS pour l'UX : c'est là que
+l'utilisateur cherche ce réglage, et le simulateur n'a pas de pied de page propre
+dans l'iframe. Or le navigateur isole le stockage de chaque origine, et range à part
+celui d'une iframe tierce : aucun des opt-out natifs de Matomo (cookie posé par la
+page du CMS, cookie tiers sur le domaine de Matomo) n'atteint notre traceur. Seul un
+message entre les deux fenêtres franchit cette frontière. Le code de Sites Conformes
+le permet : ses réglages « Scripts personnalisés » injectent un script sur chaque
+page, sa CSP se limite à `frame-ancestors`, et son bloc iframe n'impose pas de
+`sandbox` (voir [identification.md](./identification.md), R-1). Seule la page
+parente est écoutée, sans vérifier son origine : le message ne porte aucune donnée
+et ne fait qu'arrêter ou reprendre notre propre mesure.
+
+**Conséquences.** La page vue part avec un décalage d'au plus une seconde, le temps de
+la réponse. Le suivi automatique des liens sortants est retiré : il aurait continué
+après un refus en cours de session, `optUserOut` reposant sur un cookie que le
+traceur n'écrit pas. Le bouton est inséré dans la liste du pied de page DSFR : si
+Sites Conformes change cette structure, il disparaît sans erreur, et la recette doit
+le vérifier après chaque montée de version du CMS. Le script vit dans les réglages du
+CMS, hors de tout déploiement : sa mise à jour se fait à la main, depuis le fichier du
+dépôt. Le refus est mémorisé dans le stockage du CMS, ce que l'exemption autorise pour
+retenir une opposition.
+
 ## 3. Architecture cible
 
 ```mermaid
 flowchart TB
-    subgraph simu["App simulateur (dans l'iframe CMS)"]
-        parcours["Parcours de simulation<br/>(formulaire + résultat)"]
-        traceur["Traceur d'analytics, cookieless<br/>(id du service en Nom d'événement)"]
-        parcours -->|"événements de parcours"| traceur
+    subgraph cms["Page Sites Conformes"]
+        optout["Opt-out du pied de page<br/>(script du CMS, choix gardé sur son domaine)"]
+        subgraph simu["App simulateur (dans l'iframe CMS)"]
+            parcours["Parcours de simulation<br/>(formulaire + résultat)"]
+            traceur["Traceur d'analytics, cookieless<br/>(id du service en Nom d'événement)"]
+            parcours -->|"événements de parcours"| traceur
+        end
     end
+    traceur -->|"postMessage : demande du choix"| optout
+    optout -->|"postMessage : suivi ou refus"| traceur
     matomo[("Matomo<br/>(mutualisé beta.gouv, IP anonymisée par l'instance)")]
 
     rattachement["rattachement établissement/service<br/>(en mémoire de session)"] --> traceur
@@ -233,6 +279,9 @@ l'exécution.
   réponse détaillée. Elle entre dans l'exemption de consentement CNIL et se passe de
   bandeau (ADR-3), sous deux réserves : l'IP doit être anonymisée par l'instance
   Matomo (R-10), et les très petits services restent un cas limite (R-11).
+- **Depuis le 2026-09-30** : l'utilisateur peut s'opposer à la mesure depuis le pied
+  de page du CMS (ADR-5). Reste à l'en informer dans la politique de confidentialité
+  (R-12).
 - ~~Le suivi par prescripteur est quasi nominatif, donc hors de l'exemption de
   consentement CNIL. En conformité stricte, il demande un bandeau.~~
 - ~~Choix du porteur en phase expérimentale : démarrer sans bandeau, avec suivi
@@ -254,6 +303,10 @@ l'exécution.
 2. **Mesure par service, sans bandeau.** ✅ **Fait (2026-09-29)**. Le Nom d'événement
    porte l'id Grist du service, en clair, le drapeau de consentement est retiré. *Reste : vérifier
    l'anonymisation de l'IP sur l'instance (R-10).*
+3. **Opt-out dans le pied de page du CMS.** ✅ **Fait côté simulateur (2026-09-30)** :
+   le traceur attend le choix du CMS (ADR-5), et le script du CMS est versionné et
+   testé. *Reste : coller le script dans Sites Conformes avec l'origine réelle du
+   simulateur, publier le texte d'information (R-12).*
 
 Prérequis : l'écran-porte fournit le service (cf.
 [identification.md](./identification.md), incréments 1–2 et 6).
@@ -267,9 +320,10 @@ Prérequis : l'écran-porte fournit le service (cf.
 | **R-8** | Instance mutualisée beta.gouv : les custom dimensions sont indisponibles, ce que l'ADR-2 contourne en passant par une propriété d'événement. Restent à confirmer la disponibilité des Funnels et les quotas. | partiellement tranché |
 | **R-10** | **Anonymisation de l'IP** : l'exemption CNIL l'exige, et elle se règle sur l'instance Matomo (Administration → Confidentialité), pas dans le code. À confirmer auprès des admins de stats.beta.gouv.fr pour le site 275. | conformité, **à vérifier avant la release** |
 | **R-11** | **Très petits services** : dans un service d'une ou deux personnes, l'id du service désigne de fait des individus. Réserve mineure, acceptée sans traitement dans le code. | conformité |
+| **R-12** | **Information des utilisateurs** : l'exemption exige de dire ce qui est mesuré et comment s'y opposer. Le texte, dans la politique de confidentialité du CMS, doit décrire la mesure par service et renvoyer à l'opt-out du pied de page. | conformité, **à publier avant la release** |
 
 ## 8. Vérification
 
 ```bash
-pnpm --filter simulateur-eligibilite exec vitest run tests/analytics
+pnpm --filter simulateur-eligibilite exec vitest run tests/analytics tests/cms
 ```

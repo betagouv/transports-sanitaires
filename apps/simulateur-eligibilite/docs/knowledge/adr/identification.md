@@ -1,6 +1,6 @@
 # Architecture : Rattachement à l'écran-porte (~~identification du prescripteur~~)
 
-> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-29
+> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-30
 >
 > Étape de rattachement **intégrée** au simulateur d'éligibilité, **préalable
 > obligatoire** à toute simulation : l'utilisateur déclare son établissement et son
@@ -283,13 +283,21 @@ erDiagram
 
 Depuis la fusion, tout le parcours vit dans le même iframe, rattachement et simulation
 compris. Il n'y a plus de navigation top-level entre deux apps, donc plus besoin
-d'`allow-top-navigation-by-user-activation` ni d'un repli `postMessage`. Restent :
+d'`allow-top-navigation-by-user-activation`. Le code de Sites Conformes, open source,
+a été lu le 2026-09-30 (commit `bb64754`). Restent :
 
-- **`sandbox`**, si le CMS l'applique : `allow-scripts` et `allow-forms` suffisent, pour
-  les formulaires et le JS de l'app. C'est côté CMS.
+- **`sandbox`** : le bloc iframe de Sites Conformes n'en pose pas par défaut. Ses
+  « paramètres » libres permettraient d'en ajouter un ; il faudrait alors
+  `allow-scripts` et `allow-forms`, plus `allow-same-origin` pour que l'app garde son
+  origine.
 - **CSP** : notre app doit servir `Content-Security-Policy: frame-ancestors
-  https://<domaine-cms>`, et surtout pas `X-Frame-Options: DENY`. Le CMS doit autoriser
-  notre origine dans son `frame-src`, ce qui est hors de notre contrôle.
+  https://<domaine-cms>`, et surtout pas `X-Frame-Options: DENY`. Côté CMS, la seule CSP
+  émise est son propre `frame-ancestors` : ni `frame-src` ni `script-src` ne bloquent
+  notre iframe. Des en-têtes ajoutés par l'hébergement de l'instance restent possibles,
+  à vérifier sur la vraie page.
+- **`postMessage`** : il sert désormais à l'opt-out de la mesure d'audience, tenu par
+  le pied de page du CMS (voir [analytics.md](./analytics.md), ADR-5). Le CMS l'autorise
+  par ses réglages « Scripts personnalisés », qui injectent un script sur chaque page.
 - **Cookies tiers** : ils sont bloqués dans l'iframe, par ITP et par Chrome. Le tracking
   ayant désormais lieu dans l'iframe, le traceur est passé en cookieless
   (`disableCookies`) pour fonctionner sans eux (cf. [analytics.md](./analytics.md)).
@@ -310,7 +318,7 @@ d'`allow-top-navigation-by-user-activation` ni d'un repli `postMessage`. Restent
    plus dans un fragment, `apps/identification` est supprimée et le workflow GitHub Pages
    retiré. *Reste : le déploiement Scalingo effectif.*
 4. **Durcissement iframe.** Les en-têtes CSP `frame-ancestors`, en attente du domaine CMS
-   (R-1). Plus de repli `postMessage` nécessaire, tout étant dans l'iframe.
+   (R-1). Le `postMessage` ne sert qu'à l'opt-out de la mesure d'audience.
 5. **(futur) Migration FINESS.** Une nouvelle implémentation derrière l'interface
    référentiel (§5). ~~Migration RPPS~~ : sans objet depuis le retrait du prescripteur.
 6. **Retrait de l'identification individuelle.** ✅ **Fait (2026-09-29)**. L'écran-porte
@@ -326,7 +334,7 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 
 | Réf | Risque / à valider | Portée |
 |---|---|---|
-| **R-1** | **Coopération Sites Conformes** : le `sandbox` de l'iframe et la CSP `frame-src`. Sans cela, pas d'embarquement possible. **Bloquant.** | à valider avec l'éditeur **avant de coder l'intégration** |
+| **R-1** | **Coopération Sites Conformes** : ~~le `sandbox` de l'iframe et la CSP `frame-src`. Sans cela, pas d'embarquement possible. **Bloquant.**~~ **Levé côté CMS (2026-09-30)**, à la lecture de son code : le bloc iframe ne pose pas de `sandbox`, la seule CSP émise est `frame-ancestors`, et les scripts personnalisés permettent l'opt-out (§6). Reste de notre côté : servir `frame-ancestors` avec le domaine du CMS, et vérifier sur la page réelle qu'aucun en-tête d'hébergement ne bloque l'iframe. | intégration, à finir quand le domaine du CMS est connu |
 | **R-2** | Choix d'hébergement Grist, entre grist.com et self-hosted. L'app fusionnée, front et backend, est sur Scalingo faute de FaaS (cf. ADR-5). | décision infra |
 | **R-3** | Fraîcheur du référentiel : le backend lit Grist en direct, ce qui convient. Ne pas retomber sur un snapshot figé si le maintien à la main doit rester visible immédiatement. | conception backend |
 | **R-5** | Le rattachement n'est pas signé, donc l'usurpation déclarative d'un établissement ou d'un service reste possible. Acceptable tant que la mesure n'a pas de valeur probante. | sécurité |
