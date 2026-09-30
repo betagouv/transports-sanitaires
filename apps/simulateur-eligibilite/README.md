@@ -113,7 +113,8 @@ variables ont un défaut documenté ci-dessus : elles ne bloquent jamais le dém
 
 Il y a trois racines de *runtime* : `front/`, le front bundlé par Vite, `server/`, le
 backend Node qui détient la clé Grist, et `shared/`, le contrat commun.
-Chacune est organisée par feature.
+Chacune est organisée par feature. À côté, `cms/` porte le script que le CMS exécute
+sur ses propres pages : il n'est ni bundlé ni servi par l'app.
 
 ```
 shared/                  le contrat front ⇄ back, source unique des types partagés
@@ -160,8 +161,11 @@ front/                   le front, bundlé par Vite
                          du PMT et de la DAP, selon le contrat EM-2 de l'éditeur :
                          douze blocs, la mesure dans le gabarit réel, jamais
                          d'annexe
-  analytics/             le vocabulaire mesuré, seul import du reste, et son transport
-                         vers Matomo
+  analytics/             le vocabulaire mesuré, seul import du reste, son transport
+                         vers Matomo, et le choix de l'utilisateur transmis par le CMS
+cms/                     le script à coller dans Sites Conformes : l'opt-out du pied de
+                         page, qui répond au traceur de l'iframe (voir « Intégrer dans
+                         Sites Conformes »)
 ```
 
 ## Le modèle de règles
@@ -284,3 +288,30 @@ Trois fichiers de la racine portent ce déploiement :
 
 Le build installe donc aussi les dépendances de `data-analyzer` et de `glossaire-notion`.
 C'est le prix du lock unique, et il se compte en secondes.
+
+## Intégrer dans Sites Conformes
+
+Le simulateur est embarqué en iframe dans une page Sites Conformes, qui tient aussi
+l'opt-out de la mesure d'audience dans son pied de page (voir
+[analytics.md](docs/knowledge/adr/analytics.md), ADR-5). Tout se règle dans
+l'administration du CMS :
+
+1. **Embarquer l'app.** Dans la page, un bloc « Iframe » (syntaxe experte) dont l'URL
+   est celle du simulateur. Laisser le champ « Paramètres » vide : un `sandbox` y
+   casserait l'opt-out et l'API.
+2. **Installer l'opt-out.** Dans Paramètres → Scripts personnalisés → « Scripts dans
+   la section `<body>` », coller le contenu de
+   [`cms/statistiques-simulateur.js`](cms/statistiques-simulateur.js) entre
+   `<script type="module">` et `</script>`, après avoir remplacé
+   `ORIGINE_SIMULATEUR` par l'origine réelle du simulateur (`https://domaine`, sans
+   chemin ni barre finale).
+3. **Informer.** La politique de confidentialité du site décrit la mesure par service
+   et renvoie au bouton du pied de page (R-12 d'analytics.md).
+4. **Recetter.** Le bouton « Désactiver la mesure d'audience du simulateur » apparaît
+   à la fin du pied de page. Après un clic, plus aucune requête ne part vers
+   `stats.beta.gouv.fr` depuis l'iframe, même après rechargement.
+
+Le script vit dans les réglages du CMS, hors de tout déploiement : toute modification
+du fichier se recolle à la main. Il ajoute son bouton dans la liste DSFR du pied de
+page ; une montée de version de Sites Conformes qui la changerait le ferait
+disparaître sans erreur, d'où l'étape de recette.

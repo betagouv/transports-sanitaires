@@ -77,6 +77,10 @@ Découpage **par fonctionnalité**, à l'intérieur de trois racines :
 | `server/` | le backend, qui détient la clé Grist |
 | `shared/` | le contrat front ⇄ back, chargé des deux côtés |
 
+Hors de ces racines, `cms/` porte le script collé dans Sites Conformes. Il s'exécute
+sur les pages du CMS, pas dans l'app : il n'importe rien et n'est importé par
+personne, ses tests le chargent comme texte.
+
 À lire à côté :
 
 - [`docs/knowledge/adr/identification.md`](docs/knowledge/adr/identification.md)
