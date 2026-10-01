@@ -8,7 +8,7 @@ import { App } from "../../front/app/App";
 import { seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { sIdentifierProduit } from "../porte";
+import { seRattacherProduit } from "../porte";
 
 const GABARIT = readFileSync(
   join(
@@ -22,7 +22,6 @@ function setup() {
   render(
     <App
       referentiel={snapshotReferentiel}
-      pseudonymiser={async () => null}
       chargerGabarit={async () => GABARIT.buffer.slice(0) as ArrayBuffer}
     />,
   );
@@ -41,7 +40,7 @@ beforeEach(() => sessionStorage.clear());
 describe("accès au CERFA via la galerie de seeds", () => {
   it("est proposé dès le début du parcours prescripteur", async () => {
     const { user } = setup();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     // Le parcours est bien à sa première question, et la galerie est offerte.
     expect(
@@ -54,7 +53,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
 
   it("saute le questionnaire et ouvre l'écran qui propose le CERFA", async () => {
     const { user } = setup();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
     // et le délai élargi — l'import dépasse la seconde par défaut quand la suite
@@ -84,7 +83,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
 
   it("permet de générer le CERFA dans la foulée", async () => {
     const { user } = setup();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
     // et le délai élargi — l'import dépasse la seconde par défaut quand la suite
@@ -125,7 +124,7 @@ describe("accès au CERFA via la galerie de seeds", () => {
 
   it("disparaît une fois le parcours engagé sur la page de résultat", async () => {
     const { user } = setup();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
     await user.click(screen.getByRole("button", GALERIE));
     // La galerie est chargée à la demande (import dynamique) : d'où le `find`,
     // et le délai élargi — l'import dépasse la seconde par défaut quand la suite

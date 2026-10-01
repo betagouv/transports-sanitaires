@@ -1,6 +1,6 @@
 // App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
-// identification, référentiel et identité pseudonymisée, sous `/api`, puis sert le
-// front construit par Vite en same-origin. Voir l'ADR-5 de
+// rattachement, référentiel et enrichissement, sous `/api`, puis sert le front
+// construit par Vite en same-origin. Voir l'ADR-5 de
 // docs/knowledge/adr/identification.md.
 //
 // `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock.
@@ -9,32 +9,22 @@
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";
-import { identificationRoutes } from "./identification/routes.ts";
+import { rattachementRoutes } from "./rattachement/routes.ts";
 
 export type AppOptions = {
-  /** Secret de pseudonymisation (HMAC) de l'identité prescripteur. */
-  secret: string;
-  /**
-   * Mode debug : renvoie les refs en clair au lieu du HMAC (lecture directe dans
-   * Matomo en phase de test). ⚠️ Révèle des données brutes — jamais en production.
-   */
-  pseudonymesEnClair?: boolean;
   /** Répertoire du build front à servir (absent en test). */
   dossierDist?: string;
 };
 
 export function creerApp(
   referentiel: Referentiel,
-  { secret, pseudonymesEnClair = false, dossierDist }: AppOptions,
+  { dossierDist }: AppOptions = {},
 ): Express {
   const app = express();
   app.use(express.json());
   interdireIndexation(app);
 
-  app.use(
-    "/api",
-    identificationRoutes(referentiel, secret, pseudonymesEnClair),
-  );
+  app.use("/api", rattachementRoutes(referentiel));
   // Toute autre route sous /api rend un 404 JSON, pour éviter de servir
   // index.html.
   app.use("/api", (_req, res) => {

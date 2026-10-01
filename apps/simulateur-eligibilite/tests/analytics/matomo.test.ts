@@ -1,51 +1,60 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   configDepuisEnv,
   construireEvenement,
   emettre,
   initAnalytics,
 } from "../../front/analytics/matomo";
-import { rangerIdentite } from "../../front/identification/session";
-import {
-  type IdentitePseudonymisee,
-  VERSION,
-} from "../../shared/identite-pseudonymisee";
+import { rangerRattachement } from "../../front/rattachement/session";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
-const identite: IdentitePseudonymisee = {
-  etabRef: "eRef",
-  serviceRef: "sRef",
-  prescripteurRef: "pRef",
-  v: VERSION,
-};
+const rattachement: RattachementSaisi = { etabId: "7", serviceId: "42" };
 
 const config = { enabled: true, url: "https://matomo.test/", siteId: "275" };
 
 beforeEach(() => {
   window._paq = [];
-  rangerIdentite(null);
+  rangerRattachement(null);
 });
 
 describe("construireEvenement", () => {
-  it("porte le prescripteurRef en Nom d'événement", () => {
-    expect(construireEvenement(identite, "simulation_start")).toEqual([
+  it("porte l'id du service en Nom d'événement", () => {
+    expect(construireEvenement(rattachement, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_start",
-      "pRef",
+      "42",
     ]);
   });
 
   it("place la valeur après le Nom", () => {
-    expect(construireEvenement(identite, "simulation_step", 2)).toEqual([
+    expect(construireEvenement(rattachement, "simulation_step", 2)).toEqual([
       "trackEvent",
       "simulateur",
       "simulation_step",
-      "pRef",
+      "42",
       2,
     ]);
   });
 
-  it("sans identité : pas de Nom, valeur précédée d'un Nom vide", () => {
+  it("service saisi sous « Autre » : le Nom reste l'id de l'entrée « Autre »", () => {
+    // Le service libre ne part jamais : il n'est connu que de Grist, qui en fait
+    // un vrai service pour la visite suivante.
+    const autre: RattachementSaisi = {
+      etabId: "7",
+      serviceId: "99",
+      serviceEstAutre: true,
+      serviceLibre: "Néphrologie",
+    };
+    expect(construireEvenement(autre, "simulation_start")).toEqual([
+      "trackEvent",
+      "simulateur",
+      "simulation_start",
+      "99",
+    ]);
+  });
+
+  it("sans rattachement : pas de Nom, valeur précédée d'un Nom vide", () => {
     expect(construireEvenement(null, "simulation_start")).toEqual([
       "trackEvent",
       "simulateur",
@@ -103,13 +112,13 @@ describe("initAnalytics", () => {
     expect(window._paq).toContainEqual(["trackPageView"]);
   });
 
-  it("émet en portant l'identité pseudonymisée de la session", () => {
+  it("émet en portant le service rattaché en session", () => {
     initAnalytics(config);
-    rangerIdentite(identite); // identité connue après l'identification, avant les événements
+    rangerRattachement(rattachement); // connu après le rattachement, avant les événements
     window._paq = []; // isole les événements des commandes d'amorçage
     emettre("simulation_start");
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "simulation_start", "pRef"],
+      ["trackEvent", "simulateur", "simulation_start", "42"],
     ]);
   });
 
@@ -117,5 +126,97 @@ describe("initAnalytics", () => {
     initAnalytics({ ...config, enabled: false });
     emettre("simulation_start");
     expect(window._paq).toEqual([]);
+  });
+});
+
+// L'app vit dans une iframe du CMS, qui tient l'opt-out : le traceur attend son
+// choix avant de mesurer quoi que ce soit (voir choix-analytics.test.ts pour
+// le pont lui-même).
+describe("mesure selon le choix transmis par le CMS", () => {
+  function pageParente() {
+    const iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    const parent = iframe.contentWindow as Window;
+    const choisir = (suivi: boolean) =>
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "statistiques-simulateur:choix", suivi },
+          source: parent,
+        }),
+      );
+    return { parent, choisir };
+  }
+
+  // Le chargeur de matomo.js est remplacé par un relevé des chargements
+  // demandés : les tests ne touchent pas au réseau.
+  let chargements: string[] = [];
+  const demarrerDansLIframe = () => {
+    const page = pageParente();
+    chargements = [];
+    initAnalytics(config, {
+      parent: page.parent,
+      delaiMs: 60_000,
+      charger: (url) => chargements.push(url),
+    });
+    return page;
+  };
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("attend le choix avant la moindre mesure", () => {
+    demarrerDansLIframe();
+    emettre("simulation_start");
+    expect(window._paq).toEqual([]);
+    expect(chargements).toEqual([]);
+  });
+
+  it("une fois le suivi accepté, amorce le traceur puis rejoue ce qui attendait", () => {
+    const { choisir } = demarrerDansLIframe();
+    emettre("simulation_start");
+    choisir(true);
+
+    expect(window._paq?.at(0)).toEqual(["disableCookies"]);
+    expect(window._paq?.at(-2)).toEqual(["trackPageView"]);
+    expect(window._paq?.at(-1)).toEqual([
+      "trackEvent",
+      "simulateur",
+      "simulation_start",
+    ]);
+    expect(chargements).toEqual(["https://matomo.test/"]);
+  });
+
+  it("sur refus, ne charge pas Matomo et n'envoie rien", () => {
+    const { choisir } = demarrerDansLIframe();
+    emettre("simulation_start");
+    choisir(false);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([]);
+    expect(chargements).toEqual([]);
+  });
+
+  it("un refus en cours de session arrête la mesure", () => {
+    const { choisir } = demarrerDansLIframe();
+    choisir(true);
+    window._paq = [];
+    choisir(false);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([]);
+  });
+
+  it("une réactivation reprend la mesure", () => {
+    const { choisir } = demarrerDansLIframe();
+    choisir(true);
+    choisir(false);
+    window._paq = [];
+    choisir(true);
+    emettre("simulation_step", 1);
+
+    expect(window._paq).toEqual([
+      ["trackEvent", "simulateur", "simulation_step", "", 1],
+    ]);
   });
 });

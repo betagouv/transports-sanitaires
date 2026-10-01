@@ -1,8 +1,8 @@
 // Le cadre d'un écran de l'application : conteneur DSFR, respiration verticale,
 // et la largeur réduite des écrans de formulaire.
 //
-// Isolé de `App.tsx` pour la même raison que `outil.ts` : l'identification et les
-// outils produit s'en servent, et dépendre du fichier de composition les y ferait
+// Isolé de `App.tsx` pour la même raison que `outil.ts` : le rattachement et
+// les outils produit s'en servent, et dépendre du fichier de composition les y ferait
 // entrer tout entiers.
 
 import type { ReactNode } from "react";

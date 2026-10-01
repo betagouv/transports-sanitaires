@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { sIdentifier, sIdentifierProduit } from "../porte";
+import { seRattacher, seRattacherProduit } from "../porte";
 import { terminerParcours } from "../simulateur/parcours";
 
 // La trace de debug est un outil produit comme la galerie et le labo : elle
@@ -20,25 +20,23 @@ const TRACE_RESULTAT = /^Debug — résultat médical/;
 beforeEach(() => sessionStorage.clear());
 
 function afficher() {
-  render(
-    <App referentiel={snapshotReferentiel} pseudonymiser={async () => null} />,
-  );
+  render(<App referentiel={snapshotReferentiel} />);
   return userEvent.setup({ delay: null });
 }
 
 describe("trace de debug du parcours", () => {
-  it("s'ouvre sous le questionnaire après une identification service n° 4", async () => {
+  it("s'ouvre sous le questionnaire après un rattachement service n° 4", async () => {
     const user = afficher();
 
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     expect(await screen.findByText(TRACE_PARCOURS)).toBeInTheDocument();
   });
 
-  it("reste fermée après une identification ordinaire", async () => {
+  it("reste fermée après un rattachement ordinaire", async () => {
     const user = afficher();
 
-    await sIdentifier(user);
+    await seRattacher(user);
 
     await screen.findByRole("group", {
       name: /^concernant son déplacement, le patient/i,
@@ -48,7 +46,7 @@ describe("trace de debug du parcours", () => {
 
   it("porte les réponses déjà saisies, sous la règle qui les a reçues", async () => {
     const user = afficher();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     await screen.findByText(TRACE_PARCOURS);
     await user.click(
@@ -64,18 +62,18 @@ describe("trace de debug du parcours", () => {
 });
 
 describe("trace de debug du résultat médical", () => {
-  it("s'ouvre sous le résultat après une identification service n° 4", async () => {
+  it("s'ouvre sous le résultat après un rattachement service n° 4", async () => {
     const user = afficher();
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     await terminerParcours(user, []);
 
     expect(await screen.findByText(TRACE_RESULTAT)).toBeInTheDocument();
   });
 
-  it("reste fermée après une identification ordinaire", async () => {
+  it("reste fermée après un rattachement ordinaire", async () => {
     const user = afficher();
-    await sIdentifier(user);
+    await seRattacher(user);
 
     await terminerParcours(user, []);
 

@@ -1,34 +1,26 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { NomEvenement, trackEvenement } from "../../front/analytics/evenements";
 import { initAnalytics } from "../../front/analytics/matomo";
-import { rangerIdentite } from "../../front/identification/session";
-import {
-  type IdentitePseudonymisee,
-  VERSION,
-} from "../../shared/identite-pseudonymisee";
+import { rangerRattachement } from "../../front/rattachement/session";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 
-const identite: IdentitePseudonymisee = {
-  etabRef: "eRef",
-  serviceRef: "sRef",
-  prescripteurRef: "pRef",
-  v: VERSION,
-};
+const rattachement: RattachementSaisi = { etabId: "7", serviceId: "42" };
 
 beforeEach(() => {
   window._paq = [];
-  rangerIdentite(null);
+  rangerRattachement(null);
   initAnalytics({ enabled: true, url: "https://matomo.test/", siteId: "275" });
   window._paq = []; // isole les événements des commandes d'amorçage
 });
 
 describe("référentiel des évènements", () => {
-  it("émet le nom fixe de l'évènement, avec le prescripteurRef de la session", () => {
-    rangerIdentite(identite);
+  it("émet le nom fixe de l'évènement, avec le service de la session", () => {
+    rangerRattachement(rattachement);
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     trackEvenement(NomEvenement.prescripteur.simulationStep, 3);
     expect(window._paq).toEqual([
-      ["trackEvent", "simulateur", "prescripteur:simulation_start", "pRef"],
-      ["trackEvent", "simulateur", "prescripteur:simulation_step", "pRef", 3],
+      ["trackEvent", "simulateur", "prescripteur:simulation_start", "42"],
+      ["trackEvent", "simulateur", "prescripteur:simulation_step", "42", 3],
     ]);
   });
 
@@ -91,7 +83,7 @@ describe("référentiel des évènements", () => {
     ]);
   });
 
-  it("émet sans Nom si l'identification n'a pas fourni de ref", () => {
+  it("émet sans Nom tant que personne ne s'est rattaché", () => {
     trackEvenement(NomEvenement.prescripteur.simulationStart);
     expect(window._paq).toEqual([
       ["trackEvent", "simulateur", "prescripteur:simulation_start"],

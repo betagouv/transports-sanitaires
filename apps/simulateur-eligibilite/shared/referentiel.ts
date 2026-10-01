@@ -1,31 +1,28 @@
-// Le référentiel établissement / service / prescripteur : son interface, et le
-// jeu de données factices qui sert de défaut quand aucune source réelle n'est
-// branchée.
+// Le référentiel établissement / service : son interface, et le jeu de données
+// factices qui sert de défaut quand aucune source réelle n'est branchée.
 
-import type { IdentiteSaisie } from "./identite-saisie.ts";
+import type { RattachementSaisi } from "./rattachement-saisi.ts";
 
 export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
-export type Prescripteur = { id: string; libelle: string };
 
 /**
  * L'accès est masqué derrière cette interface, décrite au §5 de
  * docs/knowledge/adr/identification.md, pour pouvoir substituer la source sans
  * toucher les composants consommateurs. C'est aujourd'hui le client HTTP
- * same-origin `front/identification/referentiel-http.ts` vers le backend Grist, et
- * demain peut-être FINESS et RPPS.
+ * same-origin `front/rattachement/referentiel-http.ts` vers le backend Grist, et
+ * demain peut-être FINESS.
  */
 export interface Referentiel {
   listerEtablissements(): Promise<Etablissement[]>;
   listerServices(etabId: string): Promise<Service[]>;
-  listerPrescripteurs(serviceId: string): Promise<Prescripteur[]>;
   /**
-   * Enrichit le référentiel avec les saisies libres d'une sélection, celles du
-   * service « autre » et du prescripteur « hors liste ». C'est optionnel : seule la
-   * source Grist l'implémente, le client HTTP du front n'écrivant jamais. Voir
-   * docs/knowledge/domain/enrichissement-referentiel-saisies-libres.md.
+   * Enrichit le référentiel avec le service saisi sous « Autre ». C'est
+   * optionnel : seule la source Grist l'implémente, le client HTTP du front
+   * n'écrivant jamais. Voir
+   * docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
    */
-  enrichirDepuisSaisie?(saisie: IdentiteSaisie): Promise<void>;
+  enrichirDepuisSaisie?(saisie: RattachementSaisi): Promise<void>;
 }
 
 /**
@@ -41,17 +38,11 @@ export const snapshotReferentiel: Referentiel = {
       ({ id, libelle }) => ({ id, libelle }),
     );
   },
-  async listerPrescripteurs(serviceId) {
-    return PRESCRIPTEURS.filter(
-      (prescripteur) => prescripteur.serviceId === serviceId,
-    ).map(({ id, libelle }) => ({ id, libelle }));
-  },
 };
 
 // ---- implémentation ----
 
 type SnapshotService = Service & { etabId: string };
-type SnapshotPrescripteur = Prescripteur & { serviceId: string };
 
 const ETABLISSEMENTS: Etablissement[] = [
   { id: "e_chu_grenoble", libelle: "CHU Grenoble Alpes" },
@@ -59,13 +50,12 @@ const ETABLISSEMENTS: Etablissement[] = [
   { id: "e_clinique_belledonne", libelle: "Clinique Belledonne" },
   // Établissement « fourre-tout » du référentiel pour les prescripteurs sans
   // établissement de rattachement : ils le sélectionnent puis renseignent leur
-  // service (ou « Autre ») et leur identité (« hors liste »).
+  // service (ou « Autre »).
   { id: "e_liberal_cnam", libelle: "Libéral / CNAM / CPAM / Autre" },
 ];
 
 // Chaque établissement possède une entrée « Autre » (service / unité non listé) :
-// c'est un service du référentiel comme les autres, avec ses propres prescripteurs
-// et la même option « hors liste ». Il n'y a plus de service « libre » saisi à part.
+// c'est un service du référentiel comme les autres.
 const SERVICES: SnapshotService[] = [
   { id: "s_grenoble_cardio", etabId: "e_chu_grenoble", libelle: "Cardiologie" },
   {
@@ -102,47 +92,4 @@ const SERVICES: SnapshotService[] = [
     libelle: "Transport Sanitaire",
   },
   { id: "s_liberal_autre", etabId: "e_liberal_cnam", libelle: "Autre" },
-];
-
-const PRESCRIPTEURS: SnapshotPrescripteur[] = [
-  {
-    id: "p_grenoble_cardio_1",
-    serviceId: "s_grenoble_cardio",
-    libelle: "Dr Amina Berger",
-  },
-  {
-    id: "p_grenoble_cardio_2",
-    serviceId: "s_grenoble_cardio",
-    libelle: "Dr Louis Fontaine",
-  },
-  {
-    id: "p_grenoble_dialyse_1",
-    serviceId: "s_grenoble_dialyse",
-    libelle: "Dr Claire Nguyen",
-  },
-  {
-    id: "p_grenoble_onco_1",
-    serviceId: "s_grenoble_onco",
-    libelle: "Dr Marc Rossi",
-  },
-  {
-    id: "p_grenoble_autre_1",
-    serviceId: "s_grenoble_autre",
-    libelle: "Dr Hélène Fabre",
-  },
-  {
-    id: "p_chambery_urgences_1",
-    serviceId: "s_chambery_urgences",
-    libelle: "Dr Sophie Meunier",
-  },
-  {
-    id: "p_chambery_medecine_1",
-    serviceId: "s_chambery_medecine",
-    libelle: "Dr Paul Girard",
-  },
-  {
-    id: "p_belledonne_chirurgie_1",
-    serviceId: "s_belledonne_chirurgie",
-    libelle: "Dr Inès Lopez",
-  },
 ];

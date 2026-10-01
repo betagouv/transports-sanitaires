@@ -13,8 +13,9 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 - `@publicodes/forms`, dont le `FormBuilder` engendre le formulaire à partir des
   règles.
 
-Le parcours commence par un **écran-porte d'identification du prescripteur
-obligatoire** (`front/identification/`, référentiel Grist). Le tout est servi par
+Le parcours commence par un **écran-porte de rattachement
+obligatoire** : établissement et service, sans identifier la personne
+(`front/rattachement/`, référentiel Grist). Le tout est servi par
 un **backend Node/Express** (`server/` : le front et `/api/*`) déployé sur
 **Scalingo**. Ce n'est pas un site statique.
 
@@ -73,8 +74,12 @@ Découpage **par fonctionnalité**, à l'intérieur de trois racines :
 | Racine | Ce que c'est |
 |---|---|
 | `front/` | le navigateur, bundlé par Vite |
-| `server/` | le backend, qui détient les secrets |
+| `server/` | le backend, qui détient la clé Grist |
 | `shared/` | le contrat front ⇄ back, chargé des deux côtés |
+
+Hors de ces racines, `cms/` porte le script collé dans Sites Conformes. Il s'exécute
+sur les pages du CMS, pas dans l'app : il n'importe rien et n'est importé par
+personne, ses tests le chargent comme texte.
 
 À lire à côté :
 
@@ -199,7 +204,7 @@ d'une version à l'autre.
   un référentiel injecté.
 
 Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/moteur.ts`,
-`simulateur/parcours.ts`, `identification/serveur-de-test.ts`.
+`simulateur/parcours.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
 [`front/outils-produit/seeds/catalogue.ts`](front/outils-produit/seeds/catalogue.ts),
@@ -218,7 +223,7 @@ trois outils produit. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
   référentiel, `front/outils-produit/deverrouillage.ts`) ;
-- le même moment : ils sont atteints **après** l'identification.
+- le même moment : ils sont atteints **après** le rattachement.
 
 La galerie et le labo partagent en plus le même panneau. Les traces n'y sont pas :
 elles se lisent sous l'écran qu'elles décrivent, pas dans un encadré d'entrées.

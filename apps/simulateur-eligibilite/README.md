@@ -4,15 +4,16 @@ Aide un prescripteur hospitalier à déterminer, par un questionnaire guidé, si
 transport d'un patient est pris en charge par l'Assurance Maladie, et ce qu'il doit faire
 en conséquence : quel document établir — prescription médicale de transport, série de
 transports, accord préalable — et quel mode de transport est justifié. Les règles
-d'éligibilité encodent la réglementation en vigueur. Le parcours débute par une
-identification du prescripteur, qui est obligatoire.
+d'éligibilité encodent la réglementation en vigueur. Le parcours débute par un
+rattachement obligatoire à un établissement et à un service, sans identifier la
+personne.
 
 ## Fonctionnement
 
 ```mermaid
 flowchart LR
     subgraph front["Front (navigateur)"]
-        Ident["Identification"]
+        Ident["Rattachement<br/>établissement + service"]
         subgraph simu["Simulateur — un moteur, deux outils"]
             Presc["Prescripteur<br/>Partie 1 → résultat médical"]
             Secr["Secrétariat<br/>Partie 2 → cas final"]
@@ -23,23 +24,21 @@ flowchart LR
 
     subgraph back["Backend (Node/Express)"]
         Ref["Référentiel"]
-        Pseudo["Pseudonymisation"]
     end
 
     Grist[("Grist")]
     Matomo[("Matomo")]
     Patient(["Document complété,<br/>signé, remis au patient"])
 
-    Ident -->|"consulte"| Ref
-    Ident -->|"pseudonymise l'identité"| Pseudo
-    Ident -->|"identité validée"| simu
-    Ident -->|"refs pseudonymisées"| Analytics
+    Ident -->|"consulte, déclare un service « Autre »"| Ref
+    Ident -->|"rattachement validé"| simu
+    Ident -->|"id du service"| Analytics
     Presc -->|"passation (situation P1)"| Secr
     Presc -->|"événements"| Analytics
     Secr -->|"événements"| Analytics
     Secr -->|"situation, si le cas final ouvre un CERFA"| Cerfa
     Cerfa -->|"PDF téléchargé"| Patient
-    Ref -->|"lit"| Grist
+    Ref -->|"lit, complète"| Grist
     Analytics -->|"envoie"| Matomo
 
     classDef nominatif stroke-dasharray:4
@@ -86,28 +85,24 @@ jamais exposées au front.
 
 | Variable | Portée | Requis | Défaut / si absente | Usage |
 | --- | --- | --- | --- | --- |
-| `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services/prescripteurs). Jamais exposée au front. |
+| `GRIST_API_KEY` | serveur | **prod** | référentiel **snapshot factice** (dev/CI) | Clé API Grist source du référentiel (établissements/services). Jamais exposée au front. |
 | `GRIST_DOC_URL` | serveur | non | doc Grist du projet | Base API du doc Grist (`server/referentiel.ts`). |
-| `PSEUDONYMISATION_SECRET` | serveur | **prod** | secret de dev **non sécurisé** | Secret HMAC pseudonymisant le contexte prescripteur envoyé à Matomo. **Dédié** (≠ `GRIST_API_KEY`). Générer : `openssl rand -hex 32`. |
-| `PSEUDONYMISATION_EN_CLAIR` | serveur | non | HMAC (pseudonymisé) | Debug : renvoie les refs prescripteur **en clair** (préfixées) au lieu du HMAC, pour les lire dans Matomo. ⚠️ Révèle nom/prénom bruts — **jamais en production**. |
 | `VITE_MATOMO_ENABLED` | front | non | `false` (traceur no-op) | Active le tracking Matomo. Actif d'office en build de prod ; à mettre à `true` pour tester en local. |
 | `VITE_MATOMO_URL` | front | non | instance mutualisée beta.gouv | URL de l'instance Matomo. |
 | `VITE_MATOMO_SITE_ID` | front | non | `275` | Identifiant du site Matomo. |
 
-Les deux variables marquées **prod** n'ont pas de valeur par défaut : leur repli est un
-référentiel inventé et un secret que tout le monde peut lire, ce qui n'a de sens que sur
-un poste de développement. En production — `NODE_ENV=production`, ce que pose Scalingo —
+La variable marquée **prod** n'a pas de valeur par défaut : son repli est un
+référentiel inventé, ce qui n'a de sens que sur un poste de développement. En production — `NODE_ENV=production`, ce que pose Scalingo —
 `server/configuration.ts` refuse donc de rendre une configuration incomplète : le serveur
 s'arrête au démarrage, avant d'ouvrir son port, sur la liste de ce qui cloche.
 
 ```
 [simulateur] Démarrage impossible — configuration invalide :
   - GRIST_API_KEY : sans valeur par défaut, elle doit être posée en production
-  - PSEUDONYMISATION_SECRET : sans valeur par défaut, elle doit être posée en production
 ```
 
 La règle est portée par un schéma **zod** : un socle de variables à défaut, et une variante
-de production où ces deux-là sont exigées. Le schéma valide aussi la forme de ce qui est
+de production où la clé Grist est exigée. Le schéma valide aussi la forme de ce qui est
 posé — `PORT=quatre-mille` ou une `GRIST_DOC_URL` qui n'est pas une URL arrêtent le
 démarrage de la même manière, plutôt que d'échouer plus tard et ailleurs. Une variable
 posée mais vide (`GRIST_API_KEY=` dans un `.env` recopié) compte pour absente. Les autres
@@ -117,21 +112,22 @@ variables ont un défaut documenté ci-dessus : elles ne bloquent jamais le dém
 ## Structure (feature-first)
 
 Il y a trois racines de *runtime* : `front/`, le front bundlé par Vite, `server/`, le
-backend Node qui détient la clé Grist et le secret, et `shared/`, le contrat commun.
-Chacune est organisée par feature.
+backend Node qui détient la clé Grist, et `shared/`, le contrat commun.
+Chacune est organisée par feature. À côté, `cms/` porte le script que le CMS exécute
+sur ses propres pages : il n'est ni bundlé ni servi par l'app.
 
 ```
 shared/                  le contrat front ⇄ back, source unique des types partagés
 server/                  le backend Node, barrière de sécurité : les secrets vivent ici
                          et ne sont jamais bundlés. Bootstrap, composition,
                          configuration lue une fois et refusée si elle manque en prod.
-  identification/        LA feature backend : les routes `/api`, la source Grist du
-                         référentiel, la pseudonymisation
+  rattachement/          LA feature backend : les routes `/api` et la source Grist du
+                         référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   app/                   l'amorçage, l'écran-porte, le choix de l'outil
-  identification/        LA feature de l'écran-porte, miroir de server/identification/ :
+  rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
-                         l'API, l'identité en mémoire de session (ADR-4)
+                         l'API, le rattachement en mémoire de session (ADR-4)
   simulateur/            LES deux outils, sur un socle commun. La racine ne porte que le
                          socle non-visuel : le contrat de règles, le moteur publicodes
                          et ses lectures typées, la couture entre les deux parties.
@@ -165,8 +161,11 @@ front/                   le front, bundlé par Vite
                          du PMT et de la DAP, selon le contrat EM-2 de l'éditeur :
                          douze blocs, la mesure dans le gabarit réel, jamais
                          d'annexe
-  analytics/             le vocabulaire mesuré, seul import du reste, et son transport
-                         vers Matomo
+  analytics/             le vocabulaire mesuré, seul import du reste, son transport
+                         vers Matomo, et le choix de l'utilisateur transmis par le CMS
+cms/                     le script à coller dans Sites Conformes : l'opt-out du pied de
+                         page, qui répond au traceur de l'iframe (voir « Intégrer dans
+                         Sites Conformes »)
 ```
 
 ## Le modèle de règles
@@ -274,9 +273,8 @@ Scalingo construit et sert cette app, et déploie depuis `main`.
    lancée dans le sous-dossier n'y aurait accès à aucun des deux. Elle installerait des
    versions non verrouillées. Le réglage à tenir côté Scalingo est `PROJECT_DIR`, qui doit
    rester *vide*.
-4. **Tenir les deux variables de production**, `GRIST_API_KEY` et
-   `PSEUDONYMISATION_SECRET`. Elles n'ont pas de défaut, et le serveur refuse de démarrer
-   sans elles (cf. [Configuration](#configuration)).
+4. **Tenir la variable de production**, `GRIST_API_KEY`. Elle n'a pas de défaut, et le
+   serveur refuse de démarrer sans elle (cf. [Configuration](#configuration)).
 5. **Relire le pied de page en production.** Il annonce la version de l'app, le sha du
    commit livré et la version des règles.
 
@@ -290,3 +288,30 @@ Trois fichiers de la racine portent ce déploiement :
 
 Le build installe donc aussi les dépendances de `data-analyzer` et de `glossaire-notion`.
 C'est le prix du lock unique, et il se compte en secondes.
+
+## Intégrer dans Sites Conformes
+
+Le simulateur est embarqué en iframe dans une page Sites Conformes, qui tient aussi
+l'opt-out de la mesure d'audience dans son pied de page (voir
+[analytics.md](docs/knowledge/adr/analytics.md), ADR-5). Tout se règle dans
+l'administration du CMS :
+
+1. **Embarquer l'app.** Dans la page, un bloc « Iframe » (syntaxe experte) dont l'URL
+   est celle du simulateur. Laisser le champ « Paramètres » vide : un `sandbox` y
+   casserait l'opt-out et l'API.
+2. **Installer l'opt-out.** Dans Paramètres → Scripts personnalisés → « Scripts dans
+   la section `<body>` », coller le contenu de
+   [`cms/statistiques-simulateur.js`](cms/statistiques-simulateur.js) entre
+   `<script type="module">` et `</script>`, après avoir remplacé
+   `ORIGINE_SIMULATEUR` par l'origine réelle du simulateur (`https://domaine`, sans
+   chemin ni barre finale).
+3. **Informer.** La politique de confidentialité du site décrit la mesure par service
+   et renvoie au bouton du pied de page (R-12 d'analytics.md).
+4. **Recetter.** Le bouton « Désactiver la mesure d'audience du simulateur » apparaît
+   à la fin du pied de page. Après un clic, plus aucune requête ne part vers
+   `stats.beta.gouv.fr` depuis l'iframe, même après rechargement.
+
+Le script vit dans les réglages du CMS, hors de tout déploiement : toute modification
+du fichier se recolle à la main. Il ajoute son bouton dans la liste DSFR du pied de
+page ; une montée de version de Sites Conformes qui la changerait le ferait
+disparaître sans erreur, d'où l'étape de recette.

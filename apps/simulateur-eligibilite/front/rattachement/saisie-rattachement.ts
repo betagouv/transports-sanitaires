@@ -1,16 +1,14 @@
-// L'état du formulaire d'identification : les trois listes en cascade chargées
-// depuis le référentiel, les champs saisis, et ce qu'on en déduit — saisie
-// complète, service « Autre », accès aux outils produit.
+// L'état du formulaire de rattachement : les deux listes en cascade chargées
+// depuis le référentiel, les champs saisis, et ce qu'on en déduit : saisie
+// complète, service « Autre », accès aux outils produit, référentiel indisponible.
 
 import { useEffect, useState } from "react";
 import {
-  type IdentiteSaisie,
-  PRESCRIPTEUR_HORS_LISTE,
+  type RattachementSaisi,
   saisieComplete,
-} from "../../shared/identite-saisie";
+} from "../../shared/rattachement-saisi";
 import type {
   Etablissement,
-  Prescripteur,
   Referentiel,
   Service,
 } from "../../shared/referentiel";
@@ -20,36 +18,36 @@ type Champs = {
   etabId: string;
   serviceId: string;
   serviceLibre: string;
-  prescripteurId: string;
-  nom: string;
-  prenom: string;
 };
 
-export type SaisieIdentite = {
+export type SaisieRattachement = {
   etablissements: Etablissement[];
   services: Service[];
-  prescripteurs: Prescripteur[];
+  // Une des listes n'a pas pu se charger : la saisie devient le rattachement
+  // dégradé « Autre / Autre », complet d'office.
+  indisponible: boolean;
   champs: Champs;
   modifier: (champ: keyof Champs, valeur: string) => void;
-  // Identité saisie telle qu'elle partira à `onValide`, et si elle est complète.
-  saisie: IdentiteSaisie;
+  // Rattachement saisi tel qu'il partira à `onValide`, et s'il est complet.
+  saisie: RattachementSaisi;
   valide: boolean;
   etabChoisi: boolean;
-  serviceChoisi: boolean;
   // « Autre » sélectionné → saisie du service/unité réel obligatoire.
   serviceEstAutre: boolean;
-  // Prescripteur hors liste → nom et prénom à saisir.
-  identiteLibre: boolean;
   // Le service sélectionné déverrouille les outils produit (service n° 4).
   outilsProduit: boolean;
 };
 
-export function useSaisieIdentite(referentiel: Referentiel): SaisieIdentite {
+export function useSaisieRattachement(
+  referentiel: Referentiel,
+): SaisieRattachement {
   const [champs, setChamps] = useState<Champs>(CHAMPS_VIDES);
-  const listes = useListes(referentiel, champs.etabId, champs.serviceId);
+  const listes = useListes(referentiel, champs.etabId);
   const service = listes.services.find((s) => s.id === champs.serviceId);
   const serviceEstAutre = estAutre(service?.libelle ?? "");
-  const saisie = construireSaisie(champs, serviceEstAutre);
+  const saisie = listes.indisponible
+    ? RATTACHEMENT_DEGRADE
+    : construireSaisie(champs, serviceEstAutre);
 
   return {
     ...listes,
@@ -61,33 +59,27 @@ export function useSaisieIdentite(referentiel: Referentiel): SaisieIdentite {
     saisie,
     valide: saisieComplete(saisie),
     etabChoisi: champs.etabId !== "",
-    serviceChoisi: champs.serviceId !== "",
     serviceEstAutre,
-    identiteLibre:
-      champs.serviceId !== "" &&
-      champs.prescripteurId === PRESCRIPTEUR_HORS_LISTE,
     outilsProduit: !!service && estServiceProduit(service),
   };
 }
 
 // ---- implémentation ----
 
-// Les trois listes déroulantes : chacune se recharge quand son parent change,
-// et se vide immédiatement pour ne jamais afficher les entrées du parent
-// précédent le temps de l'aller-retour réseau.
-function useListes(
-  referentiel: Referentiel,
-  etabId: string,
-  serviceId: string,
-) {
+// Les deux listes déroulantes : celle des services se recharge quand
+// l'établissement change, et se vide immédiatement pour ne jamais afficher les
+// entrées du précédent le temps de l'aller-retour réseau. Un échec de l'une ou
+// l'autre marque le référentiel indisponible.
+function useListes(referentiel: Referentiel, etabId: string) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [prescripteurs, setPrescripteurs] = useState<Prescripteur[]>([]);
+  const [indisponible, setIndisponible] = useState(false);
 
   useEffect(() => {
     referentiel
       .listerEtablissements()
-      .then((l) => setEtablissements(triParLibelle(l)));
+      .then((l) => setEtablissements(triParLibelle(l)))
+      .catch(() => setIndisponible(true));
   }, [referentiel]);
 
   useEffect(() => {
@@ -95,47 +87,34 @@ function useListes(
     if (etabId) {
       referentiel
         .listerServices(etabId)
-        .then((l) => setServices(triParLibelle(l)));
+        .then((l) => setServices(triParLibelle(l)))
+        .catch(() => setIndisponible(true));
     }
   }, [referentiel, etabId]);
 
-  useEffect(() => {
-    setPrescripteurs([]);
-    if (serviceId) {
-      referentiel
-        .listerPrescripteurs(serviceId)
-        .then((l) => setPrescripteurs(triParLibelle(l)));
-    }
-  }, [referentiel, serviceId]);
-
-  return { etablissements, services, prescripteurs };
+  return { etablissements, services, indisponible };
 }
 
 // Changer un champ invalide ce qui en dépend : un service ne survit pas au
-// changement d'établissement, ni un prescripteur au changement de service.
+// changement d'établissement, ni `serviceLibre` au changement de service.
 function avecAvalEfface(champs: Champs, modifie: keyof Champs): Champs {
   const aval = AVAL[modifie];
   if (!aval) return champs;
   return { ...champs, ...Object.fromEntries(aval.map((c) => [c, ""])) };
 }
 
-// L'établissement est toujours porté ; le reste n'a de sens qu'une fois le
-// service choisi, et les champs libres qu'une fois leur branche empruntée.
+// L'établissement est toujours porté ; le service n'a de sens qu'une fois
+// choisi, et `serviceLibre` qu'une fois la branche « Autre » empruntée.
 function construireSaisie(
   champs: Champs,
   serviceEstAutre: boolean,
-): IdentiteSaisie {
-  const saisie: IdentiteSaisie = { etabId: champs.etabId };
+): RattachementSaisi {
+  const saisie: RattachementSaisi = { etabId: champs.etabId };
   if (!champs.etabId || !champs.serviceId) return saisie;
   saisie.serviceId = champs.serviceId;
   if (serviceEstAutre) {
     saisie.serviceEstAutre = true;
     saisie.serviceLibre = champs.serviceLibre;
-  }
-  saisie.prescripteurId = champs.prescripteurId;
-  if (champs.prescripteurId === PRESCRIPTEUR_HORS_LISTE) {
-    saisie.nom = champs.nom;
-    saisie.prenom = champs.prenom;
   }
   return saisie;
 }
@@ -147,8 +126,7 @@ function estAutre(libelle: string): boolean {
 }
 
 // Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
-// aux accents), « Autre » repoussé en fin de liste. L'option spéciale « hors
-// liste » est ajoutée séparément après la liste et garde sa place.
+// aux accents), « Autre » repoussé en fin de liste.
 function triParLibelle<T extends { libelle: string }>(liste: T[]): T[] {
   return [...liste].sort((a, b) => {
     if (estAutre(a.libelle) !== estAutre(b.libelle)) {
@@ -158,16 +136,20 @@ function triParLibelle<T extends { libelle: string }>(liste: T[]): T[] {
   });
 }
 
+// Le rattachement de repli quand le référentiel ne répond pas : l'utilisateur
+// entre quand même, et l'analytics range sa visite sous « autre ».
+const RATTACHEMENT_DEGRADE: RattachementSaisi = {
+  etabId: "autre",
+  serviceId: "autre",
+};
+
 const CHAMPS_VIDES: Champs = {
   etabId: "",
   serviceId: "",
   serviceLibre: "",
-  prescripteurId: "",
-  nom: "",
-  prenom: "",
 };
 
 const AVAL: Partial<Record<keyof Champs, Array<keyof Champs>>> = {
-  etabId: ["serviceId", "serviceLibre", "prescripteurId", "nom", "prenom"],
-  serviceId: ["serviceLibre", "prescripteurId", "nom", "prenom"],
+  etabId: ["serviceId", "serviceLibre"],
+  serviceId: ["serviceLibre"],
 };

@@ -3,7 +3,7 @@
 // transporteur et — sur la DAP seulement — l'avis de la caisse.
 //
 // Aucune de ces lignes n'a rien à dire à la checklist : l'identité est
-// `externe` (le référentiel d'identification ne porte que des libellés), la
+// `externe` (l'écran-porte ne demande pas qui prescrit), la
 // date de prescription est posée par l'application hors du moteur
 // (`date-de-prescription.ts`, qui rappelle que « le moteur ne lit jamais une
 // date système implicite »), et la signature, le cadre transporteur et l'avis

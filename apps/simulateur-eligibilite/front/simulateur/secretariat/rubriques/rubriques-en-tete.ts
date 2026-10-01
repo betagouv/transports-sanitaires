@@ -10,9 +10,9 @@
 import type { CaseDeFormulaire, Rubrique } from "../case-de-formulaire.ts";
 
 /**
- * Bénéficiaire et assuré, sur les trois formulaires. Le référentiel
- * d'identification ne porte que des libellés de prescripteur : aucune de ces
- * données n'y est, et le pré-remplissage les laisse au prescripteur.
+ * Bénéficiaire et assuré, sur les trois formulaires. L'écran-porte ne
+ * demande que l'établissement et le service : aucune de ces données n'y est,
+ * et le pré-remplissage les laisse au prescripteur.
  *
  * Non exportée : `ACCIDENT_CAUSE_PAR_UN_TIERS`, juste en dessous, en est la
  * seule utilisatrice.

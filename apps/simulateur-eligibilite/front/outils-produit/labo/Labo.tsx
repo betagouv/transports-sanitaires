@@ -1,8 +1,8 @@
 // Écran **labo** : le produit y dépose une nouvelle version du fichier de règles
 // (`.publicodes`), la valide en direct (erreurs affichées inline) et l'active pour
 // tester le simulateur avec — sans déploiement. Accessible uniquement depuis
-// l'identification quand le service « Transport Sanitaire » est sélectionné (cf.
-// Identification.tsx + `estServiceProduit`).
+// le rattachement quand le service « Transport Sanitaire » est sélectionné (cf.
+// Rattachement.tsx + `estServiceProduit`).
 
 import { useState } from "react";
 import { EcranPleinePage } from "../../app/EcranPleinePage";

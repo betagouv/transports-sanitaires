@@ -39,21 +39,16 @@ export async function creerLigne(
   table: string,
   fields: Record<string, unknown>,
 ): Promise<number> {
-  const res = await envoyer(doc, table, "POST", { records: [{ fields }] });
+  const res = await fetch(`${doc.base}/tables/${table}/records`, {
+    method: "POST",
+    headers: { ...entetes(doc), "Content-Type": "application/json" },
+    body: JSON.stringify({ records: [{ fields }] }),
+  });
+  if (!res.ok) throw new Error(`Grist ${table} POST → HTTP ${res.status}`);
   const body = (await res.json()) as { records?: Array<{ id: number }> };
   const id = body.records?.[0]?.id;
   if (id == null) throw new Error(`Grist ${table} POST : aucun id renvoyé`);
   return id;
-}
-
-// Met à jour les champs d'une ligne existante (PATCH).
-export async function majLigne(
-  doc: DocGrist,
-  table: string,
-  rowId: number,
-  fields: Record<string, unknown>,
-): Promise<void> {
-  await envoyer(doc, table, "PATCH", { records: [{ id: rowId, fields }] });
 }
 
 // Valeur de cellule ramenée à du texte : Grist renvoie aussi bien des nombres
@@ -67,23 +62,6 @@ export function texte(valeur: unknown): string {
 }
 
 // ---- implémentation ----
-
-async function envoyer(
-  doc: DocGrist,
-  table: string,
-  methode: "POST" | "PATCH",
-  corps: unknown,
-): Promise<Response> {
-  const res = await fetch(`${doc.base}/tables/${table}/records`, {
-    method: methode,
-    headers: { ...entetes(doc), "Content-Type": "application/json" },
-    body: JSON.stringify(corps),
-  });
-  if (!res.ok) {
-    throw new Error(`Grist ${table} ${methode} → HTTP ${res.status}`);
-  }
-  return res;
-}
 
 function entetes(doc: DocGrist): Record<string, string> {
   return { Authorization: `Bearer ${doc.cleApi}` };

@@ -1,12 +1,11 @@
-// Racine de l'app : **écran-porte** d'identification devant les simulateurs.
-// Tant que le prescripteur n'est pas identifié, seul l'écran d'identification
-// s'affiche — impossible de simuler sans s'être identifié (voir
+// Racine de l'app : **écran-porte** de rattachement devant les simulateurs.
+// Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
+// rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
 // docs/knowledge/adr/identification.md — ADR-1).
 //
-// À la validation, on convertit l'identité saisie en identité pseudonymisée via
-// l'API (`pseudonymiserViaApi`), on la range en session (pour Matomo), puis on
-// bascule sur le simulateur. Un échec de l'API n'empêche pas d'entrer (identité
-// `null` : suivi analytics dégradé).
+// À la validation, on range le rattachement saisi en session (pour Matomo), on
+// déclare au serveur un éventuel service saisi sous « Autre », sans attendre sa
+// réponse, puis on bascule sur le simulateur.
 //
 // Deux outils partagent le même moteur derrière la porte : le parcours médical
 // du **prescripteur** et le parcours administratif du **secrétariat**. Le
@@ -14,18 +13,17 @@
 
 import type { Situation } from "publicodes";
 import { lazy, type ReactNode, Suspense } from "react";
-import type { IdentitePseudonymisee } from "../../shared/identite-pseudonymisee";
-import type { IdentiteSaisie } from "../../shared/identite-saisie";
+import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
-import { Identification } from "../identification/Identification";
-import { pseudonymiserViaApi } from "../identification/pseudonymisation-http";
-import { referentielHttp } from "../identification/referentiel-http";
-import { rangerIdentite } from "../identification/session";
 import { BoutonCerfa } from "../outils-produit/beta/cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../outils-produit/beta/cerfa/document";
 import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
 import { Labo } from "../outils-produit/labo/Labo";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+import { declarerViaApi } from "../rattachement/declaration-http";
+import { Rattachement } from "../rattachement/Rattachement";
+import { referentielHttp } from "../rattachement/referentiel-http";
+import { rangerRattachement } from "../rattachement/session";
 import { moteur } from "../simulateur/moteur";
 import { emettrePassation } from "../simulateur/passation";
 import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
@@ -38,16 +36,14 @@ import { outilDeLUrl, useNavigation } from "./navigation";
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
-  pseudonymiser?: (
-    saisie: IdentiteSaisie,
-  ) => Promise<IdentitePseudonymisee | null>;
+  declarer?: (saisie: RattachementSaisi) => void;
   /** Gabarit CERFA (défaut = asset servi par l'application, chargé au clic). */
   chargerGabarit?: OptionsGénération["chargerGabarit"];
 };
 
 export function App({
   referentiel = referentielHttp,
-  pseudonymiser = pseudonymiserViaApi,
+  declarer = declarerViaApi,
   chargerGabarit,
 }: Props = {}) {
   const navigation = useNavigation(outilDeLUrl);
@@ -55,11 +51,11 @@ export function App({
   return (
     <>
       <BandeauLabo />
-      {navigation.ecran === "identification" && (
+      {navigation.ecran === "rattachement" && (
         <Porte
           referentiel={referentiel}
-          pseudonymiser={pseudonymiser}
-          onIdentifie={navigation.identifier}
+          declarer={declarer}
+          onRattache={navigation.rattacher}
         />
       )}
       {navigation.ecran === "labo" && (
@@ -115,24 +111,25 @@ function Galerie({ navigation }: { navigation: Navigation }) {
   );
 }
 
-// L'écran-porte, plus la conversion de l'identité saisie en identité
-// pseudonymisée. Un échec de l'API n'empêche pas d'entrer : `rangerIdentite`
-// accepte `null`, et le suivi analytics est alors dégradé.
+// L'écran-porte. Seul un service saisi sous « Autre » apprend quelque chose au
+// référentiel : c'est le seul cas déclaré au serveur. Le rattachement dégradé
+// « Autre / Autre » n'en fait pas partie, le référentiel étant alors injoignable.
 function Porte({
   referentiel,
-  pseudonymiser,
-  onIdentifie,
+  declarer,
+  onRattache,
 }: {
   referentiel: Referentiel;
-  pseudonymiser: NonNullable<Props["pseudonymiser"]>;
-  onIdentifie: Navigation["identifier"];
+  declarer: NonNullable<Props["declarer"]>;
+  onRattache: Navigation["rattacher"];
 }) {
   return (
-    <Identification
+    <Rattachement
       referentiel={referentiel}
-      onValide={async (saisie, acces) => {
-        rangerIdentite(await pseudonymiser(saisie));
-        onIdentifie(acces);
+      onValide={(saisie, acces) => {
+        rangerRattachement(saisie);
+        if (saisie.serviceEstAutre) declarer(saisie);
+        onRattache(acces);
       }}
     />
   );

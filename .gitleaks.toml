@@ -10,14 +10,16 @@ useDefault = true
 
 [[rules]]
 id = "grist-api-key"
-description = "Clé API Grist (source du référentiel établissements/services/prescripteurs)"
+description = "Clé API Grist (source du référentiel établissements/services)"
 regex = '''(?i)grist[_-]?api[_-]?key["'\s]*[:=]["'\s]*([0-9a-f]{32,})'''
 secretGroup = 1
 tags = ["grist", "referentiel"]
 
+# Le code n'utilise plus ce secret depuis le 2026-09-29, mais sa valeur a servi
+# en production : la règle reste pour le scan de l'historique.
 [[rules]]
 id = "pseudonymisation-secret"
-description = "Secret HMAC de pseudonymisation (openssl rand -hex 32)"
+description = "Ancien secret HMAC de pseudonymisation (openssl rand -hex 32)"
 regex = '''(?i)pseudonymisation[_-]?secret["'\s]*[:=]["'\s]*([0-9a-f]{32,})'''
 secretGroup = 1
 tags = ["identification", "rgpd"]

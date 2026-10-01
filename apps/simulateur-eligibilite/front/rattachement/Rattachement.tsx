@@ -1,30 +1,29 @@
-// Écran-porte d'identification du prescripteur : étape préalable **obligatoire**
-// au simulateur (voir docs/knowledge/adr/identification.md — ADR-1). Formulaire à
-// **révélation progressive** : chaque réponse dévoile la suite selon la branche
-// (workflow §4). Composant de pure sélection ; à la validation il remonte la
-// `IdentiteSaisie` brute à `onValide` (c'est la porte, App.tsx, qui la convertit
-// en identité pseudonymisée via l'API et bascule vers le simulateur). Le
-// référentiel par défaut est
-// le snapshot factice (dev / tests) ; en production App injecte le client HTTP.
+// Écran-porte de rattachement (établissement et service) : étape préalable
+// **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
+// ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
+// suite selon la branche (workflow §4). Composant de pure sélection ; à la
+// validation il remonte le `RattachementSaisi` à `onValide` (c'est la porte,
+// App.tsx, qui le range en session et bascule vers le simulateur). Si le
+// référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
+// dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
+// (dev / tests) ; en production App injecte le client HTTP.
 
-import type { ReactNode } from "react";
-import { PRESCRIPTEUR_HORS_LISTE } from "../../shared/identite-saisie";
 import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel";
 import { EcranPleinePage } from "../app/EcranPleinePage";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
-import type { SaisieIdentite } from "./saisie-identite";
-import { useSaisieIdentite } from "./saisie-identite";
+import type { SaisieRattachement } from "./saisie-rattachement";
+import { useSaisieRattachement } from "./saisie-rattachement";
 
 /**
- * Ce que la validation emporte, en plus de l'identité saisie : l'écran à ouvrir et
+ * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
  * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
- * `onValide` — l'identification est obligatoire quelle que soit la destination
- * (ADR-1), et il n'y a donc qu'un seul endroit qui pseudonymise.
+ * `onValide` : le rattachement est obligatoire quelle que soit la destination
+ * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
  */
-export type AccesIdentification = {
+export type AccesRattachement = {
   destination: "simulateur" | "galerie" | "labo";
   /** Le service sélectionné déverrouille les outils produit (service n° 4). */
   outilsProduit: boolean;
@@ -33,18 +32,18 @@ export type AccesIdentification = {
 type Props = {
   referentiel?: Referentiel;
   onValide: (
-    saisie: SaisieIdentite["saisie"],
-    acces: AccesIdentification,
+    saisie: SaisieRattachement["saisie"],
+    acces: AccesRattachement,
   ) => void;
 };
 
-export function Identification({
+export function Rattachement({
   referentiel = snapshotReferentiel,
   onValide,
 }: Props) {
-  const saisie = useSaisieIdentite(referentiel);
+  const saisie = useSaisieRattachement(referentiel);
 
-  const entrer = (destination: AccesIdentification["destination"]) => {
+  const entrer = (destination: AccesRattachement["destination"]) => {
     if (saisie.valide) {
       onValide(saisie.saisie, {
         destination,
@@ -55,7 +54,9 @@ export function Identification({
 
   return (
     <EcranPleinePage etroit>
-      <h1 className="fr-h3">Commencez par vous identifier</h1>
+      <h1 className="fr-h3">
+        Commencez par renseigner votre établissement et votre service
+      </h1>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -71,19 +72,30 @@ export function Identification({
 
 // ---- implémentation ----
 
-type ChampsProps = { saisie: SaisieIdentite };
+type ChampsProps = { saisie: SaisieRattachement };
 
 // Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
-// que leur branche n'est pas empruntée (workflow §4).
+// que leur branche n'est pas empruntée (workflow §4). Sans référentiel, il n'y a
+// rien à choisir : l'écran le dit, et la saisie est le rattachement dégradé.
 function FormulaireProgressif({ saisie }: ChampsProps) {
+  if (saisie.indisponible) return <ReferentielIndisponible />;
   return (
     <>
       <ChampEtablissement saisie={saisie} />
       <ChampService saisie={saisie} />
       <ChampServiceLibre saisie={saisie} />
-      <ChampPrescripteur saisie={saisie} />
-      <ChampsIdentiteLibre saisie={saisie} />
     </>
+  );
+}
+
+function ReferentielIndisponible() {
+  return (
+    <div className="fr-alert fr-alert--warning fr-alert--sm fr-mb-2w">
+      <p>
+        La liste des établissements est momentanément indisponible. Vous pouvez
+        tout de même accéder au simulateur.
+      </p>
+    </div>
   );
 }
 
@@ -126,42 +138,6 @@ function ChampServiceLibre({ saisie }: ChampsProps) {
   );
 }
 
-function ChampPrescripteur({ saisie }: ChampsProps) {
-  if (!saisie.serviceChoisi) return null;
-  return (
-    <ListeDeroulante
-      id="prescripteur"
-      libelle="Vous êtes"
-      invite="Sélectionnez"
-      valeur={saisie.champs.prescripteurId}
-      options={saisie.prescripteurs}
-      onChange={(v) => saisie.modifier("prescripteurId", v)}
-    >
-      <option value={PRESCRIPTEUR_HORS_LISTE}>{OPTION_HORS_LISTE}</option>
-    </ListeDeroulante>
-  );
-}
-
-function ChampsIdentiteLibre({ saisie }: ChampsProps) {
-  if (!saisie.identiteLibre) return null;
-  return (
-    <>
-      <ChampTexte
-        id="nom"
-        libelle="Votre nom"
-        valeur={saisie.champs.nom}
-        onChange={(v) => saisie.modifier("nom", v)}
-      />
-      <ChampTexte
-        id="prenom"
-        libelle="Votre prénom"
-        valeur={saisie.champs.prenom}
-        onChange={(v) => saisie.modifier("prenom", v)}
-      />
-    </>
-  );
-}
-
 // Les deux sorties de cet écran — le simulateur, et les outils produit pour le
 // service n° 4 — sont des entrées dans l'application, et passent donc par le
 // même `onValide` (ADR-1).
@@ -169,7 +145,7 @@ function EntreesDansLApplication({
   saisie,
   onEntrer,
 }: ChampsProps & {
-  onEntrer: (destination: AccesIdentification["destination"]) => void;
+  onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
     <>
@@ -181,31 +157,27 @@ function EntreesDansLApplication({
           Accéder au simulateur
         </button>
       </div>
-      {saisie.outilsProduit && (
-        <PanneauOutils valide={saisie.valide} onEntrer={onEntrer} />
-      )}
+      {saisie.outilsProduit && <PanneauOutils onEntrer={onEntrer} />}
     </>
   );
 }
 
 // Les deux outils produit sont côte à côte, hors des actions nominales. Ils
-// restent désactivés tant que l'identification n'est pas complète : y entrer
-// reste une entrée dans l'application, elle passe par la porte. Les situations
-// de la galerie vivent dans `seeds/`, pas dans cet écran — les y égrener en
-// boutons ne passait pas l'échelle.
+// n'apparaissent qu'une fois le service n° 4 choisi, ce qui complète la saisie :
+// y entrer reste une entrée dans l'application, elle passe par la porte. Les
+// situations de la galerie vivent dans `seeds/`, pas dans cet écran : les y
+// égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({
-  valide,
   onEntrer,
 }: {
-  valide: boolean;
-  onEntrer: (destination: AccesIdentification["destination"]) => void;
+  onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
     <OutilsProduit>
-      <BoutonOutil onClick={() => onEntrer("galerie")} disabled={!valide}>
+      <BoutonOutil onClick={() => onEntrer("galerie")}>
         Galerie de seeds
       </BoutonOutil>
-      <BoutonOutil onClick={() => onEntrer("labo")} disabled={!valide}>
+      <BoutonOutil onClick={() => onEntrer("labo")}>
         Mode test des règles
       </BoutonOutil>
     </OutilsProduit>
@@ -220,8 +192,6 @@ type ListeProps = {
   valeur: string;
   options: Array<{ id: string; libelle: string }>;
   onChange: (valeur: string) => void;
-  // Options supplémentaires ajoutées après la liste (ex. « hors liste »).
-  children?: ReactNode;
 };
 
 function ListeDeroulante({
@@ -231,7 +201,6 @@ function ListeDeroulante({
   valeur,
   options,
   onChange,
-  children,
 }: ListeProps) {
   return (
     <div className="fr-select-group">
@@ -252,7 +221,6 @@ function ListeDeroulante({
             {option.libelle}
           </option>
         ))}
-        {children}
       </select>
     </div>
   );
@@ -284,5 +252,3 @@ function ChampTexte({
     </div>
   );
 }
-
-const OPTION_HORS_LISTE = "Je ne suis pas dans la liste";

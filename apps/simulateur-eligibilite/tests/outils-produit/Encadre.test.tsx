@@ -2,17 +2,17 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { App } from "../../front/app/App";
-import { Identification } from "../../front/identification/Identification";
 import {
   BoutonOutil,
   OutilsProduit,
 } from "../../front/outils-produit/OutilsProduit";
+import { Rattachement } from "../../front/rattachement/Rattachement";
 import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import {
-  remplirIdentite,
-  remplirIdentiteProduit,
-  sIdentifierProduit,
+  remplirRattachement,
+  remplirRattachementProduit,
+  seRattacherProduit,
 } from "../porte";
 
 // Les outils produit (galerie de seeds, mode test des règles) court-circuitent le
@@ -25,24 +25,24 @@ const ENCADRE = { name: "Outils produit" } as const;
 const GALERIE = { name: "Galerie de seeds" } as const;
 const LABO = { name: "Mode test des règles" } as const;
 
-describe("encadré des outils produit — écran d'identification", () => {
+describe("encadré des outils produit, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
     const user = userEvent.setup();
     render(
-      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
     );
 
-    await remplirIdentite(user);
+    await remplirRattachement(user);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 
   it("apparaît pour le service n° 4, avec les deux outils et eux seuls", async () => {
     const user = userEvent.setup();
     render(
-      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
     );
 
-    await remplirIdentiteProduit(user);
+    await remplirRattachementProduit(user);
 
     const encadre = screen.getByRole("region", ENCADRE);
     expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
@@ -53,10 +53,10 @@ describe("encadré des outils produit — écran d'identification", () => {
   it("laisse l'action nominale hors de l'encadré", async () => {
     const user = userEvent.setup();
     render(
-      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
     );
 
-    await remplirIdentiteProduit(user);
+    await remplirRattachementProduit(user);
     const encadre = screen.getByRole("region", ENCADRE);
     const acceder = screen.getByRole("button", {
       name: "Accéder au simulateur",
@@ -64,12 +64,12 @@ describe("encadré des outils produit — écran d'identification", () => {
     expect(encadre).not.toContainElement(acceder);
   });
 
-  it("garde les outils désactivés tant que l'identification est incomplète", async () => {
+  it("n'apparaît qu'une fois l'établissement et le service choisis", async () => {
     // Y entrer reste une entrée dans l'application : elle passe par la porte
     // (ADR-1), quelle que soit la destination.
     const user = userEvent.setup();
     render(
-      <Identification referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
     );
 
     const select = screen.getByRole("combobox", { name: /Établissement/ });
@@ -77,27 +77,27 @@ describe("encadré des outils produit — écran d'identification", () => {
       name: "Libéral / CNAM / CPAM / Autre",
     });
     await user.selectOptions(select, "Libéral / CNAM / CPAM / Autre");
+    expect(screen.queryByRole("region", ENCADRE)).toBeNull();
+
     const service = screen.getByRole("combobox", { name: /Nom du service/ });
     await screen.findByRole("option", { name: "Transport Sanitaire" });
     await user.selectOptions(service, "Transport Sanitaire");
-
-    // Le prescripteur n'est pas encore renseigné.
-    expect(screen.getByRole("button", GALERIE)).toBeDisabled();
-    expect(screen.getByRole("button", LABO)).toBeDisabled();
+    expect(screen.getByRole("button", GALERIE)).toBeEnabled();
+    expect(screen.getByRole("button", LABO)).toBeEnabled();
   });
 
-  it("remonte la destination choisie avec l'identité et l'accès", async () => {
+  it("remonte la destination choisie avec le rattachement et l'accès", async () => {
     const user = userEvent.setup();
     const onValide = vi.fn();
     render(
-      <Identification referentiel={snapshotReferentiel} onValide={onValide} />,
+      <Rattachement referentiel={snapshotReferentiel} onValide={onValide} />,
     );
 
-    await remplirIdentiteProduit(user);
+    await remplirRattachementProduit(user);
     await user.click(screen.getByRole("button", LABO));
 
     expect(onValide).toHaveBeenCalledWith(
-      expect.objectContaining({ nom: "Durand" }),
+      { etabId: "e_liberal_cnam", serviceId: "s_transport_sanitaire" },
       {
         destination: "labo",
         outilsProduit: true,
@@ -141,32 +141,22 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
 });
 
 describe("App câble les outils produit", () => {
-  it("les reproposent au début du parcours après une identification service n° 4", async () => {
+  it("les reproposent au début du parcours après un rattachement service n° 4", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
-    await sIdentifierProduit(user);
+    await seRattacherProduit(user);
 
     const encadre = await screen.findByRole("region", ENCADRE);
     expect(within(encadre).getAllByRole("button")).toHaveLength(1);
     expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
   });
 
-  it("ne les propose pas après une identification ordinaire", async () => {
+  it("ne les propose pas après un rattachement ordinaire", async () => {
     const user = userEvent.setup();
-    render(
-      <App
-        referentiel={snapshotReferentiel}
-        pseudonymiser={async () => null}
-      />,
-    );
+    render(<App referentiel={snapshotReferentiel} />);
 
-    await remplirIdentite(user);
+    await remplirRattachement(user);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
     await user.click(
       screen.getByRole("button", { name: "Accéder au simulateur" }),
