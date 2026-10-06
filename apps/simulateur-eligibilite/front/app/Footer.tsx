@@ -17,7 +17,7 @@
 
 import type { CSSProperties } from "react";
 
-export function BandeauVersion() {
+export function Footer() {
   return (
     <footer className="fr-text--xs fr-no-print" style={STYLE_DU_BANDEAU}>
       Version{" "}

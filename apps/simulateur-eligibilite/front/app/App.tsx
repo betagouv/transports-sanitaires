@@ -17,8 +17,8 @@ import { referentielHttp } from "../rattachement/referentiel-http";
 import { rangerRattachement } from "../rattachement/session";
 import type { Seed } from "../seeds/seed";
 import { Simulateur } from "../simulateur/Simulateur";
-import { BandeauVersion } from "./BandeauVersion";
 import { EcranPleinePage } from "./EcranPleinePage";
+import { Footer } from "./Footer";
 import type { Navigation } from "./navigation";
 import { useNavigation } from "./navigation";
 
@@ -60,7 +60,7 @@ export function App({
               traceDebug={navigation.developerTools}
             />
           </EcranPleinePage>
-          <BandeauVersion />
+          <Footer />
         </PageDuSimulateur>
       )}
     </>

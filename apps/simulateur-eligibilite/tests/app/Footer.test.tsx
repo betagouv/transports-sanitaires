@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
-import { BandeauVersion } from "../../front/app/BandeauVersion";
+import { Footer } from "../../front/app/Footer";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import { seRattacher } from "../porte";
 
@@ -23,7 +23,7 @@ describe("bandeau de version", () => {
   it("affiche la version telle que `package.json` la déclare", () => {
     // Même garde, pour la version de l'app : un `pnpm version` qui n'irait pas
     // jusqu'à l'écran laisserait le support raisonner sur la précédente.
-    render(<BandeauVersion />);
+    render(<Footer />);
     expect(screen.getByRole("link")).toHaveTextContent(versionDeLApp);
   });
 
@@ -31,7 +31,7 @@ describe("bandeau de version", () => {
     // Le `@` du tag est encodé, et la nouvelle fenêtre n'est pas cosmétique :
     // l'application est embarquée en iframe, et naviguer dans le cadre y ferait
     // perdre le simulateur.
-    render(<BandeauVersion />);
+    render(<Footer />);
     const lien = screen.getByRole("link");
     expect(lien).toHaveAttribute(
       "href",
@@ -45,7 +45,7 @@ describe("bandeau de version", () => {
   });
 
   it("affiche un sha de commit, jamais une valeur vide", () => {
-    render(<BandeauVersion />);
+    render(<Footer />);
     // Sept caractères hexadécimaux, ou l'aveu qu'on ne sait pas — jamais rien.
     expect(screen.getByRole("contentinfo")).toHaveTextContent(
       /commit (?:[0-9a-f]{7}|inconnu)$/,
