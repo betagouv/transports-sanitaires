@@ -8,7 +8,7 @@ import {
   caseACocher,
   ouvrirLeSimulateur,
   question,
-} from "../simulateur/flow";
+} from "../simulateur/questionnaire";
 
 // L'écran des seeds montre les seeds qu'on lui donne, dit pour chacune si la décision
 // confirme ses attendus, et ouvre l'écran correspondant. Le catalogue étant

@@ -5,7 +5,7 @@ import {
   BOISSON,
   ouvrirLeSimulateur,
   question,
-} from "../simulateur/flow";
+} from "../simulateur/questionnaire";
 
 // La trace de debug est un developer tool comme l'écran des seeds : elle s'ouvre sur
 // **tous** les environnements, production comprise, et pour le seul service
