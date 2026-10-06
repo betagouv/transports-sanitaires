@@ -8,7 +8,7 @@
 // (`unlock.ts`). Le simulateur ne l'importe pas : `App` la lui passe, et chaque
 // écran lui donne son état à afficher.
 
-import type { DebugTraceProps } from "../simulateur/questionnaire/QuestionForm";
+import type { DebugTraceProps } from "../simulateur/questionnaire/QuestionnaireForm";
 
 export function DebugTrace(props: DebugTraceProps) {
   return (

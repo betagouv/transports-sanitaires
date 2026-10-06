@@ -8,7 +8,7 @@
 // Sauf au **retour** sur une page déjà répondue : elle rend la main au bouton,
 // faute de quoi un « Précédent » renverrait aussitôt d'où l'on vient. Modifier
 // la réponse relance l'avancement automatique. Peu importe d'où vient le
-// retour : le « Précédent » d'une page garde le parcours monté, celui d'une page
+// retour : le « Précédent » d'une page garde le questionnaire monté, celui d'une page
 // de résultat le remonte. Une page déjà répondue à l'ouverture est donc, elle
 // aussi, une page où l'on revient.
 

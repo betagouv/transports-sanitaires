@@ -40,7 +40,7 @@ Quatre règles à tenir en ajoutant une question :
 - **Une saisie ne compte qu'une fois la page validée.** Le brouillon vit dans
   `questionnaire.ts`, pas dans le champ.
 - **Le verrou est un montage, pas un drapeau.** Ce qui vient après le verrou est un
-  second `QuestionForm`, qui reçoit `lockedAnswers` et ne repose rien
+  second `QuestionnaireForm`, qui reçoit `lockedAnswers` et ne repose rien
   (`front/simulateur/Simulateur.tsx`).
 
 *Gardé par* `tests/simulateur/`.

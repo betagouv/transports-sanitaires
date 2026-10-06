@@ -1,4 +1,4 @@
-// Rend une question du parcours par le champ de `front/ui/` qui convient à sa
+// Rend une question du questionnaire par le champ de `front/ui/` qui convient à sa
 // forme : choix unique, choix multiple, nombre, texte ou date.
 
 import { CheckboxField } from "../../ui/CheckboxField";
@@ -19,7 +19,7 @@ type Props = {
   autoFocus?: boolean;
 };
 
-export function FormField(props: Props) {
+export function QuestionField(props: Props) {
   return (
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
       {render(props)}
@@ -30,7 +30,7 @@ export function FormField(props: Props) {
 // ---- implémentation ----
 
 // Ce que tous les champs reçoivent. Le libellé est mis en avant : sur une page
-// du parcours, c'est lui qui porte la question.
+// du questionnaire, c'est lui qui porte la question.
 function common({ question, error, autoFocus }: Props) {
   return {
     id: question.id,

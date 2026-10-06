@@ -1,6 +1,6 @@
-// Pilotage d'un parcours de questions : la page ouverte, son brouillon, ce
+// Pilotage d'un questionnaire : la page ouverte, son brouillon, ce
 // qu'il reste à répondre et la navigation entre pages. Le rendu est dans
-// `QuestionForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
+// `QuestionnaireForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
 // le suivi analytics dans `questionnaire-tracking.ts`.
 
 import { useState } from "react";
@@ -12,23 +12,23 @@ import { askedPages, askedQuestions, isAnswered } from "./question";
 import type { QuestionnaireTracking } from "./questionnaire-tracking";
 import { useQuestionnaireTracking } from "./questionnaire-tracking";
 
-/** Où en est un parcours : ses réponses validées, et la page ouverte. */
+/** Où en est un questionnaire : ses réponses validées, et la page ouverte. */
 export type QuestionnaireState = {
   readonly answers: Answers;
   readonly page: string;
 };
 
-export type Options = {
-  // Les pages de ce parcours, dans l'ordre. Au moins une doit se poser.
+export type QuestionnaireOptions = {
+  // Les pages de ce questionnaire, dans l'ordre. Au moins une doit se poser.
   pages: readonly Page[];
-  // Réponses acquises avant ce parcours. Aucune de ses pages ne les repose :
+  // Réponses acquises avant ce questionnaire. Aucune de ses pages ne les repose :
   // elles sont lues par les conditions, et figées par construction. C'est le
   // verrou.
   lockedAnswers?: Answers;
-  // Reprise d'un parcours déjà mené, le retour depuis une page de résultat. Il
+  // Reprise d'un questionnaire déjà mené, le retour depuis une page de résultat. Il
   // rouvre sur sa page, réponses intactes, sans réémettre un début.
   initialState?: QuestionnaireState;
-  // Le parcours émet-il ses évènements de mesure d'audience ?
+  // Le questionnaire émet-il ses évènements de mesure d'audience ?
   tracked: boolean;
   onComplete: (answers: Answers, state: QuestionnaireState) => void;
 };
@@ -45,7 +45,7 @@ type View = {
   hasPrevious: boolean;
   // Une question affichée attend encore sa réponse : on ne peut pas avancer.
   hasPendingQuestions: boolean;
-  // Avancer conclura le parcours au lieu d'ouvrir une page de plus.
+  // Avancer conclura le questionnaire au lieu d'ouvrir une page de plus.
   isLast: boolean;
 };
 
@@ -61,7 +61,7 @@ export type Questionnaire = View &
     autoAdvances: boolean;
   };
 
-export function useQuestionnaire(options: Options): Questionnaire {
+export function useQuestionnaire(options: QuestionnaireOptions): Questionnaire {
   const [state, setState] = useState<State>(() => startingState(options));
   const view = read(options.pages, state);
   const tracking = useQuestionnaireTracking(
@@ -82,7 +82,7 @@ export function useQuestionnaire(options: Options): Questionnaire {
 /**
  * L'état qu'aurait laissé un utilisateur ayant donné ces réponses : ouvert sur
  * la première page qui attend encore une réponse, sinon sur la dernière. C'est
- * ce qui permet à une seed d'avoir un parcours derrière elle, et donc un
+ * ce qui permet à une seed d'avoir un questionnaire derrière elle, et donc un
  * « Précédent ».
  */
 export function stateAfterAnswers(
@@ -96,7 +96,7 @@ export function stateAfterAnswers(
     ),
   );
   const open = pending ?? asked.at(-1);
-  if (!open) throw new Error("Ce parcours ne pose aucune page.");
+  if (!open) throw new Error("Ce questionnaire ne pose aucune page.");
   return { answers, page: open.id, complete: pending === undefined };
 }
 
@@ -108,11 +108,11 @@ type Context = {
   state: State;
   setState: (state: State) => void;
   view: View;
-  options: Options;
+  options: QuestionnaireOptions;
   tracking: QuestionnaireTracking;
 };
 
-function startingState(options: Options): State {
+function startingState(options: QuestionnaireOptions): State {
   const answers = options.initialState?.answers ?? options.lockedAnswers;
   const start =
     options.initialState ?? stateAfterAnswers(options.pages, answers ?? {});
@@ -162,7 +162,7 @@ function visibleAnswers(state: State): Answers {
   return { ...state.answers, ...state.draft };
 }
 
-// Les réponses du parcours, la page courante validée. Une question que la
+// Les réponses du questionnaire, la page courante validée. Une question que la
 // page ne pose plus n'y laisse pas de réponse.
 function validated(all: readonly Page[], state: State, page: Page): Answers {
   const asked = askedQuestions(page, visibleAnswers(state)).map((q) => q.id);

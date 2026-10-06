@@ -16,8 +16,8 @@ import {
 } from "./fake-questionnaire";
 import {
   type DebugTraceProps,
-  QuestionForm,
-} from "./questionnaire/QuestionForm";
+  QuestionnaireForm,
+} from "./questionnaire/QuestionnaireForm";
 import { type Answers, askedPages } from "./questionnaire/question";
 import type { QuestionnaireState } from "./questionnaire/questionnaire";
 import { stateAfterAnswers } from "./questionnaire/questionnaire";
@@ -109,7 +109,7 @@ function Questionnaire({
           modèle d’éligibilité suivant soit intégré.
         </p>
       </div>
-      <QuestionForm
+      <QuestionnaireForm
         pages={PAGES_BEFORE_LOCK}
         partCount={PART_COUNT}
         initialState={screen.resume}
@@ -169,7 +169,7 @@ function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
   return (
     <>
       <h1 className="fr-h3">Compléter la commande</h1>
-      <QuestionForm
+      <QuestionnaireForm
         pages={PAGES_AFTER_LOCK}
         partCount={PART_COUNT}
         lockedAnswers={locked}

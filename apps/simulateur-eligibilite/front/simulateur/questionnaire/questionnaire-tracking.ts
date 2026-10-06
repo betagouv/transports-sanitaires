@@ -1,4 +1,4 @@
-// Ce qu'un parcours de questions signale à l'analytics : son début, chaque étape
+// Ce qu'un questionnaire signale à l'analytics : son début, chaque étape
 // franchie, sa conclusion, et son abandon, si l'onglet est quitté avant la fin.
 //
 // Rassemblé ici pour que `questionnaire.ts` n'ait à connaître ni le vocabulaire
@@ -13,7 +13,7 @@ export type QuestionnaireTracking = {
 };
 
 /**
- * `tracked` : le parcours émet-il quoi que ce soit ? `resumed` : il a déjà
+ * `tracked` : le questionnaire émet-il quoi que ce soit ? `resumed` : il a déjà
  * commencé, son début n'est pas réémis.
  */
 export function useQuestionnaireTracking(

@@ -1,4 +1,4 @@
-// Ce qu'est une question du parcours, une page, et les réponses qu'on leur
+// Ce qu'est une question du questionnaire, une page, et les réponses qu'on leur
 // donne. Le questionnaire est déclaré par l'application : ses pages, ses
 // conditions d'affichage et ses dépendances se lisent ici, pas dans un moteur
 // de règles.
@@ -52,7 +52,7 @@ export type Question = SingleChoice | MultipleChoice | NumberInput | TextInput;
 
 export type Page = {
   readonly id: string;
-  /** Rang de la partie du parcours que le stepper affiche, à partir de 1. */
+  /** Rang de la partie du questionnaire que le stepper affiche, à partir de 1. */
   readonly part: number;
   readonly questions: readonly Question[];
 };
@@ -64,7 +64,7 @@ export function askedQuestions(page: Page, answers: Answers): Question[] {
   );
 }
 
-/** Les pages qui posent au moins une question, dans l'ordre du parcours. */
+/** Les pages qui posent au moins une question, dans l'ordre du questionnaire. */
 export function askedPages(pages: readonly Page[], answers: Answers) {
   return pages.filter((page) => askedQuestions(page, answers).length > 0);
 }

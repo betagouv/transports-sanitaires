@@ -1,20 +1,20 @@
-// Parcours de questions générique : le stepper, les champs de la page courante,
+// Le formulaire d'un questionnaire : le stepper, les champs de la page courante,
 // et les boutons de navigation. Toute la mécanique d'état est dans
 // `questionnaire.ts`.
 
 import type { ComponentType } from "react";
-import { FormField } from "./FormField";
+import { QuestionField } from "./QuestionField";
 import { type Answers, errorOf } from "./question";
-import type { Options, Questionnaire } from "./questionnaire";
+import type { Questionnaire, QuestionnaireOptions } from "./questionnaire";
 import { useQuestionnaire } from "./questionnaire";
 
-type Props = Options & {
+type Props = QuestionnaireOptions & {
   // Nombre de parties que le stepper annonce. Il compte des parties, jamais des
-  // pages : une question de plus ne déplace pas le prescripteur dans le parcours.
+  // pages : une question de plus ne déplace pas le prescripteur dans le questionnaire.
   partCount: number;
   // Libellé du bouton de la dernière page.
   endLabel: string;
-  // La trace de debug sous le questionnaire est un developer tool : le parcours
+  // La trace de debug sous le questionnaire est un developer tool : le questionnaire
   // sait *où* elle s'affiche et quoi lui donner à lire, pas à qui elle s'ouvre.
   // Absente, rien n'est rendu.
   DebugTrace?: ComponentType<DebugTraceProps>;
@@ -37,7 +37,7 @@ export type DebugTraceProps = {
   outputs?: Readonly<Record<string, unknown>>;
 };
 
-export function QuestionForm({
+export function QuestionnaireForm({
   partCount,
   endLabel,
   DebugTrace,
@@ -54,7 +54,7 @@ export function QuestionForm({
           questionnaire.next();
         }}
       >
-        <FormFields questionnaire={questionnaire} />
+        <QuestionFields questionnaire={questionnaire} />
         <NavigationButtons questionnaire={questionnaire} endLabel={endLabel} />
       </form>
       {DebugTrace && (
@@ -73,14 +73,14 @@ export function QuestionForm({
 // ---- implémentation ----
 
 // La page rend son brouillon : une saisie ne compte qu'une fois la page validée.
-// La première question non répondue prend le focus, pour qu'un parcours se mène
+// La première question non répondue prend le focus, pour qu'un questionnaire se mène
 // au clavier.
-function FormFields({ questionnaire }: { questionnaire: Questionnaire }) {
+function QuestionFields({ questionnaire }: { questionnaire: Questionnaire }) {
   const toFocus = questionnaire.questions.find(
     (question) => questionnaire.draft[question.id] === undefined,
   );
   return questionnaire.questions.map((question) => (
-    <FormField
+    <QuestionField
       key={question.id}
       question={question}
       answer={questionnaire.draft[question.id]}

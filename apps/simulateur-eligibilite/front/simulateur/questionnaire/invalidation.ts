@@ -2,12 +2,12 @@
 // remplacées, et celles qui dépendaient d'une réponse changée sont effacées.
 //
 // Seules les réponses dépendantes partent. Une réponse sans lien avec ce qui a
-// changé reste, même donnée plus loin dans le parcours.
+// changé reste, même donnée plus loin dans le questionnaire.
 
 import type { Answer, Answers, Page } from "./question";
 
 /**
- * Les réponses du parcours, la page validée. `inputs` porte les réponses de
+ * Les réponses du questionnaire, la page validée. `inputs` porte les réponses de
  * la page telles qu'elles sont à l'écran : une question de la page qui n'y
  * figure pas perd sa réponse.
  */
