@@ -1,4 +1,4 @@
-// Parcours de questions générique : l'étapeur, les champs de la page courante,
+// Parcours de questions générique : le stepper, les champs de la page courante,
 // et les boutons de navigation. Toute la mécanique d'état est dans
 // `passation.ts`.
 
@@ -9,7 +9,7 @@ import { erreurDe } from "./question";
 import { TraceParcours } from "./TraceParcours";
 
 type Props = Options & {
-  // Nombre de parties que l'étapeur annonce. Il compte des parties, jamais des
+  // Nombre de parties que le stepper annonce. Il compte des parties, jamais des
   // pages : une question de plus ne déplace pas le prescripteur dans le parcours.
   nombreDeParties: number;
   // Libellé du bouton de la dernière page.
@@ -30,7 +30,7 @@ export function ParcoursForm({
 
   return (
     <>
-      <Etapeur partie={passation.page.partie} sur={nombreDeParties} />
+      <Stepper partie={passation.page.partie} sur={nombreDeParties} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -66,7 +66,7 @@ function ChampsDeLaPage({ passation }: { passation: Passation }) {
   ));
 }
 
-function Etapeur({ partie, sur }: { partie: number; sur: number }) {
+function Stepper({ partie, sur }: { partie: number; sur: number }) {
   return (
     <div className="fr-stepper" style={{ marginBottom: "2rem" }}>
       <h2 className="fr-stepper__title">

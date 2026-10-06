@@ -166,7 +166,7 @@ parcours réel reprendra :
 | Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire/passation.ts` |
 | Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire/invalidation.ts` |
 | Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `Simulateur.tsx` |
-| Étapeur | Il compte des parties, jamais des pages. | `questionnaire/ParcoursForm.tsx` |
+| Stepper | Il compte des parties, jamais des pages. | `questionnaire/ParcoursForm.tsx` |
 
 *Gardé par* `tests/simulateur/`.
 

@@ -137,7 +137,7 @@ describe("encadré des developer tools, début du parcours", () => {
     expect(
       within(encadre).getByRole("button", ECRAN_SEEDS),
     ).toBeInTheDocument();
-    // L'étapeur du parcours reste au-dehors. (La première question est à choix
+    // Le stepper du parcours reste au-dehors. (La première question est à choix
     // unique : elle n'a pas de bouton de navigation, elle avance d'elle-même.)
     expect(encadre).not.toContainElement(
       screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),

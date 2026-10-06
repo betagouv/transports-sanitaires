@@ -52,7 +52,7 @@ export type Question = ChoixUnique | ChoixMultiple | SaisieNombre | SaisieTexte;
 
 export type Page = {
   readonly id: string;
-  /** Rang de la partie du parcours que l'étapeur affiche, à partir de 1. */
+  /** Rang de la partie du parcours que le stepper affiche, à partir de 1. */
   readonly partie: number;
   readonly questions: readonly Question[];
 };
