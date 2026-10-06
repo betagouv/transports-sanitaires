@@ -20,7 +20,7 @@ type Common = {
   readonly askedIf?: (answers: Answers) => boolean;
   /**
    * Les questions dont dépend cette réponse. Quand l'une d'elles change, cette
-   * réponse est effacée, et elle seule (`invalidation.ts`).
+   * réponse est effacée, et elle seule (`page-commit.ts`).
    */
   readonly dependsOn?: readonly string[];
 };

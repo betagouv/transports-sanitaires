@@ -30,7 +30,7 @@ Trois fichiers portent la mécanique, dans `front/simulateur/questionnaire/` :
 |---|---|
 | `question.ts` | ce qu'est une question, une page, une réponse |
 | `questionnaire.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
-| `invalidation.ts` | ce qu'une réponse changée efface |
+| `page-commit.ts` | ce que deviennent les réponses quand une page est validée, et ce que ça efface |
 
 Quatre règles à tenir en ajoutant une question :
 

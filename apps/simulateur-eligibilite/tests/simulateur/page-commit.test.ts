@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { withValidatedPage } from "../../front/simulateur/questionnaire/invalidation";
+import { commitPage } from "../../front/simulateur/questionnaire/page-commit";
 import type {
   Page,
   Question,
@@ -39,23 +39,21 @@ const REPONSES = {
 
 describe("validation d'une page", () => {
   it("efface les réponses dépendantes, de proche en proche", () => {
-    expect(withValidatedPage(PAGES, REPONSES, SOURCE, { source: "z" })).toEqual(
-      {
-        source: "z",
-        independante: "d",
-      },
-    );
+    expect(commitPage(PAGES, REPONSES, SOURCE, { source: "z" })).toEqual({
+      source: "z",
+      independante: "d",
+    });
   });
 
   it("ne touche à rien quand la réponse est la même", () => {
-    expect(withValidatedPage(PAGES, REPONSES, SOURCE, { source: "a" })).toEqual(
+    expect(commitPage(PAGES, REPONSES, SOURCE, { source: "a" })).toEqual(
       REPONSES,
     );
   });
 
   it("retire la réponse d'une question que la page ne pose plus", () => {
     const { source: _retiree, ...sansSource } = REPONSES;
-    expect(withValidatedPage(PAGES, REPONSES, SOURCE, {})).toEqual({
+    expect(commitPage(PAGES, REPONSES, SOURCE, {})).toEqual({
       independante: sansSource.independante,
     });
   });

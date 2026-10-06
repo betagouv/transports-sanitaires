@@ -11,7 +11,7 @@ import type { Answer, Answers, Page } from "./question";
  * la page telles qu'elles sont à l'écran : une question de la page qui n'y
  * figure pas perd sa réponse.
  */
-export function withValidatedPage(
+export function commitPage(
   pages: readonly Page[],
   answers: Answers,
   page: Page,

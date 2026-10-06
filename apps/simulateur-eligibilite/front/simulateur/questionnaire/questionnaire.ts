@@ -6,7 +6,7 @@
 import { useState } from "react";
 import type { AutoAdvance } from "./auto-advance";
 import { useAutoAdvance } from "./auto-advance";
-import { withValidatedPage } from "./invalidation";
+import { commitPage } from "./page-commit";
 import type { Answer, Answers, Page, Question } from "./question";
 import { askedPages, askedQuestions, isAnswered } from "./question";
 import type { QuestionnaireTracking } from "./questionnaire-tracking";
@@ -151,7 +151,7 @@ function read(all: readonly Page[], state: State): View {
     hasPendingQuestions,
     isLast:
       !hasPendingQuestions &&
-      nextPage(all, page, validated(all, state, page)) === undefined,
+      nextPage(all, page, committedAnswers(all, state, page)) === undefined,
   };
 }
 
@@ -164,12 +164,16 @@ function visibleAnswers(state: State): Answers {
 
 // Les réponses du questionnaire, la page courante validée. Une question que la
 // page ne pose plus n'y laisse pas de réponse.
-function validated(all: readonly Page[], state: State, page: Page): Answers {
+function committedAnswers(
+  all: readonly Page[],
+  state: State,
+  page: Page,
+): Answers {
   const asked = askedQuestions(page, visibleAnswers(state)).map((q) => q.id);
   const inputs = Object.fromEntries(
     Object.entries(state.draft).filter(([id]) => asked.includes(id)),
   );
-  return withValidatedPage(all, state.answers, page, inputs);
+  return commitPage(all, state.answers, page, inputs);
 }
 
 function nextPage(all: readonly Page[], page: Page, answers: Answers) {
@@ -190,7 +194,7 @@ function actions({
     next: () => {
       // Le bouton est déjà désactivé, ceci couvre une soumission au clavier.
       if (view.hasPendingQuestions) return;
-      const answers = validated(options.pages, state, view.page);
+      const answers = committedAnswers(options.pages, state, view.page);
       const following = nextPage(options.pages, view.page, answers);
       if (!following) {
         tracking.questionnaireCompleted();
