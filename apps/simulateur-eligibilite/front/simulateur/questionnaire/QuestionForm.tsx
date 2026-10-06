@@ -1,12 +1,12 @@
 // Parcours de questions générique : le stepper, les champs de la page courante,
 // et les boutons de navigation. Toute la mécanique d'état est dans
-// `flow.ts`.
+// `questionnaire.ts`.
 
 import type { ComponentType } from "react";
 import { FormField } from "./FormField";
-import type { Flow, Options } from "./flow";
-import { useFlow } from "./flow";
 import { type Answers, errorOf } from "./question";
+import type { Flow, Options } from "./questionnaire";
+import { useFlow } from "./questionnaire";
 
 type Props = Options & {
   // Nombre de parties que le stepper annonce. Il compte des parties, jamais des

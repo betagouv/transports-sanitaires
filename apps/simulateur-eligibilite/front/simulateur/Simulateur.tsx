@@ -14,13 +14,13 @@ import {
   PAGES_BEFORE_LOCK,
   PART_COUNT,
 } from "./fake-flow";
-import type { QuestionnaireState } from "./questionnaire/flow";
-import { stateAfterAnswers } from "./questionnaire/flow";
 import {
   type DebugTraceProps,
   QuestionForm,
 } from "./questionnaire/QuestionForm";
 import { type Answers, askedPages } from "./questionnaire/question";
+import type { QuestionnaireState } from "./questionnaire/questionnaire";
+import { stateAfterAnswers } from "./questionnaire/questionnaire";
 
 type Props = {
   onNewSimulation: () => void;

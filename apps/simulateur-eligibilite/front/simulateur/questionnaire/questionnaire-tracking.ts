@@ -1,7 +1,7 @@
 // Ce qu'un parcours de questions signale à l'analytics : son début, chaque étape
 // franchie, sa conclusion, et son abandon, si l'onglet est quitté avant la fin.
 //
-// Rassemblé ici pour que `flow.ts` n'ait à connaître ni le vocabulaire
+// Rassemblé ici pour que `questionnaire.ts` n'ait à connaître ni le vocabulaire
 // mesuré ni le moment où chaque événement part.
 
 import { useEffect, useRef } from "react";

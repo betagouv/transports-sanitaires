@@ -29,7 +29,7 @@ Trois fichiers portent la mécanique, dans `front/simulateur/questionnaire/` :
 | Fichier | Ce qu'il porte |
 |---|---|
 | `question.ts` | ce qu'est une question, une page, une réponse |
-| `flow.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
+| `questionnaire.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
 | `invalidation.ts` | ce qu'une réponse changée efface |
 
 Quatre règles à tenir en ajoutant une question :
@@ -38,7 +38,7 @@ Quatre règles à tenir en ajoutant une question :
 - **Une dépendance se déclare dans `dependsOn`.** Sans elle, la réponse survit au
   changement de celle dont elle dépend.
 - **Une saisie ne compte qu'une fois la page validée.** Le brouillon vit dans
-  `flow.ts`, pas dans le champ.
+  `questionnaire.ts`, pas dans le champ.
 - **Le verrou est un montage, pas un drapeau.** Ce qui vient après le verrou est un
   second `QuestionForm`, qui reçoit `lockedAnswers` et ne repose rien
   (`front/simulateur/Simulateur.tsx`).
