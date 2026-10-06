@@ -97,7 +97,7 @@ l'industrie nomme déjà ainsi. Le franciser produit des mots que personne n'emp
 |---|---|
 | les composants d'interface | `TextField`, `SelectField`, `Stepper`, `Container`, `Footer`, `RattachementForm` |
 | les écrans | `RattachementScreen`, `SeedsScreen`, `SimulateurScreen` |
-| la mécanique du questionnaire | `Flow`, `QuestionnaireState`, `Answer`, `draft`, `lockedAnswers`, `askedIf`, `dependsOn` |
+| la mécanique du questionnaire | `Questionnaire`, `QuestionnaireState`, `Answer`, `draft`, `lockedAnswers`, `askedIf`, `dependsOn` |
 | la navigation et l'état | `screen`, `goTo`, `restart`, `state` |
 | ce qu'une API tierce nomme | `useX`, `Props`, `track*`, `nativeInputProps`, `rowId` |
 

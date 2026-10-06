@@ -5,7 +5,7 @@
 import type { ComponentType } from "react";
 import { FormField } from "./FormField";
 import { type Answers, errorOf } from "./question";
-import type { Flow, Options } from "./questionnaire";
+import type { Options, Questionnaire } from "./questionnaire";
 import { useQuestionnaire } from "./questionnaire";
 
 type Props = Options & {
@@ -43,27 +43,27 @@ export function QuestionForm({
   DebugTrace,
   ...options
 }: Props) {
-  const flow = useQuestionnaire(options);
+  const questionnaire = useQuestionnaire(options);
 
   return (
     <>
-      <Stepper part={flow.page.part} total={partCount} />
+      <Stepper part={questionnaire.page.part} total={partCount} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          flow.next();
+          questionnaire.next();
         }}
       >
-        <FormFields flow={flow} />
-        <NavigationButtons flow={flow} endLabel={endLabel} />
+        <FormFields questionnaire={questionnaire} />
+        <NavigationButtons questionnaire={questionnaire} endLabel={endLabel} />
       </form>
       {DebugTrace && (
         <DebugTrace
           title="chemin parcouru"
-          pages={flow.pages}
-          currentPage={flow.page.id}
-          draft={flow.draft}
-          answers={flow.answers}
+          pages={questionnaire.pages}
+          currentPage={questionnaire.page.id}
+          draft={questionnaire.draft}
+          answers={questionnaire.answers}
         />
       )}
     </>
@@ -75,18 +75,18 @@ export function QuestionForm({
 // La page rend son brouillon : une saisie ne compte qu'une fois la page validée.
 // La première question non répondue prend le focus, pour qu'un parcours se mène
 // au clavier.
-function FormFields({ flow }: { flow: Flow }) {
-  const toFocus = flow.questions.find(
-    (question) => flow.draft[question.id] === undefined,
+function FormFields({ questionnaire }: { questionnaire: Questionnaire }) {
+  const toFocus = questionnaire.questions.find(
+    (question) => questionnaire.draft[question.id] === undefined,
   );
-  return flow.questions.map((question) => (
+  return questionnaire.questions.map((question) => (
     <FormField
       key={question.id}
       question={question}
-      answer={flow.draft[question.id]}
-      error={errorOf(question, flow.draft[question.id])}
+      answer={questionnaire.draft[question.id]}
+      error={errorOf(question, questionnaire.draft[question.id])}
       autoFocus={question === toFocus}
-      onChange={(answer) => flow.answer(question.id, answer)}
+      onChange={(answer) => questionnaire.answer(question.id, answer)}
     />
   ));
 }
@@ -114,10 +114,10 @@ function Stepper({ part, total }: { part: number; total: number }) {
 }
 
 function NavigationButtons({
-  flow,
+  questionnaire,
   endLabel,
 }: {
-  flow: Flow;
+  questionnaire: Questionnaire;
   endLabel: string;
 }) {
   return (
@@ -125,24 +125,24 @@ function NavigationButtons({
       className="fr-btns-group fr-btns-group--inline"
       style={{ marginTop: "2rem" }}
     >
-      {flow.hasPrevious && (
+      {questionnaire.hasPrevious && (
         <button
           type="button"
           className="fr-btn fr-btn--secondary"
-          onClick={flow.back}
+          onClick={questionnaire.back}
         >
           Précédent
         </button>
       )}
       {/* Une page à choix unique avance d'elle-même : lui donner un bouton de
           validation contredirait le geste qu'on attend de l'utilisateur. */}
-      {!flow.autoAdvances && (
+      {!questionnaire.autoAdvances && (
         <button
           type="submit"
           className="fr-btn"
-          disabled={flow.hasPendingQuestions}
+          disabled={questionnaire.hasPendingQuestions}
         >
-          {flow.isLast ? endLabel : "Suivant"}
+          {questionnaire.isLast ? endLabel : "Suivant"}
         </button>
       )}
     </div>

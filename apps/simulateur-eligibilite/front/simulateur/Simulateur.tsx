@@ -66,14 +66,14 @@ export function Simulateur({
 
 // ---- implémentation ----
 
-// `previousFlow` est le parcours qu'un résultat a derrière lui : c'est lui que
+// `previousState` est le parcours qu'un résultat a derrière lui : c'est lui que
 // « Précédent » rouvre. Passé le verrou, l'état du questionnaire n'est plus
 // porté par aucun écran : il n'y a plus rien à rouvrir.
 type Screen =
   | { name: "questionnaire"; resume?: QuestionnaireState }
-  | { name: "result"; previousFlow: QuestionnaireState }
+  | { name: "result"; previousState: QuestionnaireState }
   | { name: "complement"; locked: Answers; resume?: QuestionnaireState }
-  | { name: "end"; locked: Answers; previousFlow: QuestionnaireState };
+  | { name: "end"; locked: Answers; previousState: QuestionnaireState };
 
 type ScreenProps<Name extends Screen["name"]> = {
   screen: Extract<Screen, { name: Name }>;
@@ -91,7 +91,7 @@ function startingScreen(seedAnswers: Answers | null): Screen {
     seedAnswers,
   );
   return complete
-    ? { name: "result", previousFlow: state }
+    ? { name: "result", previousState: state }
     : { name: "questionnaire", resume: state };
 }
 
@@ -116,7 +116,9 @@ function Questionnaire({
         tracked
         endLabel="Voir le résultat"
         DebugTrace={DebugTrace}
-        onComplete={(_, previousFlow) => goTo({ name: "result", previousFlow })}
+        onComplete={(_, previousState) =>
+          goTo({ name: "result", previousState })
+        }
       />
     </>
   );
@@ -130,10 +132,10 @@ function ResultToLock({
   DebugTrace,
   onRestart,
 }: ScreenProps<"result">) {
-  const { answers } = screen.previousFlow;
+  const { answers } = screen.previousState;
   const outputs = decide(answers);
   const reopen = () =>
-    goTo({ name: "questionnaire", resume: screen.previousFlow });
+    goTo({ name: "questionnaire", resume: screen.previousState });
   const lock = () => goTo({ name: "complement", locked: answers });
   return (
     <>
@@ -175,8 +177,8 @@ function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
         tracked={false}
         endLabel="Terminer"
         DebugTrace={DebugTrace}
-        onComplete={(_, previousFlow) =>
-          goTo({ name: "end", locked, previousFlow })
+        onComplete={(_, previousState) =>
+          goTo({ name: "end", locked, previousState })
         }
       />
     </>
@@ -190,13 +192,13 @@ function CompletedOrder({
   DebugTrace,
   onRestart,
 }: ScreenProps<"end">) {
-  const { answers } = screen.previousFlow;
+  const { answers } = screen.previousState;
   const outputs = decide(answers);
   const reopen = () =>
     goTo({
       name: "complement",
       locked: screen.locked,
-      resume: screen.previousFlow,
+      resume: screen.previousState,
     });
   return (
     <>

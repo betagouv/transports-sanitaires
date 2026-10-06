@@ -55,13 +55,13 @@ type Actions = {
   back: () => void;
 };
 
-export type Flow = View &
+export type Questionnaire = View &
   Actions & {
     // La page avancera d'elle-même : le bouton « Suivant » n'a pas à s'afficher.
     autoAdvances: boolean;
   };
 
-export function useQuestionnaire(options: Options): Flow {
+export function useQuestionnaire(options: Options): Questionnaire {
   const [state, setState] = useState<State>(() => startingState(options));
   const view = read(options.pages, state);
   const tracking = useQuestionnaireTracking(
