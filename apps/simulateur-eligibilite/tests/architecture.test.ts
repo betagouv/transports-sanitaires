@@ -165,8 +165,7 @@ describe("chaîne d'outillage", () => {
   });
 });
 
-// Le texte de toutes les règles livrées. `regles/` est vide pour l'instant : la
-// garde attend le prochain modèle.
+// Le texte de toutes les règles livrées. Vide quand `regles/` n'existe pas.
 function reglesPubliees(): string {
   const dossier = join(racine, "regles");
   if (!existsSync(dossier)) return "";

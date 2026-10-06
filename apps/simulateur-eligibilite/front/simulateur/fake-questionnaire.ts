@@ -1,8 +1,8 @@
 // Le questionnaire factice : trois questions sans rapport avec le transport
 // sanitaire. Il ne décide rien.
 //
-// Il garde sous test ce que le vrai questionnaire reprendra : avancement
-// automatique, retour, brouillon, invalidation et verrou.
+// Il garde sous test la mécanique du questionnaire : avancement automatique,
+// retour, brouillon, effacement des réponses dépendantes et verrou.
 
 import type { Answers, Page } from "./questionnaire/question";
 

@@ -9,7 +9,7 @@ import { emettre } from "./matomo";
  * la compilation tout nom qui n'est pas dans la liste.
  *
  * Elle ne couvre que le questionnaire : son début, ses étapes, sa fin, son
- * abandon. Les résultats et les documents reviendront avec le prochain modèle.
+ * abandon.
  *
  * Un objet `as const`, pas un `enum` : `erasableSyntaxOnly` (tsconfig) interdit
  * l'`enum`.

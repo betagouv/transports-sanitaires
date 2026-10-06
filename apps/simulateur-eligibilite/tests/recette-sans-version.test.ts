@@ -3,8 +3,8 @@
 // Intégrer une version met les attendus à jour, sans rien renommer. Voir le
 // skill `implement-publicodes-version`.
 //
-// Les identifiants du livrable (`CONV971-*`, `RETOURS972-*`, `V973-*`) gardent
-// leur version : c'est leur nom chez l'éditeur.
+// Les identifiants du livrable gardent leur numéro : c'est leur nom chez
+// l'éditeur.
 
 import { basename } from "node:path";
 import { describe, expect, it } from "vitest";

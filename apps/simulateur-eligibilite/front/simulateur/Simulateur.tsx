@@ -156,8 +156,7 @@ function ResultToLock({
   );
 }
 
-// Le complément n'émet pas d'évènement. Ce qu'on y mesurera se décidera avec
-// le prochain modèle.
+// Le complément n'émet pas d'évènement.
 function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
   const { locked } = screen;
   return (

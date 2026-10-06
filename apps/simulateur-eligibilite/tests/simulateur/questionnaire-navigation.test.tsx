@@ -12,8 +12,8 @@ import {
   sansBouton,
 } from "./questionnaire";
 
-// La navigation que le vrai questionnaire reprendra telle quelle. Elle est
-// testée sur le questionnaire factice, par la vraie application.
+// La navigation du questionnaire, testée sur le questionnaire factice, par la
+// vraie application.
 
 describe("avancement automatique", () => {
   it("un choix unique avance seul, sans bouton « Suivant »", async () => {
