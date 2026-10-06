@@ -15,7 +15,7 @@ import {
   seRattacherProduit,
 } from "../porte";
 
-// Les outils produit (galerie de seeds, mode test des règles) court-circuitent le
+// Les outils produit (dont la galerie de seeds) court-circuitent le
 // parcours : ils doivent être regroupés dans un encadré à part, impossible à
 // confondre avec les actions nominales. Ils sont disponibles sur **tous** les
 // environnements, mais seulement pour le service n° 4 : c'est le service qui garde
@@ -23,7 +23,6 @@ import {
 
 const ENCADRE = { name: "Outils produit" } as const;
 const GALERIE = { name: "Galerie de seeds" } as const;
-const LABO = { name: "Mode test des règles" } as const;
 
 describe("encadré des outils produit, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
@@ -36,7 +35,7 @@ describe("encadré des outils produit, écran de rattachement", () => {
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 
-  it("apparaît pour le service n° 4, avec les deux outils et eux seuls", async () => {
+  it("apparaît pour le service n° 4, avec la galerie et elle seule", async () => {
     const user = userEvent.setup();
     render(
       <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
@@ -46,8 +45,7 @@ describe("encadré des outils produit, écran de rattachement", () => {
 
     const encadre = screen.getByRole("region", ENCADRE);
     expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
-    expect(within(encadre).getByRole("button", LABO)).toBeInTheDocument();
-    expect(within(encadre).getAllByRole("button")).toHaveLength(2);
+    expect(within(encadre).getAllByRole("button")).toHaveLength(1);
   });
 
   it("laisse l'action nominale hors de l'encadré", async () => {
@@ -83,7 +81,6 @@ describe("encadré des outils produit, écran de rattachement", () => {
     await screen.findByRole("option", { name: "Transport Sanitaire" });
     await user.selectOptions(service, "Transport Sanitaire");
     expect(screen.getByRole("button", GALERIE)).toBeEnabled();
-    expect(screen.getByRole("button", LABO)).toBeEnabled();
   });
 
   it("remonte la destination choisie avec le rattachement et l'accès", async () => {
@@ -94,12 +91,12 @@ describe("encadré des outils produit, écran de rattachement", () => {
     );
 
     await remplirRattachementProduit(user);
-    await user.click(screen.getByRole("button", LABO));
+    await user.click(screen.getByRole("button", GALERIE));
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "e_liberal_cnam", serviceId: "s_transport_sanitaire" },
       {
-        destination: "labo",
+        destination: "galerie",
         outilsProduit: true,
       },
     );

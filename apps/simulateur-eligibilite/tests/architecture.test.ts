@@ -68,24 +68,17 @@ describe("invariants métier", () => {
   });
 
   it("les outils produit se greffent sur le simulateur, jamais l'inverse", () => {
-    // Une exception, assumée : `moteur.ts` consulte `labo/labo.ts` pour savoir
-    // s'il doit charger des règles de test. Choisir quelles règles charger est
-    // une affaire de moteur, et l'inverser demanderait de le sortir de son
-    // singleton de module. Elle est nommée ici, donc elle ne peut pas s'étendre
-    // en silence.
-    const EXCEPTION =
-      "front/simulateur/moteur.ts → front/outils-produit/labo/labo";
     expect(
       franchissements(
         ["front/simulateur"],
         commencePar("front/outils-produit/"),
       ),
-      "La galerie rejoue des seeds dans le moteur, le labo remplace ses " +
-        "règles, le CERFA lit une situation : les outils produit sont bâtis " +
+      "La galerie rejoue des seeds dans le moteur, le CERFA lit une " +
+        "situation : les outils produit sont bâtis " +
         "**sur** le socle. Le socle, lui, n'a pas à les connaître — il reçoit " +
         "d'`App` du contenu déjà composé (`panneauOutilsProduit`, " +
         "`documentTelechargeable`). Fais de même plutôt que d'importer.",
-    ).toEqual([EXCEPTION]);
+    ).toEqual([]);
   });
 
   it("le CERFA n'adresse jamais le backend", () => {

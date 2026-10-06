@@ -47,18 +47,15 @@ describe("parcours de rattachement", () => {
     // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
     render(<Rattachement onValide={vi.fn()} />);
 
-    const labo = { name: "Mode test des règles" };
+    const galerie = { name: "Galerie de seeds" };
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Cardiologie");
-    expect(screen.queryByRole("button", labo)).toBeNull();
+    expect(screen.queryByRole("button", galerie)).toBeNull();
 
     await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
     await choisir(/Nom du service/, "Transport Sanitaire");
-    expect(screen.getByRole("button", labo)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Galerie de seeds" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", galerie)).toBeInTheDocument();
   });
 
   it("établissement « Libéral / CNAM / CPAM / Autre » → service, sans branche dédiée", async () => {

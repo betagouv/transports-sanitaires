@@ -84,8 +84,8 @@ const SERVICES: SnapshotService[] = [
   },
   { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
   { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
-  // Service dédié au produit : déverrouille le « mode test des règles » (labo).
-  // Correspond au service Grist `Id2 = 4` en production (cf. front/outils-produit/labo/labo.ts).
+  // Service dédié au produit : déverrouille les outils produit. Correspond au
+  // service Grist `Id2 = 4` en production (cf. front/outils-produit/deverrouillage.ts).
   {
     id: "s_transport_sanitaire",
     etabId: "e_liberal_cnam",

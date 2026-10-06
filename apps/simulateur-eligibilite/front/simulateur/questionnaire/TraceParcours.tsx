@@ -2,7 +2,7 @@
 // réponses saisies. Sert à comprendre un séquencement inattendu sans
 // instrumenter le moteur.
 //
-// C'est un outil produit comme la galerie ou le labo : disponible sur tous les
+// C'est un outil produit comme la galerie : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
 // (`front/outils-produit/deverrouillage.ts`). Le simulateur ignore ce service :
 // `App` lui passe la réponse, que `autorisee` porte jusqu'ici. Le prop est

@@ -17,8 +17,6 @@ import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
 import { BoutonCerfa } from "../outils-produit/beta/cerfa/BoutonCerfa";
 import type { OptionsGénération } from "../outils-produit/beta/cerfa/document";
-import { BandeauLabo } from "../outils-produit/labo/BandeauLabo";
-import { Labo } from "../outils-produit/labo/Labo";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
 import { declarerViaApi } from "../rattachement/declaration-http";
 import { Rattachement } from "../rattachement/Rattachement";
@@ -50,16 +48,12 @@ export function App({
 
   return (
     <>
-      <BandeauLabo />
       {navigation.ecran === "rattachement" && (
         <Porte
           referentiel={referentiel}
           declarer={declarer}
           onRattache={navigation.rattacher}
         />
-      )}
-      {navigation.ecran === "labo" && (
-        <Labo onRetour={navigation.fermerOutil} />
       )}
       {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
       {navigation.ecran === "simulateur" && (
@@ -189,8 +183,7 @@ function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
 // parcours, qu'`App` n'a pas sous la main).
 //
 // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
-// l'écran-porte, sans avoir à ressortir du simulateur. Le mode test des règles,
-// lui, reste à la porte — il recharge l'application, et perdrait le parcours.
+// l'écran-porte, sans avoir à ressortir du simulateur.
 function panneauOutilsProduit(navigation: Navigation) {
   if (!navigation.outilsProduit) return undefined;
   return (

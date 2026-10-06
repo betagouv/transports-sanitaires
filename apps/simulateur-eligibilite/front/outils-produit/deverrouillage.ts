@@ -1,4 +1,4 @@
-// Qui voit les outils produit (mode test des règles, galerie de seeds, traces de
+// Qui voit les outils produit (galerie de seeds, traces de
 // debug) : le service choisi à l'écran-porte, et rien d'autre.
 
 import { normalise } from "../../shared/rattachement-saisi";
@@ -23,5 +23,4 @@ const SERVICE_PRODUIT_LIBELLE = "Transport Sanitaire";
 
 // Pas de garde au build : les outils sont disponibles sur **tous** les
 // environnements, production comprise — c'est le référentiel qui décide qui les
-// voit. Et la garde vit ici plutôt que dans `labo/`, parce qu'elle sert à tous
-// les outils : l'y laisser aurait fait dépendre la galerie du module labo.
+// voit. Et la garde vit ici plutôt que dans un outil, parce qu'elle sert à tous.

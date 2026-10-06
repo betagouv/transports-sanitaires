@@ -8,10 +8,9 @@
 // Le tableau, lui, est dans `TableauDesSeeds.tsx` : ici on sait quels écrans
 // existent, pas comment une seed se lit.
 //
-// La galerie rejoue chaque seed dans le moteur **du navigateur** — donc, en mode
-// labo, sous les règles en cours de test : la colonne « État » dit alors tout de
-// suite quelles situations de référence les nouvelles règles font diverger, avant
-// même d'ouvrir un parcours.
+// La galerie rejoue chaque seed dans le moteur **du navigateur** : la colonne
+// « État » dit quelles situations de référence divergent, avant même d'ouvrir un
+// parcours.
 
 import { useMemo } from "react";
 import { EcranPleinePage } from "../../app/EcranPleinePage";
@@ -90,8 +89,7 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
 
 // ---- implémentation ----
 
-// Le moteur effectivement chargé confirme-t-il les attendus du catalogue ? En
-// mode labo, ce bandeau est le premier signal qu'une règle de test a bougé.
+// Le moteur effectivement chargé confirme-t-il les attendus du catalogue ?
 function ConformiteDuCatalogue({ lignes }: { lignes: LigneSeed[] }) {
   const enEcart = lignes.filter(
     ({ evaluation }) => evaluation.ecarts.length > 0,

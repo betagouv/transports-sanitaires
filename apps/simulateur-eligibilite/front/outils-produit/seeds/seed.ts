@@ -116,7 +116,7 @@ export type EvaluationSeed = {
  * Évalue une seed et confronte le moteur à ses attendus.
  *
  * Le moteur est passé en paramètre plutôt que construit ici, parce que le front en
- * a un seul, dans `front/simulateur/moteur.ts`, qui peut porter les règles du labo,
+ * a un seul, dans `front/simulateur/moteur.ts`,
  * et que les tests le fabriquent depuis le disque.
  */
 export function evaluerSeed(

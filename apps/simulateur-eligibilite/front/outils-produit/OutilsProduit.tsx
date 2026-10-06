@@ -1,5 +1,4 @@
-// Encadré des **outils produit** : la galerie de seeds et le mode test des règles
-// (labo). Partagé par les écrans qui les proposent, l'écran-porte de rattachement
+// Encadré des **outils produit**, dont la galerie de seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
@@ -9,7 +8,7 @@
 // build.
 //
 // Ils court-circuitent le parcours nominal (la galerie ouvre une situation
-// fabriquée, le labo remplace les règles) : ils doivent rester **impossibles à
+// fabriquée) : ils doivent rester **impossibles à
 // confondre** avec les actions du parcours. D'où l'encadré à part, la bordure
 // tiretée et l'intitulé explicite.
 //

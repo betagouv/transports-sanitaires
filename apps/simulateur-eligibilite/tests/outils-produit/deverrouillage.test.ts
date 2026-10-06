@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { estServiceProduit } from "../../front/outils-produit/deverrouillage";
 
-// Garde d'accès commune au mode test des règles et à la galerie de seeds. Elle vaut
+// Garde d'accès commune aux outils produit. Elle vaut
 // sur tous les environnements : c'est le service du référentiel qui décide, pas le
 // build.
 

@@ -6,7 +6,7 @@ import { snapshotReferentiel } from "../../shared/referentiel";
 import { seRattacher, seRattacherProduit } from "../porte";
 import { terminerParcours } from "../simulateur/parcours";
 
-// La trace de debug est un outil produit comme la galerie et le labo : elle
+// La trace de debug est un outil produit comme la galerie : elle
 // s'ouvre sur **tous** les environnements, production comprise, et pour le seul
 // service n° 4. Elle montre le chemin parcouru et les réponses déjà saisies, ce
 // qu'aucun prescripteur ordinaire n'a à voir sous ses questions.

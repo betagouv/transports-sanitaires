@@ -3,7 +3,6 @@
 import yaml from "js-yaml";
 import type { RawPublicodes } from "publicodes";
 import Engine from "publicodes";
-import { desactiverLabo, reglesLaboActives } from "../outils-produit/labo/labo";
 import type { CleDeRegle } from "./contrat-regles-publicodes";
 
 /**
@@ -62,37 +61,15 @@ export function inapplicable(
 // passent par `CleDeRegle`, donc une clé absente du contrat ne compile pas —
 // c'est leur seule raison d'être, la brièveté n'est qu'un bonus.
 
-// Choisit les règles à charger : celles du **mode labo** (test de règles par le
-// produit, cf. `outils-produit/labo/labo.ts`) si présentes et valides, sinon les
-// règles officielles embarquées dans le build.
-// Auto-réparation : des règles labo qui ne compilent pas sont désactivées et on
-// retombe sur les officielles plutôt que de bloquer toute l'app.
 function chargerMoteur(): {
   moteur: Engine;
   reglesBrutes: RawPublicodes<string>;
 } {
-  const laboYaml = reglesLaboActives();
-  if (laboYaml) {
-    try {
-      const regles = yaml.load(laboYaml) as RawPublicodes<string>;
-      return {
-        moteur: new Engine(regles, optionsMoteur()),
-        reglesBrutes: regles,
-      };
-    } catch (err) {
-      console.error(
-        "[labo] Règles de test invalides — retour aux règles officielles.",
-        err,
-      );
-      desactiverLabo();
-    }
-  }
   const regles = reglesOfficielles();
   return { moteur: new Engine(regles, optionsMoteur()), reglesBrutes: regles };
 }
 
 // Règles **officielles**, embarquées dans le build depuis `regles/*.publicodes`.
-// Assemblées à la demande : le mode labo n'en paie pas le coût.
 function reglesOfficielles(): RawPublicodes<string> {
   const modules = import.meta.glob("../../regles/*.publicodes", {
     query: "?raw",

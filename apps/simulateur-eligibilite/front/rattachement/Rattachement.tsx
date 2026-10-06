@@ -19,12 +19,12 @@ import { useSaisieRattachement } from "./saisie-rattachement";
 
 /**
  * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
- * l'accès aux outils produit. Les trois boutons de cet écran passent par le même
+ * l'accès aux outils produit. Les deux boutons de cet écran passent par le même
  * `onValide` : le rattachement est obligatoire quelle que soit la destination
  * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
  */
 export type AccesRattachement = {
-  destination: "simulateur" | "galerie" | "labo";
+  destination: "simulateur" | "galerie";
   /** Le service sélectionné déverrouille les outils produit (service n° 4). */
   outilsProduit: boolean;
 };
@@ -162,9 +162,9 @@ function EntreesDansLApplication({
   );
 }
 
-// Les deux outils produit sont côte à côte, hors des actions nominales. Ils
-// n'apparaissent qu'une fois le service n° 4 choisi, ce qui complète la saisie :
-// y entrer reste une entrée dans l'application, elle passe par la porte. Les
+// La galerie est hors des actions nominales. Elle n'apparaît qu'une fois le
+// service n° 4 choisi, ce qui complète la saisie : y entrer reste une entrée
+// dans l'application, elle passe par la porte. Les
 // situations de la galerie vivent dans `seeds/`, pas dans cet écran : les y
 // égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({
@@ -176,9 +176,6 @@ function PanneauOutils({
     <OutilsProduit>
       <BoutonOutil onClick={() => onEntrer("galerie")}>
         Galerie de seeds
-      </BoutonOutil>
-      <BoutonOutil onClick={() => onEntrer("labo")}>
-        Mode test des règles
       </BoutonOutil>
     </OutilsProduit>
   );

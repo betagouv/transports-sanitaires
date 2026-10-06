@@ -6,8 +6,8 @@
 // - les précisions médicales demandées (`precision-medicale.ts`).
 //
 // Les dates d'une permission ont leurs propres gardes
-// (`dates-de-permission.ts`). Une seed ou
-// le labo qui pose une saisie refusée n'obtient aucun document.
+// (`dates-de-permission.ts`). Une seed
+// qui pose une saisie refusée n'obtient aucun document.
 
 import type { Situation } from "publicodes";
 import type { CleDeRegle } from "./contrat-regles-publicodes";

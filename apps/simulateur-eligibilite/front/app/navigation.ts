@@ -1,5 +1,5 @@
 // Où l'on se trouve dans l'application, et comment on en change : la porte
-// de rattachement, les deux écrans d'outils produit qui s'y superposent, et
+// de rattachement, la galerie de seeds qui s'y superpose, et
 // l'outil du simulateur affiché derrière.
 //
 // Le rattachement, lui, ne transite pas par ici : la porte le range en session,
@@ -16,7 +16,7 @@ import type { AccesRattachement } from "../rattachement/Rattachement";
 import { effacerPassation, emettrePassation } from "../simulateur/passation";
 import type { Outil } from "./outil";
 
-type Ecran = "rattachement" | "galerie" | "labo" | "simulateur";
+type Ecran = "rattachement" | "galerie" | "simulateur";
 
 export type Navigation = {
   ecran: Ecran;
@@ -141,6 +141,5 @@ function ouvrirLaSeed(
 
 function ecranDe(acces: AccesRattachement): Ecran {
   if (acces.destination === "galerie") return "galerie";
-  if (acces.destination === "labo") return "labo";
   return "simulateur";
 }

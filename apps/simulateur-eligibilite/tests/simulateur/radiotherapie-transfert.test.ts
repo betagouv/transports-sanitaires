@@ -98,7 +98,7 @@ describe("TS973-06, l'exception suit la nature du transfert en direct", () => {
 // `p1_m0_seance_radiotherapie` : sans séance déclarée, l'exception est masquée
 // et le secrétariat ne peut pas la cocher. La Partie 1 étant verrouillée dès
 // l'entrée au secrétariat, la contradiction n'est pas atteignable dans le
-// parcours. Si elle arrive quand même (seed, labo),
+// parcours. Si elle arrive quand même (seed),
 // `qualificationDeclarationsValide` la refuse et aucun document n'est produit.
 //
 // La reprise médicale du livrable n'est pas construite : voir
