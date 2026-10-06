@@ -13,7 +13,7 @@ import type { QuestionnaireTracking } from "./questionnaire-tracking";
 import { useQuestionnaireTracking } from "./questionnaire-tracking";
 
 /** Où en est un parcours : ses réponses validées, et la page ouverte. */
-export type FlowState = {
+export type QuestionnaireState = {
   readonly answers: Answers;
   readonly page: string;
 };
@@ -27,10 +27,10 @@ export type Options = {
   lockedAnswers?: Answers;
   // Reprise d'un parcours déjà mené, le retour depuis une page de résultat. Il
   // rouvre sur sa page, réponses intactes, sans réémettre un début.
-  initialState?: FlowState;
+  initialState?: QuestionnaireState;
   // Le parcours émet-il ses évènements de mesure d'audience ?
   tracked: boolean;
-  onComplete: (answers: Answers, state: FlowState) => void;
+  onComplete: (answers: Answers, state: QuestionnaireState) => void;
 };
 
 type View = {
@@ -88,7 +88,7 @@ export function useFlow(options: Options): Flow {
 export function stateAfterAnswers(
   pages: readonly Page[],
   answers: Answers,
-): FlowState & { complete: boolean } {
+): QuestionnaireState & { complete: boolean } {
   const asked = askedPages(pages, answers);
   const pending = asked.find((page) =>
     askedQuestions(page, answers).some(
@@ -102,7 +102,7 @@ export function stateAfterAnswers(
 
 // ---- implémentation ----
 
-type State = FlowState & { readonly draft: Answers };
+type State = QuestionnaireState & { readonly draft: Answers };
 
 type Context = {
   state: State;

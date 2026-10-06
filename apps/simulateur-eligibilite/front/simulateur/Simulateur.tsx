@@ -14,7 +14,7 @@ import {
   PAGES_BEFORE_LOCK,
   PART_COUNT,
 } from "./fake-flow";
-import type { FlowState } from "./questionnaire/flow";
+import type { QuestionnaireState } from "./questionnaire/flow";
 import { stateAfterAnswers } from "./questionnaire/flow";
 import {
   type DebugTraceProps,
@@ -70,10 +70,10 @@ export function Simulateur({
 // « Précédent » rouvre. Passé le verrou, l'état du questionnaire n'est plus
 // porté par aucun écran : il n'y a plus rien à rouvrir.
 type Screen =
-  | { name: "questionnaire"; resume?: FlowState }
-  | { name: "result"; previousFlow: FlowState }
-  | { name: "complement"; locked: Answers; resume?: FlowState }
-  | { name: "end"; locked: Answers; previousFlow: FlowState };
+  | { name: "questionnaire"; resume?: QuestionnaireState }
+  | { name: "result"; previousFlow: QuestionnaireState }
+  | { name: "complement"; locked: Answers; resume?: QuestionnaireState }
+  | { name: "end"; locked: Answers; previousFlow: QuestionnaireState };
 
 type ScreenProps<Name extends Screen["name"]> = {
   screen: Extract<Screen, { name: Name }>;
