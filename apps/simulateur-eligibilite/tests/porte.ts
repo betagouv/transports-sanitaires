@@ -1,5 +1,5 @@
 // Helpers de franchissement de l'écran-porte, partagés par les tests qui ont besoin
-// d'être **derrière** le rattachement (parcours, galerie de seeds).
+// d'être **derrière** le rattachement (parcours, écran des seeds).
 //
 // Deux rattachements : un ordinaire, et un sur le service n° 4 (« Transport
 // Sanitaire »), seul à déverrouiller les developer tools.

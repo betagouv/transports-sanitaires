@@ -1,4 +1,4 @@
-// Encadré des **developer tools**, dont la galerie de seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
+// Encadré des **developer tools**, dont l'écran des seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
@@ -7,7 +7,7 @@
 // `estServiceProduit`, cf. `deverrouillage.ts`). C'est le service qui garde l'accès, plus le
 // build.
 //
-// Ils court-circuitent le parcours nominal (la galerie ouvre une situation
+// Ils court-circuitent le parcours nominal (l'écran des seeds ouvre une situation
 // fabriquée) : ils doivent rester **impossibles à
 // confondre** avec les actions du parcours. D'où l'encadré à part, la bordure
 // tiretée et l'intitulé explicite.

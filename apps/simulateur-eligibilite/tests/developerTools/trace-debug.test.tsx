@@ -7,7 +7,7 @@ import {
   question,
 } from "../simulateur/parcours";
 
-// La trace de debug est un developer tool comme la galerie : elle s'ouvre sur
+// La trace de debug est un developer tool comme l'écran des seeds : elle s'ouvre sur
 // **tous** les environnements, production comprise, et pour le seul service
 // n° 4. Elle montre le chemin parcouru et les réponses déjà données, ce
 // qu'aucun prescripteur ordinaire n'a à voir sous ses questions.

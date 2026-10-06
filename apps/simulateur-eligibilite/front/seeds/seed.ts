@@ -2,7 +2,7 @@
 //
 // Une seed sert deux publics à partir d'une seule définition :
 //   - les tests, qui rejouent le catalogue et comparent la décision aux attendus ;
-//   - la galerie (`GalerieSeeds.tsx`, juste à côté), d'où l'on ouvre l'écran
+//   - l'écran des seeds (`Seeds.tsx`, juste à côté), d'où l'on ouvre l'écran
 //     correspondant.
 //
 // Les deux voient donc exactement les mêmes situations. Un cas de non-régression
@@ -14,7 +14,7 @@ import type { Reponses } from "../simulateur/questionnaire/question";
 type Sorties = Readonly<Record<string, unknown>>;
 
 /**
- * Où la galerie dépose l'utilisateur.
+ * Où l'écran des seeds dépose l'utilisateur.
  *
  * `resultat`, qui est le défaut, ouvre la page de résultat. La seed doit alors
  * être complète, et ses attendus sont vérifiés. Le questionnaire n'est pas pour
@@ -31,7 +31,7 @@ type Atterrissage = "resultat" | "questionnaire";
 export type Seed = {
   /** Identifiant stable, en kebab-case, cité par les tests et la doc. */
   readonly id: string;
-  /** Libellé de la galerie : l'écran d'atterrissage, puis ce qu'on y voit. */
+  /** Libellé de l'écran des seeds : l'écran d'atterrissage, puis ce qu'on y voit. */
   readonly libelle: string;
   /** Pourquoi cette seed existe : ce qu'elle permet de voir ou de verrouiller. */
   readonly description: string;

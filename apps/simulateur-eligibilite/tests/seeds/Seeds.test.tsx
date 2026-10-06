@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { GalerieSeeds } from "../../front/seeds/GalerieSeeds";
+import { Seeds } from "../../front/seeds/Seeds";
 import type { Seed } from "../../front/seeds/seed";
 import {
   ACCOMPAGNEMENTS,
@@ -10,7 +10,7 @@ import {
   question,
 } from "../simulateur/parcours";
 
-// La galerie montre les seeds qu'on lui donne, dit pour chacune si la décision
+// L'écran des seeds montre les seeds qu'on lui donne, dit pour chacune si la décision
 // confirme ses attendus, et ouvre l'écran correspondant. Le catalogue étant
 // vide, les seeds sont écrites ici, sur le parcours factice.
 
@@ -43,20 +43,18 @@ const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN];
 
 const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.libelle}`);
 
-async function ouvrirLaGalerie() {
+async function ouvrirLesSeeds() {
   const user = await ouvrirLeSimulateur({ produit: true, seeds: SEEDS });
-  await user.click(await screen.findByRole("button", GALERIE));
-  await screen.findByRole("heading", GALERIE);
+  await user.click(await screen.findByRole("button", ECRAN_SEEDS));
+  await screen.findByRole("heading", ECRAN_SEEDS);
   return user;
 }
 
-const GALERIE = { name: "Galerie de seeds" } as const;
+const ECRAN_SEEDS = { name: "Seeds" } as const;
 
-describe("écran de galerie", () => {
+describe("écran des seeds", () => {
   it("range les seeds selon l'écran sur lequel elles atterrissent", () => {
-    render(
-      <GalerieSeeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />,
-    );
+    render(<Seeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />);
 
     const [resultat, questionnaire] = screen.getAllByRole("table") as [
       HTMLElement,
@@ -67,9 +65,7 @@ describe("écran de galerie", () => {
   });
 
   it("dit quelles seeds la décision dément", () => {
-    render(
-      <GalerieSeeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />,
-    );
+    render(<Seeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />);
 
     expect(
       screen.getByText(
@@ -81,7 +77,7 @@ describe("écran de galerie", () => {
   });
 
   it("annonce un catalogue vide plutôt que des tableaux sans ligne", () => {
-    render(<GalerieSeeds seeds={[]} onOuvrir={() => {}} onRetour={() => {}} />);
+    render(<Seeds seeds={[]} onOuvrir={() => {}} onRetour={() => {}} />);
 
     expect(screen.getByText(/^Le catalogue est vide/)).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();
@@ -90,7 +86,7 @@ describe("écran de galerie", () => {
 
 describe("ouverture d'une seed", () => {
   it("une seed complète ouvre son résultat, questionnaire derrière elle", async () => {
-    const user = await ouvrirLaGalerie();
+    const user = await ouvrirLesSeeds();
 
     await user.click(ouvrir(THE_AU_LAIT));
     expect(await screen.findByText("Commande : thé, lait")).toBeInTheDocument();
@@ -101,7 +97,7 @@ describe("ouverture d'une seed", () => {
   });
 
   it("une seed arrêtée en chemin ouvre la première page sans réponse", async () => {
-    const user = await ouvrirLaGalerie();
+    const user = await ouvrirLesSeeds();
 
     await user.click(ouvrir(ARRETEE_EN_CHEMIN));
 

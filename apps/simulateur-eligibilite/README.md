@@ -122,8 +122,8 @@ front/                   le front, bundlé par Vite
     resultat/            la trace de debug d'une page de résultat (developer tool :
                          cf. AGENTS.md § Les developer tools)
   developerTools/        ce qui est réservé au service produit : son encadré et le
-                         déverrouillage, garde commune à la galerie et aux traces
-  seeds/                 ce qu'est une seed, le catalogue (vide), sa galerie. Elles se
+                         déverrouillage, garde commune à l'écran des seeds et aux traces
+  seeds/                 ce qu'est une seed, le catalogue (vide), son écran. Elles se
                          greffent sur le simulateur, jamais l'inverse : c'est App.tsx
                          qui compose.
   cerfa/                 le socle de remplissage d'un PDF : l'écriture dans un
@@ -147,7 +147,7 @@ a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 | le questionnaire engendré par `@publicodes/forms` | l'écran-porte de rattachement et son backend |
 | les parcours prescripteur et secrétariat, leurs pages de résultat | la mesure d'audience Matomo, réduite aux événements de parcours |
 | les tests métier et la recette du livrable | le comportement de navigation, sur un parcours factice |
-| le contenu du catalogue de seeds | ce qu'est une seed, la galerie, les traces de debug |
+| le contenu du catalogue de seeds | ce qu'est une seed, l'écran des seeds, les traces de debug |
 | les trois CERFA : gabarits, tableaux de remplissage, téléchargement | le socle de remplissage d'un PDF |
 | le mode test des règles (labo) | |
 

@@ -1,4 +1,4 @@
-// Qui voit les developer tools (galerie de seeds, traces de
+// Qui voit les developer tools (écran des seeds, traces de
 // debug) : le service choisi à l'écran-porte, et rien d'autre.
 
 import { normalise } from "../../shared/rattachement-saisi";

@@ -1,5 +1,5 @@
 // Où l'on se trouve dans l'application, et comment on en change : la porte
-// de rattachement, la galerie de seeds qui s'y superpose, et le simulateur
+// de rattachement, l'écran des seeds qui s'y superpose, et le simulateur
 // affiché derrière.
 //
 // Le rattachement, lui, ne transite pas par ici : la porte le range en session,
@@ -10,7 +10,7 @@ import type { AccesRattachement } from "../rattachement/Rattachement";
 import type { Seed } from "../seeds/seed";
 import type { Reponses } from "../simulateur/questionnaire/question";
 
-type Ecran = "rattachement" | "galerie" | "simulateur";
+type Ecran = "rattachement" | "seeds" | "simulateur";
 
 export type Navigation = {
   ecran: Ecran;
@@ -29,7 +29,7 @@ export type Navigation = {
   // Ouvre la seed choisie : son résultat si elle est complète, sinon la
   // première page qu'elle laisse sans réponse.
   ouvrirSeed: (seed: Seed) => void;
-  ouvrirGalerie: () => void;
+  ouvrirSeeds: () => void;
   fermerOutil: () => void;
   recommencer: () => void;
 };
@@ -72,7 +72,7 @@ function actions(
         reponsesDeSeed: seed.reponses,
         numeroDeSimulation: etat.numeroDeSimulation + 1,
       }),
-    ouvrirGalerie: () => modifier({ ecran: "galerie" }),
+    ouvrirSeeds: () => modifier({ ecran: "seeds" }),
     fermerOutil: () => modifier({ ecran: "simulateur" }),
     recommencer: () =>
       modifier({

@@ -167,12 +167,12 @@ Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/parcours.tsx`,
 [`front/seeds/catalogue.ts`](front/seeds/catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
 *avec leurs sorties attendues*. Il est vide tant que le modèle suivant n'est pas
-intégré. Les tests de la galerie écrivent leurs propres seeds, sur le parcours
+intégré. Les tests de l'écran des seeds écrivent leurs propres seeds, sur le parcours
 factice.
 
 ## Les developer tools
 
-La galerie de seeds (`front/seeds/`) et les **traces de debug** sont les deux
+L'écran des seeds (`front/seeds/`) et les **traces de debug** sont les deux
 developer tools. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
@@ -181,7 +181,7 @@ developer tools. Ils partagent :
 
 Pas de conditionnement sur `import.meta.env.DEV`.
 
-Le simulateur ne connaît pas la galerie. C'est `App.tsx` qui lui passe du contenu
+Le simulateur ne connaît pas l'écran des seeds. C'est `App.tsx` qui lui passe du contenu
 déjà composé (`panneauDeveloperTools`).
 
 Les traces, elles, vivent dans le simulateur : elles lisent l'état vivant du

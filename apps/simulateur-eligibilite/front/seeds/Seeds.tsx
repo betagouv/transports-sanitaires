@@ -1,4 +1,4 @@
-// Galerie de seeds : écran réservé au **service produit** (n° 4), sur tous les
+// L'écran des seeds : réservé au **service produit** (n° 4), sur tous les
 // environnements (cf. `App.tsx`). Il range le catalogue de `seeds/` par écran
 // d'atterrissage et ouvre celui-ci d'un clic : la page de résultat pour les
 // seeds complètes, le questionnaire lui-même pour celles qui s'arrêtent en
@@ -7,7 +7,7 @@
 // Le tableau, lui, est dans `TableauDesSeeds.tsx` : ici on sait quels écrans
 // existent, pas comment une seed se lit.
 //
-// La galerie rejoue chaque seed dans la décision **du navigateur** : la colonne
+// L'écran des seeds rejoue chaque seed dans la décision **du navigateur** : la colonne
 // « État » dit quelles situations de référence divergent, avant même d'ouvrir
 // un parcours.
 
@@ -46,7 +46,7 @@ const SECTIONS: ReadonlyArray<{
   },
 ];
 
-export function GalerieSeeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
+export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
   const lignes = seeds.map((seed) => ({
     seed,
     evaluation: evaluerSeed(decider, seed),
@@ -54,7 +54,7 @@ export function GalerieSeeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
 
   return (
     <Container>
-      <h1 className="fr-h3">Galerie de seeds</h1>
+      <h1 className="fr-h3">Seeds</h1>
       <p className="fr-text--sm">
         Les {seeds.length} situations de référence du simulateur (
         <code>seeds/</code>), celles-là mêmes que rejouent les tests.

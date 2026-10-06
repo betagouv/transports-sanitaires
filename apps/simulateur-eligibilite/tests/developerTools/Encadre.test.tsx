@@ -15,14 +15,14 @@ import {
   seRattacherProduit,
 } from "../porte";
 
-// Les developer tools (dont la galerie de seeds) court-circuitent le
+// Les developer tools (dont l'écran des seeds) court-circuitent le
 // parcours : ils doivent être regroupés dans un encadré à part, impossible à
 // confondre avec les actions nominales. Ils sont disponibles sur **tous** les
 // environnements, mais seulement pour le service n° 4 : c'est le service qui garde
 // l'accès, plus le build.
 
 const ENCADRE = { name: "Developer tools" } as const;
-const GALERIE = { name: "Galerie de seeds" } as const;
+const ECRAN_SEEDS = { name: "Seeds" } as const;
 
 describe("encadré des developer tools, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
@@ -35,7 +35,7 @@ describe("encadré des developer tools, écran de rattachement", () => {
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 
-  it("apparaît pour le service n° 4, avec la galerie et elle seule", async () => {
+  it("apparaît pour le service n° 4, avec l'écran des seeds et lui seul", async () => {
     const user = userEvent.setup();
     render(
       <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
@@ -44,7 +44,9 @@ describe("encadré des developer tools, écran de rattachement", () => {
     await remplirRattachementProduit(user);
 
     const encadre = screen.getByRole("region", ENCADRE);
-    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
+    expect(
+      within(encadre).getByRole("button", ECRAN_SEEDS),
+    ).toBeInTheDocument();
     expect(within(encadre).getAllByRole("button")).toHaveLength(1);
   });
 
@@ -80,7 +82,7 @@ describe("encadré des developer tools, écran de rattachement", () => {
     const service = screen.getByRole("combobox", { name: /Nom du service/ });
     await screen.findByRole("option", { name: "Transport Sanitaire" });
     await user.selectOptions(service, "Transport Sanitaire");
-    expect(screen.getByRole("button", GALERIE)).toBeEnabled();
+    expect(screen.getByRole("button", ECRAN_SEEDS)).toBeEnabled();
   });
 
   it("remonte la destination choisie avec le rattachement et l'accès", async () => {
@@ -91,12 +93,12 @@ describe("encadré des developer tools, écran de rattachement", () => {
     );
 
     await remplirRattachementProduit(user);
-    await user.click(screen.getByRole("button", GALERIE));
+    await user.click(screen.getByRole("button", ECRAN_SEEDS));
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "e_liberal_cnam", serviceId: "s_transport_sanitaire" },
       {
-        destination: "galerie",
+        destination: "seeds",
         developerTools: true,
       },
     );
@@ -104,20 +106,22 @@ describe("encadré des developer tools, écran de rattachement", () => {
 });
 
 describe("encadré des developer tools, début du parcours", () => {
-  it("y range l'accès à la galerie, hors du parcours", () => {
+  it("y range l'accès à l'écran des seeds, hors du parcours", () => {
     render(
       <Simulateur
         onNouvelleSimulation={() => {}}
         panneauDeveloperTools={
           <DeveloperTools>
-            <BoutonOutil onClick={() => {}}>Galerie de seeds</BoutonOutil>
+            <BoutonOutil onClick={() => {}}>Seeds</BoutonOutil>
           </DeveloperTools>
         }
       />,
     );
 
     const encadre = screen.getByRole("region", ENCADRE);
-    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
+    expect(
+      within(encadre).getByRole("button", ECRAN_SEEDS),
+    ).toBeInTheDocument();
     // L'étapeur du parcours reste au-dehors. (La première question est à choix
     // unique : elle n'a pas de bouton de navigation, elle avance d'elle-même.)
     expect(encadre).not.toContainElement(
@@ -140,7 +144,9 @@ describe("App câble les developer tools", () => {
 
     const encadre = await screen.findByRole("region", ENCADRE);
     expect(within(encadre).getAllByRole("button")).toHaveLength(1);
-    expect(within(encadre).getByRole("button", GALERIE)).toBeInTheDocument();
+    expect(
+      within(encadre).getByRole("button", ECRAN_SEEDS),
+    ).toBeInTheDocument();
   });
 
   it("ne les propose pas après un rattachement ordinaire", async () => {

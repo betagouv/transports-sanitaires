@@ -3,7 +3,7 @@
 //
 // Il rend le `<main>` de la page : un seul par écran, jamais imbriqué.
 //
-// Isolé de `App.tsx` parce que le rattachement et la galerie de seeds s'en
+// Isolé de `App.tsx` parce que le rattachement et l'écran des seeds s'en
 // servent : dépendre du fichier de composition les y ferait entrer tout entiers.
 
 import type { ReactNode } from "react";

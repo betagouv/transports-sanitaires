@@ -24,7 +24,7 @@ import { useSaisieRattachement } from "./saisie-rattachement";
  * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
  */
 export type AccesRattachement = {
-  destination: "simulateur" | "galerie";
+  destination: "simulateur" | "seeds";
   /** Le service sélectionné déverrouille les developer tools (service n° 4). */
   developerTools: boolean;
 };
@@ -162,10 +162,10 @@ function EntreesDansLApplication({
   );
 }
 
-// La galerie est hors des actions nominales. Elle n'apparaît qu'une fois le
+// L'écran des seeds est hors des actions nominales. Il n'apparaît qu'une fois le
 // service n° 4 choisi, ce qui complète la saisie : y entrer reste une entrée
 // dans l'application, elle passe par la porte. Les
-// situations de la galerie vivent dans `seeds/`, pas dans cet écran : les y
+// situations de l'écran des seeds vivent dans `seeds/`, pas dans cet écran : les y
 // égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({
   onEntrer,
@@ -174,9 +174,7 @@ function PanneauOutils({
 }) {
   return (
     <DeveloperTools>
-      <BoutonOutil onClick={() => onEntrer("galerie")}>
-        Galerie de seeds
-      </BoutonOutil>
+      <BoutonOutil onClick={() => onEntrer("seeds")}>Seeds</BoutonOutil>
     </DeveloperTools>
   );
 }

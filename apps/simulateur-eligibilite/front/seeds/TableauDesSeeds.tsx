@@ -1,6 +1,6 @@
 // Le tableau du catalogue : une seed par ligne, quatre colonnes. Ce qu'elle
 // pose, ce qu'elle attend, ce que la décision en dit, et de quoi l'ouvrir. Le
-// découpage en sections, lui, est dans `GalerieSeeds.tsx` : ici on sait lire
+// découpage en sections, lui, est dans `Seeds.tsx` : ici on sait lire
 // une seed, pas comment le catalogue se range.
 
 import type { EvaluationSeed, Seed } from "./seed";

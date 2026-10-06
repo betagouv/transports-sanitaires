@@ -26,7 +26,7 @@ type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
   declarer?: (saisie: RattachementSaisi) => void;
-  /** Seeds de la galerie (défaut = le catalogue, chargé à la demande). */
+  /** Seeds de l'écran des seeds (défaut = le catalogue, chargé à la demande). */
   seeds?: readonly Seed[];
 };
 
@@ -46,8 +46,8 @@ export function App({
           onRattache={navigation.rattacher}
         />
       )}
-      {navigation.ecran === "galerie" && (
-        <Galerie navigation={navigation} seeds={seeds} />
+      {navigation.ecran === "seeds" && (
+        <EcranDesSeeds navigation={navigation} seeds={seeds} />
       )}
       {navigation.ecran === "simulateur" && (
         <PageDuSimulateur>
@@ -90,7 +90,7 @@ function PageDuSimulateur({ children }: { children: ReactNode }) {
   );
 }
 
-function Galerie({
+function EcranDesSeeds({
   navigation,
   seeds,
 }: {
@@ -99,7 +99,7 @@ function Galerie({
 }) {
   return (
     <Suspense fallback={null}>
-      <GalerieSeeds
+      <Seeds
         seeds={seeds}
         onOuvrir={navigation.ouvrirSeed}
         onRetour={navigation.fermerOutil}
@@ -135,9 +135,9 @@ function Porte({
 // Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
 // du bundle initial : seul le service produit y accède (cf. `developerTools`), la
 // très grande majorité des prescripteurs ne le réclamera jamais.
-const GalerieSeeds = lazy(() =>
-  import("../seeds/GalerieSeeds").then((m) => ({
-    default: m.GalerieSeeds,
+const Seeds = lazy(() =>
+  import("../seeds/Seeds").then((m) => ({
+    default: m.Seeds,
   })),
 );
 
@@ -145,19 +145,17 @@ const GalerieSeeds = lazy(() =>
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `developerTools/`. C'est aussi ici que se lit, d'un coup
 // d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau
-// de la galerie et les traces de debug (`traceDebug`, un booléen plutôt qu'un
+// de l'écran des seeds et les traces de debug (`traceDebug`, un booléen plutôt qu'un
 // contenu composé : elles lisent l'état vivant du parcours, qu'`App` n'a pas
 // sous la main).
 //
-// Galerie de seeds depuis le début du parcours : mêmes situations qu'à
+// Écran des seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran-porte, sans avoir à ressortir du simulateur.
 function panneauDeveloperTools(navigation: Navigation) {
   if (!navigation.developerTools) return undefined;
   return (
     <DeveloperTools>
-      <BoutonOutil onClick={navigation.ouvrirGalerie}>
-        Galerie de seeds
-      </BoutonOutil>
+      <BoutonOutil onClick={navigation.ouvrirSeeds}>Seeds</BoutonOutil>
     </DeveloperTools>
   );
 }

@@ -33,8 +33,8 @@ console.log(
  *
  * `pdf-lib` (~400 ko) ne doit être chargé qu'à la demande, par import
  * dynamique : un `import` statique mal placé le ferait télécharger à chaque
- * prescripteur, sans que rien n'échoue. Même chose pour la galerie de seeds,
- * réservée au service produit.
+ * prescripteur, sans que rien n'échoue. Même chose pour l'écran des seeds,
+ * réservé au service produit.
  */
 function interdits(): Array<[marqueur: string, quoi: string]> {
   const marqueurs: Array<[string, string]> = [
@@ -47,7 +47,7 @@ function interdits(): Array<[marqueur: string, quoi: string]> {
 
 /**
  * Premier identifiant du catalogue de seeds, s'il en porte un. Marqueur préféré
- * à un libellé d'interface : « Galerie de seeds » est aussi le texte du bouton
+ * à un libellé d'interface : « Seeds » est aussi le texte du bouton
  * que rend `App.tsx`, donc légitimement présent dans le chunk d'entrée. Un
  * identifiant de seed, lui, n'existe que dans le catalogue, et le lire ici
  * plutôt que le recopier évite que ce garde-fou ne pointe un jour vers une seed
