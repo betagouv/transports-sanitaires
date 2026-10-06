@@ -7,18 +7,17 @@
 // qui reçoit les réponses acquises sans en reposer aucune, et dont la première
 // page n'a pas de « Précédent ». Le verrou tient à ce montage, pas à un drapeau.
 
-import { type ReactNode, useState } from "react";
+import { type ComponentType, type ReactNode, useState } from "react";
 import {
   decide,
   PAGES_AFTER_LOCK,
   PAGES_BEFORE_LOCK,
   PART_COUNT,
 } from "./fake-flow";
-import { FlowForm } from "./questionnaire/FlowForm";
+import { FlowForm, type FlowTraceProps } from "./questionnaire/FlowForm";
 import type { FlowState } from "./questionnaire/flow";
 import { stateAfterAnswers } from "./questionnaire/flow";
 import type { Answers } from "./questionnaire/question";
-import { DebugTrace } from "./resultat/DebugTrace";
 
 type Props = {
   onNewSimulation: () => void;
@@ -29,20 +28,33 @@ type Props = {
   // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
   // compose, et il est absent hors du service produit.
   developerToolsPanel?: ReactNode;
-  // Traces de debug ouvertes sous le questionnaire et sous les résultats. Même
-  // garde que le panneau ci-dessus, portée par un booléen : la trace lit l'état
-  // vivant du parcours, `App` ne peut donc pas la composer d'avance.
-  debugTrace?: boolean;
+  // Traces de debug, rendues sous le questionnaire et sous les résultats. Même
+  // garde que le panneau ci-dessus. Ce sont des composants et non du contenu
+  // composé : le simulateur leur donne l'état vivant du parcours, qu'`App` n'a
+  // pas sous la main.
+  debugTraces?: DebugTraces;
+};
+
+/** Ce qu'une page de résultat donne à lire à sa trace de debug. */
+export type ResultTraceProps = {
+  title: string;
+  answers: Readonly<Record<string, unknown>>;
+  outputs: Readonly<Record<string, unknown>>;
+};
+
+type DebugTraces = {
+  Flow: ComponentType<FlowTraceProps>;
+  Result: ComponentType<ResultTraceProps>;
 };
 
 export function Simulateur({
   onNewSimulation,
   seedAnswers = null,
   developerToolsPanel,
-  debugTrace = false,
+  debugTraces,
 }: Props) {
   const [screen, goTo] = useState<Screen>(() => startingScreen(seedAnswers));
-  const commun = { goTo, debugTrace, onRestart: onNewSimulation };
+  const commun = { goTo, debugTraces, onRestart: onNewSimulation };
 
   switch (screen.name) {
     case "questionnaire":
@@ -75,7 +87,7 @@ type Screen =
 type ScreenProps<Name extends Screen["name"]> = {
   screen: Extract<Screen, { name: Name }>;
   goTo: (screen: Screen) => void;
-  debugTrace: boolean;
+  debugTraces?: DebugTraces;
   onRestart: () => void;
 };
 
@@ -95,7 +107,7 @@ function startingScreen(seedAnswers: Answers | null): Screen {
 function Questionnaire({
   screen,
   goTo,
-  debugTrace,
+  debugTraces,
 }: ScreenProps<"questionnaire">) {
   return (
     <>
@@ -112,7 +124,7 @@ function Questionnaire({
         initialState={screen.resume}
         tracked
         endLabel="Voir le résultat"
-        debugTrace={debugTrace}
+        Trace={debugTraces?.Flow}
         onComplete={(_, previousFlow) => goTo({ name: "result", previousFlow })}
       />
     </>
@@ -124,7 +136,7 @@ function Questionnaire({
 function ResultToLock({
   screen,
   goTo,
-  debugTrace,
+  debugTraces,
   onRestart,
 }: ScreenProps<"result">) {
   const { answers } = screen.previousFlow;
@@ -145,19 +157,20 @@ function ResultToLock({
           Nouvelle simulation
         </SecondaryButton>
       </div>
-      <DebugTrace
-        allowed={debugTrace}
-        title="résultat"
-        answers={answers}
-        outputs={outputs}
-      />
+      {debugTraces && (
+        <debugTraces.Result
+          title="résultat"
+          answers={answers}
+          outputs={outputs}
+        />
+      )}
     </>
   );
 }
 
 // Le complément n'émet pas d'évènement : ce qu'on y mesurera se décidera avec
 // les documents du modèle suivant.
-function Complement({ screen, goTo, debugTrace }: ScreenProps<"complement">) {
+function Complement({ screen, goTo, debugTraces }: ScreenProps<"complement">) {
   const { locked } = screen;
   return (
     <>
@@ -169,7 +182,7 @@ function Complement({ screen, goTo, debugTrace }: ScreenProps<"complement">) {
         initialState={screen.resume}
         tracked={false}
         endLabel="Terminer"
-        debugTrace={debugTrace}
+        Trace={debugTraces?.Flow}
         onComplete={(_, previousFlow) =>
           goTo({ name: "end", locked, previousFlow })
         }
@@ -182,7 +195,7 @@ function Complement({ screen, goTo, debugTrace }: ScreenProps<"complement">) {
 function CompletedOrder({
   screen,
   goTo,
-  debugTrace,
+  debugTraces,
   onRestart,
 }: ScreenProps<"end">) {
   const { answers } = screen.previousFlow;
@@ -205,12 +218,13 @@ function CompletedOrder({
           Nouvelle simulation
         </button>
       </div>
-      <DebugTrace
-        allowed={debugTrace}
-        title="commande complétée"
-        answers={answers}
-        outputs={outputs}
-      />
+      {debugTraces && (
+        <debugTraces.Result
+          title="commande complétée"
+          answers={answers}
+          outputs={outputs}
+        />
+      )}
     </>
   );
 }

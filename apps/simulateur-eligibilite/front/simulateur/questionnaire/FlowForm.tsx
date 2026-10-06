@@ -2,7 +2,7 @@
 // et les boutons de navigation. Toute la mécanique d'état est dans
 // `flow.ts`.
 
-import { FlowTrace } from "./FlowTrace";
+import type { ComponentType } from "react";
 import { FormField } from "./FormField";
 import type { Flow, Options } from "./flow";
 import { useFlow } from "./flow";
@@ -14,18 +14,18 @@ type Props = Options & {
   partCount: number;
   // Libellé du bouton de la dernière page.
   endLabel: string;
-  // La trace de debug sous le questionnaire est un developer tool : le simulateur
-  // sait *où* elle s'affiche, pas à qui elle s'ouvre. Défaut fermé : un appelant
-  // qui l'oublie n'en montre pas.
-  debugTrace?: boolean;
+  // La trace de debug sous le questionnaire est un developer tool : le parcours
+  // sait *où* elle s'affiche et quoi lui donner à lire, pas à qui elle s'ouvre.
+  // Absente, rien n'est rendu.
+  Trace?: ComponentType<FlowTraceProps>;
 };
 
-export function FlowForm({
-  partCount,
-  endLabel,
-  debugTrace = false,
-  ...options
-}: Props) {
+/** Ce que le parcours donne à lire à sa trace de debug. */
+export type FlowTraceProps = {
+  flow: Pick<Flow, "pages" | "page" | "draft" | "answers">;
+};
+
+export function FlowForm({ partCount, endLabel, Trace, ...options }: Props) {
   const flow = useFlow(options);
 
   return (
@@ -40,7 +40,7 @@ export function FlowForm({
         <FormFields flow={flow} />
         <NavigationButtons flow={flow} endLabel={endLabel} />
       </form>
-      <FlowTrace allowed={debugTrace} flow={flow} />
+      {Trace && <Trace flow={flow} />}
     </>
   );
 }

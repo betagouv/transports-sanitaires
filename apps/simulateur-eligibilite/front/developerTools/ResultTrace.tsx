@@ -1,19 +1,13 @@
-// Panneau de debug : les réponses données et les sorties décidées, depuis une
-// page de résultat.
+// Trace de debug d'une page de résultat : les sorties décidées et les réponses
+// données.
 //
-// Même garde que `questionnaire/FlowTrace` : c'est un developer tool,
-// disponible en production et réservé au service qui les déverrouille. Le prop
-// `allowed` est obligatoire, et porte la réponse depuis `App`.
+// Même garde que `FlowTrace` : c'est un developer tool, disponible en
+// production et réservé au service qui les déverrouille. Le simulateur ne
+// l'importe pas : `App` la lui passe.
 
-type Props = {
-  allowed: boolean;
-  title: string;
-  answers: Readonly<Record<string, unknown>>;
-  outputs: Readonly<Record<string, unknown>>;
-};
+import type { ResultTraceProps } from "../simulateur/Simulateur";
 
-export function DebugTrace({ allowed, title, answers, outputs }: Props) {
-  if (!allowed) return null;
+export function ResultTrace({ title, answers, outputs }: ResultTraceProps) {
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — {title}</summary>
@@ -29,7 +23,7 @@ export function DebugTrace({ allowed, title, answers, outputs }: Props) {
 
 // ---- implémentation ----
 
-function ValueList({ values }: { values: Props["answers"] }) {
+function ValueList({ values }: { values: ResultTraceProps["answers"] }) {
   const entries = Object.entries(values);
   return (
     <ul style={{ margin: "0.25rem 0 1rem" }}>

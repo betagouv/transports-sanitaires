@@ -119,13 +119,12 @@ front/                   le front, bundlé par Vite
     questionnaire/       ce qu'est une question et une page, l'état d'un parcours et
                          son brouillon, l'invalidation des réponses dépendantes,
                          l'avancement automatique, le champ qui rend une question,
-                         ce qui part vers l'analytics, la trace de parcours
-    resultat/            la trace de debug d'une page de résultat (developer tool :
-                         cf. AGENTS.md § Les developer tools)
+                         ce qui part vers l'analytics
   ui/                    les champs de formulaire, bâtis sur le DSFR et sans rien
                          savoir du questionnaire : TextField, SelectField,
                          RadioField, CheckboxField, NumberField, DateField
-  developerTools/        ce qui est réservé au service produit : son encadré et le
+  developerTools/        ce qui est réservé au service produit : son encadré, les
+                         traces de debug du parcours et du résultat, et le
                          déverrouillage, garde commune à l'écran des seeds et aux traces
   seeds/                 ce qu'est une seed, le catalogue (vide), son écran. Elles se
                          greffent sur le simulateur, jamais l'inverse : c'est App.tsx

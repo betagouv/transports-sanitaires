@@ -4,21 +4,13 @@
 //
 // C'est un developer tool comme l'écran des seeds : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
-// (`front/developerTools/unlock.ts`). Le simulateur ignore ce service :
-// `App` lui passe la réponse, que `allowed` porte jusqu'ici. Le prop est
-// obligatoire pour qu'aucun appelant ne puisse rendre la trace sans avoir dit à
-// qui elle s'ouvre.
+// (`unlock.ts`). Le simulateur ne l'importe pas : `App` la lui passe, et le
+// parcours lui donne son état à afficher.
 
-import type { Flow } from "./flow";
-import type { Answers } from "./question";
+import type { FlowTraceProps } from "../simulateur/questionnaire/FlowForm";
+import type { Answers } from "../simulateur/questionnaire/question";
 
-type Props = {
-  allowed: boolean;
-  flow: Pick<Flow, "pages" | "page" | "draft" | "answers">;
-};
-
-export function FlowTrace({ allowed, flow }: Props) {
-  if (!allowed) return null;
+export function FlowTrace({ flow }: FlowTraceProps) {
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — chemin parcouru</summary>
