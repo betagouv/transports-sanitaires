@@ -13,10 +13,9 @@ import {
 
 startReactDsfr({ defaultColorScheme: "system" });
 
-// Prépare le traceur au boot (cookieless) : il demande au CMS le choix de
-// l'utilisateur, et ne charge Matomo qu'au suivi. Le service n'est connu qu'après
-// le rattachement : il est renseigné en session par l'écran de rattachement (App) et lu au
-// moment d'émettre chaque événement.
+// Prépare le traceur au démarrage, sans cookie. Il demande au CMS le choix de
+// l'utilisateur et ne charge Matomo que si le suivi est accepté. Le service est
+// rangé en session au rattachement, puis lu à chaque événement.
 initAnalytics(configDepuisEnv(), { charger: chargerMatomo });
 
 const racine = document.getElementById("root");

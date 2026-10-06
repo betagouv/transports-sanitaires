@@ -1,14 +1,9 @@
 // Les invariants d'architecture, rendus exécutables.
 //
-// AGENTS.md et `docs/knowledge/adr/` énoncent des règles que rien ne vérifiait :
-// « les secrets restent au serveur », « le CERFA n'atteint jamais le backend »,
-// « l'identification reste hors du moteur d'éligibilité ». Une prose ne bloque
-// personne — ce fichier, si.
+// AGENTS.md et `docs/knowledge/adr/` énoncent des règles. Ce fichier les vérifie.
 //
-// Chaque règle porte son *pourquoi* dans son message d'échec : qui la casse doit
-// apprendre ici ce qu'elle protège, sans avoir à relire la documentation. C'est
-// le second argument d'`expect`, pas un commentaire — un commentaire ne s'affiche
-// pas quand le test rougit.
+// Chaque règle donne son pourquoi dans son message d'échec, le second argument
+// d'`expect`. Un commentaire ne s'affiche pas quand le test rougit.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -113,12 +108,9 @@ describe("invariants métier", () => {
   });
 });
 
-// Biome porte les mêmes deux limites (`noExcessiveLinesPerFunction`,
-// `noExcessiveLinesPerFile`), mais il compte des lignes **logiques** : un bloc
-// de texte JSX ou une chaîne multiligne y vaut une seule ligne. Un composant de
-// 450 lignes réelles n'en pèse que 178 pour lui. Biome reste utile — il signale
-// dans l'éditeur, et tout ce qu'il refuse échoue aussi ici — mais c'est ce
-// fichier qui fait foi, en lignes réelles.
+// Biome a les mêmes deux limites, mais il compte des lignes logiques : un bloc
+// JSX ou une chaîne multiligne y vaut une seule ligne. Il reste utile dans
+// l'éditeur. Ce fichier fait foi, en lignes réelles.
 describe("taille du code", () => {
   it("aucune fonction ne dépasse 30 lignes", () => {
     const trop = sources("front", "server", "shared", "scripts").flatMap(
@@ -173,8 +165,8 @@ describe("chaîne d'outillage", () => {
   });
 });
 
-// Le texte de toutes les règles livrées. Vide tant que `regles/` l'est : la
-// garde attend le modèle suivant, elle ne disparaît pas avec le précédent.
+// Le texte de toutes les règles livrées. `regles/` est vide pour l'instant : la
+// garde attend le prochain modèle.
 function reglesPubliees(): string {
   const dossier = join(racine, "regles");
   if (!existsSync(dossier)) return "";

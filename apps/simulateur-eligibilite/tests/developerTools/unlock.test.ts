@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { estServiceProduit } from "../../front/developerTools/unlock";
 
-// Garde d'accès commune aux developer tools. Elle vaut
-// sur tous les environnements : c'est le service du référentiel qui décide, pas le
-// build.
+// La garde d'accès des developer tools. Elle vaut sur tous les environnements :
+// le service du référentiel décide, pas le build.
 
 describe("estServiceProduit", () => {
   it("reconnaît le service par identifiant Grist", () => {

@@ -1,7 +1,7 @@
-// Le script que le CMS (Sites Conformes) exécute sur ses pages : il ajoute
+// Le script que le CMS (Sites Conformes) exécute sur ses pages. Il ajoute
 // l'opt-out au pied de page et répond au simulateur embarqué. Chaque test le
-// charge dans une fenêtre neuve, avec le vrai pied de page DSFR ; le simulateur
-// est une fenêtre qui relève les messages qu'on lui envoie.
+// charge dans une fenêtre neuve, avec le vrai pied de page DSFR. Le simulateur
+// est une fenêtre qui relève les messages reçus.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

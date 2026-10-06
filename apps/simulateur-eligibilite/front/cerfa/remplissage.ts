@@ -9,15 +9,15 @@ import type { Saisie } from "./remplir-cerfa";
 type Qui = "le prescripteur" | "le transporteur" | "la caisse";
 
 /**
- * Ce qu'un champ reçoit, les réponses lues :
+ * Ce qu'un champ reçoit, selon les réponses :
  *
- *  - `{ texte }` / `{ coché }` / `{ texteMesuré }` : le simulateur a déduit
- *    quoi y écrire, ce dernier étant mesuré avant d'être écrit ;
- *  - `undefined` : il sait le déduire, mais cette situation ne l'appelle pas ;
+ *  - `{ texte }` / `{ coché }` / `{ texteMesuré }` : le simulateur sait quoi
+ *    écrire. Le dernier est mesuré avant d'être écrit ;
+ *  - `undefined` : il sait le déduire, mais pas dans cette situation ;
  *  - `{ laisséÀ }` : il ne sait pas, et dit qui s'en chargera.
  *
- * Les deux derniers cas laissent le champ vierge de la même façon. Les distinguer
- * n'est pas pour le PDF : c'est pour qui lit le tableau.
+ * Les deux derniers cas laissent le champ vide. La différence sert à qui lit le
+ * tableau, pas au PDF.
  */
 type Valeur =
   | { readonly texte: string }
@@ -59,8 +59,8 @@ export function saisiesDuTableau<Reponses>(
 
 // ---- implémentation ----
 
-// Un champ laissé à quelqu'un et un champ sans objet laissent tous deux le PDF
-// vierge : la distinction est faite pour qui lit le tableau, pas pour l'écriture.
+// Un champ laissé à quelqu'un et un champ sans objet laissent le PDF vide de la
+// même façon.
 function saisieDe(champ: string, valeur: Valeur): Saisie[] {
   if (valeur === undefined || "laisséÀ" in valeur) return [];
   return [{ champ, ...valeur }];

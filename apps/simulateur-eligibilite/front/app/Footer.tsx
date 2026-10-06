@@ -13,9 +13,8 @@ export function Footer() {
         className="fr-link"
         style={{ fontSize: "inherit" }}
         href={LIEN_DE_LA_VERSION}
-        // Cette même iframe interdit de naviguer dans le cadre : le lecteur y
-        // perdrait le simulateur, et le CMS autour. La mention « nouvelle
-        // fenêtre » est ce qui l'annonce à un lecteur d'écran.
+        // L'iframe interdit de naviguer sur place : on y perdrait le simulateur.
+        // La mention « nouvelle fenêtre » l'annonce aux lecteurs d'écran.
         target="_blank"
         rel="noopener noreferrer"
         title={`Version ${VERSION_APP} - nouvelle fenêtre`}
@@ -29,14 +28,14 @@ export function Footer() {
 
 // ---- implémentation ----
 
-// Remplacées textuellement par Vite à la construction. Les valeurs de repli ne
-// servent qu'aux outils qui compilent ce fichier sans passer par lui.
+// Vite remplace ces valeurs à la construction. Les replis servent aux outils
+// qui compilent ce fichier sans Vite.
 const VERSION_APP: string = import.meta.env.VITE_VERSION_APP ?? "inconnue";
 const SHA_COMMIT: string = import.meta.env.VITE_SHA_COMMIT ?? "inconnu";
 
-// Le tag d'une version porte le nom de l'app — le dépôt est un monorepo dont
-// chaque app a son cycle propre (cf. `CHANGELOG.md`). Son `@` doit être encodé :
-// c'est la forme sous laquelle GitHub sert la page d'une release.
+// Le tag d'une version porte le nom de l'app : chaque app du monorepo a son
+// cycle (voir `CHANGELOG.md`). Son `@` est encodé, comme dans l'URL d'une
+// release GitHub.
 const LIEN_DE_LA_VERSION = `https://github.com/betagouv/transports-sanitaires/releases/tag/${encodeURIComponent(
   `simulateur-eligibilite@${VERSION_APP}`,
 )}`;
@@ -49,9 +48,8 @@ const FOOTER_STYLE: CSSProperties = {
   textAlign: "center",
   color: "var(--text-mention-grey)",
   backgroundColor: "var(--background-default-grey)",
-  // En propriétés longues, et non en raccourci : une `var()` dans `border-top`
-  // se répand sur les trois composantes chez certains moteurs, et la bordure
-  // disparaît sans rien dire.
+  // Propriétés longues, pas le raccourci `border-top` : avec une `var()`,
+  // certains moteurs perdent la bordure sans rien dire.
   borderTopWidth: "1px",
   borderTopStyle: "solid",
   borderTopColor: "var(--border-default-grey)",

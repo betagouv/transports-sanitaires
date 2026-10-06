@@ -18,10 +18,10 @@ import type { SaisieRattachement } from "./saisie-rattachement";
 import { useSaisieRattachement } from "./saisie-rattachement";
 
 /**
- * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
- * l'accès aux developer tools. Les deux boutons de cet écran passent par le même
+ * Ce que la validation emporte, en plus du rattachement saisi : l'écran à
+ * ouvrir et l'accès aux developer tools. Les deux boutons passent par le même
  * `onValide` : le rattachement est obligatoire quelle que soit la destination
- * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
+ * (ADR-1).
  */
 export type AccesRattachement = {
   destination: "simulateur" | "seeds";
@@ -74,9 +74,8 @@ export function RattachementForm({
 
 type FieldsProps = { saisie: SaisieRattachement };
 
-// Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
-// que leur branche n'est pas empruntée (workflow §4). Sans référentiel, il n'y a
-// rien à choisir : l'écran le dit, et la saisie est le rattachement dégradé.
+// Chaque réponse dévoile le champ suivant (workflow §4). Sans référentiel, il
+// n'y a rien à choisir : l'écran le dit, et le rattachement est celui de repli.
 function ProgressiveFields({ saisie }: FieldsProps) {
   if (saisie.indisponible) return <ReferentielIndisponible />;
   return (
@@ -138,9 +137,8 @@ function ServiceLibreField({ saisie }: FieldsProps) {
   );
 }
 
-// Les deux sorties de cet écran — le simulateur, et les developer tools pour le
-// service n° 4 — sont des entrées dans l'application, et passent donc par le
-// même `onValide` (ADR-1).
+// Les deux sorties de cet écran sont le simulateur et, pour le service n° 4,
+// les developer tools. Les deux passent par le même `onValide` (ADR-1).
 function EntreesDansLApplication({
   saisie,
   onEntrer,
@@ -162,11 +160,9 @@ function EntreesDansLApplication({
   );
 }
 
-// L'écran des seeds est hors des actions nominales. Il n'apparaît qu'une fois le
-// service n° 4 choisi, ce qui complète la saisie : y entrer reste une entrée
-// dans l'application, elle passe par l'écran de rattachement. Les
-// situations de l'écran des seeds vivent dans `seeds/`, pas dans cet écran : les y
-// égrener en boutons ne passait pas l'échelle.
+// L'écran des seeds est hors des actions normales. Son bouton apparaît une fois
+// le service n° 4 choisi, donc une fois la saisie complète. Les seeds vivent
+// dans `seeds/`, pas ici.
 function DeveloperToolsPanel({
   onEntrer,
 }: {

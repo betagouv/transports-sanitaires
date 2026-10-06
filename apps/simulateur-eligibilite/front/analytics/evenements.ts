@@ -5,16 +5,14 @@
 import { emettre } from "./matomo";
 
 /**
- * Référentiel des évènements Matomo : chaque nom est fixe, jamais composé à la
- * volée. `trackEvenement` ci-dessous refuse à la compilation tout nom qui n'en
- * soit pas une valeur exacte.
+ * La liste des évènements Matomo. Chaque nom est fixe. `trackEvenement` refuse à
+ * la compilation tout nom qui n'est pas dans la liste.
  *
- * Il ne porte que le parcours : son début, ses étapes, sa conclusion, son
- * abandon. Les résultats et les documents y reviendront avec le modèle qui les
- * définit.
+ * Elle ne couvre que le questionnaire : son début, ses étapes, sa fin, son
+ * abandon. Les résultats et les documents reviendront avec le prochain modèle.
  *
  * Un objet `as const`, pas un `enum` : `erasableSyntaxOnly` (tsconfig) interdit
- * l'`enum`, qui engendre du code non effaçable à la compilation.
+ * l'`enum`.
  */
 export const NomEvenement = {
   simulationStart: "simulation_start",
@@ -24,9 +22,9 @@ export const NomEvenement = {
 } as const;
 
 /**
- * Émet un évènement Matomo : le seul point d'entrée du reste de l'app pour
- * tracer. `nom` doit être une valeur exacte de `NomEvenement` : un nom composé
- * au moment de l'appel (gabarit de chaîne, concaténation) ne compile pas.
+ * Émet un évènement Matomo. C'est le seul point d'entrée de l'app pour tracer.
+ * `nom` doit être une valeur exacte de `NomEvenement` : un nom composé à l'appel
+ * ne compile pas.
  */
 export function trackEvenement(
   nom: (typeof NomEvenement)[keyof typeof NomEvenement],

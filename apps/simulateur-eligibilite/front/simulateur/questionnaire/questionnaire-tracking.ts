@@ -10,7 +10,7 @@ export type QuestionnaireTracking = {
 };
 
 /**
- * `tracked` : le questionnaire émet-il quoi que ce soit ? `resumed` : il a déjà
+ * `tracked` : le questionnaire émet-il des évènements ? `resumed` : il a déjà
  * commencé, son début n'est pas réémis.
  */
 export function useQuestionnaireTracking(
@@ -19,8 +19,7 @@ export function useQuestionnaireTracking(
   resumed: boolean,
 ): QuestionnaireTracking {
   const completed = useRef(false);
-  // Refs pour éviter les valeurs périmées dans le gestionnaire : `currentRef`
-  // existe pour lire la valeur fraîche sans redéclarer l'écouteur.
+  // Une ref donne la valeur fraîche au gestionnaire, sans redéclarer l'écouteur.
   const currentRef = useRef(current);
   currentRef.current = current;
   // biome-ignore lint/correctness/useExhaustiveDependencies: amorçage unique au montage

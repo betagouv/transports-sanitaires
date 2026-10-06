@@ -1,8 +1,8 @@
 // @vitest-environment node
 //
-// Teste l'API référentiel sur le vrai serveur Express, sans mock : on démarre
-// l'app avec le référentiel snapshot (comme le fait le backend quand
-// GRIST_API_KEY est absente) et on l'interroge par de vraies requêtes HTTP.
+// L'API du référentiel sur le vrai serveur Express, sans mock. L'app démarre
+// avec le référentiel snapshot, comme le backend sans GRIST_API_KEY. Elle reçoit
+// de vraies requêtes HTTP.
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { snapshotReferentiel } from "../../shared/referentiel.ts";

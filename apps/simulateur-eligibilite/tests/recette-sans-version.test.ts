@@ -1,10 +1,10 @@
-// Un test qui passe vaut pour le modèle en cours, quel que soit son numéro.
-// Ni le nom d'un fichier de test ni ses `describe`/`it` ne portent donc la
-// version du modèle : l'intégration d'une version met les attendus à jour,
-// elle ne renomme rien. Voir le skill `implement-publicodes-version`.
+// Un test vaut pour le modèle en cours, quel que soit son numéro. Ni le nom d'un
+// fichier de test ni ses `describe`/`it` ne portent la version du modèle.
+// Intégrer une version met les attendus à jour, sans rien renommer. Voir le
+// skill `implement-publicodes-version`.
 //
 // Les identifiants du livrable (`CONV971-*`, `RETOURS972-*`, `V973-*`) gardent
-// la leur : c'est leur nom chez l'éditeur, et un désaccord remonte sous ce nom.
+// leur version : c'est leur nom chez l'éditeur.
 
 import { basename } from "node:path";
 import { describe, expect, it } from "vitest";

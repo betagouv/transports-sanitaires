@@ -1,7 +1,6 @@
-// Lire les sources de l'application comme des données : la liste des fichiers,
-// leur graphe d'imports, leurs fonctions. C'est le socle
-// commun de `architecture.test.ts` (les frontières) et de `lisibilite.test.ts`
-// (la forme). Aucune assertion ici — seulement de quoi en écrire.
+// Lit les sources de l'application comme des données : fichiers, imports,
+// fonctions. `architecture.test.ts` et `lisibilite.test.ts` s'en servent.
+// Aucune assertion ici.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -57,9 +56,8 @@ export function specificateursDe(fichier: string): string[] {
 }
 
 /**
- * Les modules importés par un fichier, résolus en chemins relatifs à la racine
- * (les paquets npm sont ignorés : seules les frontières internes nous occupent).
- * Le chemin garde l'extension telle qu'elle a été écrite — ou son absence.
+ * Les modules importés par un fichier, en chemins relatifs à la racine. Les
+ * paquets npm sont ignorés. L'extension reste telle qu'elle est écrite.
  */
 export function importsDe(fichier: string): string[] {
   return specificateursDe(fichier).map((specificateur) =>
@@ -68,8 +66,8 @@ export function importsDe(fichier: string): string[] {
 }
 
 /**
- * Le fichier TypeScript que désigne un spécificateur, ou `null` s'il en désigne
- * un autre (une feuille de style, un gabarit PDF) ou rien du tout.
+ * Le fichier TypeScript que désigne un spécificateur. `null` s'il désigne autre
+ * chose (feuille de style, gabarit PDF) ou rien.
  */
 export function resoudre(
   fichier: string,
@@ -99,10 +97,8 @@ export function franchissements(
 }
 
 /**
- * Chaque fonction du fichier avec la taille réelle de son corps, accolades
- * exclues. Les fonctions imbriquées comptent pour elles-mêmes *et* dans leur
- * englobante — sortir un bloc d'une fonction trop longue ne suffit donc pas s'il
- * reste sur place.
+ * Chaque fonction du fichier, avec la taille réelle de son corps sans les
+ * accolades. Une fonction imbriquée compte aussi dans celle qui la contient.
  */
 export function fonctionsDe(fichier: string): Fonction[] {
   const source = astDe(fichier);

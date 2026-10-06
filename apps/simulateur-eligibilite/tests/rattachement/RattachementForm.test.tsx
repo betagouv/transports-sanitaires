@@ -44,7 +44,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("propose les developer tools seulement pour le service « Transport Sanitaire »", async () => {
-    // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
+    // Le service garde l'accès, sur tous les environnements (voir estServiceProduit).
     render(<RattachementForm onValide={vi.fn()} />);
 
     const seeds = { name: "Seeds" };
@@ -59,8 +59,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("établissement « Libéral / CNAM / CPAM / Autre » → service, sans branche dédiée", async () => {
-    // Le prescripteur sans établissement de rattachement passe par
-    // l'établissement fourre-tout du référentiel.
+    // Le prescripteur sans établissement passe par l'établissement fourre-tout.
     const onValide = vi.fn();
     render(<RattachementForm onValide={onValide} />);
 

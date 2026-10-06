@@ -6,9 +6,9 @@
 import type { Answer, Answers, Page } from "./question";
 
 /**
- * Les réponses du questionnaire, la page validée. `inputs` porte les réponses de
- * la page telles qu'elles sont à l'écran : une question de la page qui n'y
- * figure pas perd sa réponse.
+ * Les réponses du questionnaire, une fois la page validée. `inputs` porte les
+ * réponses de la page telles qu'à l'écran. Une question de la page absente
+ * d'`inputs` perd sa réponse.
  */
 export function commitPage(
   pages: readonly Page[],
@@ -29,7 +29,7 @@ export function commitPage(
 
 // ---- implémentation ----
 
-// Fermeture transitive : si B dépend de A et C de B, changer A efface B et C.
+// De proche en proche : si B dépend de A et C de B, changer A efface B et C.
 function dependentsOf(
   pages: readonly Page[],
   changed: readonly string[],

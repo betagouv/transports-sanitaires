@@ -63,11 +63,10 @@ async function services(doc: DocGrist, etabId: string): Promise<Service[]> {
     .filter((s) => s.id && s.libelle);
 }
 
-// Service « Autre » avec un vrai service saisi : on crée ou on réutilise ce
-// service sous l'établissement, avec la colonne `Origine=formulaire`. À la
-// connexion suivante, il apparaît dans la liste. C'est idempotent, la
-// déduplication se faisant sur le nom normalisé, et sans effet pour une sélection
-// issue des listes. Voir
+// Service « Autre » avec un vrai service saisi : on crée ce service sous
+// l'établissement, ou on réutilise son homonyme, avec `Origine=formulaire`. Il
+// apparaît dans la liste à la visite suivante. Une sélection issue des listes
+// n'écrit rien. Voir
 // docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
 async function enrichir(
   doc: DocGrist,
@@ -89,8 +88,8 @@ async function rowIdDeId2(
   return trouvees[0]?.id ?? null;
 }
 
-// Prochain Id2 métier libre de la table (max + 1). Les lignes du formulaire sont
-// ainsi visibles immédiatement dans les listes (le read-path filtre sur Id2 non nul).
+// Le prochain Id2 métier libre de la table (max + 1). La ligne créée est ainsi
+// visible aussitôt : la lecture ne garde que les Id2 non nuls.
 async function prochainId2(doc: DocGrist, table: string): Promise<number> {
   const trouvees = await lignes(doc, table);
   const max = trouvees.reduce(
@@ -134,6 +133,6 @@ const COL = {
   origine: "Origine",
 } as const;
 
-// Marqueur écrit dans la colonne `Origine` des lignes issues du formulaire (par
-// opposition aux lignes saisies par l'admin), pour tri/validation ultérieure.
+// Écrit dans la colonne `Origine` des lignes créées par le formulaire, pour les
+// distinguer de celles de l'admin.
 const ORIGINE_FORMULAIRE = "formulaire";

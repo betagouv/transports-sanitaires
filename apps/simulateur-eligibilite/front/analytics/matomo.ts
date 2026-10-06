@@ -11,8 +11,8 @@ import {
 
 declare global {
   interface Window {
-    // File d'attente du tag Matomo : ce qu'on y empile avant le chargement de
-    // matomo.js est rejoué par le script au démarrage.
+    // La file d'attente du tag Matomo. Ce qu'on y empile avant le chargement de
+    // matomo.js est rejoué par le script.
     _paq?: unknown[][];
   }
 }
@@ -24,9 +24,9 @@ export type AnalyticsConfig = {
 };
 
 /**
- * Résout la configuration depuis l'environnement. Le traceur n'est activé qu'en
+ * Lit la configuration dans l'environnement. Le traceur n'est activé qu'en
  * build de prod, ou avec `VITE_MATOMO_ENABLED=true` pour tester en local. Il ne
- * demande aucun consentement : la mesure, agrégée par service, reste dans
+ * demande pas de consentement : la mesure, agrégée par service, reste dans
  * l'exemption CNIL (ADR-3 d'analytics.md).
  */
 export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
@@ -40,19 +40,19 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
 export type TrackerOptions = BridgeOptions & {
   /**
    * Charge le script tiers au premier suivi. Rien par défaut : `Main.tsx` passe
-   * `chargerMatomo`, ce qui garde les tests sans effet de bord réseau.
+   * `chargerMatomo`, et les tests restent sans réseau.
    */
   charger?: (url: string) => void;
 };
 
 /**
- * Configure le traceur, appelé au boot. S'il est activé, il attend le choix de
- * l'utilisateur, que le CMS tient (voir `choix-analytics.ts`) : rien n'est
- * mesuré ni chargé avant. Au suivi, il amorce `_paq` et charge matomo.js ; au
+ * Configure le traceur, au démarrage. S'il est activé, il attend le choix de
+ * l'utilisateur, que le CMS tient (voir `choix-analytics.ts`). Rien n'est
+ * mesuré ni chargé avant. Au suivi, il amorce `_paq` et charge matomo.js. Au
  * refus, il ne charge rien.
  *
- * Le service n'est pas connu ici : il est lu en session au moment d'émettre
- * chaque événement, voir `emettre`.
+ * Le service n'est pas connu ici. Il est lu en session à chaque événement,
+ * voir `emettre`.
  */
 export function initAnalytics(
   config: AnalyticsConfig,
@@ -77,9 +77,9 @@ export function chargerMatomo(url: string): void {
 }
 
 /**
- * Émet un événement quand le traceur est activé et que l'utilisateur n'a pas
- * refusé, en portant le service rattaché, lu en session. Tant que le choix n'est
- * pas connu, l'événement attend. Voir `initAnalytics` pour le cycle de vie.
+ * Émet un événement si le traceur est activé et si l'utilisateur n'a pas
+ * refusé. L'événement porte le service rattaché, lu en session. Tant que le
+ * choix n'est pas connu, il attend.
  */
 export function emettre(action: string, valeur?: number): void {
   if (!etat.config.enabled || etat.choix === "refus") return;
@@ -93,14 +93,13 @@ export function emettre(action: string, valeur?: number): void {
 }
 
 /**
- * Construit un événement Matomo `trackEvent` : une catégorie constante, l'action,
- * puis l'id Grist du service en Nom s'il existe, et une valeur numérique
- * optionnelle. Le service libre saisi sous « Autre » ne part jamais : le Nom reste
- * l'id de l'entrée « Autre ».
+ * Construit un `trackEvent` Matomo : une catégorie constante, l'action, puis
+ * l'id Grist du service en Nom s'il existe, et une valeur numérique optionnelle.
+ * Le service libre saisi sous « Autre » ne part jamais : le Nom reste l'id de
+ * l'entrée « Autre ».
  *
- * L'instance mutualisée beta.gouv n'offre pas de custom dimension, c'est le risque
- * R-8. Le service est donc porté en propriété d'événement, faute de mieux. La
- * fonction est exportée pour les tests.
+ * L'instance mutualisée beta.gouv n'offre pas de custom dimension (risque R-8).
+ * Le service est donc porté par l'événement. Exportée pour les tests.
  */
 export function construireEvenement(
   rattachement: RattachementSaisi | null,
@@ -126,16 +125,16 @@ type Env = {
   VITE_MATOMO_SITE_ID?: string;
 };
 
-// Unique point de création de la file. Le tag la remplace par un objet actif quand
-// matomo.js se charge, et tout ce qui a été empilé avant est rejoué.
+// Le seul endroit qui crée la file. Quand matomo.js se charge, le tag la
+// remplace par un objet actif et rejoue ce qui était empilé.
 function filePaq(): unknown[][] {
   window._paq ??= [];
   return window._paq;
 }
 
 const CATEGORY = "simulateur";
-// Instance mutualisée beta.gouv, site 275. L'intégration passe par le tag de
-// suivi, `_paq` et matomo.js, et non par le Tag Manager.
+// Instance mutualisée beta.gouv, site 275. On passe par le tag de suivi (`_paq`
+// et matomo.js), pas par le Tag Manager.
 const DEFAULT_URL = "https://stats.beta.gouv.fr/";
 const DEFAULT_SITE_ID = "275";
 
@@ -156,9 +155,9 @@ let etat: Etat = {
   enAttente: [],
 };
 
-// Au premier suivi, amorce le traceur ; à chaque suivi, rejoue ce qui attendait.
-// Un refus jette l'attente, et `emettre` n'émet plus rien : matomo.js ne mesure
-// rien de lui-même (ni liens sortants, ni téléchargements), ce blocage suffit.
+// Au premier suivi, amorce le traceur. À chaque suivi, rejoue ce qui attendait.
+// Un refus jette l'attente, et `emettre` n'émet plus rien. Cela suffit :
+// matomo.js ne mesure rien de lui-même.
 function appliquer(courant: Etat, choix: ChoixAnalytics) {
   const attente = courant.enAttente;
   courant.enAttente = [];
@@ -169,10 +168,9 @@ function appliquer(courant: Etat, choix: ChoixAnalytics) {
   for (const evenement of attente) paq.push(evenement);
 }
 
-// Le traceur est cookieless (`disableCookies`), parce que l'app tourne dans
-// l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
-// mesure d'audience se veut sans bandeau. L'IP, elle, s'anonymise côté instance
-// Matomo, pas ici : l'API JS n'a pas de commande pour ça.
+// Le traceur est sans cookie (`disableCookies`). L'app tourne dans l'iframe du
+// CMS, un contexte tiers où les cookies sont bloqués, et la mesure se veut sans
+// bandeau. L'IP s'anonymise côté instance Matomo : l'API JS ne le permet pas.
 function bootstrap(courant: Etat) {
   const { url, siteId } = courant.config;
   const paq = filePaq();

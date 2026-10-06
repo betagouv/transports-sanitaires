@@ -5,8 +5,8 @@ import type { EvaluationSeed, Seed } from "./seed";
 
 export type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
 
-// Le titre de section passe par la légende du tableau : DSFR la rend visible
-// (`.fr-table caption`), un `fr-sr-only` y serait annulé.
+// Le titre de section est la légende du tableau. Le DSFR la rend visible
+// (`.fr-table caption`) et annulerait un `fr-sr-only`.
 export function SeedsTable({
   section,
   lignes,

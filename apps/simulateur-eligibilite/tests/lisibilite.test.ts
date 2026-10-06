@@ -1,13 +1,8 @@
 // Les conventions d'écriture, rendues exécutables.
 //
-// Elles étaient jusqu'ici de la prose dans AGENTS.md — et déjà violées : neuf
-// fichiers ouvraient sur un `import` plutôt que sur leur contrat, un helper
-// privé était une flèche déclarée au milieu du fichier. Une convention que rien
-// ne vérifie se dégrade à la vitesse où elle s'écrit.
-//
-// Comme dans `architecture.test.ts`, chaque règle porte son *pourquoi* dans son
-// message d'échec — c'est là, et nulle part ailleurs, qu'on l'apprend au moment
-// utile.
+// Une convention que rien ne vérifie se dégrade. Comme dans
+// `architecture.test.ts`, chaque règle donne son pourquoi dans son message
+// d'échec.
 
 import { basename } from "node:path";
 import ts from "typescript";
@@ -23,8 +18,8 @@ import {
 
 const RACINES = ["front", "server", "shared", "scripts"];
 const MARQUEUR = "// ---- implémentation ----";
-// Une liste de données se lit d'un seul tenant : elle n'a pas d'implémentation
-// à cacher. Même exemption que pour la limite de 300 lignes.
+// Une liste de données se lit d'un seul tenant, sans implémentation à cacher.
+// Même exemption que pour la limite de 300 lignes.
 const DONNEES = ["front/seeds/catalogue.ts"];
 
 describe("un fichier se lit comme son contrat", () => {
@@ -90,10 +85,9 @@ describe("un nom dit une intention", () => {
 });
 
 describe("les extensions d'import suivent le runtime", () => {
-  // Node exécute le TypeScript en effaçant les types : il lui faut le vrai nom
-  // de fichier. Vite, lui, résout. La frontière n'est donc pas un dossier mais
-  // une accessibilité — d'où ce calcul de fermeture transitive plutôt qu'une
-  // liste de chemins qui se périmerait au premier `import()` ajouté.
+  // Node efface les types et exige le vrai nom de fichier. Vite, lui, résout.
+  // La frontière est donc ce que Node peut atteindre, pas un dossier. D'où ce
+  // calcul de proche en proche plutôt qu'une liste de chemins.
   const depuisNode = joignablesDepuisNode();
 
   it("tout ce que Node peut atteindre importe avec l'extension", () => {
@@ -112,10 +106,8 @@ describe("les extensions d'import suivent le runtime", () => {
   });
 
   it("le reste du front importe sans extension", () => {
-    // Une cible elle-même joignable depuis Node est tolérée : écrire son
-    // extension anticipe le jour où un script la tirera aussi, et ne
-    // coûte rien à Vite. Ce qu'on refuse, c'est le mélange entre fichiers qui
-    // ne verront jamais Node.
+    // Une cible que Node peut atteindre est tolérée : son extension ne coûte
+    // rien à Vite. On refuse le mélange entre fichiers que Node ne verra jamais.
     const avec = sources("front")
       .filter((fichier) => !depuisNode.has(fichier))
       .flatMap((fichier) =>
@@ -163,9 +155,8 @@ function fonctionsPriveesEnFleche(fichier: string): string[] {
 }
 
 /**
- * Les fichiers qu'une exécution Node peut atteindre : les trois racines qui lui
- * appartiennent, plus tout ce qu'elles tirent de proche en proche — y compris
- * dans `front/`.
+ * Les fichiers que Node peut atteindre : ses trois racines, plus tout ce
+ * qu'elles importent de proche en proche, y compris dans `front/`.
  */
 function joignablesDepuisNode(): Set<string> {
   const atteints = new Set(sources("server", "shared", "scripts"));

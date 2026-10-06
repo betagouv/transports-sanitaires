@@ -81,9 +81,8 @@ function CatalogueVide() {
   );
 }
 
-// Le catalogue est présenté par écran d'atterrissage : c'est ce qui distingue
-// une situation complète d'une situation qui s'arrête en chemin, et donc ce
-// qu'on vient chercher ici.
+// Le catalogue est groupé par écran d'atterrissage. On distingue ainsi une seed
+// complète d'une seed qui s'arrête en chemin.
 function CatalogueByLanding({
   lignes,
   onOuvrir,

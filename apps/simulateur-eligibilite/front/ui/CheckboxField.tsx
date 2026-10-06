@@ -35,8 +35,7 @@ export function CheckboxField(props: Props) {
 
 // ---- implémentation ----
 
-// La forme des cases est celle du composant DSFR appelé, pas la nôtre : on la
-// lui emprunte plutôt que de la recopier.
+// La forme des cases est empruntée au composant DSFR, pas recopiée.
 type DsfrCheckbox = ComponentProps<typeof Checkbox>["options"][number];
 
 function checkboxes(props: Props): DsfrCheckbox[] {

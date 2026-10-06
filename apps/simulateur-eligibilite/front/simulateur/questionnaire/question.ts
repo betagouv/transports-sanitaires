@@ -16,7 +16,7 @@ type Common = {
   readonly label: string;
   /** Phrase indicative, rendue sous la question. */
   readonly hint?: string;
-  /** La question se pose-t-elle, les réponses lues ? Toujours, sans condition. */
+  /** La question se pose-t-elle, vu les réponses ? Absente : toujours. */
   readonly askedIf?: (answers: Answers) => boolean;
   /**
    * Les questions dont dépend cette réponse. Quand l'une d'elles change, cette
@@ -57,7 +57,7 @@ export type Page = {
   readonly questions: readonly Question[];
 };
 
-/** Les questions de la page qui se posent, les réponses lues. */
+/** Les questions de la page qui se posent, vu les réponses. */
 export function askedQuestions(page: Page, answers: Answers): Question[] {
   return page.questions.filter(
     (question) => question.askedIf?.(answers) ?? true,

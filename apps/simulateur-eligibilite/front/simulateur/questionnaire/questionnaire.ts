@@ -19,12 +19,11 @@ export type QuestionnaireState = {
 export type QuestionnaireOptions = {
   // Les pages de ce questionnaire, dans l'ordre. Au moins une doit se poser.
   pages: readonly Page[];
-  // Réponses acquises avant ce questionnaire. Aucune de ses pages ne les repose :
-  // elles sont lues par les conditions, et figées par construction. C'est le
-  // verrou.
+  // Les réponses acquises avant ce questionnaire. Ses pages ne les reposent
+  // pas : les conditions les lisent, rien ne les change. C'est le verrou.
   lockedAnswers?: Answers;
-  // Reprise d'un questionnaire déjà mené, le retour depuis une page de résultat. Il
-  // rouvre sur sa page, réponses intactes, sans réémettre un début.
+  // La reprise d'un questionnaire déjà mené, au retour d'une page de résultat.
+  // Il rouvre sur sa page, réponses intactes, sans réémettre son début.
   initialState?: QuestionnaireState;
   // Le questionnaire émet-il ses évènements de mesure d'audience ?
   tracked: boolean;
@@ -43,7 +42,7 @@ type View = {
   hasPrevious: boolean;
   // Une question affichée attend encore sa réponse : on ne peut pas avancer.
   hasPendingQuestions: boolean;
-  // Avancer conclura le questionnaire au lieu d'ouvrir une page de plus.
+  // Avancer termine le questionnaire au lieu d'ouvrir une autre page.
   isLast: boolean;
 };
 
@@ -79,9 +78,8 @@ export function useQuestionnaire(options: QuestionnaireOptions): Questionnaire {
 
 /**
  * L'état qu'aurait laissé un utilisateur ayant donné ces réponses : ouvert sur
- * la première page qui attend encore une réponse, sinon sur la dernière. C'est
- * ce qui permet à une seed d'avoir un questionnaire derrière elle, et donc un
- * « Précédent ».
+ * la première page sans réponse, sinon sur la dernière. Une seed a ainsi un
+ * questionnaire derrière elle, donc un « Précédent ».
  */
 export function stateAfterAnswers(
   pages: readonly Page[],
@@ -119,9 +117,9 @@ function startingState(options: QuestionnaireOptions): State {
   return onPage(page, start.answers);
 }
 
-// Ouvrir une page y dépose ses réponses validées : c'est ce qui la rouvre
-// telle qu'elle a été quittée, et ce qu'un « Précédent » sans validation
-// abandonne.
+// Ouvrir une page copie ses réponses validées dans le brouillon. Elle rouvre
+// ainsi telle qu'on l'a quittée. Un « Précédent » sans validation abandonne
+// ce brouillon.
 function onPage(page: Page, answers: Answers): State {
   const draft = Object.fromEntries(
     page.questions
@@ -153,9 +151,9 @@ function read(all: readonly Page[], state: State): View {
   };
 }
 
-// Ce que les conditions lisent : les réponses validées, et par-dessus celles
-// de la page en cours, pour qu'une question puisse en révéler une autre sur la
-// même page.
+// Ce que les conditions lisent : les réponses validées, puis celles de la
+// page en cours par-dessus. Une question peut ainsi en révéler une autre sur
+// la même page.
 function visibleAnswers(state: State): Answers {
   return { ...state.answers, ...state.draft };
 }
@@ -201,8 +199,8 @@ function actions({
       setState(onPage(following, answers));
       tracking.stepPassed(view.pages.indexOf(view.page) + 2);
     },
-    // Reculer ne valide rien : le brouillon de la page quittée est abandonné,
-    // et la page précédente rouvre sur ses réponses validées.
+    // Reculer ne valide rien. Le brouillon de la page quittée est abandonné, et
+    // la page précédente rouvre sur ses réponses validées.
     back: () => {
       const previous = view.pages[view.pages.indexOf(view.page) - 1];
       if (previous) setState(onPage(previous, state.answers));
@@ -219,8 +217,8 @@ function withAnswer(
   return answer === undefined ? rest : { ...rest, [id]: answer };
 }
 
-// Toute saisie relance l'avancement automatique, y compris au retour sur une
-// page déjà répondue, où il avait rendu la main au bouton « Suivant ».
+// Toute saisie relance l'avancement automatique, même au retour sur une page
+// déjà répondue, où le bouton « Suivant » était revenu.
 function withRestart(handlers: Actions, autoAdvance: AutoAdvance) {
   return {
     ...handlers,
@@ -232,10 +230,9 @@ function withRestart(handlers: Actions, autoAdvance: AutoAdvance) {
   };
 }
 
-// L'avancement automatique est réservé aux pages faites de choix uniques. Un
-// choix multiple ou une saisie gardent leur bouton, et il suffit d'un seul sur
-// la page pour que toute la page le garde : on n'avance pas une page à moitié
-// remplie.
+// L'avancement automatique vaut pour les pages faites de choix uniques. Avec
+// un seul choix multiple ou champ de saisie, toute la page garde son bouton :
+// on n'avance pas une page à moitié remplie.
 function isSingleChoicePage(questions: readonly Question[]): boolean {
   return (
     questions.length > 0 &&

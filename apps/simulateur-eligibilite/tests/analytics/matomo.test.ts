@@ -38,8 +38,7 @@ describe("construireEvenement", () => {
   });
 
   it("service saisi sous « Autre » : le Nom reste l'id de l'entrée « Autre »", () => {
-    // Le service libre ne part jamais : il n'est connu que de Grist, qui en fait
-    // un vrai service pour la visite suivante.
+    // Le service libre ne part jamais à Matomo. Seul Grist le reçoit.
     const autre: RattachementSaisi = {
       etabId: "7",
       serviceId: "99",
@@ -129,9 +128,9 @@ describe("initAnalytics", () => {
   });
 });
 
-// L'app vit dans une iframe du CMS, qui tient l'opt-out : le traceur attend son
-// choix avant de mesurer quoi que ce soit (voir choix-analytics.test.ts pour
-// le pont lui-même).
+// L'app vit dans une iframe du CMS, qui tient l'opt-out. Le traceur attend ce
+// choix avant de mesurer. Le pont lui-même est testé dans
+// choix-analytics.test.ts.
 describe("mesure selon le choix transmis par le CMS", () => {
   function pageParente() {
     const iframe = document.createElement("iframe");
@@ -147,8 +146,7 @@ describe("mesure selon le choix transmis par le CMS", () => {
     return { parent, choisir };
   }
 
-  // Le chargeur de matomo.js est remplacé par un relevé des chargements
-  // demandés : les tests ne touchent pas au réseau.
+  // Le chargeur de matomo.js est remplacé par un relevé : pas de réseau en test.
   let chargements: string[] = [];
   const demarrerDansLIframe = () => {
     const page = pageParente();

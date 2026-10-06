@@ -9,18 +9,17 @@ export type ChoixAnalytics = "suivi" | "refus";
 export type BridgeOptions = {
   /** La page qui embarque l'app (défaut : `window.parent`). */
   parent?: Window;
-  /** Au-delà, sans réponse, la mesure suit son cours. */
+  /** Passé ce délai sans réponse, la mesure continue. */
   delaiMs?: number;
 };
 
 /**
  * Demande le choix à la page qui embarque l'app, puis le suit : `surChoix` est
- * rappelé à la réponse et à chaque changement. Hors iframe, ou sans réponse dans
- * le délai, la mesure suit son cours : l'opt-out n'existe que là où le CMS
- * l'offre.
+ * appelé à la réponse et à chaque changement. Hors iframe, ou sans réponse dans
+ * le délai, la mesure continue : l'opt-out n'existe que là où le CMS l'offre.
  *
  * Seule la page parente est écoutée. Son origine n'est pas vérifiée : le message
- * ne porte aucune donnée, et ne fait qu'arrêter ou reprendre notre propre mesure.
+ * ne porte aucune donnée, il arrête ou reprend notre propre mesure.
  */
 export function suivreChoixAnalytics(
   surChoix: (choix: ChoixAnalytics) => void,
@@ -49,8 +48,7 @@ export function suivreChoixAnalytics(
 const DEMANDE = "statistiques-simulateur:demande";
 const CHOIX = "statistiques-simulateur:choix";
 
-// Court : la page vue attend la réponse, et le script du CMS répond dès que
-// l'iframe demande.
+// Court : la page vue attend la réponse, et le CMS répond dès la demande.
 const DELAI_MS = 1000;
 
 function lireChoix(data: unknown): ChoixAnalytics | null {

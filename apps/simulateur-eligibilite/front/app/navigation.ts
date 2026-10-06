@@ -13,16 +13,15 @@ type Screen = "rattachement" | "seeds" | "simulateur";
 export type Navigation = {
   screen: Screen;
   // Le service choisi déverrouille-t-il les developer tools (service n° 4) ?
-  // Retenu à la validation pour pouvoir les reproposer au début du parcours.
-  // C'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
+  // Retenu au rattachement pour les reproposer dans le simulateur. C'est un
+  // booléen, pas une identité.
   developerTools: boolean;
   // Les réponses de la seed ouverte, qui pré-remplissent le simulateur.
   seedAnswers: Answers | null;
   // Change à chaque nouvelle simulation. `App` s'en sert pour remonter le
-  // simulateur et repartir d'un parcours vierge.
+  // simulateur et repartir d'un questionnaire vierge.
   simulationNumber: number;
-  // Les developer tools s'ouvrent **après** l'écran de rattachement : on entre rattaché,
-  // quelle que soit la destination.
+  // Les developer tools s'ouvrent après le rattachement, comme le simulateur.
   rattacher: (acces: AccesRattachement) => void;
   // Ouvre la seed choisie : son résultat si elle est complète, sinon la
   // première page qu'elle laisse sans réponse.
@@ -62,8 +61,8 @@ function actions(
         screen: acces.destination,
         developerTools: acces.developerTools,
       }),
-    // Ouvrir une seed commence une simulation : la même seed peut être
-    // rouverte, et repart alors de ses réponses.
+    // Ouvrir une seed commence une simulation. Rouverte, la même seed repart
+    // de ses réponses.
     openSeed: (seed) =>
       patch({
         screen: "simulateur",

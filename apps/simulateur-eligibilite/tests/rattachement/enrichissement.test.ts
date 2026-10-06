@@ -1,8 +1,7 @@
 // @vitest-environment node
 //
 // L'écriture de la saisie libre dans le référentiel. Chaque cas démarre sa propre
-// app : le référentiel y est injecté (double capturant, ou en panne), ce que l'app
-// partagée ne permet pas.
+// app, avec un référentiel injecté : un double qui capture, ou un en panne.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { RattachementSaisi } from "../../shared/rattachement-saisi.ts";
@@ -13,7 +12,7 @@ import {
 import { demarrer, postTo } from "./serveur-de-test.ts";
 
 describe("POST /api/rattachement : enrichissement du référentiel (service « Autre »)", () => {
-  // Référentiel double : lit via le snapshot, capture les appels d'enrichissement.
+  // Référentiel double : lit le snapshot, capture les appels d'enrichissement.
   const appels: RattachementSaisi[] = [];
   const referentiel: Referentiel = {
     ...snapshotReferentiel,
@@ -43,7 +42,7 @@ describe("POST /api/rattachement : enrichissement du référentiel (service « A
   });
 
   it("appelle quand même l'enrichissement pour une sélection issue des listes (no-op côté source)", async () => {
-    // La route délègue toujours ; c'est la source (Grist) qui décide de ne rien écrire.
+    // La route délègue toujours. La source (Grist) décide de ne rien écrire.
     const sel = { etabId: "e_chu_grenoble", serviceId: "s_grenoble_cardio" };
     const { status } = await postTo(base, "/api/rattachement", sel);
     expect(status).toBe(204);

@@ -22,8 +22,8 @@ type Champs = {
 export type SaisieRattachement = {
   etablissements: Etablissement[];
   services: Service[];
-  // Une des listes n'a pas pu se charger : la saisie devient le rattachement
-  // dégradé « Autre / Autre », complet d'office.
+  // Une des listes n'a pas pu se charger. La saisie devient le rattachement de
+  // repli « Autre / Autre », toujours complet.
   indisponible: boolean;
   champs: Champs;
   modifier: (champ: keyof Champs, valeur: string) => void;
@@ -31,7 +31,7 @@ export type SaisieRattachement = {
   saisie: RattachementSaisi;
   valide: boolean;
   etabChoisi: boolean;
-  // « Autre » sélectionné → saisie du service/unité réel obligatoire.
+  // « Autre » sélectionné : la saisie du vrai service est obligatoire.
   serviceEstAutre: boolean;
   // Le service sélectionné déverrouille les developer tools (service n° 4).
   developerTools: boolean;
@@ -65,10 +65,10 @@ export function useSaisieRattachement(
 
 // ---- implémentation ----
 
-// Les deux listes déroulantes : celle des services se recharge quand
-// l'établissement change, et se vide immédiatement pour ne jamais afficher les
-// entrées du précédent le temps de l'aller-retour réseau. Un échec de l'une ou
-// l'autre marque le référentiel indisponible.
+// Les deux listes déroulantes. Celle des services se recharge quand
+// l'établissement change. Elle se vide d'abord, pour ne pas montrer les services
+// du précédent pendant l'appel réseau. Un échec de l'une ou l'autre marque le
+// référentiel indisponible.
 function useListes(referentiel: Referentiel, etabId: string) {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -94,16 +94,16 @@ function useListes(referentiel: Referentiel, etabId: string) {
   return { etablissements, services, indisponible };
 }
 
-// Changer un champ invalide ce qui en dépend : un service ne survit pas au
-// changement d'établissement, ni `serviceLibre` au changement de service.
+// Changer un champ efface ce qui en dépend : le service quand l'établissement
+// change, `serviceLibre` quand le service change.
 function avecDependantsEffaces(champs: Champs, modifie: keyof Champs): Champs {
   const dependants = DEPENDANTS[modifie];
   if (!dependants) return champs;
   return { ...champs, ...Object.fromEntries(dependants.map((c) => [c, ""])) };
 }
 
-// L'établissement est toujours porté ; le service n'a de sens qu'une fois
-// choisi, et `serviceLibre` qu'une fois la branche « Autre » empruntée.
+// L'établissement est toujours présent. Le service ne l'est qu'une fois choisi,
+// et `serviceLibre` que sous « Autre ».
 function construireSaisie(
   champs: Champs,
   serviceEstAutre: boolean,
@@ -118,14 +118,13 @@ function construireSaisie(
   return saisie;
 }
 
-// « Autre » (service / unité non listé du référentiel) reste toujours en **fin**
-// de liste, quel que soit l'ordre alphabétique.
+// « Autre » (service non listé) reste toujours en fin de liste.
 function estAutre(libelle: string): boolean {
   return libelle.trim().toLowerCase() === "autre";
 }
 
-// Tri alphabétique des listes déroulantes (locale FR, insensible à la casse et
-// aux accents), « Autre » repoussé en fin de liste.
+// Tri alphabétique français, sans tenir compte de la casse ni des accents.
+// « Autre » passe en fin de liste.
 function triParLibelle<T extends { libelle: string }>(liste: T[]): T[] {
   return [...liste].sort((a, b) => {
     if (estAutre(a.libelle) !== estAutre(b.libelle)) {
@@ -135,7 +134,7 @@ function triParLibelle<T extends { libelle: string }>(liste: T[]): T[] {
   });
 }
 
-// Le rattachement de repli quand le référentiel ne répond pas : l'utilisateur
+// Le rattachement de repli quand le référentiel ne répond pas. L'utilisateur
 // entre quand même, et l'analytics range sa visite sous « autre ».
 const RATTACHEMENT_DEGRADE: RattachementSaisi = {
   etabId: "autre",

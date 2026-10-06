@@ -1,11 +1,9 @@
 // @vitest-environment node
 //
-// La configuration est lue depuis un environnement passé en paramètre : ces tests
-// n'ont donc rien à simuler, ils décrivent des déploiements possibles. Ce qu'ils
-// gardent est la promesse tenue à l'exploitant : en production, une variable sans
-// valeur par défaut arrête le démarrage au lieu de laisser tourner un serveur qui
-// sert un référentiel factice. Et, schéma zod oblige, une variable présente mais
-// mal formée l'arrête aussi.
+// La configuration est lue depuis un environnement passé en paramètre. Ces tests
+// décrivent donc des déploiements possibles, sans rien simuler. En production,
+// une variable manquante ou mal formée arrête le démarrage. Sinon le serveur
+// servirait un référentiel factice.
 
 import { describe, expect, it } from "vitest";
 import {

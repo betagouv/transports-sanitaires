@@ -15,15 +15,14 @@ import {
 export const TAILLE_DU_GABARIT = 10;
 
 /**
- * En dessous, un texte imprimé n'est plus confortablement lisible : plancher
- * courant pour une mention secondaire (notes de bas de page, mentions
- * légales).
+ * En dessous, un texte imprimé se lit mal. C'est le plancher courant des notes
+ * de bas de page et des mentions légales.
  */
 export const TAILLE_MINIMALE_LISIBLE = 6;
 
 /**
- * Une mesure liée à `champ` : `texte` entre-t-il dans sa zone réelle, à
- * `police` et `taille` ? `taille` par défaut à `TAILLE_DU_GABARIT`.
+ * Une mesure liée à `champ` : `texte` tient-il dans sa zone réelle, à `police`
+ * et `taille` ? `taille` vaut `TAILLE_DU_GABARIT` par défaut.
  */
 export function tientDansLaZone(
   champ: PDFTextField,
@@ -46,10 +45,10 @@ export function tientDansLaZone(
 }
 
 /**
- * La plus grande taille, de celle du gabarit au plancher de lisibilité, à
- * laquelle `texte` tient dans la zone de `champ`, et dans son nombre maximal de
- * caractères s'il en déclare un. `undefined` s'il ne tient à aucune : le texte
- * déborde, et rien ne l'écrira plus petit.
+ * La plus grande taille à laquelle `texte` tient dans la zone de `champ`, entre
+ * celle du gabarit et le plancher de lisibilité. Le nombre maximal de
+ * caractères du champ compte aussi. `undefined` si le texte déborde à toutes
+ * les tailles.
  */
 export function tailleQuiTient(
   champ: PDFTextField,
@@ -76,9 +75,9 @@ type Bornes = {
   readonly height: number;
 };
 
-// Le même calcul que `defaultTextFieldAppearanceProvider` de `pdf-lib` : la
-// marge est la bordure du widget plus le remplissage qu'il applique aux
-// champs non combés, jamais 0, sans quoi le texte toucherait le cadre.
+// Le même calcul que `defaultTextFieldAppearanceProvider` de `pdf-lib`. La
+// marge est la bordure du widget plus son remplissage, jamais 0 : sinon le
+// texte toucherait le cadre.
 function bornesUtiles(champ: PDFTextField): Bornes | undefined {
   const cadre = champ.acroField.getWidgets()[0]?.getRectangle();
   if (!cadre) return undefined;

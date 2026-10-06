@@ -23,9 +23,8 @@ export function SeedsScreen(props: Props) {
 
 // ---- implémentation ----
 
-// Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
-// du bundle initial : seul le service produit y accède (cf. `developerTools`), la
-// très grande majorité des prescripteurs ne le réclamera jamais.
+// Chargé à la demande : le catalogue et son tableau restent hors du bundle
+// initial. Seul le service produit y accède.
 const Seeds = lazy(() =>
   import("./Seeds").then((m) => ({
     default: m.Seeds,

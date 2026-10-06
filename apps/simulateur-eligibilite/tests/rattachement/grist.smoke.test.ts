@@ -1,13 +1,11 @@
 // @vitest-environment node
 //
-// Smoke test d'intégration contre le **vrai** Grist (sans mock, conformément aux
-// conventions). Désactivé si `GRIST_API_KEY` est absente de l'environnement — il
-// ne tourne donc pas en CI, mais en local avec la clé exportée :
+// Smoke test de lecture contre le vrai Grist, sans mock. Désactivé sans
+// `GRIST_API_KEY` : il ne tourne pas en CI, mais en local avec la clé exportée :
 //   GRIST_API_KEY=$(grep -E '^GRIST_API_KEY=' .env | cut -d= -f2-) pnpm test
 //
-// Assertions volontairement structurelles (le référentiel est maintenu à la main
-// et évolue) : on vérifie la forme et l'enchaînement établissement → service, pas
-// des libellés figés.
+// Le référentiel évolue à la main. On vérifie donc la forme et l'enchaînement
+// établissement → service, pas des libellés.
 
 import { describe, expect, it } from "vitest";
 import { lireConfiguration } from "../../server/configuration.ts";

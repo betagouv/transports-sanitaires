@@ -50,8 +50,8 @@ export async function creerLigne(
   return id;
 }
 
-// Valeur de cellule ramenée à du texte : Grist renvoie aussi bien des nombres
-// que des chaînes selon le type de colonne.
+// La valeur d'une cellule, en texte. Grist renvoie des nombres ou des chaînes
+// selon le type de colonne.
 export function texte(valeur: unknown): string {
   return typeof valeur === "string"
     ? valeur.trim()

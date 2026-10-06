@@ -7,13 +7,12 @@ import {
   question,
 } from "../simulateur/questionnaire";
 
-// La trace de debug est un developer tool comme l'écran des seeds : elle s'ouvre sur
-// **tous** les environnements, production comprise, et pour le seul service
-// n° 4. Elle montre le chemin parcouru et les réponses déjà données, ce
-// qu'aucun prescripteur ordinaire n'a à voir sous ses questions.
+// La trace de debug est un developer tool. Elle s'ouvre sur tous les
+// environnements, pour le seul service n° 4. Elle montre le chemin parcouru et
+// les réponses données.
 //
-// Les tests passent par `App`, et non par le simulateur : c'est le câblage
-// qu'ils gardent, du service choisi à l'écran de rattachement jusqu'au `DebugTrace` des écrans.
+// Les tests passent par `App` : ils gardent le câblage, du service choisi au
+// rattachement jusqu'au `DebugTrace` des écrans.
 
 const TRACE_PARCOURS = /^Debug — chemin parcouru/;
 const TRACE_RESULTAT = /^Debug — résultat/;

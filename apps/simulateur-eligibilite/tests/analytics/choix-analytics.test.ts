@@ -1,7 +1,6 @@
-// Le pont avec la page qui embarque l'app : le simulateur demande le choix de
-// l'utilisateur sur la mesure d'audience, et le CMS le lui donne. La page parente
-// est une vraie fenêtre (celle d'une iframe) ; ses réponses arrivent comme de
-// vrais évènements `message` sur la fenêtre du simulateur.
+// Le pont avec la page qui embarque l'app. Le simulateur demande le choix de
+// l'utilisateur sur la mesure d'audience, et le CMS répond. La page parente est
+// une vraie fenêtre d'iframe. Elle répond par de vrais évènements `message`.
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {

@@ -1,6 +1,5 @@
 // Un formulaire PDF fabriqué pour les tests, et de quoi relire un PDF rempli.
-// Aucun gabarit réel ici : le socle de remplissage se teste sur des champs dont
-// on connaît la taille et les états.
+// Pas de gabarit réel : on connaît la taille et les états de chaque champ.
 
 import {
   PDFCheckBox,

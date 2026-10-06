@@ -24,14 +24,12 @@ type Props = {
   // Seed : pré-remplit le questionnaire. Complète, elle ouvre le résultat ;
   // sinon, la première page qu'elle laisse sans réponse.
   seedAnswers?: Answers | null;
-  // Encadré des developer tools, rendu tel quel sous le questionnaire. Le
-  // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
-  // compose, et il est absent hors du service produit.
+  // L'encadré des developer tools, rendu tel quel sous le questionnaire. `App`
+  // le compose. Absent hors du service produit.
   developerToolsPanel?: ReactNode;
-  // Trace de debug, rendue sous le questionnaire et sous les résultats. Même
-  // garde que le panneau ci-dessus. C'est un composant et non du contenu
-  // composé : le simulateur lui donne l'état vivant du questionnaire, qu'`App` n'a
-  // pas sous la main.
+  // La trace de debug, rendue sous le questionnaire et sous les résultats. Même
+  // garde que l'encadré. C'est un composant, pas du contenu composé : le
+  // simulateur lui passe l'état vivant du questionnaire, qu'`App` n'a pas.
   DebugTrace?: ComponentType<DebugTraceProps>;
 };
 
@@ -63,9 +61,8 @@ export function Simulateur({
 
 // ---- implémentation ----
 
-// `previousState` est le questionnaire qu'un résultat a derrière lui : c'est lui que
-// « Précédent » rouvre. Passé le verrou, l'état du questionnaire n'est plus
-// porté par aucun écran : il n'y a plus rien à rouvrir.
+// `previousState` est le questionnaire derrière un résultat : « Précédent » le
+// rouvre. Après le verrou, il n'y a plus rien à rouvrir.
 type Screen =
   | { name: "questionnaire"; resume?: QuestionnaireState }
   | { name: "result"; previousState: QuestionnaireState }
@@ -79,8 +76,8 @@ type ScreenProps<Name extends Screen["name"]> = {
   onRestart: () => void;
 };
 
-// Une seed n'est qu'un pré-remplissage : à réponses égales, l'application se
-// comporte comme sous les doigts d'un utilisateur, « Précédent » compris.
+// Une seed n'est qu'un pré-remplissage. À réponses égales, l'application se
+// comporte comme avec un utilisateur, « Précédent » compris.
 function startingScreen(seedAnswers: Answers | null): Screen {
   if (!seedAnswers) return { name: "questionnaire" };
   const { complete, ...state } = stateAfterAnswers(
@@ -159,8 +156,8 @@ function ResultToLock({
   );
 }
 
-// Le complément n'émet pas d'évènement : ce qu'on y mesurera se décidera avec
-// les documents du modèle suivant.
+// Le complément n'émet pas d'évènement. Ce qu'on y mesurera se décidera avec
+// le prochain modèle.
 function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
   const { locked } = screen;
   return (
@@ -182,7 +179,7 @@ function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
   );
 }
 
-// « Précédent » revient au complément, jamais en deçà du verrou.
+// « Précédent » revient au complément, jamais avant le verrou.
 function CompletedOrder({
   screen,
   goTo,

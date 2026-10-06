@@ -4,8 +4,8 @@
 import type { ReactNode } from "react";
 
 type Props = {
-  // Les écrans de saisie se lisent mieux sur une colonne étroite ; les tableaux
-  // et les pages de résultat prennent toute la largeur du conteneur.
+  // Les écrans de saisie tiennent sur une colonne étroite. Les tableaux et les
+  // résultats prennent toute la largeur.
   etroit?: boolean;
   children: ReactNode;
 };
@@ -15,9 +15,9 @@ export function Container({ etroit = false, children }: Props) {
     <main
       className="fr-container"
       style={{
-        // Absorbe la hauteur restante quand l'écran est plus haut que le
-        // contenu, pour que le pied de page se pose au bas de la fenêtre (voir
-        // `SimulateurScreen`). Inerte hors d'un conteneur flex.
+        // Prend la hauteur restante quand l'écran est plus haut que le contenu.
+        // Le pied de page se pose ainsi en bas de la fenêtre (voir
+        // `SimulateurScreen`). Sans effet hors d'un conteneur flex.
         flex: "1 0 auto",
         paddingTop: "2rem",
         paddingBottom: "4rem",

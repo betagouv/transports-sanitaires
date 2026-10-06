@@ -11,8 +11,7 @@ export type AppDeTest = { base: string; close: () => Promise<void> };
 export async function demarrer(referentiel: Referentiel): Promise<AppDeTest> {
   const app = creerApp(referentiel);
   const srv = await new Promise<Server>((resolve) => {
-    // Express 5 passe une éventuelle erreur au callback : on ne la propage pas
-    // dans `resolve`, qui n'attend rien.
+    // Express 5 passe une éventuelle erreur au callback. `resolve` n'en veut pas.
     const s = app.listen(0, () => resolve(s));
   });
   const { port } = srv.address() as AddressInfo;

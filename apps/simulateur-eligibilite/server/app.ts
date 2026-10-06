@@ -41,10 +41,9 @@ export function creerApp(
 
 // ---- implémentation ----
 
-// L'app est destinée à être embarquée en iframe dans le CMS : la page canonique
-// pour les moteurs est celle du CMS, pas l'URL brute de l'app. L'en-tête est posé
-// sur toutes les réponses, et doublé d'un robots.txt. Cette double protection ne
-// dépend pas du build front.
+// L'app est embarquée en iframe dans le CMS. Pour les moteurs de recherche, la
+// page de référence est celle du CMS. L'en-tête est posé sur toutes les réponses
+// et doublé d'un robots.txt, sans dépendre du build front.
 function interdireIndexation(app: Express) {
   app.use((_req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");

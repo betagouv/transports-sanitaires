@@ -11,15 +11,13 @@ type Sorties = Readonly<Record<string, unknown>>;
 /**
  * Où l'écran des seeds dépose l'utilisateur.
  *
- * `resultat`, qui est le défaut, ouvre la page de résultat. La seed doit alors
- * être complète, et ses attendus sont vérifiés. Le questionnaire n'est pas pour
- * autant escamoté : il est rouvert derrière la page, pour que « Précédent » y
- * ramène comme après une saisie.
+ * `resultat` (par défaut) ouvre la page de résultat. La seed doit être
+ * complète, et ses attendus sont vérifiés. Le questionnaire reste ouvert
+ * derrière : « Précédent » y ramène.
  *
- * `questionnaire` fait l'inverse. La seed s'arrête volontairement en chemin, et
- * le parcours s'ouvre sur la première page qu'elle laisse sans réponse. Elle
- * n'annonce aucun attendu. Ce n'est pas un cas de non-régression, mais un
- * raccourci vers un écran qu'on veut voir.
+ * `questionnaire` ouvre la première page que la seed laisse sans réponse. La
+ * seed n'a alors pas d'attendu : c'est un raccourci vers un écran, pas un cas
+ * de non-régression.
  */
 type Landing = "resultat" | "questionnaire";
 
@@ -57,10 +55,10 @@ export type EvaluationSeed = {
 };
 
 /**
- * Évalue une seed et confronte la décision à ses attendus.
+ * Évalue une seed et compare la décision à ses attendus.
  *
- * La décision est passée en paramètre plutôt qu'importée : une seed ne sait pas
- * comment le simulateur décide, seulement ce qu'elle en attend.
+ * La décision est passée en paramètre : une seed ne sait pas comment le
+ * simulateur décide, seulement ce qu'elle en attend.
  */
 export function evaluerSeed(
   decide: (answers: Answers) => Sorties,

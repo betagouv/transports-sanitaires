@@ -1,8 +1,7 @@
-// Helpers de franchissement de l'écran de rattachement, partagés par les tests qui ont besoin
-// d'être **derrière** le rattachement (parcours, écran des seeds).
+// Helpers pour franchir l'écran de rattachement dans les tests.
 //
 // Deux rattachements : un ordinaire, et un sur le service n° 4 (« Transport
-// Sanitaire »), seul à déverrouiller les developer tools.
+// Sanitaire »), le seul à déverrouiller les developer tools.
 
 import { screen } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";

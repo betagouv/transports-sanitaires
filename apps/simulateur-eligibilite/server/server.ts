@@ -19,9 +19,9 @@ app.listen(configuration.port, () => {
 
 // ---- implémentation ----
 
-// Une variable manquante en production est une erreur d'exploitation, pas un bug
-// à déboguer : on sort sur le message, sans trace de pile, avec un code non nul
-// pour que la plateforme voie l'échec du déploiement.
+// Une variable manquante en production est une erreur d'exploitation. On sort
+// sur le message, sans trace de pile, avec un code non nul : la plateforme voit
+// l'échec du déploiement.
 function configurationOuArret(): Configuration {
   try {
     return lireConfiguration();

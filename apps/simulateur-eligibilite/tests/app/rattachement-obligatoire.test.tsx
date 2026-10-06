@@ -12,9 +12,9 @@ import {
   snapshotReferentiel,
 } from "../../shared/referentiel";
 
-// L'écran de rattachement : impossible d'atteindre le simulateur sans s'être rattaché. On
-// injecte le référentiel snapshot et une déclaration qui capture ce qui partirait
-// au serveur (pas de backend en test).
+// L'écran de rattachement : on n'atteint pas le simulateur sans s'être rattaché.
+// Le référentiel est le snapshot. La déclaration capture ce qui partirait au
+// serveur : il n'y a pas de backend en test.
 function setup(referentiel: Referentiel = snapshotReferentiel) {
   const user = userEvent.setup();
   const declarations: RattachementSaisi[] = [];
@@ -45,8 +45,8 @@ beforeEach(() => rangerRattachement(null));
 describe("écran de rattachement", () => {
   it("affiche le rattachement d'abord, pas le formulaire", () => {
     setup();
-    // Pas de titre (app en iframe) : l'écran de rattachement se reconnaît à son
-    // premier champ, et le formulaire du simulateur est absent.
+    // L'app n'a pas de titre. L'écran de rattachement se reconnaît à son premier
+    // champ, et le simulateur est absent.
     expect(
       screen.getByRole("combobox", { name: /Établissement/ }),
     ).toBeInTheDocument();
@@ -60,9 +60,9 @@ describe("écran de rattachement", () => {
     await choisir(/Nom du service/, "Cardiologie");
     await acceder(user);
 
-    // Le simulateur est monté : une question de Partie 1 apparaît (plus de titre h1).
+    // Le simulateur est monté : une question de la partie 1 apparaît.
     expect(await simulateurMonte()).toBeInTheDocument();
-    // Le service part tel quel à l'analytics ; rien à apprendre au référentiel.
+    // Le service part tel quel à l'analytics. Le référentiel n'apprend rien.
     expect(rattachementEnSession()).toEqual({
       etabId: "e_chu_grenoble",
       serviceId: "s_grenoble_cardio",

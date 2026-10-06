@@ -13,9 +13,9 @@ import {
   sansBouton,
 } from "./questionnaire";
 
-// Le résultat reste ouvert tant que son action principale n'a pas été choisie.
-// Elle verrouille : le complément ne repose aucune question d'avant, et rien ne
-// ramène en deçà.
+// Le résultat reste ouvert tant que son action principale n'est pas choisie.
+// Cette action verrouille : le complément ne repose aucune question déjà posée,
+// et on ne peut plus revenir en arrière.
 
 const saisie = () => screen.getByRole("spinbutton", QUANTITE);
 

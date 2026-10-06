@@ -15,11 +15,9 @@ import {
   seRattacherProduit,
 } from "../se-rattacher";
 
-// Les developer tools (dont l'écran des seeds) court-circuitent le
-// parcours : ils doivent être regroupés dans un encadré à part, impossible à
-// confondre avec les actions nominales. Ils sont disponibles sur **tous** les
-// environnements, mais seulement pour le service n° 4 : c'est le service qui garde
-// l'accès, plus le build.
+// Les developer tools court-circuitent le questionnaire. Ils sont regroupés dans
+// un encadré à part, distinct des actions normales. Ils existent sur tous les
+// environnements, mais pour le seul service n° 4.
 
 const ENCADRE = { name: "Developer tools" } as const;
 const ECRAN_SEEDS = { name: "Seeds" } as const;
@@ -74,8 +72,8 @@ describe("encadré des developer tools, écran de rattachement", () => {
   });
 
   it("n'apparaît qu'une fois l'établissement et le service choisis", async () => {
-    // Y entrer reste une entrée dans l'application : elle passe par l'écran de rattachement
-    // (ADR-1), quelle que soit la destination.
+    // Y entrer reste une entrée dans l'application : elle passe par l'écran de
+    // rattachement (ADR-1).
     const user = userEvent.setup();
     render(
       <RattachementForm
@@ -137,8 +135,8 @@ describe("encadré des developer tools, début du parcours", () => {
     expect(
       within(encadre).getByRole("button", ECRAN_SEEDS),
     ).toBeInTheDocument();
-    // Le stepper du parcours reste au-dehors. (La première question est à choix
-    // unique : elle n'a pas de bouton de navigation, elle avance d'elle-même.)
+    // Le stepper reste hors de l'encadré. La première question est à choix
+    // unique : elle avance seule, sans bouton de navigation.
     expect(encadre).not.toContainElement(
       screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
     );

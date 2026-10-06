@@ -15,9 +15,9 @@ export function DeveloperTools({ children }: { children: ReactNode }) {
     <section
       aria-label="Developer tools"
       className="fr-mt-4w fr-p-2w"
-      // Propriétés longues plutôt que la forme raccourcie `border` : une variable
-      // CSS absente y invaliderait toute la déclaration, et l'encadré — seul
-      // signal distinguant ces boutons du parcours — disparaîtrait sans bruit.
+      // Propriétés longues, pas le raccourci `border` : une variable CSS absente
+      // invaliderait toute la déclaration. L'encadré disparaîtrait sans bruit,
+      // alors que lui seul distingue ces boutons du questionnaire.
       style={{
         borderWidth: "1px",
         borderStyle: "dashed",

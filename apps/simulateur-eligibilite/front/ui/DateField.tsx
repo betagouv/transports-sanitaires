@@ -30,8 +30,8 @@ export function DateField(props: Props) {
       nativeInputProps={{
         id: props.id,
         name: props.id,
-        // `datetime-local` et non `datetime` : c'est le seul des deux que les
-        // navigateurs rendent, et il donne une heure locale.
+        // `datetime-local` et non `datetime` : les navigateurs ne rendent que le
+        // premier, et il donne une heure locale.
         type: props.withTime ? "datetime-local" : "date",
         value: props.value,
         onChange: (e) => props.onChange(e.target.value),

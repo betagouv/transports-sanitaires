@@ -27,12 +27,11 @@ import {
  * Une valeur à écrire : un texte dans un champ nommé, une case à cocher, ou un
  * texte mesuré avant d'être écrit en entier (`écrireTexteMesuré`).
  *
- * `coché` porte l'état d'export à écrire. `On` ou `Yes` sont les cas courants,
- * une case pour un champ. Un gabarit peut aussi porter plusieurs cases visibles
- * sous un même nom, c'est-à-dire des boutons radio déguisés en case à cocher,
- * dont chaque widget sait rendre un état et un seul. La casse compte, et deux
- * gabarits ne s'accordent pas forcément : l'un écrit `/OUI`, l'autre `/Oui`.
- * Rien ne se devine : les états se relèvent par introspection du gabarit.
+ * `coché` porte l'état d'export à écrire, souvent `On` ou `Yes`. Un gabarit
+ * peut aussi mettre plusieurs cases sous un même nom : des boutons radio
+ * déguisés, dont chaque widget rend un seul état. La casse compte : un gabarit
+ * écrit `/OUI`, un autre `/Oui`. Les états se relèvent en inspectant le
+ * gabarit, ils ne se devinent pas.
  */
 export type Saisie = { readonly champ: string } & (
   | { readonly texte: string }
@@ -42,15 +41,15 @@ export type Saisie = { readonly champ: string } & (
 
 export type OptionsRemplissage = {
   /**
-   * Verrouille les champs remplis en lecture seule après coup. Le prescripteur ne
-   * peut alors plus corriger ce que le simulateur a déduit, donc à n'activer que si
-   * le produit assume cette contrainte. Par défaut le formulaire reste éditable.
+   * Passe les champs remplis en lecture seule. Le prescripteur ne peut alors
+   * plus corriger ce que le simulateur a déduit. Par défaut, le formulaire reste
+   * éditable.
    */
   readonly verrouiller?: boolean;
   /**
-   * Champs déclarés multilignes dans le PDF, mais dont le cadre visible ne montre
-   * qu'une ligne. Y écrire un `\n` rogne silencieusement le reste à l'impression :
-   * les valeurs qui leur sont destinées sont aplaties sur une seule ligne.
+   * Champs déclarés multilignes dans le PDF, mais dont le cadre ne montre qu'une
+   * ligne. Un `\n` y ferait disparaître la suite à l'impression : leurs valeurs
+   * sont aplaties sur une ligne.
    */
   readonly surUneLigne?: readonly string[];
 };
@@ -71,10 +70,9 @@ export async function remplirCerfa(
 ): Promise<Uint8Array> {
   const document = await PDFDocument.load(gabarit);
   const formulaire = document.getForm();
-  // `formulaire.updateFieldAppearances()` (plus bas) recompose l'apparence de
-  // tout champ écrit dans SA police par défaut, jamais dans celle déclarée par
-  // le gabarit : la mesure de débordement doit donc porter sur cette police-là,
-  // pas sur celle du `/DA` d'origine — cf. `réduireSiÇaDéborde`.
+  // `formulaire.updateFieldAppearances()` (plus bas) redessine tout champ écrit
+  // dans sa police par défaut, pas dans celle du gabarit. Le débordement se
+  // mesure donc avec cette police-là. Voir `réduireSiÇaDéborde`.
   const police = await document.embedFont(StandardFonts.Helvetica);
 
   for (const saisie of saisies) {
@@ -84,8 +82,8 @@ export async function remplirCerfa(
     else écrire(formulaire, police, saisie, options.surUneLigne ?? []);
   }
 
-  // Sans cet appel, les valeurs sont bien dans le PDF, mais rien ne s'affiche tant
-  // qu'un lecteur ne régénère pas les apparences, ce que tous ne font pas.
+  // Sans cet appel, les valeurs sont dans le PDF mais ne s'affichent pas dans les
+  // lecteurs qui ne régénèrent pas les apparences.
   formulaire.updateFieldAppearances();
 
   if (options.verrouiller)
@@ -113,8 +111,8 @@ function écrire(
 
   const maximum = champ.getMaxLength();
   if (maximum !== undefined && valeur.length > maximum) {
-    // Tronquer silencieusement produirait une valeur fausse sur un document
-    // opposable. On refuse plutôt que de livrer une prescription erronée.
+    // Tronquer sans le dire donnerait une valeur fausse sur un document
+    // opposable. On refuse plutôt.
     throw new Error(
       `« ${nom} » accepte ${maximum} caractères, ${valeur.length} fournis : « ${valeur} ».`,
     );
@@ -124,17 +122,13 @@ function écrire(
 }
 
 /**
- * Un gabarit déclare sa police (`/Cour 10 Tf`, par exemple), mais `pdf-lib` recompose
- * l'apparence de tout champ écrit dans sa police par défaut au moment de
- * `formulaire.updateFieldAppearances()`, jamais dans celle du `/DA` d'origine —
- * ici Helvetica, embarquée dans `remplirCerfa`. Une valeur composée, comme une
- * adresse assemblée sur l'unique ligne que le formulaire lui donne, peut
- * dépasser le cadre réel à 10 points, mesuré avec cette police réelle
- * (`tientDansLaZone`).
+ * Un gabarit déclare sa police (`/Cour 10 Tf`, par exemple). Mais `pdf-lib`
+ * redessine tout champ écrit dans sa police par défaut, ici Helvetica,
+ * embarquée dans `remplirCerfa`. Une valeur composée, comme une adresse sur une
+ * seule ligne, peut dépasser le cadre réel à 10 points (`tientDansLaZone`).
  *
- * On descend directement à `TAILLE_MINIMALE_LISIBLE` plutôt que de chercher une
- * taille intermédiaire, et sans garantir que tout y tienne. Un texte qui doit
- * tenir passe par `texteMesuré`.
+ * On descend alors directement à `TAILLE_MINIMALE_LISIBLE`, sans garantir que
+ * tout y tienne. Un texte qui doit tenir passe par `texteMesuré`.
  */
 function réduireSiÇaDéborde(
   champ: PDFTextField,
@@ -148,10 +142,10 @@ function réduireSiÇaDéborde(
 /**
  * Coche en imposant l'état d'export attendu.
  *
- * `PDFCheckBox.check()` de pdf-lib retient le premier état « on » qu'il trouve dans
- * les apparences du champ. Pour les radios déguisés, décrits sur `Saisie`, cela
- * coche la mauvaise moitié une fois sur deux. On écrit donc la valeur du champ, et
- * pour chaque widget l'état d'apparence qu'il sait rendre, ou `/Off` sinon.
+ * `PDFCheckBox.check()` de pdf-lib retient le premier état « on » qu'il trouve.
+ * Pour les radios déguisés (voir `Saisie`), il coche la mauvaise case une fois
+ * sur deux. On écrit donc la valeur du champ, puis pour chaque widget l'état
+ * qu'il sait rendre, ou `/Off`.
  */
 function cocher(formulaire: Formulaire, nom: string, coché: string): void {
   const champ = formulaire.getField(nom);
@@ -165,9 +159,8 @@ function cocher(formulaire: Formulaire, nom: string, coché: string): void {
     return apparences instanceof PDFDict && apparences.has(état);
   });
   if (connaissent.length === 0) {
-    // Aucun widget ne sait rendre cet état. La case resterait vierge, sans que
-    // rien ne le signale, sur un document opposable. `/Oui` et `/OUI` ne sont pas
-    // le même état.
+    // Aucun widget ne sait rendre cet état. La case resterait vide sans rien
+    // signaler, sur un document opposable. `/Oui` et `/OUI` sont deux états.
     throw new Error(
       `« ${nom} » ne connaît pas l'état « /${coché} » : la case resterait vide.`,
     );

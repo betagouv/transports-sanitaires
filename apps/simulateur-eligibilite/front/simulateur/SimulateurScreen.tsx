@@ -14,9 +14,8 @@ export function SimulateurScreen(props: ComponentProps<typeof Simulateur>) {
       style={{
         display: "flex",
         flexDirection: "column",
-        // `100dvh` et non `100vh` : sur mobile, la barre d'adresse qui se
-        // rétracte change la hauteur utile, et `vh` laisserait le pied de page
-        // sous le pli.
+        // `100dvh` et non `100vh` : sur mobile, la barre d'adresse change la
+        // hauteur utile, et `vh` laisserait le pied de page sous le pli.
         minHeight: "100dvh",
       }}
     >

@@ -1,5 +1,5 @@
-// Ce que les tests du parcours partagent : entrer dans le simulateur par la
-// vraie porte, puis répondre comme le ferait un utilisateur.
+// Ce que les tests du questionnaire partagent : entrer dans le simulateur par
+// l'écran de rattachement, puis répondre comme un utilisateur.
 
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

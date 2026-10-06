@@ -10,8 +10,8 @@ import {
   question,
 } from "./questionnaire";
 
-// Ce que le parcours signale à Matomo, lu dans la file `_paq` : son début, ses
-// étapes, sa conclusion. Le service est celui du rattachement de test.
+// Ce que le questionnaire signale à Matomo, lu dans la file `_paq` : son début,
+// ses étapes, sa fin. Le service est celui du rattachement de test.
 
 const evenements = () =>
   (window._paq as unknown[][])

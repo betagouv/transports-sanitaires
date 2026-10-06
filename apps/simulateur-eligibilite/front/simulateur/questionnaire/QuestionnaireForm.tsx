@@ -8,21 +8,17 @@ import type { Questionnaire, QuestionnaireOptions } from "./questionnaire";
 import { useQuestionnaire } from "./questionnaire";
 
 type Props = QuestionnaireOptions & {
-  // Nombre de parties que le stepper annonce. Il compte des parties, jamais des
-  // pages : une question de plus ne déplace pas le prescripteur dans le questionnaire.
+  // Nombre de parties que le stepper annonce. Il compte des parties, pas des
+  // pages : une question de plus ne décale pas le stepper.
   partCount: number;
   // Libellé du bouton de la dernière page.
   endLabel: string;
-  // La trace de debug sous le questionnaire est un developer tool : le questionnaire
-  // sait *où* elle s'affiche et quoi lui donner à lire, pas à qui elle s'ouvre.
-  // Absente, rien n'est rendu.
+  // La trace de debug, un developer tool. Le questionnaire sait où l'afficher
+  // et quoi lui donner, pas à qui elle s'ouvre. Absente, rien n'est rendu.
   DebugTrace?: ComponentType<DebugTraceProps>;
 };
 
-/**
- * Ce qu'un écran du simulateur donne à lire à la trace de debug : le chemin
- * parcouru, et ce qu'il en sait de plus.
- */
+/** Ce qu'un écran du simulateur donne à lire à la trace de debug. */
 export type DebugTraceProps = {
   title: string;
   /** Les pages posées, dans l'ordre. */
@@ -71,9 +67,8 @@ export function QuestionnaireForm({
 
 // ---- implémentation ----
 
-// La page rend son brouillon : une saisie ne compte qu'une fois la page validée.
-// La première question non répondue prend le focus, pour qu'un questionnaire se mène
-// au clavier.
+// La page affiche son brouillon : une saisie ne compte qu'une fois la page
+// validée. La première question sans réponse prend le focus, pour le clavier.
 function QuestionFields({ questionnaire }: { questionnaire: Questionnaire }) {
   const toFocus = questionnaire.questions.find(
     (question) => questionnaire.draft[question.id] === undefined,

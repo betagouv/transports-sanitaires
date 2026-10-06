@@ -22,11 +22,10 @@ export function RadioField(props: Props) {
       name={props.id}
       legend={props.label}
       hintText={props.hint}
-      // Variante « riche » DSFR : chaque option est une carte bordée, avec
-      // fond gris + curseur pointeur au survol. Le picto (`fr-radio-rich__img`)
-      // est facultatif, on l'omet donc. `classes.inputGroup` ajoute la classe à
-      // chaque groupe (le composant ne pose `fr-radio-rich` de lui-même que si
-      // une option fournit une `illustration`). Incompatible avec `small`.
+      // Variante « riche » du DSFR : chaque option est une carte bordée. Le picto
+      // est facultatif, on l'omet. `classes.inputGroup` pose `fr-radio-rich` sur
+      // chaque groupe : le composant ne le fait seul que si une option a une
+      // `illustration`. Incompatible avec `small`.
       classes={{
         inputGroup: "fr-radio-rich",
         legend: props.lead ? "fr-text--lead" : undefined,

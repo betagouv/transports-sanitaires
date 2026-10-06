@@ -4,9 +4,9 @@
 // cases donnent `JJ/MM/AAAA`. Le nombre de cases se lit sur le champ du PDF.
 
 /**
- * La date ISO (`AAAA-MM-JJ`) écrite comme le champ à `nombreDeCases` l'impose.
- * Une valeur qui n'a pas la forme ISO ressort telle quelle plutôt que découpée de
- * travers — un champ vide, notamment, ne doit pas devenir `00000000`.
+ * La date ISO (`AAAA-MM-JJ`), écrite selon le `nombreDeCases` du champ. Une
+ * valeur qui n'a pas la forme ISO ressort telle quelle : un champ vide ne doit
+ * pas devenir `00000000`.
  */
 export function dateSurLeChamp(iso: string, nombreDeCases: number): string {
   const [annee, mois, jour] = iso.split("-");
