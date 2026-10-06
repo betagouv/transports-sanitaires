@@ -12,7 +12,7 @@ import {
 
 // L'écran des seeds montre les seeds qu'on lui donne, dit pour chacune si la décision
 // confirme ses attendus, et ouvre l'écran correspondant. Le catalogue étant
-// vide, les seeds sont écrites ici, sur le parcours factice.
+// vide, les seeds sont écrites ici, sur le questionnaire factice.
 
 const THE_AU_LAIT: Seed = {
   id: "the-au-lait",

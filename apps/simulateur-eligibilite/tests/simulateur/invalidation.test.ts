@@ -6,7 +6,7 @@ import type {
 } from "../../front/simulateur/questionnaire/question";
 
 // Une réponse qui change n'efface que les réponses qui en dépendent. Les pages
-// sont écrites ici : le parcours factice n'a qu'une dépendance, pas de quoi
+// sont écrites ici : le questionnaire factice n'a qu'une dépendance, pas de quoi
 // montrer ce qui reste.
 
 const texte = (id: string, dependsOn?: string[]): Question => ({

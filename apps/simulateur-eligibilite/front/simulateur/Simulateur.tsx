@@ -3,7 +3,7 @@
 //
 // Tant que le résultat n'est pas verrouillé, « Précédent » rouvre le
 // questionnaire sur sa dernière page, réponses intactes. C'est l'action
-// principale du résultat qui verrouille : le complément est un second parcours,
+// principale du résultat qui verrouille : le complément est un second questionnaire,
 // qui reçoit les réponses acquises sans en reposer aucune, et dont la première
 // page n'a pas de « Précédent ». Le verrou tient à ce montage, pas à un drapeau.
 
@@ -33,7 +33,7 @@ type Props = {
   developerToolsPanel?: ReactNode;
   // Trace de debug, rendue sous le questionnaire et sous les résultats. Même
   // garde que le panneau ci-dessus. C'est un composant et non du contenu
-  // composé : le simulateur lui donne l'état vivant du parcours, qu'`App` n'a
+  // composé : le simulateur lui donne l'état vivant du questionnaire, qu'`App` n'a
   // pas sous la main.
   DebugTrace?: ComponentType<DebugTraceProps>;
 };
@@ -51,7 +51,7 @@ export function Simulateur({
     case "questionnaire":
       return (
         <>
-          <Questionnaire screen={screen} {...commun} />
+          <InitialQuestionnaire screen={screen} {...commun} />
           {developerToolsPanel}
         </>
       );
@@ -66,7 +66,7 @@ export function Simulateur({
 
 // ---- implémentation ----
 
-// `previousState` est le parcours qu'un résultat a derrière lui : c'est lui que
+// `previousState` est le questionnaire qu'un résultat a derrière lui : c'est lui que
 // « Précédent » rouvre. Passé le verrou, l'état du questionnaire n'est plus
 // porté par aucun écran : il n'y a plus rien à rouvrir.
 type Screen =
@@ -95,18 +95,18 @@ function startingScreen(seedAnswers: Answers | null): Screen {
     : { name: "questionnaire", resume: state };
 }
 
-function Questionnaire({
+function InitialQuestionnaire({
   screen,
   goTo,
   DebugTrace,
 }: ScreenProps<"questionnaire">) {
   return (
     <>
-      <h1 className="fr-h3">Parcours factice</h1>
+      <h1 className="fr-h3">Questionnaire factice</h1>
       <div className="fr-alert fr-alert--info fr-alert--sm fr-mb-4w">
         <p>
-          Ce parcours ne décide rien. Il éprouve la navigation, le temps que le
-          modèle d’éligibilité suivant soit intégré.
+          Ce questionnaire ne décide rien. Il éprouve la navigation, le temps
+          que le modèle d’éligibilité suivant soit intégré.
         </p>
       </div>
       <QuestionnaireForm

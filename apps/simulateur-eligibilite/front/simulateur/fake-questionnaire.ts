@@ -1,7 +1,7 @@
-// Le parcours factice : trois questions sans rapport avec le transport
+// Le questionnaire factice : trois questions sans rapport avec le transport
 // sanitaire, le temps que le modèle d'éligibilité suivant soit intégré.
 //
-// Il ne décide rien. Il tient en vie ce que le parcours réel reprendra tel
+// Il ne décide rien. Il tient en vie ce que le questionnaire réel reprendra tel
 // quel : l'avancement automatique, le retour en arrière, le brouillon d'une
 // page, l'invalidation des réponses dépendantes et le verrou.
 

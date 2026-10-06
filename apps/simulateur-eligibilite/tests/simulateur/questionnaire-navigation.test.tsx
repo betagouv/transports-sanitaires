@@ -13,7 +13,7 @@ import {
 } from "./questionnaire";
 
 // Le comportement de navigation que le parcours réel reprendra tel quel. Il est
-// éprouvé sur le parcours factice, par la vraie application.
+// éprouvé sur le questionnaire factice, par la vraie application.
 
 describe("avancement automatique", () => {
   it("un choix unique avance seul, sans bouton « Suivant »", async () => {
