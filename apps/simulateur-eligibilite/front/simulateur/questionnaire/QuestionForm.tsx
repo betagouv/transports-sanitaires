@@ -37,7 +37,7 @@ export type DebugTraceProps = {
   outputs?: Readonly<Record<string, unknown>>;
 };
 
-export function FlowForm({
+export function QuestionForm({
   partCount,
   endLabel,
   DebugTrace,

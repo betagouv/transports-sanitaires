@@ -1,6 +1,6 @@
 // Pilotage d'un parcours de questions : la page ouverte, son brouillon, ce
 // qu'il reste à répondre et la navigation entre pages. Le rendu est dans
-// `FlowForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
+// `QuestionForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
 // le suivi analytics dans `flow-tracking.ts`.
 
 import { useState } from "react";

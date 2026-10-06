@@ -14,9 +14,12 @@ import {
   PAGES_BEFORE_LOCK,
   PART_COUNT,
 } from "./fake-flow";
-import { type DebugTraceProps, FlowForm } from "./questionnaire/FlowForm";
 import type { FlowState } from "./questionnaire/flow";
 import { stateAfterAnswers } from "./questionnaire/flow";
+import {
+  type DebugTraceProps,
+  QuestionForm,
+} from "./questionnaire/QuestionForm";
 import { type Answers, askedPages } from "./questionnaire/question";
 
 type Props = {
@@ -106,7 +109,7 @@ function Questionnaire({
           modèle d’éligibilité suivant soit intégré.
         </p>
       </div>
-      <FlowForm
+      <QuestionForm
         pages={PAGES_BEFORE_LOCK}
         partCount={PART_COUNT}
         initialState={screen.resume}
@@ -164,7 +167,7 @@ function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
   return (
     <>
       <h1 className="fr-h3">Compléter la commande</h1>
-      <FlowForm
+      <QuestionForm
         pages={PAGES_AFTER_LOCK}
         partCount={PART_COUNT}
         lockedAnswers={locked}
