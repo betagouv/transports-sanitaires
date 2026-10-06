@@ -108,7 +108,8 @@ server/                  le backend Node, barrière de sécurité : les secrets 
   rattachement/          LA feature backend : les routes `/api` et la source Grist du
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
-  app/                   l'amorçage, l'écran-porte, la navigation entre les écrans
+  Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
+  app/                   l'écran-porte, la navigation entre les écrans, le pied de page
   rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
                          l'API, le rattachement en mémoire de session (ADR-4)

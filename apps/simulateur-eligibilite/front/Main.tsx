@@ -4,13 +4,13 @@
 import { startReactDsfr } from "@codegouvfr/react-dsfr/spa";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App";
-import "./dsfr-overrides.css";
+import { App } from "./app/App";
+import "./app/dsfr-overrides.css";
 import {
   chargerMatomo,
   configDepuisEnv,
   initAnalytics,
-} from "../analytics/matomo";
+} from "./analytics/matomo";
 
 startReactDsfr({ defaultColorScheme: "system" });
 
