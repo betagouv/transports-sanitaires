@@ -73,10 +73,7 @@ export function Seeds({ seeds = SEEDS, onOpen, onBack }: Props) {
 function EmptyCatalogue() {
   return (
     <div className="fr-alert fr-alert--info fr-alert--sm fr-mb-4w">
-      <p>
-        Le catalogue est vide. Les situations de référence reviendront avec le
-        modèle d’éligibilité suivant.
-      </p>
+      <p>Le catalogue est vide.</p>
     </div>
   );
 }
