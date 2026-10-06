@@ -9,7 +9,7 @@
 // construction (cf. `vite.config.ts`) : le navigateur n'a aucun moyen de les
 // découvrir.
 //
-// Le bandeau reste dans le flux : c'est `PageDuSimulateur` qui le pousse au bas
+// Le bandeau reste dans le flux : c'est `EcranDuSimulateur` qui le pousse au bas
 // de la fenêtre quand le contenu est trop court pour l'y amener, et il se
 // contente de suivre le contenu quand celui-ci défile. Ni `fixed` ni `sticky` —
 // l'application est embarquée en iframe dans le CMS (cf. `index.html`), et un

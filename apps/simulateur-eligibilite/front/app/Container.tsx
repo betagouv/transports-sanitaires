@@ -22,7 +22,7 @@ export function Container({ etroit = false, children }: Props) {
       style={{
         // Absorbe la hauteur restante quand l'écran est plus haut que le
         // contenu, pour que le pied de page se pose au bas de la fenêtre (voir
-        // `PageDuSimulateur`). Inerte hors d'un conteneur flex.
+        // `EcranDuSimulateur`). Inerte hors d'un conteneur flex.
         flex: "1 0 auto",
         paddingTop: "2rem",
         paddingBottom: "4rem",

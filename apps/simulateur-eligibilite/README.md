@@ -109,7 +109,8 @@ server/                  le backend Node, barrière de sécurité : les secrets 
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
-  app/                   l'écran de rattachement, la navigation entre les écrans, le pied de page
+  app/                   le choix de l'écran affiché, la navigation entre les écrans,
+                         le conteneur de page, le pied de page
   rattachement/          LA feature de l'écran de rattachement, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
                          l'API, le rattachement en mémoire de session (ADR-4)

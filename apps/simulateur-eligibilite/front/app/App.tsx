@@ -1,40 +1,31 @@
-// Racine de l'app : **écran de rattachement** devant le simulateur.
+// Racine de l'app : l'écran de rattachement devant le simulateur.
 // Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
 // rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
 // docs/knowledge/adr/identification.md, ADR-1).
 //
-// À la validation, on range le rattachement saisi en session (pour Matomo), on
-// déclare au serveur un éventuel service saisi sous « Autre », sans attendre sa
-// réponse, puis on bascule sur le simulateur.
+// Chaque écran vit dans son module. Ici on choisit lequel s'affiche, et on
+// branche les developer tools sur le simulateur.
 
-import { lazy, type ReactNode, Suspense } from "react";
-import type { RattachementSaisi } from "../../shared/rattachement-saisi";
-import type { Referentiel } from "../../shared/referentiel";
+import type { ComponentProps } from "react";
 import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
-import { declarerViaApi } from "../rattachement/declaration-http";
-import { Rattachement } from "../rattachement/Rattachement";
-import { referentielHttp } from "../rattachement/referentiel-http";
-import { rangerRattachement } from "../rattachement/session";
+import { EcranDeRattachement } from "../rattachement/EcranDeRattachement";
+import { EcranDesSeeds } from "../seeds/EcranDesSeeds";
 import type { Seed } from "../seeds/seed";
-import { Simulateur } from "../simulateur/Simulateur";
-import { Container } from "./Container";
-import { Footer } from "./Footer";
+import { EcranDuSimulateur } from "../simulateur/EcranDuSimulateur";
 import type { Navigation } from "./navigation";
 import { useNavigation } from "./navigation";
 
-type Props = {
-  // Injectables pour les tests (défauts = production same-origin).
-  referentiel?: Referentiel;
-  declarer?: (saisie: RattachementSaisi) => void;
+// `referentiel` et `declarer` sont injectables pour les tests (défauts =
+// production same-origin).
+type Props = Pick<
+  ComponentProps<typeof EcranDeRattachement>,
+  "referentiel" | "declarer"
+> & {
   /** Seeds de l'écran des seeds (défaut = le catalogue, chargé à la demande). */
   seeds?: readonly Seed[];
 };
 
-export function App({
-  referentiel = referentielHttp,
-  declarer = declarerViaApi,
-  seeds,
-}: Props = {}) {
+export function App({ referentiel, declarer, seeds }: Props = {}) {
   const navigation = useNavigation();
 
   return (
@@ -47,99 +38,26 @@ export function App({
         />
       )}
       {navigation.ecran === "seeds" && (
-        <EcranDesSeeds navigation={navigation} seeds={seeds} />
+        <EcranDesSeeds
+          seeds={seeds}
+          onOuvrir={navigation.ouvrirSeed}
+          onRetour={navigation.fermerOutil}
+        />
       )}
       {navigation.ecran === "simulateur" && (
-        <PageDuSimulateur>
-          <Container>
-            <Simulateur
-              key={navigation.numeroDeSimulation}
-              reponsesDeSeed={navigation.reponsesDeSeed}
-              onNouvelleSimulation={navigation.recommencer}
-              panneauDeveloperTools={panneauDeveloperTools(navigation)}
-              traceDebug={navigation.developerTools}
-            />
-          </Container>
-          <Footer />
-        </PageDuSimulateur>
+        <EcranDuSimulateur
+          key={navigation.numeroDeSimulation}
+          reponsesDeSeed={navigation.reponsesDeSeed}
+          onNouvelleSimulation={navigation.recommencer}
+          panneauDeveloperTools={panneauDeveloperTools(navigation)}
+          traceDebug={navigation.developerTools}
+        />
       )}
     </>
   );
 }
 
 // ---- implémentation ----
-
-// La page du simulateur fait au minimum la hauteur de la fenêtre et se répartit
-// en colonne : le contenu prend la place qu'il lui faut, le pied de page se pose
-// au bas. Sans cela, sur un écran où le contenu est court, le bandeau de version
-// flotte au milieu du vide au lieu de fermer la page.
-//
-// `100dvh` et non `100vh` : sur mobile, la barre d'adresse qui se rétracte
-// change la hauteur utile, et `vh` laisserait le bandeau sous le pli.
-function PageDuSimulateur({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100dvh",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function EcranDesSeeds({
-  navigation,
-  seeds,
-}: {
-  navigation: Navigation;
-  seeds?: readonly Seed[];
-}) {
-  return (
-    <Suspense fallback={null}>
-      <Seeds
-        seeds={seeds}
-        onOuvrir={navigation.ouvrirSeed}
-        onRetour={navigation.fermerOutil}
-      />
-    </Suspense>
-  );
-}
-
-// L'écran de rattachement. Seul un service saisi sous « Autre » apprend quelque chose au
-// référentiel : c'est le seul cas déclaré au serveur. Le rattachement dégradé
-// « Autre / Autre » n'en fait pas partie, le référentiel étant alors injoignable.
-function EcranDeRattachement({
-  referentiel,
-  declarer,
-  onRattache,
-}: {
-  referentiel: Referentiel;
-  declarer: NonNullable<Props["declarer"]>;
-  onRattache: Navigation["rattacher"];
-}) {
-  return (
-    <Rattachement
-      referentiel={referentiel}
-      onValide={(saisie, acces) => {
-        rangerRattachement(saisie);
-        if (saisie.serviceEstAutre) declarer(saisie);
-        onRattache(acces);
-      }}
-    />
-  );
-}
-
-// Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
-// du bundle initial : seul le service produit y accède (cf. `developerTools`), la
-// très grande majorité des prescripteurs ne le réclamera jamais.
-const Seeds = lazy(() =>
-  import("../seeds/Seeds").then((m) => ({
-    default: m.Seeds,
-  })),
-);
 
 // Les branchements du simulateur vers les developer tools se décident ici, et
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il

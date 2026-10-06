@@ -2,11 +2,11 @@
 // **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
-// validation il remonte le `RattachementSaisi` à `onValide` (c'est l'écran de rattachement,
-// App.tsx, qui le range en session et bascule vers le simulateur). Si le
+// validation il remonte le `RattachementSaisi` à `onValide` (c'est
+// `EcranDeRattachement.tsx` qui le range en session et prévient `App`). Si le
 // référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
 // dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
-// (dev / tests) ; en production App injecte le client HTTP.
+// (dev / tests) ; en production `EcranDeRattachement` injecte le client HTTP.
 
 import {
   type Referentiel,
