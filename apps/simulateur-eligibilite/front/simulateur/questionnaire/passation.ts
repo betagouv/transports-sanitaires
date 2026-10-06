@@ -1,6 +1,6 @@
 // Pilotage d'un parcours de questions : la page ouverte, son brouillon, ce
 // qu'il reste à répondre et la navigation entre pages. Le rendu est dans
-// `Parcours.tsx`, l'avancement automatique dans `avancement-automatique.ts`,
+// `ParcoursForm.tsx`, l'avancement automatique dans `avancement-automatique.ts`,
 // le suivi analytics dans `suivi-de-parcours.ts`.
 
 import { useState } from "react";

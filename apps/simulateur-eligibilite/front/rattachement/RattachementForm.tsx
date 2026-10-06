@@ -37,7 +37,7 @@ type Props = {
   ) => void;
 };
 
-export function Rattachement({
+export function RattachementForm({
   referentiel = snapshotReferentiel,
   onValide,
 }: Props) {

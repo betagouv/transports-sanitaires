@@ -6,7 +6,7 @@ import {
   BoutonOutil,
   DeveloperTools,
 } from "../../front/developerTools/DeveloperTools";
-import { Rattachement } from "../../front/rattachement/Rattachement";
+import { RattachementForm } from "../../front/rattachement/RattachementForm";
 import { Simulateur } from "../../front/simulateur/Simulateur";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import {
@@ -28,7 +28,10 @@ describe("encadré des developer tools, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
     const user = userEvent.setup();
     render(
-      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <RattachementForm
+        referentiel={snapshotReferentiel}
+        onValide={() => {}}
+      />,
     );
 
     await remplirRattachement(user);
@@ -38,7 +41,10 @@ describe("encadré des developer tools, écran de rattachement", () => {
   it("apparaît pour le service n° 4, avec l'écran des seeds et lui seul", async () => {
     const user = userEvent.setup();
     render(
-      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <RattachementForm
+        referentiel={snapshotReferentiel}
+        onValide={() => {}}
+      />,
     );
 
     await remplirRattachementProduit(user);
@@ -53,7 +59,10 @@ describe("encadré des developer tools, écran de rattachement", () => {
   it("laisse l'action nominale hors de l'encadré", async () => {
     const user = userEvent.setup();
     render(
-      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <RattachementForm
+        referentiel={snapshotReferentiel}
+        onValide={() => {}}
+      />,
     );
 
     await remplirRattachementProduit(user);
@@ -69,7 +78,10 @@ describe("encadré des developer tools, écran de rattachement", () => {
     // (ADR-1), quelle que soit la destination.
     const user = userEvent.setup();
     render(
-      <Rattachement referentiel={snapshotReferentiel} onValide={() => {}} />,
+      <RattachementForm
+        referentiel={snapshotReferentiel}
+        onValide={() => {}}
+      />,
     );
 
     const select = screen.getByRole("combobox", { name: /Établissement/ });
@@ -89,7 +101,10 @@ describe("encadré des developer tools, écran de rattachement", () => {
     const user = userEvent.setup();
     const onValide = vi.fn();
     render(
-      <Rattachement referentiel={snapshotReferentiel} onValide={onValide} />,
+      <RattachementForm
+        referentiel={snapshotReferentiel}
+        onValide={onValide}
+      />,
     );
 
     await remplirRattachementProduit(user);

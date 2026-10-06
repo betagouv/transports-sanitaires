@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Rattachement } from "../../front/rattachement/Rattachement";
+import { RattachementForm } from "../../front/rattachement/RattachementForm";
 import {
   type Referentiel,
   snapshotReferentiel,
@@ -21,7 +21,7 @@ const valider = () =>
 describe("parcours de rattachement", () => {
   it("établissement → service suffit", async () => {
     const onValide = vi.fn();
-    render(<Rattachement onValide={onValide} />);
+    render(<RattachementForm onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Cardiologie");
@@ -34,7 +34,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("annonce ce qui est demandé : l'établissement et le service", () => {
-    render(<Rattachement onValide={vi.fn()} />);
+    render(<RattachementForm onValide={vi.fn()} />);
 
     expect(
       screen.getByRole("heading", {
@@ -45,7 +45,7 @@ describe("parcours de rattachement", () => {
 
   it("propose les developer tools seulement pour le service « Transport Sanitaire »", async () => {
     // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
-    render(<Rattachement onValide={vi.fn()} />);
+    render(<RattachementForm onValide={vi.fn()} />);
 
     const seeds = { name: "Seeds" };
 
@@ -62,7 +62,7 @@ describe("parcours de rattachement", () => {
     // Le prescripteur sans établissement de rattachement passe par
     // l'établissement fourre-tout du référentiel.
     const onValide = vi.fn();
-    render(<Rattachement onValide={onValide} />);
+    render(<RattachementForm onValide={onValide} />);
 
     await choisir(/Établissement/, "Libéral / CNAM / CPAM / Autre");
     await choisir(/Nom du service/, "Libéral");
@@ -76,7 +76,7 @@ describe("parcours de rattachement", () => {
 
   it("service « Autre » → vrai service saisi", async () => {
     const onValide = vi.fn();
-    render(<Rattachement onValide={onValide} />);
+    render(<RattachementForm onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
@@ -98,7 +98,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("service « Autre » : validation désactivée tant que le service réel n'est pas saisi", async () => {
-    render(<Rattachement onValide={vi.fn()} />);
+    render(<RattachementForm onValide={vi.fn()} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     await choisir(/Nom du service/, "Autre");
@@ -117,7 +117,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("trie les listes déroulantes par ordre alphabétique", async () => {
-    render(<Rattachement onValide={vi.fn()} />);
+    render(<RattachementForm onValide={vi.fn()} />);
 
     // Établissements : « Centre hospitalier de Chambéry » avant « CHU Grenoble
     // Alpes » avant « Clinique Belledonne » (tri insensible à la casse).
@@ -155,7 +155,7 @@ describe("parcours de rattachement", () => {
   });
 
   it("désactive la validation tant que la branche est incomplète", async () => {
-    render(<Rattachement onValide={vi.fn()} />);
+    render(<RattachementForm onValide={vi.fn()} />);
 
     expect(
       screen.getByRole("button", { name: "Accéder au simulateur" }),
@@ -180,7 +180,7 @@ describe("référentiel indisponible : rattachement dégradé « Autre / Autre �
       ...snapshotReferentiel,
       listerEtablissements: enPanne,
     };
-    render(<Rattachement referentiel={referentiel} onValide={onValide} />);
+    render(<RattachementForm referentiel={referentiel} onValide={onValide} />);
 
     expect(
       await screen.findByText(/momentanément indisponible/),
@@ -202,7 +202,7 @@ describe("référentiel indisponible : rattachement dégradé « Autre / Autre �
       ...snapshotReferentiel,
       listerServices: enPanne,
     };
-    render(<Rattachement referentiel={referentiel} onValide={onValide} />);
+    render(<RattachementForm referentiel={referentiel} onValide={onValide} />);
 
     await choisir(/Établissement/, "CHU Grenoble Alpes");
     expect(

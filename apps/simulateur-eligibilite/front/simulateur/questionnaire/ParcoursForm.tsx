@@ -20,7 +20,7 @@ type Props = Options & {
   traceDebug?: boolean;
 };
 
-export function Parcours({
+export function ParcoursForm({
   nombreDeParties,
   libelleFin,
   traceDebug = false,

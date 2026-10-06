@@ -14,7 +14,7 @@ import {
   PAGES_APRES_VERROU,
   PAGES_AVANT_VERROU,
 } from "./parcours-factice";
-import { Parcours } from "./questionnaire/Parcours";
+import { ParcoursForm } from "./questionnaire/ParcoursForm";
 import type { EtatDuParcours } from "./questionnaire/passation";
 import { etatApresLesReponses } from "./questionnaire/passation";
 import type { Reponses } from "./questionnaire/question";
@@ -106,7 +106,7 @@ function Questionnaire({
           modèle d’éligibilité suivant soit intégré.
         </p>
       </div>
-      <Parcours
+      <ParcoursForm
         pages={PAGES_AVANT_VERROU}
         nombreDeParties={NOMBRE_DE_PARTIES}
         etatInitial={ecran.reprise}
@@ -162,7 +162,7 @@ function Complement({ ecran, allerA, traceDebug }: EcranProps<"complement">) {
   return (
     <>
       <h1 className="fr-h3">Compléter la commande</h1>
-      <Parcours
+      <ParcoursForm
         pages={PAGES_APRES_VERROU}
         nombreDeParties={NOMBRE_DE_PARTIES}
         reponsesAcquises={acquises}

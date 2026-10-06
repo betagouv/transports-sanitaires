@@ -6,7 +6,7 @@
 // et `rattacher` ne retient que le booléen d'accès aux developer tools.
 
 import { useState } from "react";
-import type { AccesRattachement } from "../rattachement/Rattachement";
+import type { AccesRattachement } from "../rattachement/RattachementForm";
 import type { Seed } from "../seeds/seed";
 import type { Reponses } from "../simulateur/questionnaire/question";
 

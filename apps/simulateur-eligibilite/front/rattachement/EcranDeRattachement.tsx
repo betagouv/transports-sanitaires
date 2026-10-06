@@ -1,4 +1,4 @@
-// L'écran de rattachement, branché : le formulaire de `Rattachement.tsx`, et ce
+// L'écran de rattachement, branché : le formulaire de `RattachementForm.tsx`, et ce
 // que sa validation déclenche avant de rendre la main à `App`.
 //
 // À la validation, on range le rattachement saisi en session (pour Matomo), on
@@ -12,7 +12,7 @@
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
 import { declarerViaApi } from "./declaration-http";
-import { type AccesRattachement, Rattachement } from "./Rattachement";
+import { type AccesRattachement, RattachementForm } from "./RattachementForm";
 import { referentielHttp } from "./referentiel-http";
 import { rangerRattachement } from "./session";
 
@@ -29,7 +29,7 @@ export function EcranDeRattachement({
   onRattache,
 }: Props) {
   return (
-    <Rattachement
+    <RattachementForm
       referentiel={referentiel}
       onValide={(saisie, acces) => {
         rangerRattachement(saisie);
