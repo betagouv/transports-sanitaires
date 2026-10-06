@@ -17,7 +17,7 @@ import { referentielHttp } from "../rattachement/referentiel-http";
 import { rangerRattachement } from "../rattachement/session";
 import type { Seed } from "../seeds/seed";
 import { Simulateur } from "../simulateur/Simulateur";
-import { EcranPleinePage } from "./EcranPleinePage";
+import { Container } from "./Container";
 import { Footer } from "./Footer";
 import type { Navigation } from "./navigation";
 import { useNavigation } from "./navigation";
@@ -51,7 +51,7 @@ export function App({
       )}
       {navigation.ecran === "simulateur" && (
         <PageDuSimulateur>
-          <EcranPleinePage>
+          <Container>
             <Simulateur
               key={navigation.cle}
               reponsesDeSeed={navigation.reponsesDeSeed}
@@ -59,7 +59,7 @@ export function App({
               panneauDeveloperTools={panneauDeveloperTools(navigation)}
               traceDebug={navigation.developerTools}
             />
-          </EcranPleinePage>
+          </Container>
           <Footer />
         </PageDuSimulateur>
       )}

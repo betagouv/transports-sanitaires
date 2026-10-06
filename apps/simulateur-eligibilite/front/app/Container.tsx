@@ -1,9 +1,10 @@
 // Le cadre d'un écran de l'application : conteneur DSFR, respiration verticale,
 // et la largeur réduite des écrans de formulaire.
 //
-// Isolé de `App.tsx` pour la même raison que `outil.ts` : le rattachement et
-// les outils produit s'en servent, et dépendre du fichier de composition les y ferait
-// entrer tout entiers.
+// Il rend le `<main>` de la page : un seul par écran, jamais imbriqué.
+//
+// Isolé de `App.tsx` parce que le rattachement et la galerie de seeds s'en
+// servent : dépendre du fichier de composition les y ferait entrer tout entiers.
 
 import type { ReactNode } from "react";
 
@@ -14,7 +15,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function EcranPleinePage({ etroit = false, children }: Props) {
+export function Container({ etroit = false, children }: Props) {
   return (
     <main
       className="fr-container"

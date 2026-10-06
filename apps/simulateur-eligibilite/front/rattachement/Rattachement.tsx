@@ -12,7 +12,7 @@ import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel";
-import { EcranPleinePage } from "../app/EcranPleinePage";
+import { Container } from "../app/Container";
 import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
 import type { SaisieRattachement } from "./saisie-rattachement";
 import { useSaisieRattachement } from "./saisie-rattachement";
@@ -53,7 +53,7 @@ export function Rattachement({
   };
 
   return (
-    <EcranPleinePage etroit>
+    <Container etroit>
       <h1 className="fr-h3">
         Commencez par renseigner votre établissement et votre service
       </h1>
@@ -66,7 +66,7 @@ export function Rattachement({
         <FormulaireProgressif saisie={saisie} />
         <EntreesDansLApplication saisie={saisie} onEntrer={entrer} />
       </form>
-    </EcranPleinePage>
+    </Container>
   );
 }
 

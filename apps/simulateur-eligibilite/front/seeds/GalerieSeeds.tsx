@@ -11,7 +11,7 @@
 // « État » dit quelles situations de référence divergent, avant même d'ouvrir
 // un parcours.
 
-import { EcranPleinePage } from "../app/EcranPleinePage";
+import { Container } from "../app/Container";
 import { decider } from "../simulateur/parcours-factice";
 import { SEEDS } from "./catalogue";
 import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
@@ -53,7 +53,7 @@ export function GalerieSeeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
   }));
 
   return (
-    <EcranPleinePage>
+    <Container>
       <h1 className="fr-h3">Galerie de seeds</h1>
       <p className="fr-text--sm">
         Les {seeds.length} situations de référence du simulateur (
@@ -71,7 +71,7 @@ export function GalerieSeeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
       >
         Retour
       </button>
-    </EcranPleinePage>
+    </Container>
   );
 }
 
