@@ -1,9 +1,5 @@
-// Le référentiel des évènements Matomo, et le seul module que le reste de
-// l'app importe pour tracer. Le transport (tag Matomo, file `_paq`) est
-// derrière, dans `matomo.ts`.
-//
-// Ce module ne connaît que les noms d'évènement : aucune donnée métier n'y est
-// interprétée. C'est l'appelant qui choisit l'entrée du référentiel à émettre.
+// La liste des évènements Matomo. C'est le seul module que l'app importe pour
+// tracer. L'envoi est dans `matomo.ts`.
 // Voir docs/knowledge/adr/analytics.md.
 
 import { emettre } from "./matomo";

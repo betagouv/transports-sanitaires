@@ -1,10 +1,7 @@
-// L'écran du simulateur tel qu'`App` le monte : le simulateur dans sa page, le
-// pied de page au bas.
+// L'écran du simulateur : le simulateur, et le pied de page en bas.
 //
-// La page fait au minimum la hauteur de la fenêtre et se répartit en colonne :
-// le contenu prend la place qu'il lui faut, le pied de page se pose au bas. Sans
-// cela, sur un écran où le contenu est court, le pied de page flotte au milieu
-// du vide au lieu de fermer la page.
+// La page fait au moins la hauteur de la fenêtre. Le pied de page reste donc en
+// bas, même quand le contenu est court.
 
 import type { ComponentProps } from "react";
 import { Container } from "../app/Container";

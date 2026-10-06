@@ -1,6 +1,5 @@
-// La saisie d'une date, avec ou sans heure : l'`Input` du DSFR sur un champ
-// natif. Le navigateur garantit le format ISO, que l'application n'a alors pas
-// à deviner pour en tirer une durée ou un rang de jour.
+// La saisie d'une date, avec ou sans heure : l'`Input` du DSFR. Le navigateur
+// garantit le format ISO.
 
 import { Input } from "@codegouvfr/react-dsfr/Input";
 

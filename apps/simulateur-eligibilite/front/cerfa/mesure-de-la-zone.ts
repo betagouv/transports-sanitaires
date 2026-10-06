@@ -1,11 +1,7 @@
-// La mesure d'un champ, avec la police et la géométrie du gabarit réel : un
-// texte y tient-il, et à quelle taille ?
+// Mesure un champ du PDF : un texte y tient-il, et à quelle taille ?
 //
-// `layoutMultilineText` et `layoutSinglelineText` sont celles que `pdf-lib`
-// emploie pour composer l'apparence réelle d'un champ (`updateFieldAppearances`,
-// dans `remplir-cerfa.ts`) : les réutiliser pour mesurer, plutôt que
-// réimplémenter un retour à la ligne, garantit que la mesure et le rendu
-// s'accordent.
+// La mesure emploie les fonctions de `pdf-lib` qui font le rendu. Mesure et
+// rendu s'accordent donc toujours.
 
 import {
   layoutMultilineText,

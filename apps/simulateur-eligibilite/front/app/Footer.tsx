@@ -1,19 +1,7 @@
-// Ce que l'application affiche d'elle-même en bas du simulateur : sa version et
-// le commit déployé.
+// Le pied de page : la version de l'app et le commit déployé.
 //
-// C'est un outil de support, pas une décoration. Quand un prescripteur signale
-// un résultat surprenant, ces valeurs disent exactement quel code
-// il avait sous les yeux, sans quoi la même situation rejouée ici ne prouve
-// rien. La version renvoie à sa release, qui dit ce que cette livraison a changé
-// et donc si le comportement signalé y est arrivé. Toutes sont figées à la
-// construction (cf. `vite.config.ts`) : le navigateur n'a aucun moyen de les
-// découvrir.
-//
-// Le pied de page reste dans le flux : c'est `SimulateurScreen` qui le pousse au bas
-// de la fenêtre quand le contenu est trop court pour l'y amener, et il se
-// contente de suivre le contenu quand celui-ci défile. Ni `fixed` ni `sticky` —
-// l'application est embarquée en iframe dans le CMS (cf. `index.html`), et un
-// pied de page détaché du flux recouvrirait le contenu d'un cadre déjà court.
+// Il sert au support. Quand un prescripteur signale un résultat surprenant, on
+// sait quel code il avait sous les yeux.
 
 import type { CSSProperties } from "react";
 
@@ -53,6 +41,9 @@ const LIEN_DE_LA_VERSION = `https://github.com/betagouv/transports-sanitaires/re
   `simulateur-eligibilite@${VERSION_APP}`,
 )}`;
 
+// Le pied de page reste dans le flux, ni `fixed` ni `sticky`. L'app est dans une
+// iframe du CMS : détaché du flux, il recouvrirait le contenu. C'est
+// `SimulateurScreen` qui le pousse en bas quand le contenu est court.
 const FOOTER_STYLE: CSSProperties = {
   padding: "0.25rem 0",
   textAlign: "center",

@@ -1,12 +1,7 @@
-// Ce qu'est une *seed* : des réponses nommées, avec ce qu'on attend d'elles.
+// Ce qu'est une seed : des réponses, et ce qu'on en attend.
 //
-// Une seed sert deux publics à partir d'une seule définition :
-//   - les tests, qui rejouent le catalogue et comparent la décision aux attendus ;
-//   - l'écran des seeds (`Seeds.tsx`, juste à côté), d'où l'on ouvre l'écran
-//     correspondant.
-//
-// Les deux voient donc exactement les mêmes situations. Un cas de non-régression
-// n'est plus seulement une ligne de test, il est consultable à l'écran.
+// La même définition sert aux tests, qui comparent la décision aux attendus, et
+// à l'écran des seeds, qui permet de l'ouvrir.
 
 import type { Answers } from "../simulateur/questionnaire/question";
 

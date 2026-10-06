@@ -1,6 +1,5 @@
-// L'état du formulaire de rattachement : les deux listes en cascade chargées
-// depuis le référentiel, les champs saisis, et ce qu'on en déduit : saisie
-// complète, service « Autre », accès aux developer tools, référentiel indisponible.
+// L'état du formulaire de rattachement : les deux listes chargées depuis le
+// référentiel, les champs saisis, et ce qu'on en déduit.
 
 import { useEffect, useState } from "react";
 import {

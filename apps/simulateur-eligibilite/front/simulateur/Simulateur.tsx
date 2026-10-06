@@ -1,11 +1,8 @@
-// Le simulateur : un questionnaire, son résultat, puis le complément posé une
-// fois le résultat verrouillé.
+// Le simulateur : un questionnaire, son résultat, puis un complément.
 //
-// Tant que le résultat n'est pas verrouillé, « Précédent » rouvre le
-// questionnaire sur sa dernière page, réponses intactes. C'est l'action
-// principale du résultat qui verrouille : le complément est un second questionnaire,
-// qui reçoit les réponses acquises sans en reposer aucune, et dont la première
-// page n'a pas de « Précédent ». Le verrou tient à ce montage, pas à un drapeau.
+// Depuis le résultat, « Précédent » rouvre le questionnaire. L'action principale
+// du résultat verrouille : le complément est un second questionnaire, qui ne
+// repose aucune question d'avant.
 
 import { type ComponentType, type ReactNode, useState } from "react";
 import {

@@ -1,9 +1,7 @@
 // Ce qu'est un tableau de remplissage, et comment on le parcourt.
 //
-// Chaque formulaire en porte un. La clé y est le nom brut d'un champ AcroForm,
-// la valeur une fonction des réponses, de sorte qu'une case du formulaire se
-// comprenne en lisant sa ligne. Ce module tient la forme commune ; les tableaux
-// tiennent le fond.
+// La clé est le nom d'un champ du PDF. La valeur est une fonction des réponses.
+// Une case du formulaire se comprend en lisant sa ligne.
 
 import type { Saisie } from "./remplir-cerfa";
 

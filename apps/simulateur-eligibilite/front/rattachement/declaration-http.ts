@@ -1,10 +1,8 @@
-// Client de l'API `POST /api/rattachement` : déclare au serveur un service saisi
-// sous « Autre », pour qu'il l'ajoute au référentiel Grist. Same-origin, aucun
-// CORS.
+// Déclare au serveur un service saisi sous « Autre » (`POST /api/rattachement`).
+// Le serveur l'ajoute au référentiel Grist.
 //
-// La déclaration part **sans attente** : l'utilisateur entre dans le simulateur
-// sans dépendre de Grist, et un échec ne coûte que l'ajout au référentiel, qui
-// était déjà best-effort côté serveur.
+// L'appel part sans attendre la réponse. L'utilisateur entre dans le simulateur
+// même si Grist ne répond pas.
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 

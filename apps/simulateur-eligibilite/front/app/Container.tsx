@@ -1,10 +1,5 @@
-// Le cadre d'un écran de l'application : conteneur DSFR, respiration verticale,
-// et la largeur réduite des écrans de formulaire.
-//
-// Il rend le `<main>` de la page : un seul par écran, jamais imbriqué.
-//
-// Isolé de `App.tsx` parce que le rattachement et l'écran des seeds s'en
-// servent : dépendre du fichier de composition les y ferait entrer tout entiers.
+// Le cadre d'un écran : le `<main>` de la page, dans un conteneur DSFR.
+// Un seul par écran, jamais imbriqué.
 
 import type { ReactNode } from "react";
 

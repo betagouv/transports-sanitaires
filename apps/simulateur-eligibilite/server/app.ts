@@ -1,11 +1,8 @@
-// App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
-// rattachement, référentiel et enrichissement, sous `/api`, puis sert le front
-// construit par Vite en same-origin. Voir l'ADR-5 de
-// docs/knowledge/adr/identification.md.
+// L'app Express. Elle monte l'API du rattachement sous `/api`, puis sert le
+// front construit par Vite.
 //
-// `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock.
-// Les tests injectent le snapshot ; en production, `server.ts` injecte le choix de
-// `choisirReferentiel`.
+// `creerApp` reçoit le `Referentiel` en paramètre : les tests passent le
+// snapshot, sans mock.
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";

@@ -1,5 +1,4 @@
-// Point d'entrée navigateur : monte l'application React et amorce le traceur
-// cookieless avant tout rendu.
+// Point d'entrée du navigateur : démarre le traceur, puis monte l'app React.
 
 import { startReactDsfr } from "@codegouvfr/react-dsfr/spa";
 import { StrictMode } from "react";

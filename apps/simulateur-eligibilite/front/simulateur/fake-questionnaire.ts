@@ -1,9 +1,8 @@
 // Le questionnaire factice : trois questions sans rapport avec le transport
-// sanitaire, le temps que le modèle d'éligibilité suivant soit intégré.
+// sanitaire. Il ne décide rien.
 //
-// Il ne décide rien. Il tient en vie ce que le questionnaire réel reprendra tel
-// quel : l'avancement automatique, le retour en arrière, le brouillon d'une
-// page, l'invalidation des réponses dépendantes et le verrou.
+// Il garde sous test ce que le vrai questionnaire reprendra : avancement
+// automatique, retour, brouillon, invalidation et verrou.
 
 import type { Answers, Page } from "./questionnaire/question";
 

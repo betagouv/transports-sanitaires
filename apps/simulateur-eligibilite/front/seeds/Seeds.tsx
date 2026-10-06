@@ -1,15 +1,8 @@
-// L'écran des seeds : réservé au **service produit** (n° 4), sur tous les
-// environnements (cf. `App.tsx`). Il range le catalogue de `seeds/` par écran
-// d'atterrissage et ouvre celui-ci d'un clic : la page de résultat pour les
-// seeds complètes, le questionnaire lui-même pour celles qui s'arrêtent en
-// chemin.
+// Le contenu de l'écran des seeds, réservé au service n° 4.
 //
-// Le tableau, lui, est dans `SeedsTable.tsx` : ici on sait quels écrans
-// existent, pas comment une seed se lit.
-//
-// L'écran des seeds rejoue chaque seed dans la décision **du navigateur** : la colonne
-// « État » dit quelles situations de référence divergent, avant même d'ouvrir
-// un parcours.
+// Il rejoue chaque seed dans la décision et signale les écarts. Il range les
+// seeds en deux sections : celles qui ouvrent un résultat, et celles qui
+// s'arrêtent dans le questionnaire.
 
 import { Container } from "../app/Container";
 import { decide } from "../simulateur/fake-questionnaire";

@@ -1,10 +1,8 @@
-// Racine de l'app : l'écran de rattachement devant le simulateur.
-// Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
-// rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
-// docs/knowledge/adr/identification.md, ADR-1).
+// Racine de l'app. Elle choisit l'écran à afficher et branche les developer
+// tools sur le simulateur.
 //
-// Chaque écran vit dans son module. Ici on choisit lequel s'affiche, et on
-// branche les developer tools sur le simulateur.
+// L'écran de rattachement passe en premier : on ne simule pas sans s'être
+// rattaché. Voir docs/knowledge/adr/identification.md, ADR-1.
 
 import type { ComponentProps } from "react";
 import { DebugTrace } from "../developerTools/DebugTrace";

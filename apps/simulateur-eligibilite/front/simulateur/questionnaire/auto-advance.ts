@@ -1,16 +1,10 @@
 // L'avancement automatique du questionnaire.
 //
-// Une page qui n'est faite que de choix uniques avance seule 200 ms après avoir
-// été répondue, sans que l'utilisateur ait à valider : le délai lui laisse voir
-// sa réponse se cocher. Le bouton « Suivant » disparaît alors : lui laisser un
-// bouton de validation contredirait le geste qu'on attend.
+// Une page faite de choix uniques avance seule, 200 ms après la réponse. Le
+// bouton « Suivant » n'est alors pas affiché.
 //
-// Sauf au **retour** sur une page déjà répondue : elle rend la main au bouton,
-// faute de quoi un « Précédent » renverrait aussitôt d'où l'on vient. Modifier
-// la réponse relance l'avancement automatique. Peu importe d'où vient le
-// retour : le « Précédent » d'une page garde le questionnaire monté, celui d'une page
-// de résultat le remonte. Une page déjà répondue à l'ouverture est donc, elle
-// aussi, une page où l'on revient.
+// Au retour sur une page déjà répondue, le bouton revient. Sinon « Précédent »
+// renverrait aussitôt d'où l'on vient. Changer la réponse relance l'avancement.
 
 import { useEffect, useRef, useState } from "react";
 

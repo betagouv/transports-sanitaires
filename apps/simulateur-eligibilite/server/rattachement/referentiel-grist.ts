@@ -1,18 +1,12 @@
-// Implémentation `Referentiel` au-dessus d'un doc Grist.
+// Le référentiel, lu et complété dans un doc Grist. Côté serveur uniquement.
+// Voir docs/knowledge/adr/identification.md, ADR-5.
 //
-// Voir l'ADR-5 et le §5 de docs/knowledge/adr/identification.md. Ce module vit côté
-// serveur uniquement : il détient la clé Grist, jamais exposée au navigateur. Il ne
-// lit ni n'écrit la table des prescripteurs, qui reste dans Grist pour l'admin.
-// L'accès HTTP lui-même est dans `lignes-grist.ts`.
-//
-// Modèle Grist (identifiants de tables/colonnes réels, assainis par Grist) :
-//   Etablissements   : Id2 (Int, « Id » métier), Nom (Text)
+// Tables Grist :
+//   Etablissements   : Id2 (Int), Nom (Text)
 //   Services_Unites  : Id2, Nom, Etablissement (Ref:Etablissements)
 //
-// Les identifiants opaques du rattachement saisi, `etabId` et `serviceId`, sont la
-// colonne Id2, par choix produit. Les colonnes de référence stockent le rowId
-// interne Grist de la ligne cible, et non son Id2. On résout donc l'Id2 en rowId
-// avant de filtrer les enfants.
+// `etabId` et `serviceId` sont la colonne Id2. Une colonne de référence stocke le
+// rowId Grist, pas l'Id2 : on convertit donc l'Id2 en rowId avant de filtrer.
 
 import {
   normalise,

@@ -1,7 +1,6 @@
-// Ce que le formulaire de rattachement collecte, et comment savoir qu'il est
-// complet. Ce sont les identifiants du référentiel Grist : le front les garde en
-// session et envoie l'id du service à Matomo, le backend s'en sert pour enrichir
-// le référentiel. Voir l'ADR-4 de docs/knowledge/adr/identification.md.
+// Ce que le formulaire de rattachement collecte, et quand il est complet.
+// Ce sont des identifiants du référentiel Grist.
+// Voir docs/knowledge/adr/identification.md, ADR-4.
 
 // Le workflow est linéaire, décrit au §4 de docs/knowledge/adr/identification.md :
 //   établissement → service. Le service « Autre » est une entrée du référentiel

@@ -1,11 +1,7 @@
-// Catalogue des situations de référence du simulateur.
+// Le catalogue des seeds : les situations de référence du simulateur.
 //
-// C'est la **source unique** : les tests métier rejouent ce catalogue et
-// l'écran des seeds l'affiche (`Seeds.tsx`). Une situation ajoutée ici devient donc
-// du même geste un cas de non-régression et un écran consultable.
-//
-// Il est vide : les situations de référence reviendront avec le modèle
-// d'éligibilité qu'elles décrivent.
+// Les tests le rejouent et l'écran des seeds l'affiche. Il est vide pour
+// l'instant : les situations reviendront avec le modèle d'éligibilité.
 
 import type { Seed } from "./seed";
 

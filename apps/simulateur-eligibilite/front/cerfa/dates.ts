@@ -1,11 +1,7 @@
-// Le format d'une date écrite dans un champ du CERFA.
+// Le format d'une date dans un champ du CERFA.
 //
-// Sur un CERFA, un champ de date est **peigné** : un cadre à cases fixes, le
-// plus souvent huit. `remplir-cerfa.ts` refuse toute valeur plus longue que le
-// champ : y écrire un séparateur sur huit cases dépasserait de deux caractères.
-//
-// La règle : huit cases donnent `JJMMAAAA`, dix cases donnent `JJ/MM/AAAA`. Le
-// nombre de cases se lit sur le champ du PDF.
+// Un champ de date a un nombre fixe de cases. Huit cases donnent `JJMMAAAA`, dix
+// cases donnent `JJ/MM/AAAA`. Le nombre de cases se lit sur le champ du PDF.
 
 /**
  * La date ISO (`AAAA-MM-JJ`) écrite comme le champ à `nombreDeCases` l'impose.

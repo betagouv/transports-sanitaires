@@ -1,8 +1,7 @@
-// Ce que deviennent les réponses quand une page est validée : les siennes sont
-// remplacées, et celles qui dépendaient d'une réponse changée sont effacées.
+// Enregistre les réponses d'une page validée.
 //
-// Seules les réponses dépendantes partent. Une réponse sans lien avec ce qui a
-// changé reste, même donnée plus loin dans le questionnaire.
+// Les réponses de la page sont remplacées. Celles qui dépendaient d'une réponse
+// changée sont effacées, et elles seules.
 
 import type { Answer, Answers, Page } from "./question";
 

@@ -1,17 +1,10 @@
-// La configuration du serveur, lue et validée une fois au démarrage.
+// La configuration du serveur, lue et validée au démarrage.
 //
-// Une variable n'a pas de valeur par défaut : `GRIST_API_KEY`, qui donne accès au
-// référentiel. En développement, son absence se replie sur un référentiel factice,
-// ce qui permet de lancer l'app sans secret. En production ce repli serait un
-// mensonge : le serveur servirait des établissements inventés. Là, on arrête le
-// démarrage.
+// `GRIST_API_KEY` n'a pas de valeur par défaut. En développement, sans elle, le
+// serveur utilise un référentiel factice. En production, il refuse de démarrer :
+// il servirait des établissements inventés.
 //
-// Le schéma zod est donc double : le même socle de variables à défaut, et une
-// variante de production où la clé est exigée. C'est lui qui porte la règle, ce
-// fichier ne l'énonce pas deux fois.
-//
-// Voir le README § « Configuration » et docs/knowledge/adr/identification.md —
-// ADR-5.
+// Voir le README § « Configuration ».
 
 import { z } from "zod";
 

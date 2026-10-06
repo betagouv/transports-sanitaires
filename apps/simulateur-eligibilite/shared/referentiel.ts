@@ -1,5 +1,5 @@
-// Le référentiel établissement / service : son interface, et le jeu de données
-// factices qui sert de défaut quand aucune source réelle n'est branchée.
+// Le référentiel établissement / service : son interface, et des données
+// factices pour le développement et les tests.
 
 import type { RattachementSaisi } from "./rattachement-saisi.ts";
 

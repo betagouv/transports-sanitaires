@@ -1,13 +1,8 @@
-// L'écran de rattachement, branché : le formulaire de `RattachementForm.tsx`, et ce
-// que sa validation déclenche avant de rendre la main à `App`.
+// L'écran de rattachement : le formulaire, et ce que sa validation déclenche.
 //
-// À la validation, on range le rattachement saisi en session (pour Matomo), on
-// déclare au serveur un éventuel service saisi sous « Autre », sans attendre sa
-// réponse, puis on prévient `App`, qui ouvre l'écran suivant.
-//
-// Seul un service saisi sous « Autre » apprend quelque chose au référentiel :
-// c'est le seul cas déclaré au serveur. Le rattachement dégradé
-// « Autre / Autre » n'en fait pas partie, le référentiel étant alors injoignable.
+// À la validation, il range le rattachement en session (pour Matomo), déclare au
+// serveur un service saisi sous « Autre », puis prévient `App`.
+// Voir docs/knowledge/adr/identification.md, ADR-1.
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";

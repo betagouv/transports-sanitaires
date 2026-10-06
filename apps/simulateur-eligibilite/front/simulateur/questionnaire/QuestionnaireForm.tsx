@@ -1,6 +1,5 @@
-// Le formulaire d'un questionnaire : le stepper, les champs de la page courante,
-// et les boutons de navigation. Toute la mécanique d'état est dans
-// `questionnaire.ts`.
+// Le formulaire du questionnaire : le stepper, les champs de la page et les
+// boutons de navigation. L'état est dans `questionnaire.ts`.
 
 import type { ComponentType } from "react";
 import { QuestionField } from "./QuestionField";

@@ -1,7 +1,5 @@
-// Pilotage d'un questionnaire : la page ouverte, son brouillon, ce
-// qu'il reste à répondre et la navigation entre pages. Le rendu est dans
-// `QuestionnaireForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
-// le suivi analytics dans `questionnaire-tracking.ts`.
+// L'état d'un questionnaire : la page ouverte, son brouillon, ce qu'il reste à
+// répondre, et la navigation entre les pages.
 
 import { useState } from "react";
 import type { AutoAdvance } from "./auto-advance";

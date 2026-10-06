@@ -1,8 +1,5 @@
-// Point d'entrée du serveur (production / dev) du simulateur : sert le front
-// (build Vite) et l'API référentiel/rattachement en same-origin.
-//
-// Il ne lit plus l'environnement lui-même : `configuration.ts` le fait, et refuse
-// de rendre une configuration incomplète en production.
+// Point d'entrée du serveur : il sert le front et l'API. La configuration est
+// lue par `configuration.ts`.
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";

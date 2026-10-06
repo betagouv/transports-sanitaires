@@ -1,6 +1,5 @@
-// Le transport des événements vers Matomo : amorçage du tag, injection du script
-// et mise en forme d'un `trackEvent`. Le vocabulaire mesuré, lui, est dans
-// `evenements.ts`. Ce fichier ne sait pas ce que le produit compte.
+// L'envoi des évènements à Matomo : démarrage du tag, chargement du script, mise
+// en forme d'un `trackEvent`. La liste des évènements est dans `evenements.ts`.
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import { rattachementEnSession } from "../rattachement/session";

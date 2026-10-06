@@ -1,8 +1,7 @@
-// L'écran des seeds tel qu'`App` le monte : `Seeds.tsx`, chargé à la demande.
+// L'écran des seeds, chargé à la demande.
 //
-// Ce fichier est le seul du module que le bundle initial contient. Il ne doit
-// donc rien importer du catalogue ni du tableau, sinon ils y entreraient avec
-// lui (`scripts/verifier-bundle.ts` le vérifie).
+// Ce fichier est le seul du module dans le bundle initial. Il ne doit importer
+// ni le catalogue ni le tableau (`scripts/verifier-bundle.ts` le vérifie).
 
 import { lazy, Suspense } from "react";
 import type { Seed } from "./seed";

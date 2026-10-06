@@ -1,7 +1,5 @@
-// Implémentation `Referentiel` côté navigateur : appelle l'API same-origin
-// exposée par le backend (voir docs/knowledge/adr/identification.md — ADR-5).
-// Aucun secret, aucun CORS (même origine). Le snapshot factice reste le défaut
-// des tests et du dev sans backend (voir shared/referentiel.ts).
+// Le référentiel côté navigateur : il appelle l'API du backend, sur la même
+// origine. Voir docs/knowledge/adr/identification.md, ADR-5.
 
 import type {
   Etablissement,

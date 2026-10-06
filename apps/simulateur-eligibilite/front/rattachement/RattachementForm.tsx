@@ -1,12 +1,10 @@
-// Écran de rattachement (établissement et service) : étape préalable
-// **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
-// ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
-// suite selon la branche (workflow §4). Composant de pure sélection ; à la
-// validation il remonte le `RattachementSaisi` à `onValide` (c'est
-// `RattachementScreen.tsx` qui le range en session et prévient `App`). Si le
-// référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
-// dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
-// (dev / tests) ; en production `RattachementScreen` injecte le client HTTP.
+// Le formulaire de rattachement : établissement, puis service.
+//
+// Chaque réponse dévoile le champ suivant. À la validation, il remonte la saisie
+// à `onValide`. Il ne range rien lui-même : c'est `RattachementScreen`.
+//
+// Si le référentiel ne répond pas, il le dit et laisse entrer avec le
+// rattachement dégradé « Autre / Autre ».
 
 import {
   type Referentiel,

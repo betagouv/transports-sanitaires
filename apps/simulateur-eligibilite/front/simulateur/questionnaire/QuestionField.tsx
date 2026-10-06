@@ -1,5 +1,4 @@
-// Rend une question du questionnaire par le champ de `front/ui/` qui convient à sa
-// forme : choix unique, choix multiple, nombre, texte ou date.
+// Rend une question avec le champ de `front/ui/` qui lui convient.
 
 import { CheckboxField } from "../../ui/CheckboxField";
 import { DateField } from "../../ui/DateField";

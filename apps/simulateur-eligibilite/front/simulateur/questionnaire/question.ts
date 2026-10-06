@@ -1,7 +1,7 @@
-// Ce qu'est une question du questionnaire, une page, et les réponses qu'on leur
-// donne. Le questionnaire est déclaré par l'application : ses pages, ses
-// conditions d'affichage et ses dépendances se lisent ici, pas dans un moteur
-// de règles.
+// Ce qu'est une question, une page, une réponse.
+//
+// Le questionnaire est déclaré ici, par l'application : ses pages, ses
+// conditions d'affichage et ses dépendances.
 
 /** Une réponse : un choix, un nombre, un texte, ou les cases cochées. */
 export type Answer = string | number | readonly string[];

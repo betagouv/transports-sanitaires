@@ -1,5 +1,4 @@
-// Un choix unique parmi des options : le `RadioButtons` du DSFR, en variante
-// « riche ».
+// Un choix unique : le `RadioButtons` du DSFR, en variante « riche ».
 
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 

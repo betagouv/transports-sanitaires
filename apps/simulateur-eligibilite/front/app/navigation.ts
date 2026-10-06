@@ -1,9 +1,7 @@
-// Où l'on se trouve dans l'application, et comment on en change : l'écran de rattachement
-// de rattachement, l'écran des seeds qui s'y superpose, et le simulateur
-// affiché derrière.
+// L'écran affiché, et comment on en change : rattachement, seeds, simulateur.
 //
-// Le rattachement, lui, ne transite pas par ici : l'écran de rattachement le range en session,
-// et `rattacher` ne retient que le booléen d'accès aux developer tools.
+// Le rattachement saisi ne passe pas par ici. Il est rangé en session, et
+// `rattacher` ne retient que l'accès aux developer tools.
 
 import { useState } from "react";
 import type { AccesRattachement } from "../rattachement/RattachementForm";

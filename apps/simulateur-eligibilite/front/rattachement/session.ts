@@ -1,5 +1,5 @@
-// Le rattachement pour la durée de la session : rangé par l'écran de rattachement, relu par
-// le traceur d'analytics à chaque événement.
+// Le rattachement, gardé le temps de la session. L'écran de rattachement
+// l'écrit, l'analytics le relit à chaque évènement.
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 

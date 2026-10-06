@@ -1,12 +1,10 @@
-// Remplissage d'un formulaire PDF (AcroForm) à partir d'un jeu de saisies.
+// Remplit un formulaire PDF (AcroForm) à partir de saisies.
 //
 // Ce fichier ne fait que l'écriture. Ce qu'il faut écrire se décide dans un
-// tableau de remplissage (`remplissage.ts`) ; ici on ne connaît que le PDF et
-// ses pièges.
+// tableau de remplissage (`remplissage.ts`).
 //
-// `pdf-lib` fonctionne à l'identique dans Node et dans le navigateur. Ce module
-// n'importe rien de `node:*` et reste donc exécutable côté front, ce qui permet de
-// générer un document sans que les données patient quittent le poste.
+// Il n'importe rien de `node:*` : le PDF se génère dans le navigateur, et les
+// données du patient ne quittent pas le poste.
 
 import {
   PDFCheckBox,

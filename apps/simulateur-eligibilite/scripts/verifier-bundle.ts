@@ -1,5 +1,5 @@
-// Garde-fou de découpage du bundle, à passer **après** `vite build` : vérifie que
-// le chunk d'entrée n'embarque pas ce qui doit rester chargé à la demande.
+// Vérifie le découpage du bundle, après `vite build` : le chunk d'entrée ne doit
+// pas contenir ce qui se charge à la demande.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

@@ -1,19 +1,12 @@
-// Encadré des **developer tools**, dont l'écran des seeds. Partagé par les écrans qui les proposent, l'écran de rattachement
-// et le début du parcours prescripteur.
+// L'encadré des developer tools, et leurs boutons.
 //
-// Ces outils ne sont pas réservés à l'environnement de développement : ils sont
-// disponibles sur tous les environnements, **production comprise**, mais seulement
-// pour le service dédié du référentiel (n° 4, « Transport Sanitaire » — cf.
-// `estServiceProduit`, cf. `unlock.ts`). C'est le service qui garde l'accès, plus le
-// build.
+// Ces outils existent sur tous les environnements, production comprise. Seul le
+// service n° 4 du référentiel les voit (`unlock.ts`).
 //
-// Ils court-circuitent le parcours nominal (l'écran des seeds ouvre une situation
-// fabriquée) : ils doivent rester **impossibles à
-// confondre** avec les actions du parcours. D'où l'encadré à part, la bordure
-// tiretée et l'intitulé explicite.
+// L'encadré est à part, avec une bordure tiretée : ces boutons ne doivent pas se
+// confondre avec ceux du parcours.
 //
-// Rien ici n'assure la garde d'accès : ce sont les appelants qui ne rendent le
-// panneau que pour le service dédié.
+// Ce fichier ne garde pas l'accès. C'est l'appelant qui décide de l'afficher.
 
 import type { ReactNode } from "react";
 

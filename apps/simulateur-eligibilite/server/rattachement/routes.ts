@@ -1,10 +1,5 @@
-// Router de la feature **rattachement** (backend) : lecture du référentiel
-// (établissement, service) et réception du rattachement saisi, qui peut l'enrichir.
-// Monté sous `/api` par `server/app.ts`. Voir docs/knowledge/adr/identification.md,
-// ADR-5.
-//
-// Prend le `Referentiel` en paramètre pour rester testable sans mock (les tests
-// injectent le snapshot).
+// Les routes du rattachement, montées sous `/api` : lire le référentiel, et
+// recevoir un rattachement saisi.
 
 import express, { type Request, type Response, type Router } from "express";
 import {

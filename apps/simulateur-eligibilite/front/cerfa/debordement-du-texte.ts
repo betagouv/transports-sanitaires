@@ -1,9 +1,7 @@
-// Le texte qui ne tient pas dans son champ, même au plancher de lisibilité.
-// Levée par le remplissage, à rattraper par l'écran qui fait réviser le texte.
+// L'erreur levée quand un texte ne tient pas dans son champ, même à la plus
+// petite taille lisible. L'écran la rattrape pour faire réviser le texte.
 //
-// Le texte est rendu entier, jamais coupé ni renvoyé à une annexe, et aucun PDF
-// ne sort. Le message ne cite pas le texte : ce peut être une donnée de santé,
-// et une erreur finit parfois dans une console.
+// Le message ne cite pas le texte : ce peut être une donnée de santé.
 
 /** Un texte mesuré, trop long pour le champ qui devait le recevoir. */
 export class DebordementDuTexte extends Error {

@@ -1,12 +1,9 @@
-// Trace de debug du simulateur : le chemin parcouru, puis ce que l'écran en
-// sait de plus. Sous le questionnaire, le brouillon de la page ouverte. Sous un
-// résultat, les sorties décidées. Sert à comprendre un séquencement ou une
-// décision inattendus.
+// La trace de debug du simulateur : les pages parcourues et les réponses.
+// Sous le questionnaire, elle ajoute le brouillon de la page. Sous un résultat,
+// les sorties décidées.
 //
-// C'est un developer tool comme l'écran des seeds : disponible sur tous les
-// environnements, production comprise, et réservé au service qui les déverrouille
-// (`unlock.ts`). Le simulateur ne l'importe pas : `App` la lui passe, et chaque
-// écran lui donne son état à afficher.
+// C'est un developer tool, réservé au service qui les déverrouille (`unlock.ts`).
+// Le simulateur ne l'importe pas : `App` la lui passe.
 
 import type { DebugTraceProps } from "../simulateur/questionnaire/QuestionnaireForm";
 

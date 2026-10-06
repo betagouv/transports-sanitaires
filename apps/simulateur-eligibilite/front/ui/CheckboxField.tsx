@@ -1,5 +1,4 @@
-// Un choix multiple : le `Checkbox` du DSFR, avec une option exclusive
-// facultative (« aucun »).
+// Un choix multiple : le `Checkbox` du DSFR. Une option peut être exclusive.
 
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import type { ChangeEvent, ComponentProps } from "react";
