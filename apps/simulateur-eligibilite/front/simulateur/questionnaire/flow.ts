@@ -1,16 +1,16 @@
 // Pilotage d'un parcours de questions : la page ouverte, son brouillon, ce
 // qu'il reste à répondre et la navigation entre pages. Le rendu est dans
 // `QuestionForm.tsx`, l'avancement automatique dans `auto-advance.ts`,
-// le suivi analytics dans `flow-tracking.ts`.
+// le suivi analytics dans `questionnaire-tracking.ts`.
 
 import { useState } from "react";
 import type { AutoAdvance } from "./auto-advance";
 import { useAutoAdvance } from "./auto-advance";
-import type { FlowTracking } from "./flow-tracking";
-import { useFlowTracking } from "./flow-tracking";
 import { withValidatedPage } from "./invalidation";
 import type { Answer, Answers, Page, Question } from "./question";
 import { askedPages, askedQuestions, isAnswered } from "./question";
+import type { QuestionnaireTracking } from "./questionnaire-tracking";
+import { useQuestionnaireTracking } from "./questionnaire-tracking";
 
 /** Où en est un parcours : ses réponses validées, et la page ouverte. */
 export type FlowState = {
@@ -64,7 +64,7 @@ export type Flow = View &
 export function useFlow(options: Options): Flow {
   const [state, setState] = useState<State>(() => startingState(options));
   const view = read(options.pages, state);
-  const tracking = useFlowTracking(
+  const tracking = useQuestionnaireTracking(
     view.pages.indexOf(view.page) + 1,
     options.tracked,
     options.initialState !== undefined,
@@ -109,7 +109,7 @@ type Context = {
   setState: (state: State) => void;
   view: View;
   options: Options;
-  tracking: FlowTracking;
+  tracking: QuestionnaireTracking;
 };
 
 function startingState(options: Options): State {
@@ -193,7 +193,7 @@ function actions({
       const answers = validated(options.pages, state, view.page);
       const following = nextPage(options.pages, view.page, answers);
       if (!following) {
-        tracking.flowCompleted();
+        tracking.questionnaireCompleted();
         return options.onComplete(answers, { answers, page: view.page.id });
       }
       setState(onPage(following, answers));

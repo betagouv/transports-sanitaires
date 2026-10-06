@@ -7,20 +7,20 @@
 import { useEffect, useRef } from "react";
 import { NomEvenement, trackEvenement } from "../../analytics/evenements";
 
-export type FlowTracking = {
+export type QuestionnaireTracking = {
   stepPassed: (page: number) => void;
-  flowCompleted: () => void;
+  questionnaireCompleted: () => void;
 };
 
 /**
  * `tracked` : le parcours émet-il quoi que ce soit ? `resumed` : il a déjà
  * commencé, son début n'est pas réémis.
  */
-export function useFlowTracking(
+export function useQuestionnaireTracking(
   current: number,
   tracked: boolean,
   resumed: boolean,
-): FlowTracking {
+): QuestionnaireTracking {
   const completed = useRef(false);
   // Refs pour éviter les valeurs périmées dans le gestionnaire : `currentRef`
   // existe pour lire la valeur fraîche sans redéclarer l'écouteur.
@@ -42,7 +42,7 @@ export function useFlowTracking(
     stepPassed: (page) => {
       if (tracked) trackEvenement(NomEvenement.simulationStep, page);
     },
-    flowCompleted: () => {
+    questionnaireCompleted: () => {
       completed.current = true;
       if (tracked) trackEvenement(NomEvenement.simulationComplete);
     },
