@@ -6,7 +6,7 @@ import type { ComponentType } from "react";
 import { FormField } from "./FormField";
 import { type Answers, errorOf } from "./question";
 import type { Flow, Options } from "./questionnaire";
-import { useFlow } from "./questionnaire";
+import { useQuestionnaire } from "./questionnaire";
 
 type Props = Options & {
   // Nombre de parties que le stepper annonce. Il compte des parties, jamais des
@@ -43,7 +43,7 @@ export function QuestionForm({
   DebugTrace,
   ...options
 }: Props) {
-  const flow = useFlow(options);
+  const flow = useQuestionnaire(options);
 
   return (
     <>

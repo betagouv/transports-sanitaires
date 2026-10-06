@@ -61,7 +61,7 @@ export type Flow = View &
     autoAdvances: boolean;
   };
 
-export function useFlow(options: Options): Flow {
+export function useQuestionnaire(options: Options): Flow {
   const [state, setState] = useState<State>(() => startingState(options));
   const view = read(options.pages, state);
   const tracking = useQuestionnaireTracking(
