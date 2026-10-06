@@ -13,7 +13,7 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 n'est pas intégrée. Il n'y a ni règles publicodes, ni page de résultat métier,
 ni CERFA téléchargeable. Le simulateur déroule un **parcours factice**
-(`front/simulateur/fake-flow.ts`), qui ne décide rien. Le
+(`front/simulateur/fake-questionnaire.ts`), qui ne décide rien. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le parcours commence par un **écran de rattachement

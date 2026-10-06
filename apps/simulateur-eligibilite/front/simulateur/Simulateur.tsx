@@ -13,7 +13,7 @@ import {
   PAGES_AFTER_LOCK,
   PAGES_BEFORE_LOCK,
   PART_COUNT,
-} from "./fake-flow";
+} from "./fake-questionnaire";
 import {
   type DebugTraceProps,
   QuestionForm,

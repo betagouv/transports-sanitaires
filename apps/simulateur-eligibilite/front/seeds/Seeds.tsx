@@ -12,7 +12,7 @@
 // un parcours.
 
 import { Container } from "../app/Container";
-import { decide } from "../simulateur/fake-flow";
+import { decide } from "../simulateur/fake-questionnaire";
 import { SEEDS } from "./catalogue";
 import { type LigneSeed, SeedsTable } from "./SeedsTable";
 import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";

@@ -158,7 +158,7 @@ Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré 
 l'application**. Une page liste ses questions, une question dit quand elle se pose
 (`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le parcours factice (`front/simulateur/fake-flow.ts`) pose trois questions sans
+Le parcours factice (`front/simulateur/fake-questionnaire.ts`) pose trois questions sans
 rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
 parcours réel reprendra :
 
