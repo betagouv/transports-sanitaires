@@ -10,7 +10,7 @@
 import { lazy, type ReactNode, Suspense } from "react";
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
-import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
 import { declarerViaApi } from "../rattachement/declaration-http";
 import { Rattachement } from "../rattachement/Rattachement";
 import { referentielHttp } from "../rattachement/referentiel-http";
@@ -56,8 +56,8 @@ export function App({
               key={navigation.cle}
               reponsesDeSeed={navigation.reponsesDeSeed}
               onNouvelleSimulation={navigation.recommencer}
-              panneauOutilsProduit={panneauOutilsProduit(navigation)}
-              traceDebug={navigation.outilsProduit}
+              panneauDeveloperTools={panneauDeveloperTools(navigation)}
+              traceDebug={navigation.developerTools}
             />
           </EcranPleinePage>
           <BandeauVersion />
@@ -133,7 +133,7 @@ function Porte({
 }
 
 // Chargé à la demande, pour que le catalogue de seeds et son tableau restent hors
-// du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la
+// du bundle initial : seul le service produit y accède (cf. `developerTools`), la
 // très grande majorité des prescripteurs ne le réclamera jamais.
 const GalerieSeeds = lazy(() =>
   import("../seeds/GalerieSeeds").then((m) => ({
@@ -143,7 +143,7 @@ const GalerieSeeds = lazy(() =>
 
 // Les branchements du simulateur vers les outils produit se décident ici, et
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
-// n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
+// n'importe rien de `developerTools/`. C'est aussi ici que se lit, d'un coup
 // d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau
 // de la galerie et les traces de debug (`traceDebug`, un booléen plutôt qu'un
 // contenu composé : elles lisent l'état vivant du parcours, qu'`App` n'a pas
@@ -151,13 +151,13 @@ const GalerieSeeds = lazy(() =>
 //
 // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran-porte, sans avoir à ressortir du simulateur.
-function panneauOutilsProduit(navigation: Navigation) {
-  if (!navigation.outilsProduit) return undefined;
+function panneauDeveloperTools(navigation: Navigation) {
+  if (!navigation.developerTools) return undefined;
   return (
-    <OutilsProduit>
+    <DeveloperTools>
       <BoutonOutil onClick={navigation.ouvrirGalerie}>
         Galerie de seeds
       </BoutonOutil>
-    </OutilsProduit>
+    </DeveloperTools>
   );
 }

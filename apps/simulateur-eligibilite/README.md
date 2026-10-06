@@ -120,7 +120,7 @@ front/                   le front, bundlé par Vite
                          l'analytics, la trace de parcours
     resultat/            la trace de debug d'une page de résultat (outil produit :
                          cf. AGENTS.md § Les outils produit)
-  outils-produit/        ce qui est réservé au service produit : son encadré et le
+  developerTools/        ce qui est réservé au service produit : son encadré et le
                          déverrouillage, garde commune à la galerie et aux traces
   seeds/                 ce qu'est une seed, le catalogue (vide), sa galerie. Elles se
                          greffent sur le simulateur, jamais l'inverse : c'est App.tsx

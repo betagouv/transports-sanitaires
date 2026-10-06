@@ -17,7 +17,7 @@
 
 import type { ReactNode } from "react";
 
-export function OutilsProduit({ children }: { children: ReactNode }) {
+export function DeveloperTools({ children }: { children: ReactNode }) {
   return (
     <section
       aria-label="Outils produit"

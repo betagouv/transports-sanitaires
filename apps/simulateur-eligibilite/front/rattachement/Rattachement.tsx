@@ -13,7 +13,7 @@ import {
   snapshotReferentiel,
 } from "../../shared/referentiel";
 import { EcranPleinePage } from "../app/EcranPleinePage";
-import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
 import type { SaisieRattachement } from "./saisie-rattachement";
 import { useSaisieRattachement } from "./saisie-rattachement";
 
@@ -26,7 +26,7 @@ import { useSaisieRattachement } from "./saisie-rattachement";
 export type AccesRattachement = {
   destination: "simulateur" | "galerie";
   /** Le service sélectionné déverrouille les outils produit (service n° 4). */
-  outilsProduit: boolean;
+  developerTools: boolean;
 };
 
 type Props = {
@@ -47,7 +47,7 @@ export function Rattachement({
     if (saisie.valide) {
       onValide(saisie.saisie, {
         destination,
-        outilsProduit: saisie.outilsProduit,
+        developerTools: saisie.developerTools,
       });
     }
   };
@@ -157,7 +157,7 @@ function EntreesDansLApplication({
           Accéder au simulateur
         </button>
       </div>
-      {saisie.outilsProduit && <PanneauOutils onEntrer={onEntrer} />}
+      {saisie.developerTools && <PanneauOutils onEntrer={onEntrer} />}
     </>
   );
 }
@@ -173,11 +173,11 @@ function PanneauOutils({
   onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
-    <OutilsProduit>
+    <DeveloperTools>
       <BoutonOutil onClick={() => onEntrer("galerie")}>
         Galerie de seeds
       </BoutonOutil>
-    </OutilsProduit>
+    </DeveloperTools>
   );
 }
 

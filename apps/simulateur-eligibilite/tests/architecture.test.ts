@@ -72,13 +72,13 @@ describe("invariants métier", () => {
       franchissements(
         ["front/simulateur"],
         (cible) =>
-          cible.startsWith("front/outils-produit/") ||
+          cible.startsWith("front/developerTools/") ||
           cible.startsWith("front/seeds/"),
       ),
       "La galerie rejoue des seeds dans la décision du simulateur : les " +
         "seeds et les outils produit sont bâtis **sur** le socle. Le socle, " +
         "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
-        "composé (`panneauOutilsProduit`). Fais de même plutôt que d'importer.",
+        "composé (`panneauDeveloperTools`). Fais de même plutôt que d'importer.",
     ).toEqual([]);
   });
 

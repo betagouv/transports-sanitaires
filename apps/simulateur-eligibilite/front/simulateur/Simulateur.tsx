@@ -28,7 +28,7 @@ type Props = {
   // Encadré des outils produit, rendu tel quel sous le questionnaire. Le
   // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
   // compose, et il est absent hors du service produit.
-  panneauOutilsProduit?: ReactNode;
+  panneauDeveloperTools?: ReactNode;
   // Traces de debug ouvertes sous le questionnaire et sous les résultats. Même
   // garde que le panneau ci-dessus, portée par un booléen : la trace lit l'état
   // vivant du parcours, `App` ne peut donc pas la composer d'avance.
@@ -38,7 +38,7 @@ type Props = {
 export function Simulateur({
   onNouvelleSimulation,
   reponsesDeSeed = null,
-  panneauOutilsProduit,
+  panneauDeveloperTools,
   traceDebug = false,
 }: Props) {
   const [ecran, allerA] = useState<Ecran>(() => ecranDeDepart(reponsesDeSeed));
@@ -49,7 +49,7 @@ export function Simulateur({
       return (
         <>
           <Questionnaire ecran={ecran} {...commun} />
-          {panneauOutilsProduit}
+          {panneauDeveloperTools}
         </>
       );
     case "resultat":

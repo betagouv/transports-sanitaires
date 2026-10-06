@@ -12,7 +12,7 @@ import type {
   Referentiel,
   Service,
 } from "../../shared/referentiel";
-import { estServiceProduit } from "../outils-produit/deverrouillage";
+import { estServiceProduit } from "../developerTools/deverrouillage";
 
 type Champs = {
   etabId: string;
@@ -35,7 +35,7 @@ export type SaisieRattachement = {
   // « Autre » sélectionné → saisie du service/unité réel obligatoire.
   serviceEstAutre: boolean;
   // Le service sélectionné déverrouille les outils produit (service n° 4).
-  outilsProduit: boolean;
+  developerTools: boolean;
 };
 
 export function useSaisieRattachement(
@@ -60,7 +60,7 @@ export function useSaisieRattachement(
     valide: saisieComplete(saisie),
     etabChoisi: champs.etabId !== "",
     serviceEstAutre,
-    outilsProduit: !!service && estServiceProduit(service),
+    developerTools: !!service && estServiceProduit(service),
   };
 }
 

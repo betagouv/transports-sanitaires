@@ -17,7 +17,7 @@ export type Navigation = {
   // Le service choisi déverrouille-t-il les outils produit (service n° 4) ?
   // Retenu à la validation pour pouvoir les reproposer au début du parcours.
   // C'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
-  outilsProduit: boolean;
+  developerTools: boolean;
   // Les réponses de la seed ouverte, qui pré-remplissent le simulateur.
   reponsesDeSeed: Reponses | null;
   // Remontée à chaque nouvelle simulation pour remonter (remount) le simulateur
@@ -37,7 +37,7 @@ export type Navigation = {
 export function useNavigation(): Navigation {
   const [etat, changer] = useState<Etat>({
     ecran: "rattachement",
-    outilsProduit: false,
+    developerTools: false,
     reponsesDeSeed: null,
     cle: 0,
   });
@@ -51,7 +51,7 @@ export function useNavigation(): Navigation {
 
 type Etat = Pick<
   Navigation,
-  "ecran" | "outilsProduit" | "reponsesDeSeed" | "cle"
+  "ecran" | "developerTools" | "reponsesDeSeed" | "cle"
 >;
 
 function actions(
@@ -62,7 +62,7 @@ function actions(
     rattacher: (acces) =>
       modifier({
         ecran: acces.destination,
-        outilsProduit: acces.outilsProduit,
+        developerTools: acces.developerTools,
       }),
     // La clé remonte pour repartir d'un parcours vierge, la seed pouvant être
     // rouverte.

@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import { App } from "../../front/app/App";
 import {
   BoutonOutil,
-  OutilsProduit,
-} from "../../front/outils-produit/OutilsProduit";
+  DeveloperTools,
+} from "../../front/developerTools/DeveloperTools";
 import { Rattachement } from "../../front/rattachement/Rattachement";
 import { Simulateur } from "../../front/simulateur/Simulateur";
 import { snapshotReferentiel } from "../../shared/referentiel";
@@ -97,7 +97,7 @@ describe("encadré des outils produit, écran de rattachement", () => {
       { etabId: "e_liberal_cnam", serviceId: "s_transport_sanitaire" },
       {
         destination: "galerie",
-        outilsProduit: true,
+        developerTools: true,
       },
     );
   });
@@ -108,10 +108,10 @@ describe("encadré des outils produit, début du parcours", () => {
     render(
       <Simulateur
         onNouvelleSimulation={() => {}}
-        panneauOutilsProduit={
-          <OutilsProduit>
+        panneauDeveloperTools={
+          <DeveloperTools>
             <BoutonOutil onClick={() => {}}>Galerie de seeds</BoutonOutil>
-          </OutilsProduit>
+          </DeveloperTools>
         }
       />,
     );

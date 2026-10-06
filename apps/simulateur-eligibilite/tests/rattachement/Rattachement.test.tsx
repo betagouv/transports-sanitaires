@@ -29,7 +29,7 @@ describe("parcours de rattachement", () => {
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "e_chu_grenoble", serviceId: "s_grenoble_cardio" },
-      { destination: "simulateur", outilsProduit: false },
+      { destination: "simulateur", developerTools: false },
     );
   });
 
@@ -70,7 +70,7 @@ describe("parcours de rattachement", () => {
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "e_liberal_cnam", serviceId: "s_liberal" },
-      { destination: "simulateur", outilsProduit: false },
+      { destination: "simulateur", developerTools: false },
     );
   });
 
@@ -93,7 +93,7 @@ describe("parcours de rattachement", () => {
         serviceEstAutre: true,
         serviceLibre: "Néphrologie",
       },
-      { destination: "simulateur", outilsProduit: false },
+      { destination: "simulateur", developerTools: false },
     );
   });
 
@@ -192,7 +192,7 @@ describe("référentiel indisponible : rattachement dégradé « Autre / Autre �
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "autre", serviceId: "autre" },
-      { destination: "simulateur", outilsProduit: false },
+      { destination: "simulateur", developerTools: false },
     );
   });
 
@@ -212,7 +212,7 @@ describe("référentiel indisponible : rattachement dégradé « Autre / Autre �
 
     expect(onValide).toHaveBeenCalledWith(
       { etabId: "autre", serviceId: "autre" },
-      { destination: "simulateur", outilsProduit: false },
+      { destination: "simulateur", developerTools: false },
     );
   });
 });

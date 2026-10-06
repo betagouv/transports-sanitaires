@@ -176,13 +176,13 @@ La galerie de seeds (`front/seeds/`) et les **traces de debug** sont les deux
 outils produit. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
-  référentiel, `front/outils-produit/deverrouillage.ts`) ;
+  référentiel, `front/developerTools/deverrouillage.ts`) ;
 - le même moment : ils sont atteints **après** le rattachement.
 
 Pas de conditionnement sur `import.meta.env.DEV`.
 
 Le simulateur ne connaît pas la galerie. C'est `App.tsx` qui lui passe du contenu
-déjà composé (`panneauOutilsProduit`).
+déjà composé (`panneauDeveloperTools`).
 
 Les traces, elles, vivent dans le simulateur : elles lisent l'état vivant du
 parcours, qu'`App` n'a pas sous la main. Ce n'est donc pas un contenu composé qui

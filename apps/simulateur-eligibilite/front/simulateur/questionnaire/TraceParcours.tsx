@@ -4,7 +4,7 @@
 //
 // C'est un outil produit comme la galerie : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
-// (`front/outils-produit/deverrouillage.ts`). Le simulateur ignore ce service :
+// (`front/developerTools/deverrouillage.ts`). Le simulateur ignore ce service :
 // `App` lui passe la réponse, que `autorisee` porte jusqu'ici. Le prop est
 // obligatoire pour qu'aucun appelant ne puisse rendre la trace sans avoir dit à
 // qui elle s'ouvre.
