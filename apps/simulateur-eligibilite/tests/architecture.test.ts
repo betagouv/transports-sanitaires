@@ -67,16 +67,18 @@ describe("invariants métier", () => {
     ).toEqual([]);
   });
 
-  it("les outils produit se greffent sur le simulateur, jamais l'inverse", () => {
+  it("les seeds et les outils produit se greffent sur le simulateur, jamais l'inverse", () => {
     expect(
       franchissements(
         ["front/simulateur"],
-        commencePar("front/outils-produit/"),
+        (cible) =>
+          cible.startsWith("front/outils-produit/") ||
+          cible.startsWith("front/seeds/"),
       ),
       "La galerie rejoue des seeds dans la décision du simulateur : les " +
-        "outils produit sont bâtis **sur** le socle. Le socle, lui, n'a pas à " +
-        "les connaître : il reçoit d'`App` du contenu déjà composé " +
-        "(`panneauOutilsProduit`). Fais de même plutôt que d'importer.",
+        "seeds et les outils produit sont bâtis **sur** le socle. Le socle, " +
+        "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
+        "composé (`panneauOutilsProduit`). Fais de même plutôt que d'importer.",
     ).toEqual([]);
   });
 
@@ -136,7 +138,7 @@ describe("taille du code", () => {
   });
 
   it("aucun fichier ne dépasse 300 lignes", () => {
-    const EXEMPTES = ["front/outils-produit/seeds/catalogue.ts"];
+    const EXEMPTES = ["front/seeds/catalogue.ts"];
     const trop = sources("front", "server", "shared", "scripts", "tests")
       .filter((fichier) => !EXEMPTES.includes(fichier))
       .map((fichier) => ({ fichier, lignes: lignesDe(fichier) }))

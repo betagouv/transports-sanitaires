@@ -6,8 +6,8 @@
 // et `rattacher` ne retient que le booléen d'accès aux outils produit.
 
 import { useState } from "react";
-import type { Seed } from "../outils-produit/seeds/seed";
 import type { AccesRattachement } from "../rattachement/Rattachement";
+import type { Seed } from "../seeds/seed";
 import type { Reponses } from "../simulateur/questionnaire/question";
 
 type Ecran = "rattachement" | "galerie" | "simulateur";

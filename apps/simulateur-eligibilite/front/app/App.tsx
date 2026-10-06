@@ -11,11 +11,11 @@ import { lazy, type ReactNode, Suspense } from "react";
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
-import type { Seed } from "../outils-produit/seeds/seed";
 import { declarerViaApi } from "../rattachement/declaration-http";
 import { Rattachement } from "../rattachement/Rattachement";
 import { referentielHttp } from "../rattachement/referentiel-http";
 import { rangerRattachement } from "../rattachement/session";
+import type { Seed } from "../seeds/seed";
 import { Simulateur } from "../simulateur/Simulateur";
 import { BandeauVersion } from "./BandeauVersion";
 import { EcranPleinePage } from "./EcranPleinePage";
@@ -136,7 +136,7 @@ function Porte({
 // du bundle initial : seul le service produit y accède (cf. `outilsProduit`), la
 // très grande majorité des prescripteurs ne le réclamera jamais.
 const GalerieSeeds = lazy(() =>
-  import("../outils-produit/seeds/GalerieSeeds").then((m) => ({
+  import("../seeds/GalerieSeeds").then((m) => ({
     default: m.GalerieSeeds,
   })),
 );

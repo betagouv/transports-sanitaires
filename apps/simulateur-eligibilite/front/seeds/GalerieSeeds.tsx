@@ -11,8 +11,8 @@
 // « État » dit quelles situations de référence divergent, avant même d'ouvrir
 // un parcours.
 
-import { EcranPleinePage } from "../../app/EcranPleinePage";
-import { decider } from "../../simulateur/parcours-factice";
+import { EcranPleinePage } from "../app/EcranPleinePage";
+import { decider } from "../simulateur/parcours-factice";
 import { SEEDS } from "./catalogue";
 import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
 import { type LigneSeed, TableauDesSeeds } from "./TableauDesSeeds";

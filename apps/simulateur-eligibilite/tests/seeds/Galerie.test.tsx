@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { GalerieSeeds } from "../../front/outils-produit/seeds/GalerieSeeds";
-import type { Seed } from "../../front/outils-produit/seeds/seed";
+import { GalerieSeeds } from "../../front/seeds/GalerieSeeds";
+import type { Seed } from "../../front/seeds/seed";
 import {
   ACCOMPAGNEMENTS,
   bouton,

@@ -28,7 +28,7 @@ const RACINES = ["front", "server", "shared", "scripts"];
 const MARQUEUR = "// ---- implémentation ----";
 // Une liste de données se lit d'un seul tenant : elle n'a pas d'implémentation
 // à cacher. Même exemption que pour la limite de 300 lignes.
-const DONNEES = ["front/outils-produit/seeds/catalogue.ts"];
+const DONNEES = ["front/seeds/catalogue.ts"];
 
 describe("un fichier se lit comme son contrat", () => {
   it("chaque fichier s'ouvre sur un en-tête", () => {

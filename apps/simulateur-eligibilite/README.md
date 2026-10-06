@@ -120,10 +120,11 @@ front/                   le front, bundlé par Vite
                          l'analytics, la trace de parcours
     resultat/            la trace de debug d'une page de résultat (outil produit :
                          cf. AGENTS.md § Les outils produit)
-  outils-produit/        LA feature réservée au service produit. Elle se greffe sur le
-                         simulateur, jamais l'inverse : c'est App.tsx qui compose. Le
-                         déverrouillage est la garde commune à tout le dossier.
-    seeds/               ce qu'est une seed, le catalogue (vide), sa galerie
+  outils-produit/        ce qui est réservé au service produit : son encadré et le
+                         déverrouillage, garde commune à la galerie et aux traces
+  seeds/                 ce qu'est une seed, le catalogue (vide), sa galerie. Elles se
+                         greffent sur le simulateur, jamais l'inverse : c'est App.tsx
+                         qui compose.
   cerfa/                 le socle de remplissage d'un PDF : l'écriture dans un
                          AcroForm et ses pièges, la mesure d'un texte dans son champ,
                          la forme d'un tableau de remplissage. Aucun gabarit.

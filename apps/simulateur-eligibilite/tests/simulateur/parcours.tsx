@@ -4,7 +4,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
-import type { Seed } from "../../front/outils-produit/seeds/seed";
+import type { Seed } from "../../front/seeds/seed";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import { seRattacher, seRattacherProduit } from "../porte";
 

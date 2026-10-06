@@ -8,7 +8,7 @@
 // Les deux voient donc exactement les mêmes situations. Un cas de non-régression
 // n'est plus seulement une ligne de test, il est consultable à l'écran.
 
-import type { Reponses } from "../../simulateur/questionnaire/question";
+import type { Reponses } from "../simulateur/questionnaire/question";
 
 /** Ce que rend la décision : des sorties nommées. */
 type Sorties = Readonly<Record<string, unknown>>;

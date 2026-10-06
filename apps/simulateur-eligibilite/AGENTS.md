@@ -124,7 +124,7 @@ Ils sont **exécutables**, dans
 
 - les frontières entre `front/`, `server/` et `shared/` ;
 - le simulateur, qui ignore qui prescrit ;
-- les outils produit, greffés sur le simulateur et jamais l'inverse ;
+- les seeds et les outils produit, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité (sans objet tant que
   `regles/` est vide) ;
@@ -164,7 +164,7 @@ Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/parcours.tsx`,
 `cerfa/formulaire-de-test.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
-[`front/outils-produit/seeds/catalogue.ts`](front/outils-produit/seeds/catalogue.ts),
+[`front/seeds/catalogue.ts`](front/seeds/catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
 *avec leurs sorties attendues*. Il est vide tant que le modèle suivant n'est pas
 intégré. Les tests de la galerie écrivent leurs propres seeds, sur le parcours
@@ -172,8 +172,8 @@ factice.
 
 ## Les outils produit
 
-La galerie de seeds et les **traces de debug** sont les deux outils produit. Ils
-partagent :
+La galerie de seeds (`front/seeds/`) et les **traces de debug** sont les deux
+outils produit. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
   référentiel, `front/outils-produit/deverrouillage.ts`) ;
