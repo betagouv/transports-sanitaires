@@ -109,8 +109,8 @@ server/                  le backend Node, barrière de sécurité : les secrets 
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
-  app/                   l'écran-porte, la navigation entre les écrans, le pied de page
-  rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
+  app/                   l'écran de rattachement, la navigation entre les écrans, le pied de page
+  rattachement/          LA feature de l'écran de rattachement, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
                          l'API, le rattachement en mémoire de session (ADR-4)
   simulateur/            le montage du parcours (questionnaire, résultat, verrou,
@@ -144,7 +144,7 @@ a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 | Retiré | Conservé |
 | --- | --- |
 | les règles publicodes, leur validation, la version du modèle au pied de page | l'interface DSFR |
-| le questionnaire engendré par `@publicodes/forms` | l'écran-porte de rattachement et son backend |
+| le questionnaire engendré par `@publicodes/forms` | l'écran de rattachement et son backend |
 | les parcours prescripteur et secrétariat, leurs pages de résultat | la mesure d'audience Matomo, réduite aux événements de parcours |
 | les tests métier et la recette du livrable | le comportement de navigation, sur un parcours factice |
 | le contenu du catalogue de seeds | ce qu'est une seed, l'écran des seeds, les traces de debug |

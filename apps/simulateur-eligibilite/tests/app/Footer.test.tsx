@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { App } from "../../front/app/App";
 import { Footer } from "../../front/app/Footer";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { seRattacher } from "../porte";
+import { seRattacher } from "../se-rattacher";
 
 // Le pied de page dit quelle version et quel code un utilisateur a
 // sous les yeux. Ses deux valeurs sont figées par Vite à la construction : ce
@@ -52,7 +52,7 @@ describe("bandeau de version", () => {
     );
   });
 
-  it("accompagne le simulateur, pas l'écran-porte", async () => {
+  it("accompagne le simulateur, pas l'écran de rattachement", async () => {
     const user = userEvent.setup();
     render(<App referentiel={snapshotReferentiel} />);
 

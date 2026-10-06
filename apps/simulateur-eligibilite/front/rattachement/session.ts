@@ -1,4 +1,4 @@
-// Le rattachement pour la durée de la session : rangé par l'écran-porte, relu par
+// Le rattachement pour la durée de la session : rangé par l'écran de rattachement, relu par
 // le traceur d'analytics à chaque événement.
 
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";

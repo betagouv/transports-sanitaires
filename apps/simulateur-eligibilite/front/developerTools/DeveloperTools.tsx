@@ -1,4 +1,4 @@
-// Encadré des **developer tools**, dont l'écran des seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
+// Encadré des **developer tools**, dont l'écran des seeds. Partagé par les écrans qui les proposent, l'écran de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont

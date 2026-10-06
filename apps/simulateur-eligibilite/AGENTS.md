@@ -16,7 +16,7 @@ ni CERFA téléchargeable. Le simulateur déroule un **parcours factice**
 (`front/simulateur/parcours-factice.ts`), qui ne décide rien. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
-Le parcours commence par un **écran-porte de rattachement
+Le parcours commence par un **écran de rattachement
 obligatoire** : établissement et service, sans identifier la personne
 (`front/rattachement/`, référentiel Grist). Le tout est servi par
 un **backend Node/Express** (`server/` : le front et `/api/*`) déployé sur
@@ -160,7 +160,7 @@ d'une version à l'autre.
   un référentiel injecté.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
-Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/parcours.tsx`,
+Réutilise les helpers de `tests/` : `se-rattacher.ts`, `simulateur/parcours.tsx`,
 `cerfa/formulaire-de-test.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans

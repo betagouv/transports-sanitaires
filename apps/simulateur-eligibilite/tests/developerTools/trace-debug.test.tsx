@@ -13,7 +13,7 @@ import {
 // qu'aucun prescripteur ordinaire n'a à voir sous ses questions.
 //
 // Les tests passent par `App`, et non par le simulateur : c'est le câblage
-// qu'ils gardent, du service choisi à la porte jusqu'au `traceDebug` des écrans.
+// qu'ils gardent, du service choisi à l'écran de rattachement jusqu'au `traceDebug` des écrans.
 
 const TRACE_PARCOURS = /^Debug — chemin parcouru/;
 const TRACE_RESULTAT = /^Debug — résultat/;

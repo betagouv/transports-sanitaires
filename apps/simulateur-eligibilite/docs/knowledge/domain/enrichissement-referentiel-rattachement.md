@@ -1,9 +1,9 @@
-# Alimenter Grist depuis le service saisi à l'écran-porte
+# Alimenter Grist depuis le service saisi à l'écran de rattachement
 
 > Statut : **implémenté**. Décisions validées avec le porteur le 2026-07-08, révisées
 > le 2026-09-29.
 >
-> **Mise à jour 2026-09-29, rattachement sans identité.** L'écran-porte ne demande plus
+> **Mise à jour 2026-09-29, rattachement sans identité.** L'écran de rattachement ne demande plus
 > qui réalise la simulation (voir [l'ADR d'identification](../adr/identification.md),
 > ADR-3). Les branches qui écrivaient un **prescripteur** dans Grist disparaissent :
 > plus de création d'un prescripteur « hors liste », plus de déplacement d'un
@@ -21,7 +21,7 @@
 
 ## Contexte
 
-L'écran-porte capture du texte libre, plutôt qu'une sélection dans une liste du
+L'écran de rattachement capture du texte libre, plutôt qu'une sélection dans une liste du
 référentiel, dans un seul cas : l'utilisateur choisit le service « Autre » d'un
 établissement et doit alors saisir son service ou son unité réels (`serviceLibre`).
 

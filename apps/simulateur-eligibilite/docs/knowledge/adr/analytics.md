@@ -3,7 +3,7 @@
 > Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-10-06
 >
 > Suivi analytique du parcours dans le simulateur d'éligibilité.
-> Repose sur le rattachement établissement/service fourni par l'écran-porte :
+> Repose sur le rattachement établissement/service fourni par l'écran de rattachement :
 > voir [identification.md](./identification.md).
 >
 > **Mise à jour 2026-10-06, vidage avant la v10.** Les événements de résultat et de
@@ -290,7 +290,7 @@ Retiré le 2026-10-06 avec le téléchargement des trois CERFA.
    testé. *Reste : coller le script dans Sites Conformes avec l'origine réelle du
    simulateur, publier le texte d'information (R-12).*
 
-Prérequis : l'écran-porte fournit le service (cf.
+Prérequis : l'écran de rattachement fournit le service (cf.
 [identification.md](./identification.md), incréments 1–2 et 6).
 
 ## 7. Risques & validations en attente

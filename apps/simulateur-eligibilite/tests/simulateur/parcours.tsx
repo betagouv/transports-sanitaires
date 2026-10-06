@@ -6,11 +6,11 @@ import userEvent from "@testing-library/user-event";
 import { App } from "../../front/app/App";
 import type { Seed } from "../../front/seeds/seed";
 import { snapshotReferentiel } from "../../shared/referentiel";
-import { seRattacher, seRattacherProduit } from "../porte";
+import { seRattacher, seRattacherProduit } from "../se-rattacher";
 
 type User = ReturnType<typeof userEvent.setup>;
 
-/** Monte l'application et franchit la porte. `produit` : service n° 4. */
+/** Monte l'application et franchit l'écran de rattachement. `produit` : service n° 4. */
 export async function ouvrirLeSimulateur(
   options: { produit?: boolean; seeds?: readonly Seed[] } = {},
 ): Promise<User> {

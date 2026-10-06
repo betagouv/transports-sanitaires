@@ -1,4 +1,4 @@
-// Helpers de franchissement de l'écran-porte, partagés par les tests qui ont besoin
+// Helpers de franchissement de l'écran de rattachement, partagés par les tests qui ont besoin
 // d'être **derrière** le rattachement (parcours, écran des seeds).
 //
 // Deux rattachements : un ordinaire, et un sur le service n° 4 (« Transport
@@ -30,13 +30,13 @@ export async function remplirRattachementProduit(user: User) {
 const acceder = (user: User) =>
   user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
 
-/** Franchit la porte avec un rattachement ordinaire. */
+/** Franchit l'écran de rattachement avec un rattachement ordinaire. */
 export async function seRattacher(user: User) {
   await remplirRattachement(user);
   await acceder(user);
 }
 
-/** Franchit la porte avec le service n° 4, puis entre dans le simulateur. */
+/** Franchit l'écran de rattachement avec le service n° 4, puis entre dans le simulateur. */
 export async function seRattacherProduit(user: User) {
   await remplirRattachementProduit(user);
   await acceder(user);

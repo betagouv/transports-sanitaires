@@ -12,7 +12,7 @@ import {
   snapshotReferentiel,
 } from "../../shared/referentiel";
 
-// La porte : impossible d'atteindre le simulateur sans s'être rattaché. On
+// L'écran de rattachement : impossible d'atteindre le simulateur sans s'être rattaché. On
 // injecte le référentiel snapshot et une déclaration qui capture ce qui partirait
 // au serveur (pas de backend en test).
 function setup(referentiel: Referentiel = snapshotReferentiel) {
@@ -42,7 +42,7 @@ const simulateurMonte = () => screen.findByRole("group", PREMIERE_QUESTION);
 
 beforeEach(() => rangerRattachement(null));
 
-describe("écran-porte de rattachement", () => {
+describe("écran de rattachement", () => {
   it("affiche le rattachement d'abord, pas le formulaire", () => {
     setup();
     // Pas de titre (app en iframe) : l'écran de rattachement se reconnaît à son

@@ -1,8 +1,8 @@
-// Écran-porte de rattachement (établissement et service) : étape préalable
+// Écran de rattachement (établissement et service) : étape préalable
 // **obligatoire** au simulateur (voir docs/knowledge/adr/identification.md,
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
-// validation il remonte le `RattachementSaisi` à `onValide` (c'est la porte,
+// validation il remonte le `RattachementSaisi` à `onValide` (c'est l'écran de rattachement,
 // App.tsx, qui le range en session et bascule vers le simulateur). Si le
 // référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
 // dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
@@ -164,7 +164,7 @@ function EntreesDansLApplication({
 
 // L'écran des seeds est hors des actions nominales. Il n'apparaît qu'une fois le
 // service n° 4 choisi, ce qui complète la saisie : y entrer reste une entrée
-// dans l'application, elle passe par la porte. Les
+// dans l'application, elle passe par l'écran de rattachement. Les
 // situations de l'écran des seeds vivent dans `seeds/`, pas dans cet écran : les y
 // égrener en boutons ne passait pas l'échelle.
 function PanneauOutils({

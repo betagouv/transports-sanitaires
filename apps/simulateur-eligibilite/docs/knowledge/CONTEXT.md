@@ -1,7 +1,7 @@
 # Simulateur d'éligibilité : domaine
 
 Glossaire des termes propres à ce contexte : le parcours de simulation d'éligibilité
-au transport sanitaire, et son écran-porte.
+au transport sanitaire, et son écran de rattachement.
 
 ## Language
 

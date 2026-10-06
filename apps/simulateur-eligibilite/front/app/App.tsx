@@ -1,4 +1,4 @@
-// Racine de l'app : **écran-porte** de rattachement devant le simulateur.
+// Racine de l'app : **écran de rattachement** devant le simulateur.
 // Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
 // rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
 // docs/knowledge/adr/identification.md, ADR-1).
@@ -40,7 +40,7 @@ export function App({
   return (
     <>
       {navigation.ecran === "rattachement" && (
-        <Porte
+        <EcranDeRattachement
           referentiel={referentiel}
           declarer={declarer}
           onRattache={navigation.rattacher}
@@ -108,10 +108,10 @@ function EcranDesSeeds({
   );
 }
 
-// L'écran-porte. Seul un service saisi sous « Autre » apprend quelque chose au
+// L'écran de rattachement. Seul un service saisi sous « Autre » apprend quelque chose au
 // référentiel : c'est le seul cas déclaré au serveur. Le rattachement dégradé
 // « Autre / Autre » n'en fait pas partie, le référentiel étant alors injoignable.
-function Porte({
+function EcranDeRattachement({
   referentiel,
   declarer,
   onRattache,
@@ -150,7 +150,7 @@ const Seeds = lazy(() =>
 // sous la main).
 //
 // Écran des seeds depuis le début du parcours : mêmes situations qu'à
-// l'écran-porte, sans avoir à ressortir du simulateur.
+// l'écran de rattachement, sans avoir à ressortir du simulateur.
 function panneauDeveloperTools(navigation: Navigation) {
   if (!navigation.developerTools) return undefined;
   return (

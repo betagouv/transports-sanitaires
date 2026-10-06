@@ -13,7 +13,7 @@ import {
   remplirRattachement,
   remplirRattachementProduit,
   seRattacherProduit,
-} from "../porte";
+} from "../se-rattacher";
 
 // Les developer tools (dont l'écran des seeds) court-circuitent le
 // parcours : ils doivent être regroupés dans un encadré à part, impossible à
@@ -65,7 +65,7 @@ describe("encadré des developer tools, écran de rattachement", () => {
   });
 
   it("n'apparaît qu'une fois l'établissement et le service choisis", async () => {
-    // Y entrer reste une entrée dans l'application : elle passe par la porte
+    // Y entrer reste une entrée dans l'application : elle passe par l'écran de rattachement
     // (ADR-1), quelle que soit la destination.
     const user = userEvent.setup();
     render(

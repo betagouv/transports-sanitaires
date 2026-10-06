@@ -1,8 +1,8 @@
-// Où l'on se trouve dans l'application, et comment on en change : la porte
+// Où l'on se trouve dans l'application, et comment on en change : l'écran de rattachement
 // de rattachement, l'écran des seeds qui s'y superpose, et le simulateur
 // affiché derrière.
 //
-// Le rattachement, lui, ne transite pas par ici : la porte le range en session,
+// Le rattachement, lui, ne transite pas par ici : l'écran de rattachement le range en session,
 // et `rattacher` ne retient que le booléen d'accès aux developer tools.
 
 import { useState } from "react";
@@ -23,7 +23,7 @@ export type Navigation = {
   // Change à chaque nouvelle simulation. `App` s'en sert pour remonter le
   // simulateur et repartir d'un parcours vierge.
   numeroDeSimulation: number;
-  // Les developer tools s'ouvrent **après** la porte : on entre rattaché,
+  // Les developer tools s'ouvrent **après** l'écran de rattachement : on entre rattaché,
   // quelle que soit la destination.
   rattacher: (acces: AccesRattachement) => void;
   // Ouvre la seed choisie : son résultat si elle est complète, sinon la
