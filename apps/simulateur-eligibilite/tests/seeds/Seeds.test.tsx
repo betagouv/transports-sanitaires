@@ -16,32 +16,32 @@ import {
 
 const THE_AU_LAIT: Seed = {
   id: "the-au-lait",
-  libelle: "Résultat : un thé au lait",
+  label: "Résultat : un thé au lait",
   description: "Situation complète.",
   answers: { boisson: "the", accompagnements: ["lait"] },
-  attendu: { commande: "thé, lait" },
+  expected: { commande: "thé, lait" },
 };
 
 const ATTENDU_DEMENTI: Seed = {
   id: "attendu-dementi",
-  libelle: "Résultat : un café annoncé à tort",
+  label: "Résultat : un café annoncé à tort",
   description: "L'attendu contredit la décision.",
   answers: { boisson: "the", accompagnements: ["aucun"] },
-  attendu: { commande: "café" },
+  expected: { commande: "café" },
 };
 
 const ARRETEE_EN_CHEMIN: Seed = {
   id: "arretee-en-chemin",
-  libelle: "Questionnaire : les accompagnements",
+  label: "Questionnaire : les accompagnements",
   description: "S'arrête avant la deuxième question.",
   landing: "questionnaire",
   answers: { boisson: "cafe" },
-  attendu: {},
+  expected: {},
 };
 
 const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN];
 
-const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.libelle}`);
+const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.label}`);
 
 async function ouvrirLesSeeds() {
   const user = await ouvrirLeSimulateur({ produit: true, seeds: SEEDS });
@@ -54,7 +54,7 @@ const ECRAN_SEEDS = { name: "Seeds" } as const;
 
 describe("écran des seeds", () => {
   it("range les seeds selon l'écran sur lequel elles atterrissent", () => {
-    render(<Seeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />);
+    render(<Seeds seeds={SEEDS} onOpen={() => {}} onBack={() => {}} />);
 
     const [resultat, questionnaire] = screen.getAllByRole("table") as [
       HTMLElement,
@@ -65,11 +65,11 @@ describe("écran des seeds", () => {
   });
 
   it("dit quelles seeds la décision dément", () => {
-    render(<Seeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />);
+    render(<Seeds seeds={SEEDS} onOpen={() => {}} onBack={() => {}} />);
 
     expect(
       screen.getByText(
-        `1 seed(s) en écart avec leurs attendus : ${ATTENDU_DEMENTI.libelle}.`,
+        `1 seed(s) en écart avec leurs attendus : ${ATTENDU_DEMENTI.label}.`,
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("écart")).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe("écran des seeds", () => {
   });
 
   it("annonce un catalogue vide plutôt que des tableaux sans ligne", () => {
-    render(<Seeds seeds={[]} onOuvrir={() => {}} onRetour={() => {}} />);
+    render(<Seeds seeds={[]} onOpen={() => {}} onBack={() => {}} />);
 
     expect(screen.getByText(/^Le catalogue est vide/)).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();

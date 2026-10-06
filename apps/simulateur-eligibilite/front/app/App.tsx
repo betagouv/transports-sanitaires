@@ -38,8 +38,8 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
       {navigation.screen === "seeds" && (
         <SeedsScreen
           seeds={seeds}
-          onOuvrir={navigation.openSeed}
-          onRetour={navigation.closeTool}
+          onOpen={navigation.openSeed}
+          onBack={navigation.closeTool}
         />
       )}
       {navigation.screen === "simulateur" && (

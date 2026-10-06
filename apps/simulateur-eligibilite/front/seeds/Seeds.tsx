@@ -7,42 +7,42 @@
 import { Container } from "../app/Container";
 import { decide } from "../simulateur/fake-questionnaire";
 import { SEEDS } from "./catalogue";
-import { type LigneSeed, SeedsTable } from "./SeedsTable";
-import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
+import { type SeedRow, SeedsTable } from "./SeedsTable";
+import { evaluateSeed, opensQuestionnaire, type Seed } from "./seed";
 
 type Props = {
   /** Injectable pour les tests (défaut = le catalogue). */
   seeds?: readonly Seed[];
-  onOuvrir: (seed: Seed) => void;
-  onRetour: () => void;
+  onOpen: (seed: Seed) => void;
+  onBack: () => void;
 };
 
 const SECTIONS: ReadonlyArray<{
-  cle: string;
-  titre: string;
-  sousTitre: string;
-  retient: (seed: Seed) => boolean;
+  key: string;
+  title: string;
+  subtitle: string;
+  keeps: (seed: Seed) => boolean;
 }> = [
   {
-    cle: "resultat",
-    titre: "Page de résultat",
-    sousTitre:
+    key: "result",
+    title: "Page de résultat",
+    subtitle:
       "Situations complètes, ouvertes sur leur résultat. « Précédent » y rouvre le questionnaire.",
-    retient: (seed) => !ouvreLeQuestionnaire(seed),
+    keeps: (seed) => !opensQuestionnaire(seed),
   },
   {
-    cle: "questionnaire",
-    titre: "Questionnaire, là où la seed s'arrête",
-    sousTitre:
+    key: "questionnaire",
+    title: "Questionnaire, là où la seed s'arrête",
+    subtitle:
       "Situations volontairement incomplètes, ouvertes sur la première page sans réponse. Elles n'annoncent aucun attendu.",
-    retient: ouvreLeQuestionnaire,
+    keeps: opensQuestionnaire,
   },
 ];
 
-export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
-  const lignes = seeds.map((seed) => ({
+export function Seeds({ seeds = SEEDS, onOpen, onBack }: Props) {
+  const rows = seeds.map((seed) => ({
     seed,
-    evaluation: evaluerSeed(decide, seed),
+    evaluation: evaluateSeed(decide, seed),
   }));
 
   return (
@@ -52,15 +52,15 @@ export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
         Les {seeds.length} situations de référence du simulateur (
         <code>seeds/</code>), celles-là mêmes que rejouent les tests.
       </p>
-      {lignes.length === 0 ? (
-        <CatalogueVide />
+      {rows.length === 0 ? (
+        <EmptyCatalogue />
       ) : (
-        <CatalogueByLanding lignes={lignes} onOuvrir={onOuvrir} />
+        <CatalogueByLanding rows={rows} onOpen={onOpen} />
       )}
       <button
         type="button"
         className="fr-btn fr-btn--secondary"
-        onClick={onRetour}
+        onClick={onBack}
       >
         Retour
       </button>
@@ -70,7 +70,7 @@ export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
 
 // ---- implémentation ----
 
-function CatalogueVide() {
+function EmptyCatalogue() {
   return (
     <div className="fr-alert fr-alert--info fr-alert--sm fr-mb-4w">
       <p>
@@ -84,36 +84,36 @@ function CatalogueVide() {
 // Le catalogue est groupé par écran d'atterrissage. On distingue ainsi une seed
 // complète d'une seed qui s'arrête en chemin.
 function CatalogueByLanding({
-  lignes,
-  onOuvrir,
+  rows,
+  onOpen,
 }: {
-  lignes: LigneSeed[];
-  onOuvrir: (seed: Seed) => void;
+  rows: SeedRow[];
+  onOpen: (seed: Seed) => void;
 }) {
-  const enEcart = lignes.filter(
-    ({ evaluation }) => evaluation.ecarts.length > 0,
+  const mismatching = rows.filter(
+    ({ evaluation }) => evaluation.mismatches.length > 0,
   );
   return (
     <>
       <div
         className={`fr-alert fr-alert--sm fr-mb-4w fr-alert--${
-          enEcart.length === 0 ? "success" : "error"
+          mismatching.length === 0 ? "success" : "error"
         }`}
       >
         <p>
-          {enEcart.length === 0
+          {mismatching.length === 0
             ? "La décision confirme les attendus des seeds."
-            : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
-                .map(({ seed }) => seed.libelle)
+            : `${mismatching.length} seed(s) en écart avec leurs attendus : ${mismatching
+                .map(({ seed }) => seed.label)
                 .join(", ")}.`}
         </p>
       </div>
       {SECTIONS.map((section) => (
         <SeedsTable
-          key={section.cle}
+          key={section.key}
           section={section}
-          lignes={lignes.filter(({ seed }) => section.retient(seed))}
-          onOuvrir={onOuvrir}
+          rows={rows.filter(({ seed }) => section.keeps(seed))}
+          onOpen={onOpen}
         />
       ))}
     </>

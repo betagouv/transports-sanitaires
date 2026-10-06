@@ -9,8 +9,8 @@ import type { Seed } from "./seed";
 type Props = {
   /** Injectable pour les tests (défaut = le catalogue). */
   seeds?: readonly Seed[];
-  onOuvrir: (seed: Seed) => void;
-  onRetour: () => void;
+  onOpen: (seed: Seed) => void;
+  onBack: () => void;
 };
 
 export function SeedsScreen(props: Props) {

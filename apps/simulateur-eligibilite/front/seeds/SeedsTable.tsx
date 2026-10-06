@@ -1,37 +1,37 @@
 // Le tableau des seeds : une seed par ligne. Ce qu'elle pose, ce qu'elle attend,
 // ce que la décision en dit, et un bouton pour l'ouvrir.
 
-import type { EvaluationSeed, Seed } from "./seed";
+import type { Seed, SeedEvaluation } from "./seed";
 
-export type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
+export type SeedRow = { seed: Seed; evaluation: SeedEvaluation };
 
 // Le titre de section est la légende du tableau. Le DSFR la rend visible
 // (`.fr-table caption`) et annulerait un `fr-sr-only`.
 export function SeedsTable({
   section,
-  lignes,
-  onOuvrir,
+  rows,
+  onOpen,
 }: {
-  section: { titre: string; sousTitre: string };
-  lignes: LigneSeed[];
-  onOuvrir: (seed: Seed) => void;
+  section: { title: string; subtitle: string };
+  rows: SeedRow[];
+  onOpen: (seed: Seed) => void;
 }) {
   return (
     <section className="fr-mb-6w">
       <div className="fr-table fr-table--bordered">
         <table>
           <caption>
-            {section.titre}
-            <span className="fr-table__detail">{section.sousTitre}</span>
+            {section.title}
+            <span className="fr-table__detail">{section.subtitle}</span>
           </caption>
-          <ColonnesDuCatalogue />
+          <TableHead />
           <tbody>
-            {lignes.map(({ seed, evaluation }) => (
-              <Ligne
+            {rows.map(({ seed, evaluation }) => (
+              <Row
                 key={seed.id}
                 seed={seed}
                 evaluation={evaluation}
-                onOuvrir={() => onOuvrir(seed)}
+                onOpen={() => onOpen(seed)}
               />
             ))}
           </tbody>
@@ -43,30 +43,30 @@ export function SeedsTable({
 
 // ---- implémentation ----
 
-function Ligne({
+function Row({
   seed,
   evaluation,
-  onOuvrir,
+  onOpen,
 }: {
   seed: Seed;
-  evaluation: EvaluationSeed;
-  onOuvrir: () => void;
+  evaluation: SeedEvaluation;
+  onOpen: () => void;
 }) {
   return (
     <tr>
-      <IdentiteDeLaSeed seed={seed} />
+      <SeedIdentity seed={seed} />
       <td>
-        <Attendus seed={seed} />
+        <ExpectedOutputs seed={seed} />
       </td>
       <td>
-        <Etat evaluation={evaluation} />
+        <Status evaluation={evaluation} />
       </td>
       <td>
         <button
           type="button"
           className="fr-btn fr-btn--sm fr-btn--tertiary"
-          aria-label={`Ouvrir : ${seed.libelle}`}
-          onClick={onOuvrir}
+          aria-label={`Ouvrir : ${seed.label}`}
+          onClick={onOpen}
         >
           Ouvrir
         </button>
@@ -75,7 +75,7 @@ function Ligne({
   );
 }
 
-function ColonnesDuCatalogue() {
+function TableHead() {
   return (
     <thead>
       <tr>
@@ -92,10 +92,10 @@ function ColonnesDuCatalogue() {
 
 // Ce qui désigne la seed : son libellé, ce qu'elle raconte, et l'identifiant par
 // lequel les tests la nomment.
-function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
+function SeedIdentity({ seed }: { seed: Seed }) {
   return (
     <th scope="row" style={{ maxWidth: "22rem" }}>
-      <span className="fr-text--bold">{seed.libelle}</span>
+      <span className="fr-text--bold">{seed.label}</span>
       <br />
       <span className="fr-text--xs" style={{ fontWeight: "normal" }}>
         {seed.description}
@@ -106,35 +106,35 @@ function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
   );
 }
 
-function Attendus({ seed }: { seed: Seed }) {
+function ExpectedOutputs({ seed }: { seed: Seed }) {
   return (
     <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
-      {Object.entries(seed.attendu).map(([sortie, valeur]) => (
-        <li key={sortie}>
-          {sortie} : <strong>{String(valeur)}</strong>
+      {Object.entries(seed.expected).map(([output, value]) => (
+        <li key={output}>
+          {output} : <strong>{String(value)}</strong>
         </li>
       ))}
     </ul>
   );
 }
 
-function Etat({ evaluation }: Pick<LigneSeed, "evaluation">) {
-  const conforme = evaluation.ecarts.length === 0;
+function Status({ evaluation }: Pick<SeedRow, "evaluation">) {
+  const matches = evaluation.mismatches.length === 0;
   return (
     <>
       <p
-        className={`fr-badge fr-badge--sm fr-badge--${conforme ? "success" : "error"}`}
+        className={`fr-badge fr-badge--sm fr-badge--${matches ? "success" : "error"}`}
       >
-        {conforme ? "conforme" : "écart"}
+        {matches ? "conforme" : "écart"}
       </p>
-      {!conforme && (
+      {!matches && (
         <ul
           className="fr-text--xs"
           style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
         >
-          {evaluation.ecarts.map((ecart) => (
-            <li key={ecart.sortie}>
-              {ecart.sortie} : {String(ecart.obtenu)}
+          {evaluation.mismatches.map((mismatch) => (
+            <li key={mismatch.output}>
+              {mismatch.output} : {String(mismatch.actual)}
             </li>
           ))}
         </ul>
