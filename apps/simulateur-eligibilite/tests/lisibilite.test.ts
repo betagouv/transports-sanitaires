@@ -159,6 +159,11 @@ describe("les extensions d'import suivent le runtime", () => {
 // Les noms anglais que le code a réellement portés, plus ceux qui reviennent
 // naturellement sous les doigts. Cette liste croît quand un anglicisme passe
 // entre les mailles — pas quand il devient gênant.
+//
+// `field` et `fields` n'y sont pas : un champ de formulaire se nomme `FormField`,
+// comme dans le DSFR et dans React, et Grist range un enregistrement dans un
+// objet `fields`. `row` non plus, qui n'apparaît que composé avec l'identifiant
+// Grist (`etabRowId`, `serviceRowId`).
 const ANGLICISMES = new Set([
   "item",
   "items",
@@ -185,8 +190,6 @@ const ANGLICISMES = new Set([
   "helpers",
   "util",
   "utils",
-  "field",
-  "fields",
 ]);
 
 // Ce que nomme une API tierce, et que renommer casserait ou obscurcirait.
@@ -195,10 +198,6 @@ const ANGLICISMES = new Set([
 const TOLERES = new Set([
   // React / DSFR : la forme des props est imposée par le composant appelé.
   "Props",
-  // Grist : un enregistrement y est un `rowId` et un objet `fields`. Le segment
-  // `row` n'est pas dans la liste noire pour cette raison — il n'apparaît chez
-  // nous que composé avec l'identifiant Grist (`etabRowId`, `serviceRowId`).
-  "fields",
 ]);
 
 function aDesFonctionsPrivees(fichier: string): boolean {

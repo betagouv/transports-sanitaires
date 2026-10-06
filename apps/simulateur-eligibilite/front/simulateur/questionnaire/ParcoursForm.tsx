@@ -2,7 +2,7 @@
 // et les boutons de navigation. Toute la mécanique d'état est dans
 // `passation.ts`.
 
-import { ChampDeFormulaire } from "./ChampDeFormulaire";
+import { FormField } from "./FormField";
 import type { Options, Passation } from "./passation";
 import { usePassation } from "./passation";
 import { erreurDe } from "./question";
@@ -37,7 +37,7 @@ export function ParcoursForm({
           passation.avancer();
         }}
       >
-        <ChampsDeLaPage passation={passation} />
+        <FormFields passation={passation} />
         <Navigation passation={passation} libelleFin={libelleFin} />
       </form>
       <TraceParcours autorisee={traceDebug} passation={passation} />
@@ -50,12 +50,12 @@ export function ParcoursForm({
 // La page rend son brouillon : une saisie ne compte qu'une fois la page validée.
 // La première question non répondue prend le focus, pour qu'un parcours se mène
 // au clavier.
-function ChampsDeLaPage({ passation }: { passation: Passation }) {
+function FormFields({ passation }: { passation: Passation }) {
   const aFocaliser = passation.questions.find(
     (question) => passation.brouillon[question.id] === undefined,
   );
   return passation.questions.map((question) => (
-    <ChampDeFormulaire
+    <FormField
       key={question.id}
       question={question}
       reponse={passation.brouillon[question.id]}

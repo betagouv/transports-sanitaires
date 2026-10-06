@@ -25,7 +25,7 @@ type Props = {
 
 // La `question` est passée déjà restreinte à chaque sous-composant : c'est le
 // `switch` ci-dessous qui porte le narrowing de l'union, pas les composants.
-export function ChampDeFormulaire({ question, ...props }: Props) {
+export function FormField({ question, ...props }: Props) {
   return (
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
       {rendre(question, props)}

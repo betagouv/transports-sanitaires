@@ -95,7 +95,7 @@ L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi :
 |---|---|
 | `handleX`, `useX`, `Props` | React |
 | `track*` | Matomo |
-| `label`, `nativeInputProps` | DSFR |
+| `label`, `nativeInputProps`, `Stepper`, `Form`, `FormField` | DSFR, HTML |
 | `formState`, `pageCount` | `@publicodes/forms` |
 | `fields`, `rowId` | Grist |
 | `Engine` | publicodes |
