@@ -2,11 +2,13 @@
 
 Aide un prescripteur hospitalier à déterminer, par un questionnaire guidé, si le
 transport d'un patient est pris en charge par l'Assurance Maladie, et ce qu'il doit faire
-en conséquence : quel document établir — prescription médicale de transport, série de
-transports, accord préalable — et quel mode de transport est justifié. Les règles
-d'éligibilité encodent la réglementation en vigueur. Le parcours débute par un
-rattachement obligatoire à un établissement et à un service, sans identifier la
-personne.
+en conséquence. Le parcours débute par un rattachement obligatoire à un établissement et
+à un service, sans identifier la personne.
+
+> **L'app est entre deux modèles.** Le modèle d'éligibilité v9 et tout ce qui en
+> dépendait ont été retirés, et la v10 n'est pas encore intégrée. Le simulateur déroule
+> un **parcours factice** de trois questions, qui ne décide rien. Voir
+> [« Entre deux modèles »](#entre-deux-modèles).
 
 ## Fonctionnement
 
@@ -14,11 +16,7 @@ personne.
 flowchart LR
     subgraph front["Front (navigateur)"]
         Ident["Rattachement<br/>établissement + service"]
-        subgraph simu["Simulateur — un moteur, deux outils"]
-            Presc["Prescripteur<br/>Partie 1 → résultat médical"]
-            Secr["Secrétariat<br/>Partie 2 → cas final"]
-        end
-        Cerfa["CERFA pré-rempli"]
+        Simu["Simulateur<br/>questionnaire → résultat → complément"]
         Analytics["Analytics"]
     end
 
@@ -28,44 +26,30 @@ flowchart LR
 
     Grist[("Grist")]
     Matomo[("Matomo")]
-    Patient(["Document complété,<br/>signé, remis au patient"])
 
     Ident -->|"consulte, déclare un service « Autre »"| Ref
-    Ident -->|"rattachement validé"| simu
+    Ident -->|"rattachement validé"| Simu
     Ident -->|"id du service"| Analytics
-    Presc -->|"passation (situation P1)"| Secr
-    Presc -->|"événements"| Analytics
-    Secr -->|"événements"| Analytics
-    Secr -->|"situation, si le cas final ouvre un CERFA"| Cerfa
-    Cerfa -->|"PDF téléchargé"| Patient
+    Simu -->|"événements de parcours"| Analytics
     Ref -->|"lit, complète"| Grist
     Analytics -->|"envoie"| Matomo
-
-    classDef nominatif stroke-dasharray:4
-    class Cerfa,Patient nominatif
 ```
 
-Le CERFA n'a aucune flèche vers le backend, et c'est structurel. Le prescripteur y
-complète des données de santé nominatives, qui ne doivent jamais quitter le navigateur ;
-ce sont les traits tiretés ci-dessus. Son téléchargement est par ailleurs réservé au
-service produit, et le gabarit comme `pdf-lib` ne sont chargés qu'au clic. Trois
-formulaires en sortent, selon le cas final : la prescription médicale de transport
-(n° 11574\*07), la demande d'accord préalable (n° 11575\*08) et la prescription pour
-permission de sortie des moins de 20 ans (n° 16184\*01).
+Aucune réponse du questionnaire ne quitte le navigateur. Le backend ne sert que le
+front et le référentiel de rattachement.
 
 ## Commandes
 
 | Commande | Ce qu'elle fait |
 | --- | --- |
-| `pnpm verifier` | **La vérification complète** : lint, typecheck, knip, validation des règles, tests, build et sa vérification de bundle. C'est la commande que lance la CI, telle quelle : ce qui passe ici passe là-bas. |
+| `pnpm verifier` | **La vérification complète** : lint, typecheck, knip, tests, build et sa vérification de bundle. C'est la commande que lance la CI, telle quelle : ce qui passe ici passe là-bas. |
 | `pnpm dev:front` | Le front de dev, sur le port 5173, qui proxifie `/api` vers `:3000` |
 | `pnpm dev:server` | Le backend de dev, sur le port 3000, en `--watch`, qui charge `.env` s'il est présent |
 | `pnpm test` | Vitest. Le smoke Grist est ignoré sans `GRIST_API_KEY`. |
 | `pnpm lint` | Biome : format, tri des imports et lint. `lint:fix` applique les corrections sûres. Le socle est commun aux trois apps, dans `biome.base.jsonc` à la racine. |
 | `pnpm knip` | Les exports, fichiers et dépendances que plus personne n'atteint |
 | `pnpm typecheck` | `tsc -b` sur les quatre projets : front, node, serveur et tests |
-| `pnpm valider-regles` | Compile `regles/*.publicodes` et signale les erreurs |
-| `pnpm build` | Typecheck puis build Vite dans `dist/`, suivi de `verifier-bundle`. `pdf-lib` et le catalogue de seeds doivent rester hors du chunk d'entrée, sans quoi chaque prescripteur télécharge 1,2 Mo qu'il ne verra jamais. |
+| `pnpm build` | Typecheck puis build Vite dans `dist/`, suivi de `verifier-bundle`. `pdf-lib` et le catalogue de seeds doivent rester hors du chunk d'entrée, sans quoi chaque prescripteur télécharge ce qu'il ne verra jamais. |
 | `pnpm start` | Le serveur de production (`node server/server.ts`, Node 24) |
 
 Les règles d'écriture et les invariants ne sont pas de la prose, ils sont exécutables.
@@ -124,43 +108,25 @@ server/                  le backend Node, barrière de sécurité : les secrets 
   rattachement/          LA feature backend : les routes `/api` et la source Grist du
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
-  app/                   l'amorçage, l'écran-porte, le choix de l'outil
+  app/                   l'amorçage, l'écran-porte, la navigation entre les écrans
   rattachement/          LA feature de l'écran-porte, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
                          l'API, le rattachement en mémoire de session (ADR-4)
-  simulateur/            LES deux outils, sur un socle commun. La racine ne porte que le
-                         socle non-visuel : le contrat de règles, le moteur publicodes
-                         et ses lectures typées, la couture entre les deux parties.
-    questionnaire/       le parcours et son état : la pagination (une question par page,
-                         sauf les adresses), l'avancement automatique du contrat 2.0.0,
-                         les champs et les mosaïques, ce qui part vers l'analytics
-    resultat/            ce qui entoure un résultat : la vulgarisation vers le patient,
-                         l'information à lui donner, la trace de débogage (outil
-                         produit : cf. AGENTS.md § Les outils produit)
-    prescripteur/        Partie 1 puis Résultat 1
-    secretariat/         Partie 2 puis Résultat 2 : l'assemblage de ses trois blocs et
-                         la charge de l'établissement (article 80)
+  simulateur/            le montage du parcours (questionnaire, résultat, verrou,
+                         complément) et le parcours factice qu'il déroule
+    questionnaire/       ce qu'est une question et une page, l'état d'un parcours et
+                         son brouillon, l'invalidation des réponses dépendantes,
+                         l'avancement automatique, les champs, ce qui part vers
+                         l'analytics, la trace de parcours
+    resultat/            la trace de debug d'une page de résultat (outil produit :
+                         cf. AGENTS.md § Les outils produit)
   outils-produit/        LA feature réservée au service produit. Elle se greffe sur le
                          simulateur, jamais l'inverse : c'est App.tsx qui compose. Le
                          déverrouillage est la garde commune à tout le dossier.
-    labo/                le test d'un fichier de règles par le produit lui-même
-    seeds/               le catalogue des situations de référence, sa galerie et ses
-                         écrans d'atterrissage
-    beta/                ce qui est gardé le temps d'être éprouvé, pas par nature
-      cerfa/             les CERFA pré-remplis, générés dans le navigateur : quel
-                         formulaire ouvre quel cas final, ce que le remplissage lit du
-                         modèle, l'écriture dans le PDF et ses pièges
-        pmt/             prescription médicale de transport (n° 11574*07)
-        dap/             demande d'accord préalable (n° 11575*08)
-        s3141/           prescription pour permission de sortie des moins de 20 ans
-                         (n° 16184*01)
-                         un sous-dossier par formulaire, gabarit compris, chacun avec
-                         son tableau : un champ du PDF, une ligne, comment il se
-                         remplit ou qui le remplira
-        elements-medicaux/ la composition de la zone « éléments d'ordre médical »
-                         du PMT et de la DAP, selon le contrat EM-2 de l'éditeur :
-                         douze blocs, la mesure dans le gabarit réel, jamais
-                         d'annexe
+    seeds/               ce qu'est une seed, le catalogue (vide), sa galerie
+    beta/cerfa/          le socle de remplissage d'un PDF : l'écriture dans un
+                         AcroForm et ses pièges, la mesure d'un texte dans son champ,
+                         la forme d'un tableau de remplissage. Aucun gabarit.
   analytics/             le vocabulaire mesuré, seul import du reste, son transport
                          vers Matomo, et le choix de l'utilisateur transmis par le CMS
 cms/                     le script à coller dans Sites Conformes : l'opt-out du pied de
@@ -168,98 +134,38 @@ cms/                     le script à coller dans Sites Conformes : l'opt-out du
                          Sites Conformes »)
 ```
 
-## Le modèle de règles
+## Entre deux modèles
 
-`regles/regles.publicodes` est livré de l'extérieur et intégré par recopie. C'est
-aujourd'hui la v9.7.3, qui compte 324 règles et 76 cibles. La v9.7.2 en comptait 308.
-Les seize règles de plus portent les contrôles de cohérence de la version :
+La v10 du modèle change trop de comportements pour être portée par-dessus la v9. L'app
+a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 
-- trois gardes que l'application calcule (`owner: application`, cf.
-  [`gardes-calculees.md`](docs/knowledge/domain/gardes-calculees.md)) ;
-- une question, l'exception de retour pénitentiaire ;
-- douze règles de cohérence et de possibilité, comme l'orientation vers la caisse ou
-  l'exception radiothérapie possible.
-
-Le fichier livré ne porte pas sa version : c'est `regles/VERSION` qui la porte à côté de
-lui, et c'est elle que le pied de page affiche. Une recopie met les deux à jour, sans quoi
-l'application annonce une version qu'elle n'exécute pas.
-
-Le paquet apporte aussi un contrat d'interface (`*.ui.yaml`, schéma 3.3.0), une matrice de
-tests et, depuis la v9.7, une correspondance documentaire. Tous sont réencodés ici plutôt
-que chargés : le contrat se lit dans les composants et dans `questionnaire/etapes.ts`, la
-recette dans vingt-huit fichiers `tests/simulateur/*.test.ts(x)`, un par sujet.
-Ces tests gardent les identifiants du livrable : `ALD-002`, `SERIE-001`, `ARTICLE80-001`,
-`GRID-AMB-SEANCE-D2-N4`, `ROUTE-ER-DESTINATION-1`, `PERM-DAP-PERIODE-DEPASSE-4`,
-`TR-CTX-4` et les autres. Un désaccord remonte ainsi au fournisseur sous son nom.
-
-La matrice v9.7 en compte 275, dont 225 engendrés par un produit croisé : cinq modes,
-cinq motifs, trois distances, trois nombres de transports. Elle est inchangée jusqu'en
-v9.7.3. Les contrôles neufs de chaque version vivent dans les suites `tests/*.mjs` du
-paquet plutôt que dans ce fichier YAML :
-
-| Version | Contrôles neufs | Portés par |
-|---|---|---|
-| v9.7.1 | convocation, financement, asepsie | `convocation*`, `financement*`, `asepsie` |
-| v9.7.2 | attente de l'accord préalable, explication de l'asepsie, faits connus de la convocation | `attente-accord`, `asepsie-explication`, `faits-connus` |
-| v9.7.3 | la campagne de l'éditeur (`tests/campagne-v973/`) | les neuf fichiers `campagne-*` |
-
-La campagne v9.7.3 couvre les trajets, les permissions, les décisions, les documents et
-les modifications après coup. Elle ajoute les régressions `V973-*` et `EM-*`.
-
-La matrice elle-même ne donne pas des situations mais des **options**, qu'un adaptateur
-traduit en réponses : `tests/simulateur/livrable.ts` en est la recopie, et c'est
-par lui que tous ces cas se rejouent. `migration-du-livrable.ts` y ramène les
-fixtures écrites pour la v9.7.2.
-
-La correspondance documentaire est la nouveauté de la v9.7 : pour chaque zone des trois
-Cerfa — PMT S3138g, DAP S3139h, S3141 — elle nomme la règle qui la décide, la condition
-qui la fait exister, la façon de la rendre et l'origine de la valeur (`publicodes`,
-`application`, `externe`, `manuel`). Le porteur la tient à jour dans un
-[Google Sheet](https://docs.google.com/spreadsheets/d/1NXQzQUwJdK7dfTg3GYctjIwmkk2Y21tImo0-DwaGzc4/edit?gid=2040210112),
-à côté du paquet de l'éditeur — c'est le contrat de correspondance entre le simulateur et
-le document remis au patient, et le code ne doit pas reconstruire une règle réglementaire
-à partir de l'interface. Le paquet ne fournit pas de moteur de rendu PDF ; ce qu'elle
-apporte déjà, c'est que l'application cesse de **déduire** ce qui se coche.
-
-Elle est recopiée en entier dans `secretariat/` : `case-de-formulaire.ts` porte la forme
-d'une case, `rubriques-en-tete.ts`, `rubriques-mode-de-transport.ts`, `rubriques-trajet.ts`,
-`rubriques-situation-medicale.ts` et `rubriques-prescripteur.ts` portent ce que les trois
-formulaires partagent, et un fichier par formulaire (`rubriques-du-pmt.ts`,
-`rubriques-de-la-dap.ts`, `rubriques-du-s3141.ts`) porte le reste — les numéros de rubrique
-diffèrent de l'un à l'autre. Le pré-remplissage du CERFA
-(`outils-produit/beta/cerfa/mapping.ts`) la relit pour ce que la checklist n'affiche pas.
-
-Trois choses ont quitté le modèle en v9.7, et vivent désormais dans le code parce que le
-contrat d'interface les y met :
-
-| Ce que le modèle ne porte plus | Où c'est recopié |
+| Retiré | Conservé |
 | --- | --- |
-| L'ordre du parcours et le rattachement d'une question à son étape (`spec_id`) | `questionnaire/etapes.ts` |
-| Les bornes d'une saisie chiffrée (minimum, maximum, entier) | `questionnaire/bornes-de-saisie.ts` |
-| Onze entrées que l'application calcule, jamais posées (`owner: application`) | `entrees-calculees.ts` |
+| les règles publicodes, leur validation, la version du modèle au pied de page | l'interface DSFR |
+| le questionnaire engendré par `@publicodes/forms` | l'écran-porte de rattachement et son backend |
+| les parcours prescripteur et secrétariat, leurs pages de résultat | la mesure d'audience Matomo, réduite aux événements de parcours |
+| les tests métier et la recette du livrable | le comportement de navigation, sur un parcours factice |
+| le contenu du catalogue de seeds | ce qu'est une seed, la galerie, les traces de debug |
+| les trois CERFA : gabarits, tableaux de remplissage, téléchargement | le socle de remplissage d'un PDF |
+| le mode test des règles (labo) | |
 
-Trois coutures tiennent le modèle et le code ensemble, et il faut les trois :
+Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré par
+l'application**. Une page liste ses questions, une question dit quand elle se pose
+(`poseeSi`) et de quelles réponses elle dépend (`dependDe`).
 
-| Ce qui est vérifié | Par quoi |
-| --- | --- |
-| Le code ne nomme que des règles existantes | `contrat-regles-publicodes.ts` (TypeScript) **et** `tests/regles-front.test.ts` (les noms existent dans le modèle) |
-| Le code ne compare qu'à des **valeurs** existantes | `tests/regles-front.test.ts › valeurs comparées aux sorties du moteur`, seule garde contre une reformulation en amont, que le typage ne voit pas |
-| Chaque cas final est traité par les trois blocs de la Page Résultat 2 | `tests/regles-front.test.ts › exhaustivité de la Page Résultat 2` |
-| Chaque case des trois Cerfa a une règle qui la décide | `tests/simulateur/correspondances-documentaires.test.ts`, qui dit **quelle rubrique de quel formulaire** perd sa source |
+Le parcours factice (`front/simulateur/parcours-factice.ts`) pose trois questions sans
+rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
+parcours réel reprendra :
 
-### Deux comportements que le modèle ne porte pas
+| Comportement | Ce qu'il fait | Où |
+| --- | --- | --- |
+| Avancement automatique | Une page faite de choix uniques avance seule 200 ms après la réponse, sans bouton « Suivant ». Au retour, le bouton reprend la main ; changer la réponse avance aussitôt. | `questionnaire/avancement-automatique.ts` |
+| Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire/passation.ts` |
+| Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire/invalidation.ts` |
+| Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `Simulateur.tsx` |
+| Étapeur | Il compte des parties, jamais des pages. | `questionnaire/Parcours.tsx` |
 
-Le moteur calcule les cibles, mais ne pilote ni les écrans ni ce qui reste modifiable. Le
-contrat d'interface décrit deux règles qu'il ne peut donc pas appliquer seul.
-
-- **L'avancement automatique.** Une page qui n'est faite que de choix uniques avance seule
-  200 ms après avoir été répondue, sans bouton « Suivant ». Au retour sur une page déjà
-  répondue, le bouton reprend la main, sans quoi « Précédent » renverrait aussitôt d'où
-  l'on vient. Tout est dans `questionnaire/avancement-automatique.ts`.
-- **Le verrouillage de la décision médicale.** Au Résultat 1, « Précédent » rouvre le
-  questionnaire sur sa dernière page, réponses intactes. C'est l'action principale qui
-  verrouille, et elle est irréversible. La Partie 2 ne repose aucune question de Partie 1,
-  et seule une nouvelle simulation remet tout à zéro.
+*Gardé par* `tests/simulateur/`.
 
 ## Déployer
 
@@ -275,8 +181,8 @@ Scalingo construit et sert cette app, et déploie depuis `main`.
    rester *vide*.
 4. **Tenir la variable de production**, `GRIST_API_KEY`. Elle n'a pas de défaut, et le
    serveur refuse de démarrer sans elle (cf. [Configuration](#configuration)).
-5. **Relire le pied de page en production.** Il annonce la version de l'app, le sha du
-   commit livré et la version des règles.
+5. **Relire le pied de page en production.** Il annonce la version de l'app et le sha du
+   commit livré.
 
 Trois fichiers de la racine portent ce déploiement :
 
