@@ -124,7 +124,7 @@ Ils sont **exécutables**, dans
 
 - les frontières entre `front/`, `server/` et `shared/` ;
 - le simulateur, qui ignore qui prescrit ;
-- les seeds et les outils produit, greffés sur le simulateur et jamais l'inverse ;
+- les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité (sans objet tant que
   `regles/` est vide) ;
@@ -170,10 +170,10 @@ pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
 intégré. Les tests de la galerie écrivent leurs propres seeds, sur le parcours
 factice.
 
-## Les outils produit
+## Les developer tools
 
 La galerie de seeds (`front/seeds/`) et les **traces de debug** sont les deux
-outils produit. Ils partagent :
+developer tools. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
   référentiel, `front/developerTools/deverrouillage.ts`) ;

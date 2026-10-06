@@ -2,7 +2,7 @@
 // ouverte, puis les réponses validées. Sert à comprendre un séquencement
 // inattendu.
 //
-// C'est un outil produit comme la galerie : disponible sur tous les
+// C'est un developer tool comme la galerie : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
 // (`front/developerTools/deverrouillage.ts`). Le simulateur ignore ce service :
 // `App` lui passe la réponse, que `autorisee` porte jusqu'ici. Le prop est

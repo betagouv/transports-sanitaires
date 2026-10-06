@@ -67,7 +67,7 @@ describe("invariants métier", () => {
     ).toEqual([]);
   });
 
-  it("les seeds et les outils produit se greffent sur le simulateur, jamais l'inverse", () => {
+  it("les seeds et les developer tools se greffent sur le simulateur, jamais l'inverse", () => {
     expect(
       franchissements(
         ["front/simulateur"],
@@ -76,7 +76,7 @@ describe("invariants métier", () => {
           cible.startsWith("front/seeds/"),
       ),
       "La galerie rejoue des seeds dans la décision du simulateur : les " +
-        "seeds et les outils produit sont bâtis **sur** le socle. Le socle, " +
+        "seeds et les developer tools sont bâtis **sur** le socle. Le socle, " +
         "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
         "composé (`panneauDeveloperTools`). Fais de même plutôt que d'importer.",
     ).toEqual([]);

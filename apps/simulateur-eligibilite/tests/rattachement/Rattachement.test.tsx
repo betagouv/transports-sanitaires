@@ -43,7 +43,7 @@ describe("parcours de rattachement", () => {
     ).toBeInTheDocument();
   });
 
-  it("propose les outils produit seulement pour le service « Transport Sanitaire »", async () => {
+  it("propose les developer tools seulement pour le service « Transport Sanitaire »", async () => {
     // Garde d'accès par le service, sur tous les environnements (cf. estServiceProduit).
     render(<Rattachement onValide={vi.fn()} />);
 

@@ -119,8 +119,8 @@ front/                   le front, bundlé par Vite
                          son brouillon, l'invalidation des réponses dépendantes,
                          l'avancement automatique, les champs, ce qui part vers
                          l'analytics, la trace de parcours
-    resultat/            la trace de debug d'une page de résultat (outil produit :
-                         cf. AGENTS.md § Les outils produit)
+    resultat/            la trace de debug d'une page de résultat (developer tool :
+                         cf. AGENTS.md § Les developer tools)
   developerTools/        ce qui est réservé au service produit : son encadré et le
                          déverrouillage, garde commune à la galerie et aux traces
   seeds/                 ce qu'est une seed, le catalogue (vide), sa galerie. Elles se

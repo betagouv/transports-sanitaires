@@ -1,7 +1,7 @@
 // Panneau de debug : les réponses données et les sorties décidées, depuis une
 // page de résultat.
 //
-// Même garde que `questionnaire/TraceParcours` : c'est un outil produit,
+// Même garde que `questionnaire/TraceParcours` : c'est un developer tool,
 // disponible en production et réservé au service qui les déverrouille. Le prop
 // `autorisee` est obligatoire, et porte la réponse depuis `App`.
 

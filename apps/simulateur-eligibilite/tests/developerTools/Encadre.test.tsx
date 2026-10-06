@@ -15,16 +15,16 @@ import {
   seRattacherProduit,
 } from "../porte";
 
-// Les outils produit (dont la galerie de seeds) court-circuitent le
+// Les developer tools (dont la galerie de seeds) court-circuitent le
 // parcours : ils doivent être regroupés dans un encadré à part, impossible à
 // confondre avec les actions nominales. Ils sont disponibles sur **tous** les
 // environnements, mais seulement pour le service n° 4 : c'est le service qui garde
 // l'accès, plus le build.
 
-const ENCADRE = { name: "Outils produit" } as const;
+const ENCADRE = { name: "Developer tools" } as const;
 const GALERIE = { name: "Galerie de seeds" } as const;
 
-describe("encadré des outils produit, écran de rattachement", () => {
+describe("encadré des developer tools, écran de rattachement", () => {
   it("n'apparaît pas pour un service ordinaire", async () => {
     const user = userEvent.setup();
     render(
@@ -103,7 +103,7 @@ describe("encadré des outils produit, écran de rattachement", () => {
   });
 });
 
-describe("encadré des outils produit, début du parcours", () => {
+describe("encadré des developer tools, début du parcours", () => {
   it("y range l'accès à la galerie, hors du parcours", () => {
     render(
       <Simulateur
@@ -131,7 +131,7 @@ describe("encadré des outils produit, début du parcours", () => {
   });
 });
 
-describe("App câble les outils produit", () => {
+describe("App câble les developer tools", () => {
   it("les reproposent au début du parcours après un rattachement service n° 4", async () => {
     const user = userEvent.setup();
     render(<App referentiel={snapshotReferentiel} />);

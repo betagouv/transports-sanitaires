@@ -1,9 +1,9 @@
-// Qui voit les outils produit (galerie de seeds, traces de
+// Qui voit les developer tools (galerie de seeds, traces de
 // debug) : le service choisi à l'écran-porte, et rien d'autre.
 
 import { normalise } from "../../shared/rattachement-saisi";
 
-/** Vrai quand le service sélectionné déverrouille les outils produit. */
+/** Vrai quand le service sélectionné déverrouille les developer tools. */
 export function estServiceProduit(service: {
   id: string;
   libelle: string;
@@ -16,7 +16,7 @@ export function estServiceProduit(service: {
 
 // ---- implémentation ----
 
-// Service du référentiel Grist qui déverrouille les outils produit (colonne `Id2`,
+// Service du référentiel Grist qui déverrouille les developer tools (colonne `Id2`,
 // choix produit). On accepte aussi le libellé pour rester robuste si l'`Id2` change.
 const SERVICE_PRODUIT_ID = "4";
 const SERVICE_PRODUIT_LIBELLE = "Transport Sanitaire";

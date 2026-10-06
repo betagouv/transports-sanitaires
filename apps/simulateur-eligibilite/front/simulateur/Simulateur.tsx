@@ -25,7 +25,7 @@ type Props = {
   // Seed : pré-remplit le questionnaire. Complète, elle ouvre le résultat ;
   // sinon, la première page qu'elle laisse sans réponse.
   reponsesDeSeed?: Reponses | null;
-  // Encadré des outils produit, rendu tel quel sous le questionnaire. Le
+  // Encadré des developer tools, rendu tel quel sous le questionnaire. Le
   // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
   // compose, et il est absent hors du service produit.
   panneauDeveloperTools?: ReactNode;

@@ -141,7 +141,7 @@ const GalerieSeeds = lazy(() =>
   })),
 );
 
-// Les branchements du simulateur vers les outils produit se décident ici, et
+// Les branchements du simulateur vers les developer tools se décident ici, et
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `developerTools/`. C'est aussi ici que se lit, d'un coup
 // d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau

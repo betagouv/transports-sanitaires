@@ -1,4 +1,4 @@
-// Encadré des **outils produit**, dont la galerie de seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
+// Encadré des **developer tools**, dont la galerie de seeds. Partagé par les écrans qui les proposent, l'écran-porte de rattachement
 // et le début du parcours prescripteur.
 //
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
@@ -20,7 +20,7 @@ import type { ReactNode } from "react";
 export function DeveloperTools({ children }: { children: ReactNode }) {
   return (
     <section
-      aria-label="Outils produit"
+      aria-label="Developer tools"
       className="fr-mt-4w fr-p-2w"
       // Propriétés longues plutôt que la forme raccourcie `border` : une variable
       // CSS absente y invaliderait toute la déclaration, et l'encadré — seul
@@ -41,7 +41,7 @@ export function DeveloperTools({ children }: { children: ReactNode }) {
         }}
       >
         <span className="fr-icon-flashlight-line fr-mr-1w" aria-hidden="true" />
-        Outils produit — service Transport Sanitaire
+        Developer tools — service Transport Sanitaire
       </p>
       <div className="fr-btns-group fr-btns-group--inline fr-btns-group--sm">
         {children}
@@ -50,7 +50,7 @@ export function DeveloperTools({ children }: { children: ReactNode }) {
   );
 }
 
-/** Bouton d'un outil produit. Même apparence pour tous : aucun n'est « l'action ». */
+/** Bouton d'un developer tool. Même apparence pour tous : aucun n'est « l'action ». */
 export function BoutonOutil({
   onClick,
   children,

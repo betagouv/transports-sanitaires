@@ -19,13 +19,13 @@ import { useSaisieRattachement } from "./saisie-rattachement";
 
 /**
  * Ce que la validation emporte, en plus du rattachement saisi : l'écran à ouvrir et
- * l'accès aux outils produit. Les deux boutons de cet écran passent par le même
+ * l'accès aux developer tools. Les deux boutons de cet écran passent par le même
  * `onValide` : le rattachement est obligatoire quelle que soit la destination
  * (ADR-1), et il n'y a donc qu'un seul endroit qui le range.
  */
 export type AccesRattachement = {
   destination: "simulateur" | "galerie";
-  /** Le service sélectionné déverrouille les outils produit (service n° 4). */
+  /** Le service sélectionné déverrouille les developer tools (service n° 4). */
   developerTools: boolean;
 };
 
@@ -138,7 +138,7 @@ function ChampServiceLibre({ saisie }: ChampsProps) {
   );
 }
 
-// Les deux sorties de cet écran — le simulateur, et les outils produit pour le
+// Les deux sorties de cet écran — le simulateur, et les developer tools pour le
 // service n° 4 — sont des entrées dans l'application, et passent donc par le
 // même `onValide` (ADR-1).
 function EntreesDansLApplication({

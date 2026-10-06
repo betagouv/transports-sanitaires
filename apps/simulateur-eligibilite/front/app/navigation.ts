@@ -3,7 +3,7 @@
 // affiché derrière.
 //
 // Le rattachement, lui, ne transite pas par ici : la porte le range en session,
-// et `rattacher` ne retient que le booléen d'accès aux outils produit.
+// et `rattacher` ne retient que le booléen d'accès aux developer tools.
 
 import { useState } from "react";
 import type { AccesRattachement } from "../rattachement/Rattachement";
@@ -14,7 +14,7 @@ type Ecran = "rattachement" | "galerie" | "simulateur";
 
 export type Navigation = {
   ecran: Ecran;
-  // Le service choisi déverrouille-t-il les outils produit (service n° 4) ?
+  // Le service choisi déverrouille-t-il les developer tools (service n° 4) ?
   // Retenu à la validation pour pouvoir les reproposer au début du parcours.
   // C'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
   developerTools: boolean;
@@ -23,7 +23,7 @@ export type Navigation = {
   // Change à chaque nouvelle simulation. `App` s'en sert pour remonter le
   // simulateur et repartir d'un parcours vierge.
   numeroDeSimulation: number;
-  // Les outils produit s'ouvrent **après** la porte : on entre rattaché,
+  // Les developer tools s'ouvrent **après** la porte : on entre rattaché,
   // quelle que soit la destination.
   rattacher: (acces: AccesRattachement) => void;
   // Ouvre la seed choisie : son résultat si elle est complète, sinon la

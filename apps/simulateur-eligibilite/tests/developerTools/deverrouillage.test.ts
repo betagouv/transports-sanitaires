@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { estServiceProduit } from "../../front/developerTools/deverrouillage";
 
-// Garde d'accès commune aux outils produit. Elle vaut
+// Garde d'accès commune aux developer tools. Elle vaut
 // sur tous les environnements : c'est le service du référentiel qui décide, pas le
 // build.
 

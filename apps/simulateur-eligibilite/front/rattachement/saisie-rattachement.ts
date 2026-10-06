@@ -1,6 +1,6 @@
 // L'état du formulaire de rattachement : les deux listes en cascade chargées
 // depuis le référentiel, les champs saisis, et ce qu'on en déduit : saisie
-// complète, service « Autre », accès aux outils produit, référentiel indisponible.
+// complète, service « Autre », accès aux developer tools, référentiel indisponible.
 
 import { useEffect, useState } from "react";
 import {
@@ -34,7 +34,7 @@ export type SaisieRattachement = {
   etabChoisi: boolean;
   // « Autre » sélectionné → saisie du service/unité réel obligatoire.
   serviceEstAutre: boolean;
-  // Le service sélectionné déverrouille les outils produit (service n° 4).
+  // Le service sélectionné déverrouille les developer tools (service n° 4).
   developerTools: boolean;
 };
 

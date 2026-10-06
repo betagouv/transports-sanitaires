@@ -14,7 +14,7 @@ type Props = Options & {
   nombreDeParties: number;
   // Libellé du bouton de la dernière page.
   libelleFin: string;
-  // La trace de debug sous le questionnaire est un outil produit : le simulateur
+  // La trace de debug sous le questionnaire est un developer tool : le simulateur
   // sait *où* elle s'affiche, pas à qui elle s'ouvre. Défaut fermé : un appelant
   // qui l'oublie n'en montre pas.
   traceDebug?: boolean;
