@@ -8,7 +8,7 @@
 // Les deux voient donc exactement les mêmes situations. Un cas de non-régression
 // n'est plus seulement une ligne de test, il est consultable à l'écran.
 
-import type { Reponses } from "../simulateur/questionnaire/question";
+import type { Answers } from "../simulateur/questionnaire/question";
 
 /** Ce que rend la décision : des sorties nommées. */
 type Sorties = Readonly<Record<string, unknown>>;
@@ -26,7 +26,7 @@ type Sorties = Readonly<Record<string, unknown>>;
  * n'annonce aucun attendu. Ce n'est pas un cas de non-régression, mais un
  * raccourci vers un écran qu'on veut voir.
  */
-type Atterrissage = "resultat" | "questionnaire";
+type Landing = "resultat" | "questionnaire";
 
 export type Seed = {
   /** Identifiant stable, en kebab-case, cité par les tests et la doc. */
@@ -35,17 +35,17 @@ export type Seed = {
   readonly libelle: string;
   /** Pourquoi cette seed existe : ce qu'elle permet de voir ou de verrouiller. */
   readonly description: string;
-  /** Résultat, qui est le défaut, ou questionnaire. Voir `Atterrissage`. */
-  readonly atterrissage?: Atterrissage;
+  /** Résultat, qui est le défaut, ou questionnaire. Voir `Landing`. */
+  readonly landing?: Landing;
   /** Les réponses données, par identifiant de question. */
-  readonly reponses: Reponses;
+  readonly answers: Answers;
   /** Les sorties attendues. Partiel : on n'annonce que ce qui la caractérise. */
   readonly attendu: Sorties;
 };
 
 /** La seed s'arrête-t-elle en chemin, pour ouvrir le questionnaire ? */
 export function ouvreLeQuestionnaire(seed: Seed): boolean {
-  return seed.atterrissage === "questionnaire";
+  return seed.landing === "questionnaire";
 }
 
 type EcartSeed = {
@@ -68,10 +68,10 @@ export type EvaluationSeed = {
  * comment le simulateur décide, seulement ce qu'elle en attend.
  */
 export function evaluerSeed(
-  decider: (reponses: Reponses) => Sorties,
+  decide: (answers: Answers) => Sorties,
   seed: Seed,
 ): EvaluationSeed {
-  const sorties = decider(seed.reponses);
+  const sorties = decide(seed.answers);
   const ecarts = Object.entries(seed.attendu)
     .filter(([sortie, attendu]) => sorties[sortie] !== attendu)
     .map(([sortie, attendu]) => ({

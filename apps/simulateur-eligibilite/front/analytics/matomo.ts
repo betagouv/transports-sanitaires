@@ -5,8 +5,8 @@
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import { rattachementEnSession } from "../rattachement/session";
 import {
+  type BridgeOptions,
   type ChoixAnalytics,
-  type OptionsDuPont,
   suivreChoixAnalytics,
 } from "./choix-analytics";
 
@@ -38,7 +38,7 @@ export function configDepuisEnv(env: Env = import.meta.env): AnalyticsConfig {
   };
 }
 
-export type OptionsDuTraceur = OptionsDuPont & {
+export type TrackerOptions = BridgeOptions & {
   /**
    * Charge le script tiers au premier suivi. Rien par défaut : `Main.tsx` passe
    * `chargerMatomo`, ce qui garde les tests sans effet de bord réseau.
@@ -57,14 +57,14 @@ export type OptionsDuTraceur = OptionsDuPont & {
  */
 export function initAnalytics(
   config: AnalyticsConfig,
-  { charger = () => {}, ...pont }: OptionsDuTraceur = {},
+  { charger = () => {}, ...bridge }: TrackerOptions = {},
 ): void {
   const courant: Etat = { config, charger, choix: "en-attente", enAttente: [] };
   etat = courant;
   if (!config.enabled) return;
   suivreChoixAnalytics((choix) => {
     if (etat === courant) appliquer(courant, choix);
-  }, pont);
+  }, bridge);
 }
 
 /** Injecte le script matomo.js, qui traitera la file. Idempotent. */
@@ -147,7 +147,7 @@ type Etat = {
   // Les événements émis avant le choix, rejoués au suivi.
   enAttente: unknown[][];
   // Le traceur a été amorcé, et matomo.js chargé.
-  amorce?: boolean;
+  bootstrapped?: boolean;
 };
 
 let etat: Etat = {
@@ -165,7 +165,7 @@ function appliquer(courant: Etat, choix: ChoixAnalytics) {
   courant.enAttente = [];
   courant.choix = choix;
   if (choix === "refus") return;
-  if (!courant.amorce) amorcer(courant);
+  if (!courant.bootstrapped) bootstrap(courant);
   const paq = filePaq();
   for (const evenement of attente) paq.push(evenement);
 }
@@ -174,7 +174,7 @@ function appliquer(courant: Etat, choix: ChoixAnalytics) {
 // l'iframe du CMS, un contexte tiers où les cookies sont bloqués, et parce que la
 // mesure d'audience se veut sans bandeau. L'IP, elle, s'anonymise côté instance
 // Matomo, pas ici : l'API JS n'a pas de commande pour ça.
-function amorcer(courant: Etat) {
+function bootstrap(courant: Etat) {
   const { url, siteId } = courant.config;
   const paq = filePaq();
   paq.push(["disableCookies"]);
@@ -182,5 +182,5 @@ function amorcer(courant: Etat) {
   paq.push(["setSiteId", siteId]);
   paq.push(["trackPageView"]);
   courant.charger(url);
-  courant.amorce = true;
+  courant.bootstrapped = true;
 }

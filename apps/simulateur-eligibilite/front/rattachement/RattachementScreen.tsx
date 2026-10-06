@@ -23,7 +23,7 @@ type Props = {
   onRattache: (acces: AccesRattachement) => void;
 };
 
-export function EcranDeRattachement({
+export function RattachementScreen({
   referentiel = referentielHttp,
   declarer = declarerViaApi,
   onRattache,

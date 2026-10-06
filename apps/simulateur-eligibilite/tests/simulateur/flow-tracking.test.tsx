@@ -8,7 +8,7 @@ import {
   ouvrirLeSimulateur,
   QUANTITE,
   question,
-} from "./parcours";
+} from "./flow";
 
 // Ce que le parcours signale à Matomo, lu dans la file `_paq` : son début, ses
 // étapes, sa conclusion. Le service est celui du rattachement de test.

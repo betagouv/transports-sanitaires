@@ -12,7 +12,7 @@ import type {
   Referentiel,
   Service,
 } from "../../shared/referentiel";
-import { estServiceProduit } from "../developerTools/deverrouillage";
+import { estServiceProduit } from "../developerTools/unlock";
 
 type Champs = {
   etabId: string;
@@ -54,7 +54,7 @@ export function useSaisieRattachement(
     champs,
     modifier: (champ, valeur) =>
       setChamps((actuels) =>
-        avecAvalEfface({ ...actuels, [champ]: valeur }, champ),
+        avecDependantsEffaces({ ...actuels, [champ]: valeur }, champ),
       ),
     saisie,
     valide: saisieComplete(saisie),
@@ -97,10 +97,10 @@ function useListes(referentiel: Referentiel, etabId: string) {
 
 // Changer un champ invalide ce qui en dépend : un service ne survit pas au
 // changement d'établissement, ni `serviceLibre` au changement de service.
-function avecAvalEfface(champs: Champs, modifie: keyof Champs): Champs {
-  const aval = AVAL[modifie];
-  if (!aval) return champs;
-  return { ...champs, ...Object.fromEntries(aval.map((c) => [c, ""])) };
+function avecDependantsEffaces(champs: Champs, modifie: keyof Champs): Champs {
+  const dependants = DEPENDANTS[modifie];
+  if (!dependants) return champs;
+  return { ...champs, ...Object.fromEntries(dependants.map((c) => [c, ""])) };
 }
 
 // L'établissement est toujours porté ; le service n'a de sens qu'une fois
@@ -149,7 +149,7 @@ const CHAMPS_VIDES: Champs = {
   serviceLibre: "",
 };
 
-const AVAL: Partial<Record<keyof Champs, Array<keyof Champs>>> = {
+const DEPENDANTS: Partial<Record<keyof Champs, Array<keyof Champs>>> = {
   etabId: ["serviceId", "serviceLibre"],
   serviceId: ["serviceLibre"],
 };

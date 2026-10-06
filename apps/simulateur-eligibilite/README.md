@@ -118,10 +118,13 @@ front/                   le front, bundlé par Vite
                          complément) et le parcours factice qu'il déroule
     questionnaire/       ce qu'est une question et une page, l'état d'un parcours et
                          son brouillon, l'invalidation des réponses dépendantes,
-                         l'avancement automatique, les champs, ce qui part vers
-                         l'analytics, la trace de parcours
+                         l'avancement automatique, le champ qui rend une question,
+                         ce qui part vers l'analytics, la trace de parcours
     resultat/            la trace de debug d'une page de résultat (developer tool :
                          cf. AGENTS.md § Les developer tools)
+  ui/                    les champs de formulaire, bâtis sur le DSFR et sans rien
+                         savoir du questionnaire : TextField, SelectField,
+                         RadioField, CheckboxField, NumberField, DateField
   developerTools/        ce qui est réservé au service produit : son encadré et le
                          déverrouillage, garde commune à l'écran des seeds et aux traces
   seeds/                 ce qu'est une seed, le catalogue (vide), son écran. Elles se
@@ -154,19 +157,19 @@ a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 
 Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré par
 l'application**. Une page liste ses questions, une question dit quand elle se pose
-(`poseeSi`) et de quelles réponses elle dépend (`dependDe`).
+(`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le parcours factice (`front/simulateur/parcours-factice.ts`) pose trois questions sans
+Le parcours factice (`front/simulateur/fake-flow.ts`) pose trois questions sans
 rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
 parcours réel reprendra :
 
 | Comportement | Ce qu'il fait | Où |
 | --- | --- | --- |
-| Avancement automatique | Une page faite de choix uniques avance seule 200 ms après la réponse, sans bouton « Suivant ». Au retour, le bouton reprend la main ; changer la réponse avance aussitôt. | `questionnaire/avancement-automatique.ts` |
-| Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire/passation.ts` |
+| Avancement automatique | Une page faite de choix uniques avance seule 200 ms après la réponse, sans bouton « Suivant ». Au retour, le bouton reprend la main ; changer la réponse avance aussitôt. | `questionnaire/auto-advance.ts` |
+| Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire/flow.ts` |
 | Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire/invalidation.ts` |
 | Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `Simulateur.tsx` |
-| Stepper | Il compte des parties, jamais des pages. | `questionnaire/ParcoursForm.tsx` |
+| Stepper | Il compte des parties, jamais des pages. | `questionnaire/FlowForm.tsx` |
 
 *Gardé par* `tests/simulateur/`.
 

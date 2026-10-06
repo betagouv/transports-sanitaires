@@ -4,7 +4,7 @@
 // Ces outils ne sont pas réservés à l'environnement de développement : ils sont
 // disponibles sur tous les environnements, **production comprise**, mais seulement
 // pour le service dédié du référentiel (n° 4, « Transport Sanitaire » — cf.
-// `estServiceProduit`, cf. `deverrouillage.ts`). C'est le service qui garde l'accès, plus le
+// `estServiceProduit`, cf. `unlock.ts`). C'est le service qui garde l'accès, plus le
 // build.
 //
 // Ils court-circuitent le parcours nominal (l'écran des seeds ouvre une situation
@@ -51,7 +51,7 @@ export function DeveloperTools({ children }: { children: ReactNode }) {
 }
 
 /** Bouton d'un developer tool. Même apparence pour tous : aucun n'est « l'action ». */
-export function BoutonOutil({
+export function ToolButton({
   onClick,
   children,
 }: {

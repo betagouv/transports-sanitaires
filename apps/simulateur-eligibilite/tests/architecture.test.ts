@@ -78,7 +78,7 @@ describe("invariants métier", () => {
       "L'écran des seeds rejoue des seeds dans la décision du simulateur : les " +
         "seeds et les developer tools sont bâtis **sur** le socle. Le socle, " +
         "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
-        "composé (`panneauDeveloperTools`). Fais de même plutôt que d'importer.",
+        "composé (`developerToolsPanel`). Fais de même plutôt que d'importer.",
     ).toEqual([]);
   });
 

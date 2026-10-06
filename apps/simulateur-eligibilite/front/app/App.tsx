@@ -7,18 +7,18 @@
 // branche les developer tools sur le simulateur.
 
 import type { ComponentProps } from "react";
-import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
-import { EcranDeRattachement } from "../rattachement/EcranDeRattachement";
-import { EcranDesSeeds } from "../seeds/EcranDesSeeds";
+import { DeveloperTools, ToolButton } from "../developerTools/DeveloperTools";
+import { RattachementScreen } from "../rattachement/RattachementScreen";
+import { SeedsScreen } from "../seeds/SeedsScreen";
 import type { Seed } from "../seeds/seed";
-import { EcranDuSimulateur } from "../simulateur/EcranDuSimulateur";
+import { SimulateurScreen } from "../simulateur/SimulateurScreen";
 import type { Navigation } from "./navigation";
 import { useNavigation } from "./navigation";
 
 // `referentiel` et `declarer` sont injectables pour les tests (défauts =
 // production same-origin).
 type Props = Pick<
-  ComponentProps<typeof EcranDeRattachement>,
+  ComponentProps<typeof RattachementScreen>,
   "referentiel" | "declarer"
 > & {
   /** Seeds de l'écran des seeds (défaut = le catalogue, chargé à la demande). */
@@ -30,27 +30,27 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
 
   return (
     <>
-      {navigation.ecran === "rattachement" && (
-        <EcranDeRattachement
+      {navigation.screen === "rattachement" && (
+        <RattachementScreen
           referentiel={referentiel}
           declarer={declarer}
           onRattache={navigation.rattacher}
         />
       )}
-      {navigation.ecran === "seeds" && (
-        <EcranDesSeeds
+      {navigation.screen === "seeds" && (
+        <SeedsScreen
           seeds={seeds}
-          onOuvrir={navigation.ouvrirSeed}
-          onRetour={navigation.fermerOutil}
+          onOuvrir={navigation.openSeed}
+          onRetour={navigation.closeTool}
         />
       )}
-      {navigation.ecran === "simulateur" && (
-        <EcranDuSimulateur
-          key={navigation.numeroDeSimulation}
-          reponsesDeSeed={navigation.reponsesDeSeed}
-          onNouvelleSimulation={navigation.recommencer}
-          panneauDeveloperTools={panneauDeveloperTools(navigation)}
-          traceDebug={navigation.developerTools}
+      {navigation.screen === "simulateur" && (
+        <SimulateurScreen
+          key={navigation.simulationNumber}
+          seedAnswers={navigation.seedAnswers}
+          onNewSimulation={navigation.restart}
+          developerToolsPanel={developerToolsPanel(navigation)}
+          debugTrace={navigation.developerTools}
         />
       )}
     </>
@@ -63,17 +63,17 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `developerTools/`. C'est aussi ici que se lit, d'un coup
 // d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau
-// de l'écran des seeds et les traces de debug (`traceDebug`, un booléen plutôt qu'un
+// de l'écran des seeds et les traces de debug (`debugTrace`, un booléen plutôt qu'un
 // contenu composé : elles lisent l'état vivant du parcours, qu'`App` n'a pas
 // sous la main).
 //
 // Écran des seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran de rattachement, sans avoir à ressortir du simulateur.
-function panneauDeveloperTools(navigation: Navigation) {
+function developerToolsPanel(navigation: Navigation) {
   if (!navigation.developerTools) return undefined;
   return (
     <DeveloperTools>
-      <BoutonOutil onClick={navigation.ouvrirSeeds}>Seeds</BoutonOutil>
+      <ToolButton onClick={navigation.openSeeds}>Seeds</ToolButton>
     </DeveloperTools>
   );
 }

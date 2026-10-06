@@ -4,51 +4,53 @@
 // Seules les réponses dépendantes partent. Une réponse sans lien avec ce qui a
 // changé reste, même donnée plus loin dans le parcours.
 
-import type { Page, Reponse, Reponses } from "./question";
+import type { Answer, Answers, Page } from "./question";
 
 /**
- * Les réponses du parcours, la page validée. `saisies` porte les réponses de
+ * Les réponses du parcours, la page validée. `inputs` porte les réponses de
  * la page telles qu'elles sont à l'écran : une question de la page qui n'y
  * figure pas perd sa réponse.
  */
-export function avecPageValidee(
+export function withValidatedPage(
   pages: readonly Page[],
-  reponses: Reponses,
+  answers: Answers,
   page: Page,
-  saisies: Reponses,
-): Reponses {
-  const deLaPage = new Set(page.questions.map((question) => question.id));
-  const changees = [...deLaPage].filter(
-    (id) => !memeReponse(reponses[id], saisies[id]),
+  inputs: Answers,
+): Answers {
+  const onThePage = new Set(page.questions.map((question) => question.id));
+  const changed = [...onThePage].filter(
+    (id) => !sameAnswer(answers[id], inputs[id]),
   );
-  const perimees = dependantesDe(pages, changees);
-  const gardees = Object.entries(reponses).filter(
-    ([id]) => !deLaPage.has(id) && !perimees.has(id),
+  const stale = dependentsOf(pages, changed);
+  const kept = Object.entries(answers).filter(
+    ([id]) => !onThePage.has(id) && !stale.has(id),
   );
-  return { ...Object.fromEntries(gardees), ...saisies };
+  return { ...Object.fromEntries(kept), ...inputs };
 }
 
 // ---- implémentation ----
 
 // Fermeture transitive : si B dépend de A et C de B, changer A efface B et C.
-function dependantesDe(
+function dependentsOf(
   pages: readonly Page[],
-  changees: readonly string[],
+  changed: readonly string[],
 ): Set<string> {
   const questions = pages.flatMap((page) => page.questions);
-  const perimees = new Set<string>();
-  let front = changees;
-  while (front.length > 0) {
-    const suivantes = questions
-      .filter((question) => !perimees.has(question.id))
-      .filter((question) => question.dependDe?.some((id) => front.includes(id)))
+  const stale = new Set<string>();
+  let frontier = changed;
+  while (frontier.length > 0) {
+    const next = questions
+      .filter((question) => !stale.has(question.id))
+      .filter((question) =>
+        question.dependsOn?.some((id) => frontier.includes(id)),
+      )
       .map((question) => question.id);
-    for (const id of suivantes) perimees.add(id);
-    front = suivantes;
+    for (const id of next) stale.add(id);
+    frontier = next;
   }
-  return perimees;
+  return stale;
 }
 
-function memeReponse(a: Reponse | undefined, b: Reponse | undefined): boolean {
+function sameAnswer(a: Answer | undefined, b: Answer | undefined): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }

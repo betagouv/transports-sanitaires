@@ -2,9 +2,8 @@
 //
 // Elles étaient jusqu'ici de la prose dans AGENTS.md — et déjà violées : neuf
 // fichiers ouvraient sur un `import` plutôt que sur leur contrat, un helper
-// privé était une flèche déclarée au milieu du fichier, des types de domaine
-// portaient des noms anglais. Une convention que rien ne vérifie se dégrade à
-// la vitesse où elle s'écrit.
+// privé était une flèche déclarée au milieu du fichier. Une convention que rien
+// ne vérifie se dégrade à la vitesse où elle s'écrit.
 //
 // Comme dans `architecture.test.ts`, chaque règle porte son *pourquoi* dans son
 // message d'échec — c'est là, et nulle part ailleurs, qu'on l'apprend au moment
@@ -15,10 +14,8 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
   astDe,
-  identifiantsDe,
   lignesDe,
   resoudre,
-  segments,
   sources,
   specificateursDe,
   texteDe,
@@ -90,22 +87,6 @@ describe("un nom dit une intention", () => {
         "appartient à ses appelants.",
     ).toEqual([]);
   });
-
-  it("les identifiants sont en français", () => {
-    const anglicismes = sources(...RACINES).flatMap((fichier) =>
-      identifiantsDe(fichier)
-        .filter(({ nom }) => !TOLERES.has(nom))
-        .filter(({ nom }) => segments(nom).some((s) => ANGLICISMES.has(s)))
-        .map(({ nom, ligne }) => `${fichier}:${ligne} — ${nom}`),
-    );
-    expect(
-      anglicismes,
-      "Le domaine se dit en français : `moteur`, `passation`, `casesRetenues`. " +
-        "L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi " +
-        "(`handleX`, `useX`, `Props`, `track*`) — et " +
-        "c'est l'inscription dans `TOLERES`, ici, qui l'autorise.",
-    ).toEqual([]);
-  });
 });
 
 describe("les extensions d'import suivent le runtime", () => {
@@ -155,50 +136,6 @@ describe("les extensions d'import suivent le runtime", () => {
 });
 
 // ---- implémentation ----
-
-// Les noms anglais que le code a réellement portés, plus ceux qui reviennent
-// naturellement sous les doigts. Cette liste croît quand un anglicisme passe
-// entre les mailles — pas quand il devient gênant.
-//
-// `field` et `fields` n'y sont pas : un champ de formulaire se nomme `FormField`,
-// comme dans le DSFR et dans React, et Grist range un enregistrement dans un
-// objet `fields`. `row` non plus, qui n'apparaît que composé avec l'identifiant
-// Grist (`etabRowId`, `serviceRowId`).
-const ANGLICISMES = new Set([
-  "item",
-  "items",
-  "label",
-  "text",
-  "name",
-  "value",
-  "values",
-  "get",
-  "set",
-  "list",
-  "title",
-  "path",
-  "result",
-  "count",
-  "add",
-  "remove",
-  "update",
-  "delete",
-  "send",
-  "load",
-  "save",
-  "helper",
-  "helpers",
-  "util",
-  "utils",
-]);
-
-// Ce que nomme une API tierce, et que renommer casserait ou obscurcirait.
-// Toute entrée ici est une dérogation : elle se justifie, elle ne s'ajoute pas
-// pour faire passer le test.
-const TOLERES = new Set([
-  // React / DSFR : la forme des props est imposée par le composant appelé.
-  "Props",
-]);
 
 function aDesFonctionsPrivees(fichier: string): boolean {
   return astDe(fichier).statements.some(

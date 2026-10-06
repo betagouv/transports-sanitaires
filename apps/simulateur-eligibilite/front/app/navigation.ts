@@ -8,77 +8,77 @@
 import { useState } from "react";
 import type { AccesRattachement } from "../rattachement/RattachementForm";
 import type { Seed } from "../seeds/seed";
-import type { Reponses } from "../simulateur/questionnaire/question";
+import type { Answers } from "../simulateur/questionnaire/question";
 
-type Ecran = "rattachement" | "seeds" | "simulateur";
+type Screen = "rattachement" | "seeds" | "simulateur";
 
 export type Navigation = {
-  ecran: Ecran;
+  screen: Screen;
   // Le service choisi déverrouille-t-il les developer tools (service n° 4) ?
   // Retenu à la validation pour pouvoir les reproposer au début du parcours.
   // C'est un booléen, pas une identité : l'invariant de `docs/knowledge` tient.
   developerTools: boolean;
   // Les réponses de la seed ouverte, qui pré-remplissent le simulateur.
-  reponsesDeSeed: Reponses | null;
+  seedAnswers: Answers | null;
   // Change à chaque nouvelle simulation. `App` s'en sert pour remonter le
   // simulateur et repartir d'un parcours vierge.
-  numeroDeSimulation: number;
+  simulationNumber: number;
   // Les developer tools s'ouvrent **après** l'écran de rattachement : on entre rattaché,
   // quelle que soit la destination.
   rattacher: (acces: AccesRattachement) => void;
   // Ouvre la seed choisie : son résultat si elle est complète, sinon la
   // première page qu'elle laisse sans réponse.
-  ouvrirSeed: (seed: Seed) => void;
-  ouvrirSeeds: () => void;
-  fermerOutil: () => void;
-  recommencer: () => void;
+  openSeed: (seed: Seed) => void;
+  openSeeds: () => void;
+  closeTool: () => void;
+  restart: () => void;
 };
 
 export function useNavigation(): Navigation {
-  const [etat, changer] = useState<Etat>({
-    ecran: "rattachement",
+  const [state, setState] = useState<State>({
+    screen: "rattachement",
     developerTools: false,
-    reponsesDeSeed: null,
-    numeroDeSimulation: 0,
+    seedAnswers: null,
+    simulationNumber: 0,
   });
-  const modifier = (partiel: Partial<Etat>) =>
-    changer((actuel) => ({ ...actuel, ...partiel }));
+  const patch = (partial: Partial<State>) =>
+    setState((current) => ({ ...current, ...partial }));
 
-  return { ...etat, ...actions(etat, modifier) };
+  return { ...state, ...actions(state, patch) };
 }
 
 // ---- implémentation ----
 
-type Etat = Pick<
+type State = Pick<
   Navigation,
-  "ecran" | "developerTools" | "reponsesDeSeed" | "numeroDeSimulation"
+  "screen" | "developerTools" | "seedAnswers" | "simulationNumber"
 >;
 
 function actions(
-  etat: Etat,
-  modifier: (partiel: Partial<Etat>) => void,
-): Omit<Navigation, keyof Etat> {
+  state: State,
+  patch: (partial: Partial<State>) => void,
+): Omit<Navigation, keyof State> {
   return {
     rattacher: (acces) =>
-      modifier({
-        ecran: acces.destination,
+      patch({
+        screen: acces.destination,
         developerTools: acces.developerTools,
       }),
     // Ouvrir une seed commence une simulation : la même seed peut être
     // rouverte, et repart alors de ses réponses.
-    ouvrirSeed: (seed) =>
-      modifier({
-        ecran: "simulateur",
-        reponsesDeSeed: seed.reponses,
-        numeroDeSimulation: etat.numeroDeSimulation + 1,
+    openSeed: (seed) =>
+      patch({
+        screen: "simulateur",
+        seedAnswers: seed.answers,
+        simulationNumber: state.simulationNumber + 1,
       }),
-    ouvrirSeeds: () => modifier({ ecran: "seeds" }),
-    fermerOutil: () => modifier({ ecran: "simulateur" }),
-    recommencer: () =>
-      modifier({
-        ecran: "simulateur",
-        reponsesDeSeed: null,
-        numeroDeSimulation: etat.numeroDeSimulation + 1,
+    openSeeds: () => patch({ screen: "seeds" }),
+    closeTool: () => patch({ screen: "simulateur" }),
+    restart: () =>
+      patch({
+        screen: "simulateur",
+        seedAnswers: null,
+        simulationNumber: state.simulationNumber + 1,
       }),
   };
 }

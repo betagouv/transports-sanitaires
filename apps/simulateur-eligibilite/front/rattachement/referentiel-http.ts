@@ -18,9 +18,9 @@ export const referentielHttp: Referentiel = {
 // ---- implémentation ----
 
 async function recuperer<T>(chemin: string): Promise<T> {
-  const reponse = await fetch(chemin);
-  if (!reponse.ok) throw new Error(`API ${chemin} → HTTP ${reponse.status}`);
-  return (await reponse.json()) as T;
+  const response = await fetch(chemin);
+  if (!response.ok) throw new Error(`API ${chemin} → HTTP ${response.status}`);
+  return (await response.json()) as T;
 }
 
 function encoder(valeur: string): string {

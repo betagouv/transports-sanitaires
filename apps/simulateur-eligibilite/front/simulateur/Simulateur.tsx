@@ -9,94 +9,94 @@
 
 import { type ReactNode, useState } from "react";
 import {
-  decider,
-  NOMBRE_DE_PARTIES,
-  PAGES_APRES_VERROU,
-  PAGES_AVANT_VERROU,
-} from "./parcours-factice";
-import { ParcoursForm } from "./questionnaire/ParcoursForm";
-import type { EtatDuParcours } from "./questionnaire/passation";
-import { etatApresLesReponses } from "./questionnaire/passation";
-import type { Reponses } from "./questionnaire/question";
-import { TraceDebug } from "./resultat/TraceDebug";
+  decide,
+  PAGES_AFTER_LOCK,
+  PAGES_BEFORE_LOCK,
+  PART_COUNT,
+} from "./fake-flow";
+import { FlowForm } from "./questionnaire/FlowForm";
+import type { FlowState } from "./questionnaire/flow";
+import { stateAfterAnswers } from "./questionnaire/flow";
+import type { Answers } from "./questionnaire/question";
+import { DebugTrace } from "./resultat/DebugTrace";
 
 type Props = {
-  onNouvelleSimulation: () => void;
+  onNewSimulation: () => void;
   // Seed : pré-remplit le questionnaire. Complète, elle ouvre le résultat ;
   // sinon, la première page qu'elle laisse sans réponse.
-  reponsesDeSeed?: Reponses | null;
+  seedAnswers?: Answers | null;
   // Encadré des developer tools, rendu tel quel sous le questionnaire. Le
   // simulateur sait *où* il s'affiche, pas ce qu'il contient : c'est `App` qui le
   // compose, et il est absent hors du service produit.
-  panneauDeveloperTools?: ReactNode;
+  developerToolsPanel?: ReactNode;
   // Traces de debug ouvertes sous le questionnaire et sous les résultats. Même
   // garde que le panneau ci-dessus, portée par un booléen : la trace lit l'état
   // vivant du parcours, `App` ne peut donc pas la composer d'avance.
-  traceDebug?: boolean;
+  debugTrace?: boolean;
 };
 
 export function Simulateur({
-  onNouvelleSimulation,
-  reponsesDeSeed = null,
-  panneauDeveloperTools,
-  traceDebug = false,
+  onNewSimulation,
+  seedAnswers = null,
+  developerToolsPanel,
+  debugTrace = false,
 }: Props) {
-  const [ecran, allerA] = useState<Ecran>(() => ecranDeDepart(reponsesDeSeed));
-  const commun = { allerA, traceDebug, onRecommencer: onNouvelleSimulation };
+  const [screen, goTo] = useState<Screen>(() => startingScreen(seedAnswers));
+  const commun = { goTo, debugTrace, onRestart: onNewSimulation };
 
-  switch (ecran.nom) {
+  switch (screen.name) {
     case "questionnaire":
       return (
         <>
-          <Questionnaire ecran={ecran} {...commun} />
-          {panneauDeveloperTools}
+          <Questionnaire screen={screen} {...commun} />
+          {developerToolsPanel}
         </>
       );
-    case "resultat":
-      return <ResultatAVerrouiller ecran={ecran} {...commun} />;
+    case "result":
+      return <ResultToLock screen={screen} {...commun} />;
     case "complement":
-      return <Complement ecran={ecran} {...commun} />;
+      return <Complement screen={screen} {...commun} />;
     default:
-      return <CommandeCompletee ecran={ecran} {...commun} />;
+      return <CompletedOrder screen={screen} {...commun} />;
   }
 }
 
 // ---- implémentation ----
 
-// `derriere` est le parcours qu'un résultat a derrière lui : c'est lui que
+// `previousFlow` est le parcours qu'un résultat a derrière lui : c'est lui que
 // « Précédent » rouvre. Passé le verrou, l'état du questionnaire n'est plus
 // porté par aucun écran : il n'y a plus rien à rouvrir.
-type Ecran =
-  | { nom: "questionnaire"; reprise?: EtatDuParcours }
-  | { nom: "resultat"; derriere: EtatDuParcours }
-  | { nom: "complement"; acquises: Reponses; reprise?: EtatDuParcours }
-  | { nom: "fin"; acquises: Reponses; derriere: EtatDuParcours };
+type Screen =
+  | { name: "questionnaire"; resume?: FlowState }
+  | { name: "result"; previousFlow: FlowState }
+  | { name: "complement"; locked: Answers; resume?: FlowState }
+  | { name: "end"; locked: Answers; previousFlow: FlowState };
 
-type EcranProps<Nom extends Ecran["nom"]> = {
-  ecran: Extract<Ecran, { nom: Nom }>;
-  allerA: (ecran: Ecran) => void;
-  traceDebug: boolean;
-  onRecommencer: () => void;
+type ScreenProps<Name extends Screen["name"]> = {
+  screen: Extract<Screen, { name: Name }>;
+  goTo: (screen: Screen) => void;
+  debugTrace: boolean;
+  onRestart: () => void;
 };
 
 // Une seed n'est qu'un pré-remplissage : à réponses égales, l'application se
 // comporte comme sous les doigts d'un utilisateur, « Précédent » compris.
-function ecranDeDepart(reponsesDeSeed: Reponses | null): Ecran {
-  if (!reponsesDeSeed) return { nom: "questionnaire" };
-  const { complet, ...etat } = etatApresLesReponses(
-    PAGES_AVANT_VERROU,
-    reponsesDeSeed,
+function startingScreen(seedAnswers: Answers | null): Screen {
+  if (!seedAnswers) return { name: "questionnaire" };
+  const { complete, ...state } = stateAfterAnswers(
+    PAGES_BEFORE_LOCK,
+    seedAnswers,
   );
-  return complet
-    ? { nom: "resultat", derriere: etat }
-    : { nom: "questionnaire", reprise: etat };
+  return complete
+    ? { name: "result", previousFlow: state }
+    : { name: "questionnaire", resume: state };
 }
 
 function Questionnaire({
-  ecran,
-  allerA,
-  traceDebug,
-}: EcranProps<"questionnaire">) {
+  screen,
+  goTo,
+  debugTrace,
+}: ScreenProps<"questionnaire">) {
   return (
     <>
       <h1 className="fr-h3">Parcours factice</h1>
@@ -106,14 +106,14 @@ function Questionnaire({
           modèle d’éligibilité suivant soit intégré.
         </p>
       </div>
-      <ParcoursForm
-        pages={PAGES_AVANT_VERROU}
-        nombreDeParties={NOMBRE_DE_PARTIES}
-        etatInitial={ecran.reprise}
-        mesure
-        libelleFin="Voir le résultat"
-        traceDebug={traceDebug}
-        onTermine={(_, derriere) => allerA({ nom: "resultat", derriere })}
+      <FlowForm
+        pages={PAGES_BEFORE_LOCK}
+        partCount={PART_COUNT}
+        initialState={screen.resume}
+        tracked
+        endLabel="Voir le résultat"
+        debugTrace={debugTrace}
+        onComplete={(_, previousFlow) => goTo({ name: "result", previousFlow })}
       />
     </>
   );
@@ -121,35 +121,35 @@ function Questionnaire({
 
 // Le verrou ne s'annonce pas à l'écran : l'interface nomme l'action, et le
 // « Précédent » de cette page dit ce qui reste ouvert.
-function ResultatAVerrouiller({
-  ecran,
-  allerA,
-  traceDebug,
-  onRecommencer,
-}: EcranProps<"resultat">) {
-  const { reponses } = ecran.derriere;
-  const sorties = decider(reponses);
-  const rouvrir = () =>
-    allerA({ nom: "questionnaire", reprise: ecran.derriere });
-  const verrouiller = () => allerA({ nom: "complement", acquises: reponses });
+function ResultToLock({
+  screen,
+  goTo,
+  debugTrace,
+  onRestart,
+}: ScreenProps<"result">) {
+  const { answers } = screen.previousFlow;
+  const outputs = decide(answers);
+  const reopen = () =>
+    goTo({ name: "questionnaire", resume: screen.previousFlow });
+  const lock = () => goTo({ name: "complement", locked: answers });
   return (
     <>
       <h1 className="fr-h3">Résultat</h1>
-      <p className="fr-text--lead">Commande : {sorties.commande}</p>
+      <p className="fr-text--lead">Commande : {outputs.commande}</p>
       <div className="fr-btns-group fr-btns-group--inline">
-        <BoutonSecondaire onClick={rouvrir}>Précédent</BoutonSecondaire>
-        <button type="button" className="fr-btn" onClick={verrouiller}>
+        <SecondaryButton onClick={reopen}>Précédent</SecondaryButton>
+        <button type="button" className="fr-btn" onClick={lock}>
           Compléter la commande
         </button>
-        <BoutonSecondaire onClick={onRecommencer}>
+        <SecondaryButton onClick={onRestart}>
           Nouvelle simulation
-        </BoutonSecondaire>
+        </SecondaryButton>
       </div>
-      <TraceDebug
-        autorisee={traceDebug}
-        titre="résultat"
-        reponses={reponses}
-        sorties={sorties}
+      <DebugTrace
+        allowed={debugTrace}
+        title="résultat"
+        answers={answers}
+        outputs={outputs}
       />
     </>
   );
@@ -157,63 +157,65 @@ function ResultatAVerrouiller({
 
 // Le complément n'émet pas d'évènement : ce qu'on y mesurera se décidera avec
 // les documents du modèle suivant.
-function Complement({ ecran, allerA, traceDebug }: EcranProps<"complement">) {
-  const { acquises } = ecran;
+function Complement({ screen, goTo, debugTrace }: ScreenProps<"complement">) {
+  const { locked } = screen;
   return (
     <>
       <h1 className="fr-h3">Compléter la commande</h1>
-      <ParcoursForm
-        pages={PAGES_APRES_VERROU}
-        nombreDeParties={NOMBRE_DE_PARTIES}
-        reponsesAcquises={acquises}
-        etatInitial={ecran.reprise}
-        mesure={false}
-        libelleFin="Terminer"
-        traceDebug={traceDebug}
-        onTermine={(_, derriere) => allerA({ nom: "fin", acquises, derriere })}
+      <FlowForm
+        pages={PAGES_AFTER_LOCK}
+        partCount={PART_COUNT}
+        lockedAnswers={locked}
+        initialState={screen.resume}
+        tracked={false}
+        endLabel="Terminer"
+        debugTrace={debugTrace}
+        onComplete={(_, previousFlow) =>
+          goTo({ name: "end", locked, previousFlow })
+        }
       />
     </>
   );
 }
 
 // « Précédent » revient au complément, jamais en deçà du verrou.
-function CommandeCompletee({
-  ecran,
-  allerA,
-  traceDebug,
-  onRecommencer,
-}: EcranProps<"fin">) {
-  const { reponses } = ecran.derriere;
-  const sorties = decider(reponses);
-  const rouvrir = () =>
-    allerA({
-      nom: "complement",
-      acquises: ecran.acquises,
-      reprise: ecran.derriere,
+function CompletedOrder({
+  screen,
+  goTo,
+  debugTrace,
+  onRestart,
+}: ScreenProps<"end">) {
+  const { answers } = screen.previousFlow;
+  const outputs = decide(answers);
+  const reopen = () =>
+    goTo({
+      name: "complement",
+      locked: screen.locked,
+      resume: screen.previousFlow,
     });
   return (
     <>
       <h1 className="fr-h3">Commande complétée</h1>
       <p className="fr-text--lead">
-        Commande : {sorties.commande}, {String(reponses.quantite)} tasses
+        Commande : {outputs.commande}, {String(answers.quantite)} tasses
       </p>
       <div className="fr-btns-group fr-btns-group--inline">
-        <BoutonSecondaire onClick={rouvrir}>Précédent</BoutonSecondaire>
-        <button type="button" className="fr-btn" onClick={onRecommencer}>
+        <SecondaryButton onClick={reopen}>Précédent</SecondaryButton>
+        <button type="button" className="fr-btn" onClick={onRestart}>
           Nouvelle simulation
         </button>
       </div>
-      <TraceDebug
-        autorisee={traceDebug}
-        titre="commande complétée"
-        reponses={reponses}
-        sorties={sorties}
+      <DebugTrace
+        allowed={debugTrace}
+        title="commande complétée"
+        answers={answers}
+        outputs={outputs}
       />
     </>
   );
 }
 
-function BoutonSecondaire({
+function SecondaryButton({
   onClick,
   children,
 }: {

@@ -19,7 +19,7 @@ const versionDeLApp = JSON.parse(
   readFileSync(join(racine, "package.json"), "utf8"),
 ).version;
 
-describe("bandeau de version", () => {
+describe("pied de page", () => {
   it("affiche la version telle que `package.json` la déclare", () => {
     // Même garde, pour la version de l'app : un `pnpm version` qui n'irait pas
     // jusqu'à l'écran laisserait le support raisonner sur la précédente.

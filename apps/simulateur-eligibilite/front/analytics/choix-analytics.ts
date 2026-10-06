@@ -5,7 +5,7 @@
 
 export type ChoixAnalytics = "suivi" | "refus";
 
-export type OptionsDuPont = {
+export type BridgeOptions = {
   /** La page qui embarque l'app (défaut : `window.parent`). */
   parent?: Window;
   /** Au-delà, sans réponse, la mesure suit son cours. */
@@ -23,7 +23,7 @@ export type OptionsDuPont = {
  */
 export function suivreChoixAnalytics(
   surChoix: (choix: ChoixAnalytics) => void,
-  { parent = window.parent, delaiMs = DELAI_MS }: OptionsDuPont = {},
+  { parent = window.parent, delaiMs = DELAI_MS }: BridgeOptions = {},
 ): void {
   if (parent === window) {
     surChoix("suivi");

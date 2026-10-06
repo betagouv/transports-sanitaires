@@ -14,40 +14,40 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export type AvancementAutomatique = {
+export type AutoAdvance = {
   /** La page avancera d'elle-même : le bouton « Suivant » n'a pas à s'afficher. */
-  avancerSeul: boolean;
+  autoAdvances: boolean;
   /** À appeler sur toute saisie : elle relance l'avancement automatique. */
-  aLaSaisie: () => void;
+  onInput: () => void;
 };
 
-export function useAvancementAutomatique(
+export function useAutoAdvance(
   page: string,
   eligible: boolean,
-  questionsEnAttente: boolean,
-  avancer: () => void,
-): AvancementAutomatique {
-  const avancerRef = useRef(avancer);
-  avancerRef.current = avancer;
+  hasPendingQuestions: boolean,
+  next: () => void,
+): AutoAdvance {
+  const nextRef = useRef(next);
+  nextRef.current = next;
 
-  const [pageVue, setPageVue] = useState(page);
-  const [rendreLaMain, setRendreLaMain] = useState(!questionsEnAttente);
-  if (pageVue !== page) {
-    setPageVue(page);
-    setRendreLaMain(!questionsEnAttente);
+  const [seenPage, setSeenPage] = useState(page);
+  const [waitsForButton, setWaitsForButton] = useState(!hasPendingQuestions);
+  if (seenPage !== page) {
+    setSeenPage(page);
+    setWaitsForButton(!hasPendingQuestions);
   }
 
-  const avancerSeul = eligible && !rendreLaMain;
-  const declenche = avancerSeul && !questionsEnAttente;
+  const autoAdvances = eligible && !waitsForButton;
+  const triggered = autoAdvances && !hasPendingQuestions;
   useEffect(() => {
-    if (!declenche) return;
-    const minuteur = setTimeout(() => avancerRef.current(), DELAI_MS);
-    return () => clearTimeout(minuteur);
-  }, [declenche]);
+    if (!triggered) return;
+    const timer = setTimeout(() => nextRef.current(), DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [triggered]);
 
-  return { avancerSeul, aLaSaisie: () => setRendreLaMain(false) };
+  return { autoAdvances, onInput: () => setWaitsForButton(false) };
 }
 
 // ---- implémentation ----
 
-const DELAI_MS = 200;
+const DELAY_MS = 200;

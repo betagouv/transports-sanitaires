@@ -3,17 +3,19 @@
 // ADR-1). Formulaire à **révélation progressive** : chaque réponse dévoile la
 // suite selon la branche (workflow §4). Composant de pure sélection ; à la
 // validation il remonte le `RattachementSaisi` à `onValide` (c'est
-// `EcranDeRattachement.tsx` qui le range en session et prévient `App`). Si le
+// `RattachementScreen.tsx` qui le range en session et prévient `App`). Si le
 // référentiel ne répond pas, l'écran le dit et laisse entrer avec le rattachement
 // dégradé « Autre / Autre ». Le référentiel par défaut est le snapshot factice
-// (dev / tests) ; en production `EcranDeRattachement` injecte le client HTTP.
+// (dev / tests) ; en production `RattachementScreen` injecte le client HTTP.
 
 import {
   type Referentiel,
   snapshotReferentiel,
 } from "../../shared/referentiel";
 import { Container } from "../app/Container";
-import { BoutonOutil, DeveloperTools } from "../developerTools/DeveloperTools";
+import { DeveloperTools, ToolButton } from "../developerTools/DeveloperTools";
+import { SelectField } from "../ui/SelectField";
+import { TextField } from "../ui/TextField";
 import type { SaisieRattachement } from "./saisie-rattachement";
 import { useSaisieRattachement } from "./saisie-rattachement";
 
@@ -63,7 +65,7 @@ export function RattachementForm({
           entrer("simulateur");
         }}
       >
-        <FormulaireProgressif saisie={saisie} />
+        <ProgressiveFields saisie={saisie} />
         <EntreesDansLApplication saisie={saisie} onEntrer={entrer} />
       </form>
     </Container>
@@ -72,18 +74,18 @@ export function RattachementForm({
 
 // ---- implémentation ----
 
-type ChampsProps = { saisie: SaisieRattachement };
+type FieldsProps = { saisie: SaisieRattachement };
 
 // Chaque réponse dévoile la suite : les champs en aval se rendent `null` tant
 // que leur branche n'est pas empruntée (workflow §4). Sans référentiel, il n'y a
 // rien à choisir : l'écran le dit, et la saisie est le rattachement dégradé.
-function FormulaireProgressif({ saisie }: ChampsProps) {
+function ProgressiveFields({ saisie }: FieldsProps) {
   if (saisie.indisponible) return <ReferentielIndisponible />;
   return (
     <>
-      <ChampEtablissement saisie={saisie} />
-      <ChampService saisie={saisie} />
-      <ChampServiceLibre saisie={saisie} />
+      <EtablissementField saisie={saisie} />
+      <ServiceField saisie={saisie} />
+      <ServiceLibreField saisie={saisie} />
     </>
   );
 }
@@ -99,40 +101,40 @@ function ReferentielIndisponible() {
   );
 }
 
-function ChampEtablissement({ saisie }: ChampsProps) {
+function EtablissementField({ saisie }: FieldsProps) {
   return (
-    <ListeDeroulante
+    <SelectField
       id="etablissement"
-      libelle="Établissement"
-      invite="Sélectionnez un établissement"
-      valeur={saisie.champs.etabId}
-      options={saisie.etablissements}
+      label="Établissement"
+      placeholder="Sélectionnez un établissement"
+      value={saisie.champs.etabId}
+      options={options(saisie.etablissements)}
       onChange={(v) => saisie.modifier("etabId", v)}
     />
   );
 }
 
-function ChampService({ saisie }: ChampsProps) {
+function ServiceField({ saisie }: FieldsProps) {
   if (!saisie.etabChoisi) return null;
   return (
-    <ListeDeroulante
+    <SelectField
       id="service"
-      libelle="Nom du service"
-      invite="Sélectionnez un service"
-      valeur={saisie.champs.serviceId}
-      options={saisie.services}
+      label="Nom du service"
+      placeholder="Sélectionnez un service"
+      value={saisie.champs.serviceId}
+      options={options(saisie.services)}
       onChange={(v) => saisie.modifier("serviceId", v)}
     />
   );
 }
 
-function ChampServiceLibre({ saisie }: ChampsProps) {
+function ServiceLibreField({ saisie }: FieldsProps) {
   if (!saisie.serviceEstAutre) return null;
   return (
-    <ChampTexte
+    <TextField
       id="service-libre"
-      libelle="Nom de votre service / unité"
-      valeur={saisie.champs.serviceLibre}
+      label="Nom de votre service / unité"
+      value={saisie.champs.serviceLibre}
       onChange={(v) => saisie.modifier("serviceLibre", v)}
     />
   );
@@ -144,7 +146,7 @@ function ChampServiceLibre({ saisie }: ChampsProps) {
 function EntreesDansLApplication({
   saisie,
   onEntrer,
-}: ChampsProps & {
+}: FieldsProps & {
   onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
@@ -157,7 +159,7 @@ function EntreesDansLApplication({
           Accéder au simulateur
         </button>
       </div>
-      {saisie.developerTools && <PanneauOutils onEntrer={onEntrer} />}
+      {saisie.developerTools && <DeveloperToolsPanel onEntrer={onEntrer} />}
     </>
   );
 }
@@ -167,83 +169,19 @@ function EntreesDansLApplication({
 // dans l'application, elle passe par l'écran de rattachement. Les
 // situations de l'écran des seeds vivent dans `seeds/`, pas dans cet écran : les y
 // égrener en boutons ne passait pas l'échelle.
-function PanneauOutils({
+function DeveloperToolsPanel({
   onEntrer,
 }: {
   onEntrer: (destination: AccesRattachement["destination"]) => void;
 }) {
   return (
     <DeveloperTools>
-      <BoutonOutil onClick={() => onEntrer("seeds")}>Seeds</BoutonOutil>
+      <ToolButton onClick={() => onEntrer("seeds")}>Seeds</ToolButton>
     </DeveloperTools>
   );
 }
 
-type ListeProps = {
-  id: string;
-  libelle: string;
-  // Option affichée tant que rien n'est sélectionné.
-  invite: string;
-  valeur: string;
-  options: Array<{ id: string; libelle: string }>;
-  onChange: (valeur: string) => void;
-};
-
-function ListeDeroulante({
-  id,
-  libelle,
-  invite,
-  valeur,
-  options,
-  onChange,
-}: ListeProps) {
-  return (
-    <div className="fr-select-group">
-      <label className="fr-label" htmlFor={id}>
-        {libelle}
-      </label>
-      <select
-        className="fr-select"
-        id={id}
-        value={valeur}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        <option value="" disabled hidden>
-          {invite}
-        </option>
-        {options.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.libelle}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function ChampTexte({
-  id,
-  libelle,
-  valeur,
-  onChange,
-}: {
-  id: string;
-  libelle: string;
-  valeur: string;
-  onChange: (valeur: string) => void;
-}) {
-  return (
-    <div className="fr-input-group">
-      <label className="fr-label" htmlFor={id}>
-        {libelle}
-      </label>
-      <input
-        className="fr-input"
-        id={id}
-        type="text"
-        value={valeur}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
+// Une entrée du référentiel, sous la forme qu'attend `SelectField`.
+function options(entrees: ReadonlyArray<{ id: string; libelle: string }>) {
+  return entrees.map(({ id, libelle }) => ({ value: id, label: libelle }));
 }

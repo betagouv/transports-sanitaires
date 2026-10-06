@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { App } from "../../front/app/App";
 import {
-  BoutonOutil,
   DeveloperTools,
+  ToolButton,
 } from "../../front/developerTools/DeveloperTools";
 import { RattachementForm } from "../../front/rattachement/RattachementForm";
 import { Simulateur } from "../../front/simulateur/Simulateur";
@@ -124,10 +124,10 @@ describe("encadré des developer tools, début du parcours", () => {
   it("y range l'accès à l'écran des seeds, hors du parcours", () => {
     render(
       <Simulateur
-        onNouvelleSimulation={() => {}}
-        panneauDeveloperTools={
+        onNewSimulation={() => {}}
+        developerToolsPanel={
           <DeveloperTools>
-            <BoutonOutil onClick={() => {}}>Seeds</BoutonOutil>
+            <ToolButton onClick={() => {}}>Seeds</ToolButton>
           </DeveloperTools>
         }
       />,
@@ -145,7 +145,7 @@ describe("encadré des developer tools, début du parcours", () => {
   });
 
   it("n'apparaît pas quand l'accès n'est pas fourni", () => {
-    render(<Simulateur onNouvelleSimulation={() => {}} />);
+    render(<Simulateur onNewSimulation={() => {}} />);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 });

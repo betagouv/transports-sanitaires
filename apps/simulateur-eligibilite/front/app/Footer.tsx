@@ -9,7 +9,7 @@
 // construction (cf. `vite.config.ts`) : le navigateur n'a aucun moyen de les
 // découvrir.
 //
-// Le bandeau reste dans le flux : c'est `EcranDuSimulateur` qui le pousse au bas
+// Le pied de page reste dans le flux : c'est `SimulateurScreen` qui le pousse au bas
 // de la fenêtre quand le contenu est trop court pour l'y amener, et il se
 // contente de suivre le contenu quand celui-ci défile. Ni `fixed` ni `sticky` —
 // l'application est embarquée en iframe dans le CMS (cf. `index.html`), et un
@@ -19,7 +19,7 @@ import type { CSSProperties } from "react";
 
 export function Footer() {
   return (
-    <footer className="fr-text--xs fr-no-print" style={STYLE_DU_BANDEAU}>
+    <footer className="fr-text--xs fr-no-print" style={FOOTER_STYLE}>
       Version{" "}
       <a
         className="fr-link"
@@ -53,7 +53,7 @@ const LIEN_DE_LA_VERSION = `https://github.com/betagouv/transports-sanitaires/re
   `simulateur-eligibilite@${VERSION_APP}`,
 )}`;
 
-const STYLE_DU_BANDEAU: CSSProperties = {
+const FOOTER_STYLE: CSSProperties = {
   padding: "0.25rem 0",
   textAlign: "center",
   color: "var(--text-mention-grey)",

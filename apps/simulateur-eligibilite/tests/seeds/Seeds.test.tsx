@@ -8,7 +8,7 @@ import {
   caseACocher,
   ouvrirLeSimulateur,
   question,
-} from "../simulateur/parcours";
+} from "../simulateur/flow";
 
 // L'écran des seeds montre les seeds qu'on lui donne, dit pour chacune si la décision
 // confirme ses attendus, et ouvre l'écran correspondant. Le catalogue étant
@@ -18,7 +18,7 @@ const THE_AU_LAIT: Seed = {
   id: "the-au-lait",
   libelle: "Résultat : un thé au lait",
   description: "Situation complète.",
-  reponses: { boisson: "the", accompagnements: ["lait"] },
+  answers: { boisson: "the", accompagnements: ["lait"] },
   attendu: { commande: "thé, lait" },
 };
 
@@ -26,7 +26,7 @@ const ATTENDU_DEMENTI: Seed = {
   id: "attendu-dementi",
   libelle: "Résultat : un café annoncé à tort",
   description: "L'attendu contredit la décision.",
-  reponses: { boisson: "the", accompagnements: ["aucun"] },
+  answers: { boisson: "the", accompagnements: ["aucun"] },
   attendu: { commande: "café" },
 };
 
@@ -34,8 +34,8 @@ const ARRETEE_EN_CHEMIN: Seed = {
   id: "arretee-en-chemin",
   libelle: "Questionnaire : les accompagnements",
   description: "S'arrête avant la deuxième question.",
-  atterrissage: "questionnaire",
-  reponses: { boisson: "cafe" },
+  landing: "questionnaire",
+  answers: { boisson: "cafe" },
   attendu: {},
 };
 

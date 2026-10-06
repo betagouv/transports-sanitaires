@@ -11,7 +11,7 @@ import {
   question,
   radio,
   sansBouton,
-} from "./parcours";
+} from "./flow";
 
 // Le résultat reste ouvert tant que son action principale n'a pas été choisie.
 // Elle verrouille : le complément ne repose aucune question d'avant, et rien ne

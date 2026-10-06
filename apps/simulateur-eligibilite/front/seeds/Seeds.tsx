@@ -4,7 +4,7 @@
 // seeds complètes, le questionnaire lui-même pour celles qui s'arrêtent en
 // chemin.
 //
-// Le tableau, lui, est dans `TableauDesSeeds.tsx` : ici on sait quels écrans
+// Le tableau, lui, est dans `SeedsTable.tsx` : ici on sait quels écrans
 // existent, pas comment une seed se lit.
 //
 // L'écran des seeds rejoue chaque seed dans la décision **du navigateur** : la colonne
@@ -12,10 +12,10 @@
 // un parcours.
 
 import { Container } from "../app/Container";
-import { decider } from "../simulateur/parcours-factice";
+import { decide } from "../simulateur/fake-flow";
 import { SEEDS } from "./catalogue";
+import { type LigneSeed, SeedsTable } from "./SeedsTable";
 import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
-import { type LigneSeed, TableauDesSeeds } from "./TableauDesSeeds";
 
 type Props = {
   /** Injectable pour les tests (défaut = le catalogue). */
@@ -49,7 +49,7 @@ const SECTIONS: ReadonlyArray<{
 export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
   const lignes = seeds.map((seed) => ({
     seed,
-    evaluation: evaluerSeed(decider, seed),
+    evaluation: evaluerSeed(decide, seed),
   }));
 
   return (
@@ -62,7 +62,7 @@ export function Seeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
       {lignes.length === 0 ? (
         <CatalogueVide />
       ) : (
-        <CatalogueParEcranDAtterrissage lignes={lignes} onOuvrir={onOuvrir} />
+        <CatalogueByLanding lignes={lignes} onOuvrir={onOuvrir} />
       )}
       <button
         type="button"
@@ -91,7 +91,7 @@ function CatalogueVide() {
 // Le catalogue est présenté par écran d'atterrissage : c'est ce qui distingue
 // une situation complète d'une situation qui s'arrête en chemin, et donc ce
 // qu'on vient chercher ici.
-function CatalogueParEcranDAtterrissage({
+function CatalogueByLanding({
   lignes,
   onOuvrir,
 }: {
@@ -117,7 +117,7 @@ function CatalogueParEcranDAtterrissage({
         </p>
       </div>
       {SECTIONS.map((section) => (
-        <TableauDesSeeds
+        <SeedsTable
           key={section.cle}
           section={section}
           lignes={lignes.filter(({ seed }) => section.retient(seed))}

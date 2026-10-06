@@ -13,7 +13,7 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 n'est pas intégrée. Il n'y a ni règles publicodes, ni page de résultat métier,
 ni CERFA téléchargeable. Le simulateur déroule un **parcours factice**
-(`front/simulateur/parcours-factice.ts`), qui ne décide rien. Le
+(`front/simulateur/fake-flow.ts`), qui ne décide rien. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le parcours commence par un **écran de rattachement
@@ -29,18 +29,18 @@ Trois fichiers portent la mécanique, dans `front/simulateur/questionnaire/` :
 | Fichier | Ce qu'il porte |
 |---|---|
 | `question.ts` | ce qu'est une question, une page, une réponse |
-| `passation.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
+| `flow.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
 | `invalidation.ts` | ce qu'une réponse changée efface |
 
 Quatre règles à tenir en ajoutant une question :
 
-- **Une condition d'affichage s'écrit dans `poseeSi`.** Jamais dans un composant.
-- **Une dépendance se déclare dans `dependDe`.** Sans elle, la réponse survit au
+- **Une condition d'affichage s'écrit dans `askedIf`.** Jamais dans un composant.
+- **Une dépendance se déclare dans `dependsOn`.** Sans elle, la réponse survit au
   changement de celle dont elle dépend.
 - **Une saisie ne compte qu'une fois la page validée.** Le brouillon vit dans
-  `passation.ts`, pas dans le champ.
+  `flow.ts`, pas dans le champ.
 - **Le verrou est un montage, pas un drapeau.** Ce qui vient après le verrou est un
-  second `ParcoursForm`, qui reçoit `reponsesAcquises` et ne repose rien
+  second `FlowForm`, qui reçoit `lockedAnswers` et ne repose rien
   (`front/simulateur/Simulateur.tsx`).
 
 *Gardé par* `tests/simulateur/`.
@@ -176,16 +176,16 @@ L'écran des seeds (`front/seeds/`) et les **traces de debug** sont les deux
 developer tools. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
-  référentiel, `front/developerTools/deverrouillage.ts`) ;
+  référentiel, `front/developerTools/unlock.ts`) ;
 - le même moment : ils sont atteints **après** le rattachement.
 
 Pas de conditionnement sur `import.meta.env.DEV`.
 
 Le simulateur ne connaît pas l'écran des seeds. C'est `App.tsx` qui lui passe du contenu
-déjà composé (`panneauDeveloperTools`).
+déjà composé (`developerToolsPanel`).
 
 Les traces, elles, vivent dans le simulateur : elles lisent l'état vivant du
 parcours, qu'`App` n'a pas sous la main. Ce n'est donc pas un contenu composé qui
-descend, mais le booléen `traceDebug`, jusqu'au prop obligatoire `autorisee` des
+descend, mais le booléen `debugTrace`, jusqu'au prop obligatoire `allowed` des
 deux composants de trace. Obligatoire pour qu'aucun appelant ne puisse en rendre
 une sans avoir dit à qui elle s'ouvre.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avecPageValidee } from "../../front/simulateur/questionnaire/invalidation";
+import { withValidatedPage } from "../../front/simulateur/questionnaire/invalidation";
 import type {
   Page,
   Question,
@@ -9,16 +9,16 @@ import type {
 // sont écrites ici : le parcours factice n'a qu'une dépendance, pas de quoi
 // montrer ce qui reste.
 
-const texte = (id: string, dependDe?: string[]): Question => ({
+const texte = (id: string, dependsOn?: string[]): Question => ({
   id,
-  forme: "texte",
-  libelle: id,
-  dependDe,
+  kind: "text",
+  label: id,
+  dependsOn,
 });
 
 const page = (question: Question): Page => ({
   id: question.id,
-  partie: 1,
+  part: 1,
   questions: [question],
 });
 
@@ -39,21 +39,23 @@ const REPONSES = {
 
 describe("validation d'une page", () => {
   it("efface les réponses dépendantes, de proche en proche", () => {
-    expect(avecPageValidee(PAGES, REPONSES, SOURCE, { source: "z" })).toEqual({
-      source: "z",
-      independante: "d",
-    });
+    expect(withValidatedPage(PAGES, REPONSES, SOURCE, { source: "z" })).toEqual(
+      {
+        source: "z",
+        independante: "d",
+      },
+    );
   });
 
   it("ne touche à rien quand la réponse est la même", () => {
-    expect(avecPageValidee(PAGES, REPONSES, SOURCE, { source: "a" })).toEqual(
+    expect(withValidatedPage(PAGES, REPONSES, SOURCE, { source: "a" })).toEqual(
       REPONSES,
     );
   });
 
   it("retire la réponse d'une question que la page ne pose plus", () => {
     const { source: _retiree, ...sansSource } = REPONSES;
-    expect(avecPageValidee(PAGES, REPONSES, SOURCE, {})).toEqual({
+    expect(withValidatedPage(PAGES, REPONSES, SOURCE, {})).toEqual({
       independante: sansSource.independante,
     });
   });

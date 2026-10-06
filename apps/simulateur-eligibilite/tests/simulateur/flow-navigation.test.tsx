@@ -10,7 +10,7 @@ import {
   question,
   radio,
   sansBouton,
-} from "./parcours";
+} from "./flow";
 
 // Le comportement de navigation que le parcours réel reprendra tel quel. Il est
 // éprouvé sur le parcours factice, par la vraie application.

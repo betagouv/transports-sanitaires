@@ -14,7 +14,7 @@ type Props = {
   onRetour: () => void;
 };
 
-export function EcranDesSeeds(props: Props) {
+export function SeedsScreen(props: Props) {
   return (
     <Suspense fallback={null}>
       <Seeds {...props} />

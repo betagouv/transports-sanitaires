@@ -350,7 +350,7 @@ dépasse 300 lignes`.
 
 ```
 ✅ OK
-deverrouillage.ts  passation.ts  pagination.ts  lieux-du-trajet.ts
+unlock.ts  flow.ts  pagination.ts  lieux-du-trajet.ts
 ```
 
 ```
@@ -391,7 +391,7 @@ export function estServiceProduit(idService: number): boolean { … }
 ```
 
 *Gardé par* `pnpm knip`, dans `verifier`. C'est le défaut qu'a livré le fichier
-aujourd'hui appelé `deverrouillage.ts`.
+aujourd'hui appelé `unlock.ts`.
 
 ---
 

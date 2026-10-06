@@ -11,7 +11,7 @@ import { Container } from "../app/Container";
 import { Footer } from "../app/Footer";
 import { Simulateur } from "./Simulateur";
 
-export function EcranDuSimulateur(props: ComponentProps<typeof Simulateur>) {
+export function SimulateurScreen(props: ComponentProps<typeof Simulateur>) {
   return (
     <div
       style={{

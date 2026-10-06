@@ -4,41 +4,41 @@
 //
 // C'est un developer tool comme l'écran des seeds : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
-// (`front/developerTools/deverrouillage.ts`). Le simulateur ignore ce service :
-// `App` lui passe la réponse, que `autorisee` porte jusqu'ici. Le prop est
+// (`front/developerTools/unlock.ts`). Le simulateur ignore ce service :
+// `App` lui passe la réponse, que `allowed` porte jusqu'ici. Le prop est
 // obligatoire pour qu'aucun appelant ne puisse rendre la trace sans avoir dit à
 // qui elle s'ouvre.
 
-import type { Passation } from "./passation";
-import type { Reponses } from "./question";
+import type { Flow } from "./flow";
+import type { Answers } from "./question";
 
 type Props = {
-  autorisee: boolean;
-  passation: Pick<Passation, "pages" | "page" | "brouillon" | "reponses">;
+  allowed: boolean;
+  flow: Pick<Flow, "pages" | "page" | "draft" | "answers">;
 };
 
-export function TraceParcours({ autorisee, passation }: Props) {
-  if (!autorisee) return null;
+export function FlowTrace({ allowed, flow }: Props) {
+  if (!allowed) return null;
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
       <summary style={{ cursor: "pointer" }}>Debug — chemin parcouru</summary>
       <div style={{ marginTop: "0.75rem" }}>
         <strong>Pages (◀ = page courante) :</strong>
         <ol style={{ margin: "0.25rem 0 1rem" }}>
-          {passation.pages.map((page) => (
+          {flow.pages.map((page) => (
             <li
               key={page.id}
-              style={{ fontWeight: page === passation.page ? 700 : 400 }}
+              style={{ fontWeight: page === flow.page ? 700 : 400 }}
             >
               <code>{page.id}</code>
-              {page === passation.page ? " ◀" : ""}
+              {page === flow.page ? " ◀" : ""}
             </li>
           ))}
         </ol>
         <strong>Brouillon de la page :</strong>
-        <ListeDeReponses reponses={passation.brouillon} />
+        <AnswerList answers={flow.draft} />
         <strong>Réponses validées :</strong>
-        <ListeDeReponses reponses={passation.reponses} />
+        <AnswerList answers={flow.answers} />
       </div>
     </details>
   );
@@ -46,14 +46,14 @@ export function TraceParcours({ autorisee, passation }: Props) {
 
 // ---- implémentation ----
 
-function ListeDeReponses({ reponses }: { reponses: Reponses }) {
-  const saisies = Object.entries(reponses);
+function AnswerList({ answers }: { answers: Answers }) {
+  const entries = Object.entries(answers);
   return (
     <ul style={{ margin: "0.25rem 0 1rem" }}>
-      {saisies.length === 0 && <li>(aucune)</li>}
-      {saisies.map(([id, reponse]) => (
+      {entries.length === 0 && <li>(aucune)</li>}
+      {entries.map(([id, answer]) => (
         <li key={id}>
-          <code>{id}</code> = <code>{JSON.stringify(reponse)}</code>
+          <code>{id}</code> = <code>{JSON.stringify(answer)}</code>
         </li>
       ))}
     </ul>

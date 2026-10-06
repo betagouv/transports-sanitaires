@@ -9,7 +9,7 @@ export type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
 
 // Le titre de section passe par la légende du tableau : DSFR la rend visible
 // (`.fr-table caption`), un `fr-sr-only` y serait annulé.
-export function TableauDesSeeds({
+export function SeedsTable({
   section,
   lignes,
   onOuvrir,

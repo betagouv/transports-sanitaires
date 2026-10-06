@@ -1,5 +1,5 @@
 // Lire les sources de l'application comme des données : la liste des fichiers,
-// leur graphe d'imports, leurs fonctions, leurs identifiants. C'est le socle
+// leur graphe d'imports, leurs fonctions. C'est le socle
 // commun de `architecture.test.ts` (les frontières) et de `lisibilite.test.ts`
 // (la forme). Aucune assertion ici — seulement de quoi en écrire.
 
@@ -11,7 +11,6 @@ import ts from "typescript";
 export const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export type Fonction = { ligne: number; lignes: number };
-export type Identifiant = { nom: string; ligne: number };
 
 /** Tous les fichiers TypeScript d'un dossier, en chemins relatifs à la racine. */
 export function sources(...dossiers: string[]): string[] {
@@ -121,36 +120,6 @@ export function fonctionsDe(fichier: string): Fonction[] {
   return trouvees;
 }
 
-/**
- * Les noms que le fichier **déclare** : variables, fonctions, paramètres, types
- * et champs de types. Volontairement pas les clés d'objets littéraux ni les
- * attributs JSX — ceux-là portent le plus souvent la forme d'une API tierce
- * (DSFR, `@publicodes/forms`), dont le nommage ne nous appartient pas.
- */
-export function identifiantsDe(fichier: string): Identifiant[] {
-  const source = astDe(fichier);
-  const trouves: Identifiant[] = [];
-  const visiter = (noeud: ts.Node) => {
-    const nom = nomDeclare(noeud);
-    if (nom) {
-      const { line } = source.getLineAndCharacterOfPosition(noeud.getStart());
-      trouves.push({ nom, ligne: line + 1 });
-    }
-    ts.forEachChild(noeud, visiter);
-  };
-  visiter(source);
-  return trouves;
-}
-
-/** Les segments d'un identifiant : `casesRetenues` → `cases`, `retenues`. */
-export function segments(identifiant: string): string[] {
-  return identifiant
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .split(/[\s_]+/)
-    .map((segment) => segment.toLowerCase())
-    .filter(Boolean);
-}
-
 // ---- implémentation ----
 
 const IMPORT = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
@@ -168,18 +137,4 @@ function estUneFonction(noeud: ts.Node): noeud is NoeudFonction {
     ts.isArrowFunction(noeud) ||
     ts.isMethodDeclaration(noeud)
   );
-}
-
-function nomDeclare(noeud: ts.Node): string | undefined {
-  const porteUnNom =
-    ts.isVariableDeclaration(noeud) ||
-    ts.isFunctionDeclaration(noeud) ||
-    ts.isParameter(noeud) ||
-    ts.isTypeAliasDeclaration(noeud) ||
-    ts.isInterfaceDeclaration(noeud) ||
-    ts.isClassDeclaration(noeud) ||
-    ts.isPropertySignature(noeud) ||
-    ts.isMethodSignature(noeud);
-  if (!porteUnNom || !noeud.name || !ts.isIdentifier(noeud.name)) return;
-  return noeud.name.text;
 }
