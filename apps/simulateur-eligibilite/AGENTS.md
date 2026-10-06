@@ -184,7 +184,7 @@ Pas de conditionnement sur `import.meta.env.DEV`.
 Le simulateur ne connaît pas l'écran des seeds. C'est `App.tsx` qui lui passe du contenu
 déjà composé (`developerToolsPanel`).
 
-Les traces vivent aussi dans `front/developerTools/`. Elles lisent l'état vivant
-du parcours, qu'`App` n'a pas sous la main : `App` passe donc au simulateur les
-composants eux-mêmes (`debugTraces`), et le simulateur leur donne l'état à
-afficher. Sans composant passé, aucune trace n'est rendue.
+La trace de debug vit aussi dans `front/developerTools/` (`DebugTrace.tsx`). Elle
+lit l'état vivant du parcours, qu'`App` n'a pas sous la main : `App` passe donc au
+simulateur le composant lui-même (`DebugTrace`), et chaque écran lui donne son
+état à afficher. Sans composant passé, aucune trace n'est rendue.

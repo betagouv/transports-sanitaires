@@ -7,9 +7,8 @@
 // branche les developer tools sur le simulateur.
 
 import type { ComponentProps } from "react";
+import { DebugTrace } from "../developerTools/DebugTrace";
 import { DeveloperTools, ToolButton } from "../developerTools/DeveloperTools";
-import { FlowTrace } from "../developerTools/FlowTrace";
-import { ResultTrace } from "../developerTools/ResultTrace";
 import { RattachementScreen } from "../rattachement/RattachementScreen";
 import { SeedsScreen } from "../seeds/SeedsScreen";
 import type { Seed } from "../seeds/seed";
@@ -52,7 +51,7 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
           seedAnswers={navigation.seedAnswers}
           onNewSimulation={navigation.restart}
           developerToolsPanel={developerToolsPanel(navigation)}
-          debugTraces={debugTraces(navigation)}
+          DebugTrace={navigation.developerTools ? DebugTrace : undefined}
         />
       )}
     </>
@@ -65,7 +64,7 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `developerTools/`. C'est aussi ici que se lit, d'un coup
 // d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau
-// de l'écran des seeds et les traces de debug.
+// de l'écran des seeds et la trace de debug.
 //
 // Écran des seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran de rattachement, sans avoir à ressortir du simulateur.
@@ -76,11 +75,4 @@ function developerToolsPanel(navigation: Navigation) {
       <ToolButton onClick={navigation.openSeeds}>Seeds</ToolButton>
     </DeveloperTools>
   );
-}
-
-// Les traces sont passées comme composants : c'est le simulateur qui leur donne
-// l'état vivant du parcours à afficher.
-function debugTraces(navigation: Navigation) {
-  if (!navigation.developerTools) return undefined;
-  return { Flow: FlowTrace, Result: ResultTrace };
 }

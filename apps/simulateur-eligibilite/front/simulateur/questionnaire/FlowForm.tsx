@@ -6,7 +6,7 @@ import type { ComponentType } from "react";
 import { FormField } from "./FormField";
 import type { Flow, Options } from "./flow";
 import { useFlow } from "./flow";
-import { errorOf } from "./question";
+import { type Answers, errorOf } from "./question";
 
 type Props = Options & {
   // Nombre de parties que le stepper annonce. Il compte des parties, jamais des
@@ -17,15 +17,32 @@ type Props = Options & {
   // La trace de debug sous le questionnaire est un developer tool : le parcours
   // sait *où* elle s'affiche et quoi lui donner à lire, pas à qui elle s'ouvre.
   // Absente, rien n'est rendu.
-  Trace?: ComponentType<FlowTraceProps>;
+  DebugTrace?: ComponentType<DebugTraceProps>;
 };
 
-/** Ce que le parcours donne à lire à sa trace de debug. */
-export type FlowTraceProps = {
-  flow: Pick<Flow, "pages" | "page" | "draft" | "answers">;
+/**
+ * Ce qu'un écran du simulateur donne à lire à la trace de debug : le chemin
+ * parcouru, et ce qu'il en sait de plus.
+ */
+export type DebugTraceProps = {
+  title: string;
+  /** Les pages posées, dans l'ordre. */
+  pages: ReadonlyArray<{ id: string }>;
+  /** La page ouverte, s'il y en a une. */
+  currentPage?: string;
+  /** Le brouillon de la page ouverte. */
+  draft?: Answers;
+  answers: Answers;
+  /** Ce que la décision a rendu, sur une page de résultat. */
+  outputs?: Readonly<Record<string, unknown>>;
 };
 
-export function FlowForm({ partCount, endLabel, Trace, ...options }: Props) {
+export function FlowForm({
+  partCount,
+  endLabel,
+  DebugTrace,
+  ...options
+}: Props) {
   const flow = useFlow(options);
 
   return (
@@ -40,7 +57,15 @@ export function FlowForm({ partCount, endLabel, Trace, ...options }: Props) {
         <FormFields flow={flow} />
         <NavigationButtons flow={flow} endLabel={endLabel} />
       </form>
-      {Trace && <Trace flow={flow} />}
+      {DebugTrace && (
+        <DebugTrace
+          title="chemin parcouru"
+          pages={flow.pages}
+          currentPage={flow.page.id}
+          draft={flow.draft}
+          answers={flow.answers}
+        />
+      )}
     </>
   );
 }

@@ -123,8 +123,8 @@ front/                   le front, bundlé par Vite
   ui/                    les champs de formulaire, bâtis sur le DSFR et sans rien
                          savoir du questionnaire : TextField, SelectField,
                          RadioField, CheckboxField, NumberField, DateField
-  developerTools/        ce qui est réservé au service produit : son encadré, les
-                         traces de debug du parcours et du résultat, et le
+  developerTools/        ce qui est réservé au service produit : son encadré, la
+                         trace de debug du parcours et de ses résultats, et le
                          déverrouillage, garde commune à l'écran des seeds et aux traces
   seeds/                 ce qu'est une seed, le catalogue (vide), son écran. Elles se
                          greffent sur le simulateur, jamais l'inverse : c'est App.tsx
