@@ -81,7 +81,7 @@ describe("invariants métier", () => {
   });
 
   it("le CERFA n'adresse jamais le backend", () => {
-    const fautifs = sources("front/outils-produit/beta/cerfa").filter((f) =>
+    const fautifs = sources("front/cerfa").filter((f) =>
       texteDe(f).includes("/api"),
     );
     expect(

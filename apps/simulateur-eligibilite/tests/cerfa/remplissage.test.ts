@@ -1,14 +1,14 @@
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import { dateSurLeChamp } from "../../front/outils-produit/beta/cerfa/dates";
-import { DebordementDuTexte } from "../../front/outils-produit/beta/cerfa/debordement-du-texte";
-import { remplirCerfa } from "../../front/outils-produit/beta/cerfa/remplir-cerfa";
+import { dateSurLeChamp } from "../../front/cerfa/dates";
+import { DebordementDuTexte } from "../../front/cerfa/debordement-du-texte";
+import { remplirCerfa } from "../../front/cerfa/remplir-cerfa";
 import {
   laisséÀ,
   saisiesDuTableau,
   type Tableau,
   écrit,
-} from "../../front/outils-produit/beta/cerfa/remplissage";
+} from "../../front/cerfa/remplissage";
 import {
   formulaireDeTest,
   relire,

@@ -47,7 +47,7 @@ Quatre règles à tenir en ajoutant une question :
 
 ## Le socle PDF
 
-`front/outils-produit/beta/cerfa/` ne porte plus aucun formulaire. Il garde ce qui
+`front/cerfa/` ne porte plus aucun formulaire. Il garde ce qui
 ne dépend d'aucun gabarit :
 
 | Fichier | Ce qu'il porte |

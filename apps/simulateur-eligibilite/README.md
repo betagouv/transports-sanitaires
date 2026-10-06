@@ -124,7 +124,7 @@ front/                   le front, bundlé par Vite
                          simulateur, jamais l'inverse : c'est App.tsx qui compose. Le
                          déverrouillage est la garde commune à tout le dossier.
     seeds/               ce qu'est une seed, le catalogue (vide), sa galerie
-    beta/cerfa/          le socle de remplissage d'un PDF : l'écriture dans un
+  cerfa/                 le socle de remplissage d'un PDF : l'écriture dans un
                          AcroForm et ses pièges, la mesure d'un texte dans son champ,
                          la forme d'un tableau de remplissage. Aucun gabarit.
   analytics/             le vocabulaire mesuré, seul import du reste, son transport
