@@ -20,9 +20,9 @@ export type Navigation = {
   developerTools: boolean;
   // Les réponses de la seed ouverte, qui pré-remplissent le simulateur.
   reponsesDeSeed: Reponses | null;
-  // Remontée à chaque nouvelle simulation pour remonter (remount) le simulateur
-  // et repartir d'un parcours vierge.
-  cle: number;
+  // Change à chaque nouvelle simulation. `App` s'en sert pour remonter le
+  // simulateur et repartir d'un parcours vierge.
+  numeroDeSimulation: number;
   // Les outils produit s'ouvrent **après** la porte : on entre rattaché,
   // quelle que soit la destination.
   rattacher: (acces: AccesRattachement) => void;
@@ -39,7 +39,7 @@ export function useNavigation(): Navigation {
     ecran: "rattachement",
     developerTools: false,
     reponsesDeSeed: null,
-    cle: 0,
+    numeroDeSimulation: 0,
   });
   const modifier = (partiel: Partial<Etat>) =>
     changer((actuel) => ({ ...actuel, ...partiel }));
@@ -51,7 +51,7 @@ export function useNavigation(): Navigation {
 
 type Etat = Pick<
   Navigation,
-  "ecran" | "developerTools" | "reponsesDeSeed" | "cle"
+  "ecran" | "developerTools" | "reponsesDeSeed" | "numeroDeSimulation"
 >;
 
 function actions(
@@ -64,13 +64,13 @@ function actions(
         ecran: acces.destination,
         developerTools: acces.developerTools,
       }),
-    // La clé remonte pour repartir d'un parcours vierge, la seed pouvant être
-    // rouverte.
+    // Ouvrir une seed commence une simulation : la même seed peut être
+    // rouverte, et repart alors de ses réponses.
     ouvrirSeed: (seed) =>
       modifier({
         ecran: "simulateur",
         reponsesDeSeed: seed.reponses,
-        cle: etat.cle + 1,
+        numeroDeSimulation: etat.numeroDeSimulation + 1,
       }),
     ouvrirGalerie: () => modifier({ ecran: "galerie" }),
     fermerOutil: () => modifier({ ecran: "simulateur" }),
@@ -78,7 +78,7 @@ function actions(
       modifier({
         ecran: "simulateur",
         reponsesDeSeed: null,
-        cle: etat.cle + 1,
+        numeroDeSimulation: etat.numeroDeSimulation + 1,
       }),
   };
 }

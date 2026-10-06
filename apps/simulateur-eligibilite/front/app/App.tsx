@@ -53,7 +53,7 @@ export function App({
         <PageDuSimulateur>
           <Container>
             <Simulateur
-              key={navigation.cle}
+              key={navigation.numeroDeSimulation}
               reponsesDeSeed={navigation.reponsesDeSeed}
               onNouvelleSimulation={navigation.recommencer}
               panneauDeveloperTools={panneauDeveloperTools(navigation)}
