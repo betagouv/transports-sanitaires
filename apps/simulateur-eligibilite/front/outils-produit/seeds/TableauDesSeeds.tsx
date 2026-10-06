@@ -1,21 +1,11 @@
-// Le tableau du catalogue : une seed par ligne, cinq colonnes — ce qu'elle pose,
-// qui paie, ce qu'elle attend, ce que le moteur chargé en dit, et de quoi
-// l'ouvrir. Le découpage en sections, lui, est dans `GalerieSeeds.tsx` : ici on
-// sait lire une seed, pas comment le catalogue se range.
+// Le tableau du catalogue : une seed par ligne, quatre colonnes. Ce qu'elle
+// pose, ce qu'elle attend, ce que la décision en dit, et de quoi l'ouvrir. Le
+// découpage en sections, lui, est dans `GalerieSeeds.tsx` : ici on sait lire
+// une seed, pas comment le catalogue se range.
 
-import type { CibleSeed, EvaluationSeed, Seed } from "./seed";
+import type { EvaluationSeed, Seed } from "./seed";
 
 export type LigneSeed = { seed: Seed; evaluation: EvaluationSeed };
-
-// Intitulés courts des cibles, pour tenir dans une colonne.
-const LIBELLE_CIBLE: Record<CibleSeed, string> = {
-  cible_resultat_medical: "Résultat médical",
-  cible_transport_sanitaire_prescrit: "Transport",
-  cible_partie_2_requise: "Partie 2 requise",
-  cible_cas_final: "Cas final",
-  cible_document_a_remettre_au_patient: "Document",
-  cible_regime_financement: "Qui paie",
-};
 
 // Le titre de section passe par la légende du tableau : DSFR la rend visible
 // (`.fr-table caption`), un `fr-sr-only` y serait annulé.
@@ -55,9 +45,6 @@ export function TableauDesSeeds({
 
 // ---- implémentation ----
 
-// La colonne « Qui paie » porte le régime de financement : c'est lui qui dit d'un
-// coup d'œil si le transport est à la charge de l'Assurance Maladie — donc si la
-// situation est une non-conformité. Toutes les seeds le déclarent.
 function Ligne({
   seed,
   evaluation,
@@ -70,9 +57,6 @@ function Ligne({
   return (
     <tr>
       <IdentiteDeLaSeed seed={seed} />
-      <td className="fr-text--sm">
-        <strong>{String(seed.attendu.cible_regime_financement)}</strong>
-      </td>
       <td>
         <Attendus seed={seed} />
       </td>
@@ -93,15 +77,11 @@ function Ligne({
   );
 }
 
-// Les cinq colonnes décrivant une seed, identiques dans les deux tableaux : ce
-// qu'elle pose, qui paie, ce qu'elle attend, ce que le moteur en dit, et de quoi
-// l'ouvrir.
 function ColonnesDuCatalogue() {
   return (
     <thead>
       <tr>
         <th scope="col">Situation</th>
-        <th scope="col">Qui paie</th>
         <th scope="col">Attendu</th>
         <th scope="col">État</th>
         <th scope="col">
@@ -113,7 +93,7 @@ function ColonnesDuCatalogue() {
 }
 
 // Ce qui désigne la seed : son libellé, ce qu'elle raconte, et l'identifiant par
-// lequel les tests et `apercu-cerfa` la nomment.
+// lequel les tests la nomment.
 function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
   return (
     <th scope="row" style={{ maxWidth: "22rem" }}>
@@ -131,22 +111,17 @@ function IdentiteDeLaSeed({ seed }: { seed: Seed }) {
 function Attendus({ seed }: { seed: Seed }) {
   return (
     <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
-      {Object.entries(seed.attendu)
-        .filter(([cible]) => cible !== "cible_regime_financement")
-        .map(([cible, valeur]) => (
-          <li key={cible}>
-            {LIBELLE_CIBLE[cible as CibleSeed]} :{" "}
-            <strong>{String(valeur)}</strong>
-          </li>
-        ))}
+      {Object.entries(seed.attendu).map(([sortie, valeur]) => (
+        <li key={sortie}>
+          {sortie} : <strong>{String(valeur)}</strong>
+        </li>
+      ))}
     </ul>
   );
 }
 
 function Etat({ evaluation }: Pick<LigneSeed, "evaluation">) {
   const conforme = evaluation.ecarts.length === 0;
-  const proposeLeCerfa =
-    evaluation.valeurs.cible_cas_final === "prescription médicale de transport";
   return (
     <>
       <p
@@ -159,15 +134,12 @@ function Etat({ evaluation }: Pick<LigneSeed, "evaluation">) {
           className="fr-text--xs"
           style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
         >
-          {evaluation.ecarts.map((e) => (
-            <li key={e.cible}>
-              {LIBELLE_CIBLE[e.cible]} : {String(e.obtenu)}
+          {evaluation.ecarts.map((ecart) => (
+            <li key={ecart.sortie}>
+              {ecart.sortie} : {String(ecart.obtenu)}
             </li>
           ))}
         </ul>
-      )}
-      {proposeLeCerfa && (
-        <p className="fr-badge fr-badge--sm fr-badge--info fr-mt-1w">CERFA</p>
       )}
     </>
   );

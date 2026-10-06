@@ -1,25 +1,25 @@
-// Galerie de seeds — écran réservé au **service produit** (n° 4), sur tous les
+// Galerie de seeds : écran réservé au **service produit** (n° 4), sur tous les
 // environnements (cf. `App.tsx`). Il range le catalogue de `seeds/` par écran
-// d'atterrissage et ouvre celui-ci d'un clic : Page Résultat 1 pour les seeds de
-// Partie 1, Page Résultat 2 pour celles dont l'intérêt est le cas final — d'où
-// l'on télécharge le CERFA pré-rempli quand le cas s'y prête —, et le
-// questionnaire lui-même pour celles qui s'arrêtent en chemin.
+// d'atterrissage et ouvre celui-ci d'un clic : la page de résultat pour les
+// seeds complètes, le questionnaire lui-même pour celles qui s'arrêtent en
+// chemin.
 //
 // Le tableau, lui, est dans `TableauDesSeeds.tsx` : ici on sait quels écrans
 // existent, pas comment une seed se lit.
 //
-// La galerie rejoue chaque seed dans le moteur **du navigateur** : la colonne
-// « État » dit quelles situations de référence divergent, avant même d'ouvrir un
-// parcours.
+// La galerie rejoue chaque seed dans la décision **du navigateur** : la colonne
+// « État » dit quelles situations de référence divergent, avant même d'ouvrir
+// un parcours.
 
-import { useMemo } from "react";
 import { EcranPleinePage } from "../../app/EcranPleinePage";
-import { moteur } from "../../simulateur/moteur";
+import { decider } from "../../simulateur/parcours-factice";
 import { SEEDS } from "./catalogue";
 import { evaluerSeed, ouvreLeQuestionnaire, type Seed } from "./seed";
 import { type LigneSeed, TableauDesSeeds } from "./TableauDesSeeds";
 
 type Props = {
+  /** Injectable pour les tests (défaut = le catalogue). */
+  seeds?: readonly Seed[];
   onOuvrir: (seed: Seed) => void;
   onRetour: () => void;
 };
@@ -31,51 +31,39 @@ const SECTIONS: ReadonlyArray<{
   retient: (seed: Seed) => boolean;
 }> = [
   {
-    cle: "prescripteur",
-    titre: "Page Résultat 1 — résultat médical",
+    cle: "resultat",
+    titre: "Page de résultat",
     sousTitre:
-      "Situations tranchées en Partie 1. Le parcours reste franchissable jusqu'au résultat final.",
-    retient: (seed) =>
-      seed.outil === "prescripteur" && !ouvreLeQuestionnaire(seed),
-  },
-  {
-    cle: "secretariat",
-    titre: "Page Résultat 2 — résultat final",
-    sousTitre:
-      "Situations complètes (Partie 1 + Partie 2), ouvertes directement sur le cas final.",
-    retient: (seed) =>
-      seed.outil === "secretariat" && !ouvreLeQuestionnaire(seed),
+      "Situations complètes, ouvertes sur leur résultat. « Précédent » y rouvre le questionnaire.",
+    retient: (seed) => !ouvreLeQuestionnaire(seed),
   },
   {
     cle: "questionnaire",
-    titre: "Questionnaire — là où la seed s'arrête",
+    titre: "Questionnaire, là où la seed s'arrête",
     sousTitre:
-      "Situations volontairement incomplètes, ouvertes sur la première question sans réponse. Elles ne décident aucune cible : leurs colonnes sont donc vides, et c'est normal.",
+      "Situations volontairement incomplètes, ouvertes sur la première page sans réponse. Elles n'annoncent aucun attendu.",
     retient: ouvreLeQuestionnaire,
   },
 ];
 
-export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
-  // Une seule passe sur le catalogue : `setSituation` réinitialise le moteur à
-  // chaque seed, l'évaluation d'une seed n'influence donc pas la suivante.
-  const lignes = useMemo(
-    () =>
-      SEEDS.map((seed) => ({ seed, evaluation: evaluerSeed(moteur, seed) })),
-    [],
-  );
+export function GalerieSeeds({ seeds = SEEDS, onOuvrir, onRetour }: Props) {
+  const lignes = seeds.map((seed) => ({
+    seed,
+    evaluation: evaluerSeed(decider, seed),
+  }));
 
   return (
     <EcranPleinePage>
       <h1 className="fr-h3">Galerie de seeds</h1>
       <p className="fr-text--sm">
-        Les {SEEDS.length} situations de référence du simulateur (
-        <code>seeds/</code>), celles-là mêmes que rejouent les tests. Ouvrez-en
-        une pour consulter son résultat — et, pour un cas de prescription, le
-        CERFA pré-rempli. Les dernières ouvrent le questionnaire au lieu d'un
-        résultat : elles s'arrêtent en chemin, à l'écran qu'on veut voir.
+        Les {seeds.length} situations de référence du simulateur (
+        <code>seeds/</code>), celles-là mêmes que rejouent les tests.
       </p>
-      <ConformiteDuCatalogue lignes={lignes} />
-      <SeedsParEcranDAtterrissage lignes={lignes} onOuvrir={onOuvrir} />
+      {lignes.length === 0 ? (
+        <CatalogueVide />
+      ) : (
+        <CatalogueParEcranDAtterrissage lignes={lignes} onOuvrir={onOuvrir} />
+      )}
       <button
         type="button"
         className="fr-btn fr-btn--secondary"
@@ -89,45 +77,53 @@ export function GalerieSeeds({ onOuvrir, onRetour }: Props) {
 
 // ---- implémentation ----
 
-// Le moteur effectivement chargé confirme-t-il les attendus du catalogue ?
-function ConformiteDuCatalogue({ lignes }: { lignes: LigneSeed[] }) {
-  const enEcart = lignes.filter(
-    ({ evaluation }) => evaluation.ecarts.length > 0,
-  );
+function CatalogueVide() {
   return (
-    <div
-      className={`fr-alert fr-alert--sm fr-mb-4w fr-alert--${
-        enEcart.length === 0 ? "success" : "error"
-      }`}
-    >
+    <div className="fr-alert fr-alert--info fr-alert--sm fr-mb-4w">
       <p>
-        {enEcart.length === 0
-          ? "Le moteur chargé confirme les attendus des seeds."
-          : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
-              .map(({ seed }) => seed.libelle)
-              .join(", ")}.`}
+        Le catalogue est vide. Les situations de référence reviendront avec le
+        modèle d’éligibilité suivant.
       </p>
     </div>
   );
 }
 
-// Le catalogue est présenté par écran d'atterrissage : c'est ce qui distingue une
-// situation tranchée en Partie 1 d'une situation complète, et donc ce qu'on vient
-// chercher ici. Un troisième tableau ne mène pas à un résultat mais au
-// questionnaire, là où la seed s'arrête.
-function SeedsParEcranDAtterrissage({
+// Le catalogue est présenté par écran d'atterrissage : c'est ce qui distingue
+// une situation complète d'une situation qui s'arrête en chemin, et donc ce
+// qu'on vient chercher ici.
+function CatalogueParEcranDAtterrissage({
   lignes,
   onOuvrir,
 }: {
   lignes: LigneSeed[];
   onOuvrir: (seed: Seed) => void;
 }) {
-  return SECTIONS.map((section) => (
-    <TableauDesSeeds
-      key={section.cle}
-      section={section}
-      lignes={lignes.filter(({ seed }) => section.retient(seed))}
-      onOuvrir={onOuvrir}
-    />
-  ));
+  const enEcart = lignes.filter(
+    ({ evaluation }) => evaluation.ecarts.length > 0,
+  );
+  return (
+    <>
+      <div
+        className={`fr-alert fr-alert--sm fr-mb-4w fr-alert--${
+          enEcart.length === 0 ? "success" : "error"
+        }`}
+      >
+        <p>
+          {enEcart.length === 0
+            ? "La décision confirme les attendus des seeds."
+            : `${enEcart.length} seed(s) en écart avec leurs attendus : ${enEcart
+                .map(({ seed }) => seed.libelle)
+                .join(", ")}.`}
+        </p>
+      </div>
+      {SECTIONS.map((section) => (
+        <TableauDesSeeds
+          key={section.cle}
+          section={section}
+          lignes={lignes.filter(({ seed }) => section.retient(seed))}
+          onOuvrir={onOuvrir}
+        />
+      ))}
+    </>
+  );
 }

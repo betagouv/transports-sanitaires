@@ -7,7 +7,7 @@ import {
   OutilsProduit,
 } from "../../front/outils-produit/OutilsProduit";
 import { Rattachement } from "../../front/rattachement/Rattachement";
-import { Prescripteur } from "../../front/simulateur/prescripteur/Prescripteur";
+import { Simulateur } from "../../front/simulateur/Simulateur";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import {
   remplirRattachement,
@@ -103,11 +103,10 @@ describe("encadré des outils produit, écran de rattachement", () => {
   });
 });
 
-describe("encadré des outils produit — début du parcours prescripteur", () => {
+describe("encadré des outils produit, début du parcours", () => {
   it("y range l'accès à la galerie, hors du parcours", () => {
     render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
+      <Simulateur
         onNouvelleSimulation={() => {}}
         panneauOutilsProduit={
           <OutilsProduit>
@@ -127,12 +126,7 @@ describe("encadré des outils produit — début du parcours prescripteur", () =
   });
 
   it("n'apparaît pas quand l'accès n'est pas fourni", () => {
-    render(
-      <Prescripteur
-        onPasserAuSecretariat={() => {}}
-        onNouvelleSimulation={() => {}}
-      />,
-    );
+    render(<Simulateur onNouvelleSimulation={() => {}} />);
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();
   });
 });
@@ -161,7 +155,7 @@ describe("App câble les outils produit", () => {
 
     expect(
       await screen.findByRole("group", {
-        name: /^concernant son déplacement, le patient/i,
+        name: /^quelle boisson souhaitez-vous/i,
       }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("region", ENCADRE)).toBeNull();

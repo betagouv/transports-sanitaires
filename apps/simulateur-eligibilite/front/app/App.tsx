@@ -1,50 +1,41 @@
-// Racine de l'app : **écran-porte** de rattachement devant les simulateurs.
+// Racine de l'app : **écran-porte** de rattachement devant le simulateur.
 // Tant que l'établissement et le service ne sont pas renseignés, seul l'écran de
 // rattachement s'affiche : impossible de simuler sans s'être rattaché (voir
-// docs/knowledge/adr/identification.md — ADR-1).
+// docs/knowledge/adr/identification.md, ADR-1).
 //
 // À la validation, on range le rattachement saisi en session (pour Matomo), on
 // déclare au serveur un éventuel service saisi sous « Autre », sans attendre sa
 // réponse, puis on bascule sur le simulateur.
-//
-// Deux outils partagent le même moteur derrière la porte : le parcours médical
-// du **prescripteur** et le parcours administratif du **secrétariat**. Le
-// premier passe la main au second via la passation (situation de Partie 1).
 
-import type { Situation } from "publicodes";
 import { lazy, type ReactNode, Suspense } from "react";
 import type { RattachementSaisi } from "../../shared/rattachement-saisi";
 import type { Referentiel } from "../../shared/referentiel";
-import { BoutonCerfa } from "../outils-produit/beta/cerfa/BoutonCerfa";
-import type { OptionsGénération } from "../outils-produit/beta/cerfa/document";
 import { BoutonOutil, OutilsProduit } from "../outils-produit/OutilsProduit";
+import type { Seed } from "../outils-produit/seeds/seed";
 import { declarerViaApi } from "../rattachement/declaration-http";
 import { Rattachement } from "../rattachement/Rattachement";
 import { referentielHttp } from "../rattachement/referentiel-http";
 import { rangerRattachement } from "../rattachement/session";
-import { moteur } from "../simulateur/moteur";
-import { emettrePassation } from "../simulateur/passation";
-import { Prescripteur } from "../simulateur/prescripteur/Prescripteur";
-import { Secretariat } from "../simulateur/secretariat/Secretariat";
+import { Simulateur } from "../simulateur/Simulateur";
 import { BandeauVersion } from "./BandeauVersion";
 import { EcranPleinePage } from "./EcranPleinePage";
 import type { Navigation } from "./navigation";
-import { outilDeLUrl, useNavigation } from "./navigation";
+import { useNavigation } from "./navigation";
 
 type Props = {
   // Injectables pour les tests (défauts = production same-origin).
   referentiel?: Referentiel;
   declarer?: (saisie: RattachementSaisi) => void;
-  /** Gabarit CERFA (défaut = asset servi par l'application, chargé au clic). */
-  chargerGabarit?: OptionsGénération["chargerGabarit"];
+  /** Seeds de la galerie (défaut = le catalogue, chargé à la demande). */
+  seeds?: readonly Seed[];
 };
 
 export function App({
   referentiel = referentielHttp,
   declarer = declarerViaApi,
-  chargerGabarit,
+  seeds,
 }: Props = {}) {
-  const navigation = useNavigation(outilDeLUrl);
+  const navigation = useNavigation();
 
   return (
     <>
@@ -55,13 +46,18 @@ export function App({
           onRattache={navigation.rattacher}
         />
       )}
-      {navigation.ecran === "galerie" && <Galerie navigation={navigation} />}
+      {navigation.ecran === "galerie" && (
+        <Galerie navigation={navigation} seeds={seeds} />
+      )}
       {navigation.ecran === "simulateur" && (
         <PageDuSimulateur>
           <EcranPleinePage>
             <Simulateur
-              navigation={navigation}
-              chargerGabarit={chargerGabarit}
+              key={navigation.cle}
+              reponsesDeSeed={navigation.reponsesDeSeed}
+              onNouvelleSimulation={navigation.recommencer}
+              panneauOutilsProduit={panneauOutilsProduit(navigation)}
+              traceDebug={navigation.outilsProduit}
             />
           </EcranPleinePage>
           <BandeauVersion />
@@ -94,10 +90,17 @@ function PageDuSimulateur({ children }: { children: ReactNode }) {
   );
 }
 
-function Galerie({ navigation }: { navigation: Navigation }) {
+function Galerie({
+  navigation,
+  seeds,
+}: {
+  navigation: Navigation;
+  seeds?: readonly Seed[];
+}) {
   return (
     <Suspense fallback={null}>
       <GalerieSeeds
+        seeds={seeds}
         onOuvrir={navigation.ouvrirSeed}
         onRetour={navigation.fermerOutil}
       />
@@ -138,49 +141,13 @@ const GalerieSeeds = lazy(() =>
   })),
 );
 
-type SimulateurProps = {
-  navigation: Navigation;
-  chargerGabarit?: OptionsGénération["chargerGabarit"];
-};
-
-function Simulateur({ navigation, chargerGabarit }: SimulateurProps) {
-  if (navigation.outil === "secretariat") {
-    return (
-      <Secretariat
-        key={navigation.cle}
-        situationFinale={navigation.situationDev}
-        onNouvelleSimulation={navigation.recommencer}
-        onRetourAuResultatMedical={navigation.revenirAuResultatMedical}
-        documentTelechargeable={documentTelechargeable(
-          navigation.outilsProduit,
-          chargerGabarit,
-        )}
-        traceDebug={navigation.outilsProduit}
-      />
-    );
-  }
-  return (
-    <Prescripteur
-      key={navigation.cle}
-      situationInitiale={navigation.situationDev}
-      onPasserAuSecretariat={(situationP1: Situation<string>) => {
-        emettrePassation(situationP1);
-        navigation.passerAuSecretariat();
-      }}
-      onNouvelleSimulation={navigation.recommencer}
-      panneauOutilsProduit={panneauOutilsProduit(navigation)}
-      traceDebug={navigation.outilsProduit}
-    />
-  );
-}
-
 // Les branchements du simulateur vers les outils produit se décident ici, et
 // nulle part ailleurs : le simulateur reçoit du contenu déjà composé, il
 // n'importe rien de `outils-produit/`. C'est aussi ici que se lit, d'un coup
-// d'œil, tout ce que le service n° 4 déverrouille dans le parcours — le panneau
-// de la galerie, le document téléchargeable, et les traces de debug (`traceDebug`,
-// un booléen plutôt qu'un contenu composé : elles lisent l'état vivant du
-// parcours, qu'`App` n'a pas sous la main).
+// d'œil, tout ce que le service n° 4 déverrouille dans le parcours : le panneau
+// de la galerie et les traces de debug (`traceDebug`, un booléen plutôt qu'un
+// contenu composé : elles lisent l'état vivant du parcours, qu'`App` n'a pas
+// sous la main).
 //
 // Galerie de seeds depuis le début du parcours : mêmes situations qu'à
 // l'écran-porte, sans avoir à ressortir du simulateur.
@@ -192,22 +159,5 @@ function panneauOutilsProduit(navigation: Navigation) {
         Galerie de seeds
       </BoutonOutil>
     </OutilsProduit>
-  );
-}
-
-// Le pré-remplissage du CERFA reste réservé au service n° 4, le temps d'être
-// éprouvé. La Page Résultat 2 décide, elle, si le modèle nomme un document à
-// remettre ; `BoutonCerfa` sait lequel des deux formulaires en est un, ou aucun.
-function documentTelechargeable(
-  outilsProduit: boolean,
-  chargerGabarit: OptionsGénération["chargerGabarit"] | undefined,
-) {
-  if (!outilsProduit) return undefined;
-  return (situation: Situation<string>) => (
-    <BoutonCerfa
-      moteur={moteur}
-      situation={situation}
-      chargerGabarit={chargerGabarit}
-    />
   );
 }

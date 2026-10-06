@@ -1,290 +1,236 @@
-// Pilotage d'un parcours de questions `@publicodes/forms` : l'état dérivé du
-// formulaire, ce qu'il reste à répondre et la navigation entre pages. Le rendu
-// est dans `Parcours.tsx`, l'avancement automatique dans
-// `avancement-automatique.ts`, le suivi analytics dans `suivi-de-parcours.ts`.
+// Pilotage d'un parcours de questions : la page ouverte, son brouillon, ce
+// qu'il reste à répondre et la navigation entre pages. Le rendu est dans
+// `Parcours.tsx`, l'avancement automatique dans `avancement-automatique.ts`,
+// le suivi analytics dans `suivi-de-parcours.ts`.
 
-import type {
-  EvaluatedFormElement,
-  FormPageElementProp,
-  FormState,
-} from "@publicodes/forms";
-import { FormBuilder } from "@publicodes/forms";
-import type { Situation } from "publicodes";
-import { type RefObject, useEffect, useState } from "react";
-import type { Outil } from "../../app/outil";
-import { avecEntreesCalculees } from "../entrees-calculees";
-import { moteur } from "../moteur";
+import { useState } from "react";
 import type { AvancementAutomatique } from "./avancement-automatique";
-import {
-  pageAChoixUnique,
-  useAvancementAutomatique,
-} from "./avancement-automatique";
-import { formBuilder } from "./constructeur-de-formulaire";
-import type { Mosaique } from "./mosaique";
-import { mosaiqueDe } from "./mosaique";
-import { regleDeComplétude } from "./pagination";
-import { avecCalculs } from "./recalcul";
-import { avecReponse, avecReponses } from "./reponse-unique";
-import { saisieACorriger } from "./saisie-a-corriger";
-import { avecSuiteRevue } from "./suite-du-parcours";
+import { useAvancementAutomatique } from "./avancement-automatique";
+import { avecPageValidee } from "./invalidation";
+import type { Page, Question, Reponse, Reponses } from "./question";
+import { estRepondue, pagesPosees, questionsPosees } from "./question";
 import type { SuiviDeParcours } from "./suivi-de-parcours";
 import { useSuiviDeParcours } from "./suivi-de-parcours";
 
-export type Champ = EvaluatedFormElement & FormPageElementProp;
-
-// Plusieurs réponses booléennes à appliquer d'un bloc (cf. `repondrePlusieurs`).
-export type Reponses = Array<[string, boolean | undefined]>;
-
-export type Options = {
-  // Étiquette analytics de l'outil émetteur — fait aussi partie du nom des
-  // évènements Matomo, voir `NomEvenement` dans `analytics/evenements.ts`.
-  outil: Outil;
-  // Règles cibles : leur graphe de dépendances détermine les questions posées.
-  cibles: readonly string[];
-  // Réponses déjà connues (ex. la Partie 1 pour le secrétariat) : les questions
-  // correspondantes ne sont pas reposées.
-  situationInitiale?: Situation<string>;
-  // Reprise d'un parcours déjà mené — le retour depuis une page de résultat.
-  // Le questionnaire rouvre sur sa dernière page, réponses intactes, et le
-  // suivi analytics ne réémet pas un début de simulation.
-  etatInitial?: FormState<string>;
-  onTermine: (situation: Situation<string>, etat: FormState<string>) => void;
+/** Où en est un parcours : ses réponses validées, et la page ouverte. */
+export type EtatDuParcours = {
+  readonly reponses: Reponses;
+  readonly page: string;
 };
 
-type Etat = {
-  champs: readonly Champ[];
-  // État brut du formulaire — la situation saisie, et les pages traversées ou
-  // à venir. Seule la trace de debug a besoin de ce niveau de détail.
-  formState: FormState<string>;
-  current: number;
-  pageCount: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  // Toutes les cibles sont déjà déterminées : il n'y a rien à demander.
-  aucuneQuestion: boolean;
+export type Options = {
+  // Les pages de ce parcours, dans l'ordre. Au moins une doit se poser.
+  pages: readonly Page[];
+  // Réponses acquises avant ce parcours. Aucune de ses pages ne les repose :
+  // elles sont lues par les conditions, et figées par construction. C'est le
+  // verrou.
+  reponsesAcquises?: Reponses;
+  // Reprise d'un parcours déjà mené, le retour depuis une page de résultat. Il
+  // rouvre sur sa page, réponses intactes, sans réémettre un début.
+  etatInitial?: EtatDuParcours;
+  // Le parcours émet-il ses évènements de mesure d'audience ?
+  mesure: boolean;
+  onTermine: (reponses: Reponses, etat: EtatDuParcours) => void;
+};
+
+type Vue = {
+  page: Page;
+  // Les pages posées, pour la trace de debug.
+  pages: readonly Page[];
+  questions: readonly Question[];
+  // Les réponses de la page telles qu'elles sont à l'écran. Elles ne comptent
+  // qu'une fois la page validée.
+  brouillon: Reponses;
+  reponses: Reponses;
+  aUnePrecedente: boolean;
   // Une question affichée attend encore sa réponse : on ne peut pas avancer.
   questionsEnAttente: boolean;
   // Avancer conclura le parcours au lieu d'ouvrir une page de plus.
-  parcoursTermine: boolean;
-  // La page n'est faite que de choix uniques : elle relève de l'avancement
-  // automatique, et non du bouton « Suivant » (cf. `useAvancementAutomatique`).
-  pageAChoixUnique: boolean;
+  derniere: boolean;
 };
 
 type Actions = {
-  repondre: (id: string, valeur: unknown) => void;
-  repondrePlusieurs: (reponses: Reponses) => void;
+  repondre: (id: string, reponse: Reponse | undefined) => void;
   avancer: () => void;
   reculer: () => void;
 };
 
-export type Passation = Etat &
+export type Passation = Vue &
   Actions & {
     // La page avancera d'elle-même : le bouton « Suivant » n'a pas à s'afficher.
     avancerSeul: boolean;
   };
 
-// Un même moteur amorcé avec une situation initiale différente produit deux
-// questionnaires distincts (Partie 1 vs Partie 2), sans logique dédiée.
 export function usePassation(options: Options): Passation {
-  const [formState, setFormState] = useState<FormState<string>>(() =>
-    etatDeDepart(options),
-  );
-  const etat = lireEtat(formState);
+  const [etat, changer] = useState<Etat>(() => etatDeDepart(options));
+  const vue = lire(options.pages, etat);
   const suivi = useSuiviDeParcours(
-    options.outil,
-    etat.current,
-    // Une reprise ne réémet pas un début de simulation : c'est le même parcours.
-    !etat.aucuneQuestion && options.etatInitial === undefined,
+    vue.pages.indexOf(vue.page) + 1,
+    options.mesure,
+    options.etatInitial !== undefined,
   );
-  useConclusionSansQuestion(etat, formState, options, suivi.termine);
-
-  const gestes = actions({ formState, setFormState, etat, options, suivi });
+  const gestes = actions({ etat, changer, vue, options, suivi });
   const avancement = useAvancementAutomatique(
-    etat.current,
-    etat.pageAChoixUnique,
-    etat.questionsEnAttente,
+    etat.page,
+    pageAChoixUnique(vue.questions),
+    vue.questionsEnAttente,
     gestes.avancer,
   );
+  return { ...vue, ...avecRelance(gestes, avancement) };
+}
 
-  return { ...etat, ...avecRelance(gestes, avancement) };
+/**
+ * L'état qu'aurait laissé un utilisateur ayant donné ces réponses : ouvert sur
+ * la première page qui attend encore une réponse, sinon sur la dernière. C'est
+ * ce qui permet à une seed d'avoir un parcours derrière elle, et donc un
+ * « Précédent ».
+ */
+export function etatApresLesReponses(
+  pages: readonly Page[],
+  reponses: Reponses,
+): EtatDuParcours & { complet: boolean } {
+  const posees = pagesPosees(pages, reponses);
+  const enAttente = posees.find((page) =>
+    questionsPosees(page, reponses).some(
+      (question) => !estRepondue(question, reponses[question.id]),
+    ),
+  );
+  const ouverte = enAttente ?? posees.at(-1);
+  if (!ouverte) throw new Error("Ce parcours ne pose aucune page.");
+  return { reponses, page: ouverte.id, complet: enAttente === undefined };
 }
 
 // ---- implémentation ----
 
+type Etat = EtatDuParcours & { readonly brouillon: Reponses };
+
 type Contexte = {
-  formState: FormState<string>;
-  setFormState: (etat: FormState<string>) => void;
   etat: Etat;
+  changer: (etat: Etat) => void;
+  vue: Vue;
   options: Options;
   suivi: SuiviDeParcours;
 };
 
-function lireEtat(formState: FormState<string>): Etat {
-  const { current, pageCount, hasNextPage, hasPreviousPage } =
-    formBuilder.pagination(formState);
-  const page = formBuilder.currentPage(formState);
-  const questionsEnAttente = resteARepondre(page.elements, formState.situation);
-  return {
-    champs: page.elements,
-    formState,
-    current,
-    pageCount,
-    hasNextPage,
-    hasPreviousPage,
-    aucuneQuestion: !hasNextPage && page.elements.length === 0,
-    questionsEnAttente,
-    parcoursTermine: !hasNextPage && !questionsEnAttente,
-    pageAChoixUnique: pageAChoixUnique(page.elements),
-  };
+function etatDeDepart(options: Options): Etat {
+  const reponses = options.etatInitial?.reponses ?? options.reponsesAcquises;
+  const depart =
+    options.etatInitial ?? etatApresLesReponses(options.pages, reponses ?? {});
+  const page = options.pages.find((p) => p.id === depart.page);
+  if (!page) throw new Error(`Page inconnue : « ${depart.page} ».`);
+  return surLaPage(page, depart.reponses);
 }
 
-function etatDeDepart(options: Options): FormState<string> {
-  return (
-    options.etatInitial ??
-    formBuilder.start(
-      FormBuilder.newState(
-        avecEntreesCalculees(options.situationInitiale ?? {}),
-      ),
-      ...options.cibles,
-    )
+// Ouvrir une page y dépose ses réponses validées : c'est ce qui la rouvre
+// telle qu'elle a été quittée, et ce qu'un « Précédent » sans validation
+// abandonne.
+function surLaPage(page: Page, reponses: Reponses): Etat {
+  const brouillon = Object.fromEntries(
+    page.questions
+      .filter((question) => reponses[question.id] !== undefined)
+      .map((question) => [question.id, reponses[question.id] as Reponse]),
   );
+  return { reponses, page: page.id, brouillon };
 }
 
-function actions({
-  formState,
-  setFormState,
-  etat,
-  options,
-  suivi,
-}: Contexte): Actions {
+function lire(toutes: readonly Page[], etat: Etat): Vue {
+  const pages = pagesPosees(toutes, etat.reponses);
+  const page = pages.find((p) => p.id === etat.page);
+  if (!page) throw new Error(`La page « ${etat.page} » ne se pose plus.`);
+  const questions = questionsPosees(page, lues(etat));
+  const questionsEnAttente = questions.some(
+    (question) => !estRepondue(question, etat.brouillon[question.id]),
+  );
   return {
-    repondre: (id, valeur) =>
-      setFormState(
-        avecRecalcul(formState, (fs) => avecReponse(fs, id, valeur)),
-      ),
-    repondrePlusieurs: (reponses) =>
-      setFormState(avecRecalcul(formState, (fs) => avecReponses(fs, reponses))),
-    avancer: () => {
-      // Sécurité : ne jamais avancer (ni conclure le parcours) tant qu'une
-      // question posée reste sans réponse — le bouton est déjà désactivé, ceci
-      // couvre une soumission clavier éventuelle.
-      if (etat.questionsEnAttente) return;
-      const revu = avecSuiteRevue(formState);
-      if (!formBuilder.pagination(revu).hasNextPage)
-        return conclure(revu, options, suivi);
-      const suivante = formBuilder.goToNextPage(revu);
-      setFormState(suivante);
-      suivi.etapeFranchie(formBuilder.pagination(suivante).current);
-    },
-    // Revenir en arrière ne retire aucune réponse et ne raccourcit pas le
-    // parcours : la page rouvre telle qu'elle a été quittée, et les pages en
-    // aval restent dans `pages`. Les en sortir les perdrait — `computeNextFields`
-    // ne rend que ce qui *manque*, et une question répondue ne manque plus.
-    reculer: () => setFormState(formBuilder.goToPreviousPage(formState)),
+    page,
+    pages,
+    questions,
+    brouillon: etat.brouillon,
+    reponses: etat.reponses,
+    aUnePrecedente: pages.indexOf(page) > 0,
+    questionsEnAttente,
+    derniere:
+      !questionsEnAttente &&
+      pageSuivante(toutes, page, validees(toutes, etat, page)) === undefined,
   };
 }
 
-// La situation précédente est capturée avant l'appel qui mute son argument
-// (`avecReponse`/`avecReponses` → `handleInputChange`, cf. AGENTS.md) :
-// `avecEntreesCalculees` en renvoie une copie, insensible à la mutation qui
-// suit. TS973-11 s'en sert pour invalider une adresse dont le lieu déduit a
-// changé de type entre les deux saisies (`recalcul.ts`).
-function avecRecalcul(
-  formState: FormState<string>,
-  produire: (formState: FormState<string>) => FormState<string>,
-): FormState<string> {
-  const precedente = avecEntreesCalculees(formState.situation);
-  return avecCalculs(produire(formState), precedente);
+// Ce que les conditions lisent : les réponses validées, et par-dessus celles
+// de la page en cours, pour qu'une question puisse en révéler une autre sur la
+// même page.
+function lues(etat: Etat): Reponses {
+  return { ...etat.reponses, ...etat.brouillon };
 }
 
-// Toute saisie relance l'avancement automatique — y compris au retour sur une
+// Les réponses du parcours, la page courante validée. Une question que la
+// page ne pose plus n'y laisse pas de réponse.
+function validees(toutes: readonly Page[], etat: Etat, page: Page): Reponses {
+  const posees = questionsPosees(page, lues(etat)).map((q) => q.id);
+  const saisies = Object.fromEntries(
+    Object.entries(etat.brouillon).filter(([id]) => posees.includes(id)),
+  );
+  return avecPageValidee(toutes, etat.reponses, page, saisies);
+}
+
+function pageSuivante(toutes: readonly Page[], page: Page, reponses: Reponses) {
+  const pages = pagesPosees(toutes, reponses);
+  return pages[pages.findIndex((p) => p.id === page.id) + 1];
+}
+
+function actions({ etat, changer, vue, options, suivi }: Contexte): Actions {
+  return {
+    repondre: (id, reponse) =>
+      changer({ ...etat, brouillon: avecReponse(etat.brouillon, id, reponse) }),
+    avancer: () => {
+      // Le bouton est déjà désactivé, ceci couvre une soumission au clavier.
+      if (vue.questionsEnAttente) return;
+      const reponses = validees(options.pages, etat, vue.page);
+      const suivante = pageSuivante(options.pages, vue.page, reponses);
+      if (!suivante) {
+        suivi.parcoursConclu();
+        return options.onTermine(reponses, { reponses, page: vue.page.id });
+      }
+      changer(surLaPage(suivante, reponses));
+      suivi.etapeFranchie(vue.pages.indexOf(vue.page) + 2);
+    },
+    // Reculer ne valide rien : le brouillon de la page quittée est abandonné,
+    // et la page précédente rouvre sur ses réponses validées.
+    reculer: () => {
+      const precedente = vue.pages[vue.pages.indexOf(vue.page) - 1];
+      if (precedente) changer(surLaPage(precedente, etat.reponses));
+    },
+  };
+}
+
+function avecReponse(
+  brouillon: Reponses,
+  id: string,
+  reponse: Reponse | undefined,
+): Reponses {
+  const { [id]: _retiree, ...reste } = brouillon;
+  return reponse === undefined ? reste : { ...reste, [id]: reponse };
+}
+
+// Toute saisie relance l'avancement automatique, y compris au retour sur une
 // page déjà répondue, où il avait rendu la main au bouton « Suivant ».
 function avecRelance(gestes: Actions, avancement: AvancementAutomatique) {
   return {
     ...gestes,
     avancerSeul: avancement.avancerSeul,
-    repondre: (id: string, valeur: unknown) => {
+    repondre: (id: string, reponse: Reponse | undefined) => {
       avancement.aLaSaisie();
-      gestes.repondre(id, valeur);
-    },
-    repondrePlusieurs: (reponses: Reponses) => {
-      avancement.aLaSaisie();
-      gestes.repondrePlusieurs(reponses);
+      gestes.repondre(id, reponse);
     },
   };
 }
 
-// Ce qui manque encore pour quitter la page. Une saisie en erreur la retient
-// toujours (`saisie-a-corriger.ts`). Sinon, deux régimes : quand l'étape porte
-// une règle de complétude du modèle, elle tranche seule, facultatif compris ;
-// partout ailleurs, la page se quitte dès que chacune de ses questions a
-// répondu. Le modèle dit lui-même ce qui est facultatif, l'application ne le
-// décide plus (le complément d'adresse et le pays, jadis dans `Secretariat.tsx`).
-function resteARepondre(
-  champs: readonly Champ[],
-  situation: Situation<string>,
-): boolean {
-  if (champs.some((champ) => saisieACorriger(champ.id, situation))) return true;
-  const complet = regleDeComplétude(champs.map((champ) => champ.id));
-  if (complet === undefined) return resteUneQuestion(champs, situation);
-  return moteur.setSituation(situation).evaluate(complet).nodeValue !== true;
-}
-
-// Une question affichée (applicable et visible) est « posée » : elle doit être
-// répondue avant de pouvoir avancer. Le parcours n'est réellement terminé que
-// si la page courante est entièrement répondue ET qu'aucune page suivante
-// n'existe : avec le séquencement conditionnel du modèle, répondre peut révéler
-// de nouvelles pages (`nextPages` recalculées à chaque saisie), donc
-// `!hasNextPage` seul ne prouve pas qu'on est au bout — il vaut aussi « vrai »
-// sur une page dont les questions ne sont pas encore répondues.
-// Une mosaïque (vrai choix multiple) n'est répondue que si au moins une option
-// est cochée OU l'option « aucun » l'est. On ne peut PAS se fier à l'`answered`
-// par élément : à chaque clic, `repondrePlusieurs` écrit toutes les options
-// (dont les non touchées, figées à `false`) dans la situation — elles comptent
-// alors toutes comme « answered », y compris après un coche→décoche qui laisse
-// le groupe visuellement vide mais sans « aucun » explicite.
-function resteUneQuestion(
-  champs: readonly Champ[],
-  situation: Situation<string>,
-): boolean {
-  const evalue = moteur.setSituation(situation);
-  const coche = (id: string) => evalue.evaluate(id).nodeValue === true;
-  const repondue = (m: Mosaique) =>
-    m.optionIds.some(coche) || (m.aucun ? coche(m.aucun.id) : false);
-  const groupesEvalues = new Set<string>();
-  return champs.some((champ) => {
-    if (!champ.applicable || champ.hidden) return false;
-    const m = mosaiqueDe(champ.id);
-    if (!m) return !champ.answered;
-    if (groupesEvalues.has(m.parentId)) return false;
-    groupesEvalues.add(m.parentId);
-    return !repondue(m);
-  });
-}
-
-function conclure(
-  formState: FormState<string>,
-  options: Options,
-  suivi: SuiviDeParcours,
-) {
-  suivi.parcoursConclu();
-  options.onTermine(formState.situation, formState);
-}
-
-// Parcours court (ex. cas tranché dès la Partie 1) : aucune question à poser,
-// on termine immédiatement. Le ref évite le double-déclenchement en StrictMode.
-function useConclusionSansQuestion(
-  etat: Etat,
-  formState: FormState<string>,
-  options: Options,
-  termineRef: RefObject<boolean>,
-) {
-  const { aucuneQuestion } = etat;
-  useEffect(() => {
-    if (aucuneQuestion && !termineRef.current) {
-      termineRef.current = true;
-      options.onTermine(formState.situation, formState);
-    }
-  }, [aucuneQuestion, formState, options, termineRef]);
+// L'avancement automatique est réservé aux pages faites de choix uniques. Un
+// choix multiple ou une saisie gardent leur bouton, et il suffit d'un seul sur
+// la page pour que toute la page le garde : on n'avance pas une page à moitié
+// remplie.
+function pageAChoixUnique(questions: readonly Question[]): boolean {
+  return (
+    questions.length > 0 &&
+    questions.every((question) => question.forme === "choix unique")
+  );
 }

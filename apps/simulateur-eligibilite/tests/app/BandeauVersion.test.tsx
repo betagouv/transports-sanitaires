@@ -9,30 +9,17 @@ import { BandeauVersion } from "../../front/app/BandeauVersion";
 import { snapshotReferentiel } from "../../shared/referentiel";
 import { seRattacher } from "../porte";
 
-// Le pied de page dit quelle version, quel code et quel modèle un utilisateur a
-// sous les yeux. Ses trois valeurs sont figées par Vite à la construction : ce
+// Le pied de page dit quelle version et quel code un utilisateur a
+// sous les yeux. Ses deux valeurs sont figées par Vite à la construction : ce
 // fichier vérifie qu'elles arrivent bien jusqu'à l'écran, et qu'elles ne sont
 // pas inventées.
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const versionDesRegles = readFileSync(
-  join(racine, "regles/VERSION"),
-  "utf8",
-).trim();
 const versionDeLApp = JSON.parse(
   readFileSync(join(racine, "package.json"), "utf8"),
 ).version;
 
 describe("bandeau de version", () => {
-  it("affiche la version du modèle telle que `regles/VERSION` la déclare", () => {
-    // La garde contre la dérive : si la recopie d'une livraison oublie de mettre
-    // `regles/VERSION` à jour, c'est un mensonge affiché à tous les utilisateurs.
-    render(<BandeauVersion />);
-    expect(
-      screen.getByText(new RegExp(`règles ${versionDesRegles}`)),
-    ).toBeInTheDocument();
-  });
-
   it("affiche la version telle que `package.json` la déclare", () => {
     // Même garde, pour la version de l'app : un `pnpm version` qui n'irait pas
     // jusqu'à l'écran laisserait le support raisonner sur la précédente.
@@ -61,7 +48,7 @@ describe("bandeau de version", () => {
     render(<BandeauVersion />);
     // Sept caractères hexadécimaux, ou l'aveu qu'on ne sait pas — jamais rien.
     expect(screen.getByRole("contentinfo")).toHaveTextContent(
-      /commit (?:[0-9a-f]{7}|inconnu) · règles/,
+      /commit (?:[0-9a-f]{7}|inconnu)$/,
     );
   });
 

@@ -1,66 +1,57 @@
 // Ce qu'est un tableau de remplissage, et comment on le parcourt.
 //
-// Chaque CERFA en porte un : `pmt/remplissage-pmt.ts`, `dap/remplissage-dap.ts`.
-// La clé y est le nom brut d'un champ AcroForm, la valeur une fonction des
-// réponses de la simulation — de sorte qu'une case du formulaire se comprenne en
-// lisant sa ligne. Ce module tient la forme commune ; les tableaux tiennent le
-// fond.
+// Chaque formulaire en porte un. La clé y est le nom brut d'un champ AcroForm,
+// la valeur une fonction des réponses, de sorte qu'une case du formulaire se
+// comprenne en lisant sa ligne. Ce module tient la forme commune ; les tableaux
+// tiennent le fond.
 
-import type { Saisie, ÉtatCoché } from "./remplir-cerfa.ts";
-import type { Reponses } from "./reponses.ts";
+import type { Saisie } from "./remplir-cerfa";
 
 /** Qui remplira un champ que le simulateur ne déduit pas. */
 type Qui = "le prescripteur" | "le transporteur" | "la caisse";
 
 /**
- * Ce qu'un champ reçoit, la situation lue :
+ * Ce qu'un champ reçoit, les réponses lues :
  *
- *  - `{ texte }` / `{ coché }` / `{ texteMédical }` — le simulateur a déduit
- *    quoi y écrire, ce dernier étant composé puis mesuré plutôt qu'écrit tel
- *    quel (`depuisLeMapping` sur une case `composition: "EM-2"`) ;
- *  - `undefined` — il sait le déduire, mais cette situation ne l'appelle pas ;
- *  - `{ laisséÀ }` — il ne sait pas, et dit qui s'en chargera.
+ *  - `{ texte }` / `{ coché }` / `{ texteMesuré }` : le simulateur a déduit
+ *    quoi y écrire, ce dernier étant mesuré avant d'être écrit ;
+ *  - `undefined` : il sait le déduire, mais cette situation ne l'appelle pas ;
+ *  - `{ laisséÀ }` : il ne sait pas, et dit qui s'en chargera.
  *
  * Les deux derniers cas laissent le champ vierge de la même façon. Les distinguer
  * n'est pas pour le PDF : c'est pour qui lit le tableau.
  */
 type Valeur =
   | { readonly texte: string }
-  | { readonly coché: ÉtatCoché }
-  | { readonly texteMédical: string }
+  | { readonly coché: string }
+  | { readonly texteMesuré: string }
   | { readonly laisséÀ: Qui; readonly raison: string }
   | undefined;
 
 /** Comment un champ se remplit : une fonction des réponses, et rien d'autre. */
-export type Remplissage = (réponses: Reponses) => Valeur;
+export type Remplissage<Reponses> = (réponses: Reponses) => Valeur;
 
 /** Un formulaire entier : un champ AcroForm par clé, sans exception. */
-export type Tableau = Readonly<Record<string, Remplissage>>;
+export type Tableau<Reponses> = Readonly<Record<string, Remplissage<Reponses>>>;
 
 /** Un texte écrit dans le champ. La chaîne vide le laisse vierge. */
-export function écrit(quoi: (réponses: Reponses) => string): Remplissage {
+export function écrit<Reponses>(
+  quoi: (réponses: Reponses) => string,
+): Remplissage<Reponses> {
   return (réponses) => {
     const texte = quoi(réponses);
     return texte === "" ? undefined : { texte };
   };
 }
 
-export function auPrescripteur(raison: string): Remplissage {
-  return () => ({ laisséÀ: "le prescripteur", raison });
-}
-
-export function auTransporteur(raison: string): Remplissage {
-  return () => ({ laisséÀ: "le transporteur", raison });
-}
-
-/** Rubriques que l'organisme d'assurance maladie renseigne après coup. */
-export function àLaCaisse(raison: string): Remplissage {
-  return () => ({ laisséÀ: "la caisse", raison });
+/** Un champ que le simulateur ne déduit pas, et qui le remplira à sa place. */
+export function laisséÀ(qui: Qui, raison: string): Remplissage<unknown> {
+  return () => ({ laisséÀ: qui, raison });
 }
 
 /** Les saisies que `tableau` déduit de `réponses`, champ par champ. */
-export function saisiesDuTableau(
-  tableau: Tableau,
+export function saisiesDuTableau<Reponses>(
+  tableau: Tableau<Reponses>,
   réponses: Reponses,
 ): Saisie[] {
   return Object.entries(tableau).flatMap(([champ, remplir]) =>

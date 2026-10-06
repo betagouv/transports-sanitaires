@@ -102,7 +102,7 @@ describe("un nom dit une intention", () => {
       anglicismes,
       "Le domaine se dit en français : `moteur`, `passation`, `casesRetenues`. " +
         "L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi " +
-        "(`handleX`, `useX`, `Props`, `track*`, `Engine`, `FormBuilder`) — et " +
+        "(`handleX`, `useX`, `Props`, `track*`) — et " +
         "c'est l'inscription dans `TOLERES`, ici, qui l'autorise.",
     ).toEqual([]);
   });
@@ -124,7 +124,7 @@ describe("les extensions d'import suivent le runtime", () => {
     expect(
       sans,
       "Ce fichier est atteignable depuis Node (`server/`, `shared/`, " +
-        "`scripts/`, ou la chaîne que `pnpm apercu-cerfa` tire dans " +
+        "`scripts/`, ou ce qu'ils tirent dans " +
         "`front/`). Node ne résout pas les extensions : écris `.ts` / `.tsx`, " +
         "sinon l'import casse à l'exécution — sans que Vite ni `tsc` le voient.",
     ).toEqual([]);
@@ -132,7 +132,7 @@ describe("les extensions d'import suivent le runtime", () => {
 
   it("le reste du front importe sans extension", () => {
     // Une cible elle-même joignable depuis Node est tolérée : écrire son
-    // extension anticipe le jour où `apercu-cerfa.ts` la tirera aussi, et ne
+    // extension anticipe le jour où un script la tirera aussi, et ne
     // coûte rien à Vite. Ce qu'on refuse, c'est le mélange entre fichiers qui
     // ne verront jamais Node.
     const avec = sources("front")
@@ -195,13 +195,6 @@ const ANGLICISMES = new Set([
 const TOLERES = new Set([
   // React / DSFR : la forme des props est imposée par le composant appelé.
   "Props",
-  // `@publicodes/forms` : le vocabulaire de son modèle de formulaire, qu'on
-  // relaie tel quel plutôt que d'entretenir une table de traduction.
-  "page",
-  "pages",
-  "pageCount",
-  "formState",
-  "setFormState",
   // Grist : un enregistrement y est un `rowId` et un objet `fields`. Le segment
   // `row` n'est pas dans la liste noire pour cette raison — il n'apparaît chez
   // nous que composé avec l'identifiant Grist (`etabRowId`, `serviceRowId`).
@@ -236,7 +229,7 @@ function fonctionsPriveesEnFleche(fichier: string): string[] {
 /**
  * Les fichiers qu'une exécution Node peut atteindre : les trois racines qui lui
  * appartiennent, plus tout ce qu'elles tirent de proche en proche — y compris
- * dans `front/`, via `scripts/apercu-cerfa.ts`.
+ * dans `front/`.
  */
 function joignablesDepuisNode(): Set<string> {
   const atteints = new Set(sources("server", "shared", "scripts"));

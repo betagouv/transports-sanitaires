@@ -1,9 +1,9 @@
-// Ce que l'application affiche d'elle-même en bas du simulateur : sa version, le
-// commit déployé et la version du modèle de règles.
+// Ce que l'application affiche d'elle-même en bas du simulateur : sa version et
+// le commit déployé.
 //
 // C'est un outil de support, pas une décoration. Quand un prescripteur signale
-// un résultat surprenant, ces valeurs disent exactement quel code et quel modèle
-// il avait sous les yeux — sans quoi la même situation rejouée ici ne prouve
+// un résultat surprenant, ces valeurs disent exactement quel code
+// il avait sous les yeux, sans quoi la même situation rejouée ici ne prouve
 // rien. La version renvoie à sa release, qui dit ce que cette livraison a changé
 // et donc si le comportement signalé y est arrivé. Toutes sont figées à la
 // construction (cf. `vite.config.ts`) : le navigateur n'a aucun moyen de les
@@ -34,7 +34,7 @@ export function BandeauVersion() {
       >
         {VERSION_APP}
       </a>{" "}
-      · commit {SHA_COMMIT} · règles {VERSION_REGLES}
+      · commit {SHA_COMMIT}
     </footer>
   );
 }
@@ -45,8 +45,6 @@ export function BandeauVersion() {
 // servent qu'aux outils qui compilent ce fichier sans passer par lui.
 const VERSION_APP: string = import.meta.env.VITE_VERSION_APP ?? "inconnue";
 const SHA_COMMIT: string = import.meta.env.VITE_SHA_COMMIT ?? "inconnu";
-const VERSION_REGLES: string =
-  import.meta.env.VITE_VERSION_REGLES ?? "inconnues";
 
 // Le tag d'une version porte le nom de l'app — le dépôt est un monorepo dont
 // chaque app a son cycle propre (cf. `CHANGELOG.md`). Son `@` doit être encodé :

@@ -1,6 +1,6 @@
-// Trace de debug d'un parcours : les pages traversées et à venir, puis les
-// réponses saisies. Sert à comprendre un séquencement inattendu sans
-// instrumenter le moteur.
+// Trace de debug d'un parcours : les pages posées, le brouillon de la page
+// ouverte, puis les réponses validées. Sert à comprendre un séquencement
+// inattendu.
 //
 // C'est un outil produit comme la galerie : disponible sur tous les
 // environnements, production comprise, et réservé au service qui les déverrouille
@@ -9,29 +9,36 @@
 // obligatoire pour qu'aucun appelant ne puisse rendre la trace sans avoir dit à
 // qui elle s'ouvre.
 
-import type { FormState } from "@publicodes/forms";
-import { reglesBrutes } from "../moteur";
+import type { Passation } from "./passation";
+import type { Reponses } from "./question";
 
 type Props = {
   autorisee: boolean;
-  formState: FormState<string>;
-  // Numéro de la page courante (1-indexé, comme la pagination de la lib).
-  current: number;
-  outil: string;
+  passation: Pick<Passation, "pages" | "page" | "brouillon" | "reponses">;
 };
 
-export function TraceParcours({ autorisee, formState, current, outil }: Props) {
+export function TraceParcours({ autorisee, passation }: Props) {
   if (!autorisee) return null;
   return (
     <details style={{ marginTop: "2.5rem", fontSize: "0.8rem", color: "#555" }}>
-      <summary style={{ cursor: "pointer" }}>
-        Debug — chemin parcouru ({outil})
-      </summary>
+      <summary style={{ cursor: "pointer" }}>Debug — chemin parcouru</summary>
       <div style={{ marginTop: "0.75rem" }}>
         <strong>Pages (◀ = page courante) :</strong>
-        <ListePages formState={formState} current={current} />
-        <strong>Réponses saisies :</strong>
-        <ListeReponses situation={formState.situation} />
+        <ol style={{ margin: "0.25rem 0 1rem" }}>
+          {passation.pages.map((page) => (
+            <li
+              key={page.id}
+              style={{ fontWeight: page === passation.page ? 700 : 400 }}
+            >
+              <code>{page.id}</code>
+              {page === passation.page ? " ◀" : ""}
+            </li>
+          ))}
+        </ol>
+        <strong>Brouillon de la page :</strong>
+        <ListeDeReponses reponses={passation.brouillon} />
+        <strong>Réponses validées :</strong>
+        <ListeDeReponses reponses={passation.reponses} />
       </div>
     </details>
   );
@@ -39,67 +46,16 @@ export function TraceParcours({ autorisee, formState, current, outil }: Props) {
 
 // ---- implémentation ----
 
-function ListePages({
-  formState,
-  current,
-}: Omit<Props, "autorisee" | "outil">) {
-  const pages = [...formState.pages, ...formState.nextPages];
+function ListeDeReponses({ reponses }: { reponses: Reponses }) {
+  const saisies = Object.entries(reponses);
   return (
-    <ol style={{ margin: "0.25rem 0 1rem" }}>
-      {pages.map((page, i) => (
-        <li
-          // Trace de debug rendue d'un bloc, jamais réordonnée — et deux pages
-          // peuvent porter exactement les mêmes éléments.
-          // biome-ignore lint/suspicious/noArrayIndexKey: pas d'autre identifiant stable
-          key={i}
-          style={{ fontWeight: i === current - 1 ? 700 : 400 }}
-        >
-          {page.elements.length === 0 ? (
-            <code>—</code>
-          ) : (
-            page.elements.map((id, j) => <Element key={id} id={id} rang={j} />)
-          )}
-          {i === current - 1 ? " ◀" : ""}
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function ListeReponses({
-  situation,
-}: {
-  situation: FormState<string>["situation"];
-}) {
-  const saisies = Object.entries(situation);
-  return (
-    <ul style={{ margin: "0.25rem 0" }}>
+    <ul style={{ margin: "0.25rem 0 1rem" }}>
       {saisies.length === 0 && <li>(aucune)</li>}
-      {saisies.map(([id, valeur]) => (
+      {saisies.map(([id, reponse]) => (
         <li key={id}>
-          <code>{id}</code> = <code>{JSON.stringify(valeur)}</code>
+          <code>{id}</code> = <code>{JSON.stringify(reponse)}</code>
         </li>
       ))}
     </ul>
   );
-}
-
-function Element({ id, rang }: { id: string; rang: number }) {
-  const specId = specIdDe(id);
-  return (
-    <span>
-      {rang > 0 ? ", " : ""}
-      <code>{id}</code>
-      {specId ? ` [${specId}]` : ""}
-    </span>
-  );
-}
-
-// Identifiant fonctionnel (spec_id) d'une règle, lu depuis les métadonnées
-// brutes du modèle — pour la trace de debug uniquement.
-function specIdDe(id: string): string | undefined {
-  const regle = reglesBrutes[id];
-  return regle && typeof regle === "object"
-    ? (regle as { spec_id?: string }).spec_id
-    : undefined;
 }

@@ -36,10 +36,9 @@ async function choisir(labelSelect: RegExp, optionLabel: string) {
 const acceder = (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByRole("button", { name: "Accéder au simulateur" }));
 
-const simulateurMonte = () =>
-  screen.findByRole("group", {
-    name: /^concernant son déplacement, le patient/i,
-  });
+const PREMIERE_QUESTION = { name: /^quelle boisson souhaitez-vous/i };
+
+const simulateurMonte = () => screen.findByRole("group", PREMIERE_QUESTION);
 
 beforeEach(() => rangerRattachement(null));
 
@@ -51,11 +50,7 @@ describe("écran-porte de rattachement", () => {
     expect(
       screen.getByRole("combobox", { name: /Établissement/ }),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("group", {
-        name: /^concernant son déplacement, le patient/i,
-      }),
-    ).toBeNull();
+    expect(screen.queryByRole("group", PREMIERE_QUESTION)).toBeNull();
   });
 
   it("passe au simulateur une fois l'établissement et le service validés", async () => {

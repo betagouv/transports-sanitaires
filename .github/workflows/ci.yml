@@ -26,7 +26,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # lint → typecheck → knip → validation des règles → tests → build
+      # lint → typecheck → knip → tests → build
       # (+ vérification de bundle en `postbuild`).
       - run: pnpm --filter simulateur-eligibilite verifier
 

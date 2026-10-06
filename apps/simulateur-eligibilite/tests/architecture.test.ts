@@ -10,7 +10,7 @@
 // le second argument d'`expect`, pas un commentaire — un commentaire ne s'affiche
 // pas quand le test rougit.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -73,11 +73,10 @@ describe("invariants métier", () => {
         ["front/simulateur"],
         commencePar("front/outils-produit/"),
       ),
-      "La galerie rejoue des seeds dans le moteur, le CERFA lit une " +
-        "situation : les outils produit sont bâtis " +
-        "**sur** le socle. Le socle, lui, n'a pas à les connaître — il reçoit " +
-        "d'`App` du contenu déjà composé (`panneauOutilsProduit`, " +
-        "`documentTelechargeable`). Fais de même plutôt que d'importer.",
+      "La galerie rejoue des seeds dans la décision du simulateur : les " +
+        "outils produit sont bâtis **sur** le socle. Le socle, lui, n'a pas à " +
+        "les connaître : il reçoit d'`App` du contenu déjà composé " +
+        "(`panneauOutilsProduit`). Fais de même plutôt que d'importer.",
     ).toEqual([]);
   });
 
@@ -94,7 +93,7 @@ describe("invariants métier", () => {
   });
 
   it("les règles publicodes ne portent que de l'éligibilité", () => {
-    const regles = texteDe("regles/regles.publicodes").toLowerCase();
+    const regles = reglesPubliees().toLowerCase();
     const interdits = [
       "prescripteur . nom",
       "prescripteur . prenom",
@@ -105,7 +104,7 @@ describe("invariants métier", () => {
     ].filter((terme) => regles.includes(terme));
     expect(
       interdits,
-      "Ni identification, ni analytics dans `regles.publicodes` : le moteur " +
+      "Ni identification, ni analytics dans `regles/*.publicodes` : le moteur " +
         "reste une transcription de la réglementation, rejouable hors de " +
         "l'application.",
     ).toEqual([]);
@@ -171,3 +170,14 @@ describe("chaîne d'outillage", () => {
     ).toBe(true);
   });
 });
+
+// Le texte de toutes les règles livrées. Vide tant que `regles/` l'est : la
+// garde attend le modèle suivant, elle ne disparaît pas avec le précédent.
+function reglesPubliees(): string {
+  const dossier = join(racine, "regles");
+  if (!existsSync(dossier)) return "";
+  return readdirSync(dossier)
+    .filter((fichier) => fichier.endsWith(".publicodes"))
+    .map((fichier) => texteDe(`regles/${fichier}`))
+    .join("\n");
+}

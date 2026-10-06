@@ -1,225 +1,112 @@
 import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { App } from "../../front/app/App";
-import { SEEDS, seedParId } from "../../front/outils-produit/seeds/catalogue";
 import { GalerieSeeds } from "../../front/outils-produit/seeds/GalerieSeeds";
-import { snapshotReferentiel } from "../../shared/referentiel";
-import { remplirRattachementProduit, seRattacherProduit } from "../porte";
+import type { Seed } from "../../front/outils-produit/seeds/seed";
+import {
+  ACCOMPAGNEMENTS,
+  bouton,
+  caseACocher,
+  ouvrirLeSimulateur,
+  question,
+} from "../simulateur/parcours";
 
-// La galerie est le point d'entrée dev du catalogue de seeds : elle doit montrer
-// **toutes** les seeds, dire pour chacune si le moteur chargé confirme ses
-// attendus, et ouvrir la page de résultat correspondante.
+// La galerie montre les seeds qu'on lui donne, dit pour chacune si la décision
+// confirme ses attendus, et ouvre l'écran correspondant. Le catalogue étant
+// vide, les seeds sont écrites ici, sur le parcours factice.
+
+const THE_AU_LAIT: Seed = {
+  id: "the-au-lait",
+  libelle: "Résultat : un thé au lait",
+  description: "Situation complète.",
+  reponses: { boisson: "the", accompagnements: ["lait"] },
+  attendu: { commande: "thé, lait" },
+};
+
+const ATTENDU_DEMENTI: Seed = {
+  id: "attendu-dementi",
+  libelle: "Résultat : un café annoncé à tort",
+  description: "L'attendu contredit la décision.",
+  reponses: { boisson: "the", accompagnements: ["aucun"] },
+  attendu: { commande: "café" },
+};
+
+const ARRETEE_EN_CHEMIN: Seed = {
+  id: "arretee-en-chemin",
+  libelle: "Questionnaire : les accompagnements",
+  description: "S'arrête avant la deuxième question.",
+  atterrissage: "questionnaire",
+  reponses: { boisson: "cafe" },
+  attendu: {},
+};
+
+const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN];
+
+const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.libelle}`);
+
+async function ouvrirLaGalerie() {
+  const user = await ouvrirLeSimulateur({ produit: true, seeds: SEEDS });
+  await user.click(await screen.findByRole("button", GALERIE));
+  await screen.findByRole("heading", GALERIE);
+  return user;
+}
 
 const GALERIE = { name: "Galerie de seeds" } as const;
 
-/**
- * Ouvre la galerie depuis l'écran-porte. Le rattachement est obligatoire quelle que
- * soit la destination : le bouton la valide **et** ouvre la galerie.
- */
-async function ouvrirGalerie(user: ReturnType<typeof userEvent.setup>) {
-  await remplirRattachementProduit(user);
-  await user.click(screen.getByRole("button", GALERIE));
-}
-
 describe("écran de galerie", () => {
-  it("liste toutes les seeds du catalogue", () => {
-    render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
+  it("range les seeds selon l'écran sur lequel elles atterrissent", () => {
+    render(
+      <GalerieSeeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />,
+    );
 
-    for (const seed of SEEDS) {
-      expect(
-        screen.getByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
-      ).toBeInTheDocument();
-    }
-  });
-
-  it("sépare les seeds selon l'écran sur lequel elles atterrissent", () => {
-    render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
-
-    // Trois tableaux : les deux pages de résultat, puis les seeds qui s'arrêtent
-    // en chemin et ouvrent le questionnaire.
-    const compte = (outil: "prescripteur" | "secretariat") =>
-      SEEDS.filter(
-        (s) => s.outil === outil && s.atterrissage !== "questionnaire",
-      ).length;
-
-    const tables = screen.getAllByRole("table");
-    expect(tables).toHaveLength(3);
-    const [p1, p2, questionnaire] = tables as [
-      HTMLElement,
+    const [resultat, questionnaire] = screen.getAllByRole("table") as [
       HTMLElement,
       HTMLElement,
     ];
-    expect(
-      within(p1).getAllByRole("button", { name: /^Ouvrir :/ }),
-    ).toHaveLength(compte("prescripteur"));
-    expect(
-      within(p2).getAllByRole("button", { name: /^Ouvrir :/ }),
-    ).toHaveLength(compte("secretariat"));
-    expect(
-      within(questionnaire).getAllByRole("button", { name: /^Ouvrir :/ }),
-    ).toHaveLength(
-      SEEDS.filter((s) => s.atterrissage === "questionnaire").length,
-    );
+    expect(within(resultat).getAllByRole("button")).toHaveLength(2);
+    expect(within(questionnaire).getAllByRole("button")).toHaveLength(1);
   });
 
-  it("donne à chaque seed son régime de financement, non-conformités comprises", () => {
-    // La colonne « Qui paie » est ce qui rend une non-conformité repérable d'un
-    // coup d'œil : un régime autre qu'« Assurance Maladie ».
-    render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
-
-    const ligne = (id: string) =>
-      screen
-        .getByRole("button", { name: `Ouvrir : ${seedParId(id).libelle}` })
-        .closest("tr")!;
-
-    expect(
-      ligne("secretariat-transfert-inter-etablissements"),
-    ).toHaveTextContent("Établissement");
-    expect(ligne("prescripteur-ald-sans-incapacite")).toHaveTextContent(
-      "Absence de prise en charge Assurance Maladie",
-    );
-    expect(ligne("secretariat-prescription")).toHaveTextContent(
-      "Assurance Maladie",
-    );
-  });
-
-  it("annonce que le moteur confirme les attendus du catalogue", () => {
-    // Les règles officielles sont chargées : aucune seed ne doit être en écart.
-    render(<GalerieSeeds onOuvrir={() => {}} onRetour={() => {}} />);
-
-    expect(
-      screen.getByText(/Le moteur chargé confirme les attendus des seeds/),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/en écart avec leurs attendus/)).toBeNull();
-  });
-
-  it("remonte la seed choisie", async () => {
-    const user = userEvent.setup();
-    const ouvertes: string[] = [];
+  it("dit quelles seeds la décision dément", () => {
     render(
-      <GalerieSeeds
-        onOuvrir={(seed) => ouvertes.push(seed.id)}
-        onRetour={() => {}}
-      />,
+      <GalerieSeeds seeds={SEEDS} onOuvrir={() => {}} onRetour={() => {}} />,
     );
 
-    const seed = seedParId("secretariat-convocation");
-    await user.click(
-      screen.getByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
-    );
-    expect(ouvertes).toEqual([seed.id]);
+    expect(
+      screen.getByText(
+        `1 seed(s) en écart avec leurs attendus : ${ATTENDU_DEMENTI.libelle}.`,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("écart")).toBeInTheDocument();
+    expect(screen.getAllByText("conforme")).toHaveLength(2);
+  });
+
+  it("annonce un catalogue vide plutôt que des tableaux sans ligne", () => {
+    render(<GalerieSeeds seeds={[]} onOuvrir={() => {}} onRetour={() => {}} />);
+
+    expect(screen.getByText(/^Le catalogue est vide/)).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
   });
 });
 
-describe("galerie branchée sur l'App", () => {
-  it("depuis une seed de Partie 1, le résultat médical mène à la Partie 2", async () => {
-    // Aucune question administrative à poser : l'écran en deçà du document est
-    // le résultat médical, et « Précédent » doit y ramener — quel que soit ce
-    // qu'a conclu la Partie 1, et quelle que soit la façon d'être arrivé là.
-    const user = userEvent.setup({ delay: null });
-    render(<App referentiel={snapshotReferentiel} />);
+describe("ouverture d'une seed", () => {
+  it("une seed complète ouvre son résultat, questionnaire derrière elle", async () => {
+    const user = await ouvrirLaGalerie();
 
-    await ouvrirGalerie(user);
-    // La v9.5.1 employait ici une seed tranchée dès la Partie 1 — l'urgence
-    // vitale — dont le document ramenait au résultat médical. La v9.7 a retiré
-    // ces sorties directes : une seed de Partie 1 traverse désormais la Partie 2,
-    // et c'est le retour depuis le document qu'on vérifie.
-    const seed = seedParId("prescripteur-bariatrique");
-    // La galerie est chargée à la demande, et l'ouverture d'une seed rejoue son
-    // parcours : de quoi dépasser la seconde par défaut quand la suite tourne en
-    // parallèle.
-    await user.click(
-      await screen.findByRole(
-        "button",
-        { name: `Ouvrir : ${seed.libelle}` },
-        { timeout: 10_000 },
-      ),
-    );
-    // La Partie 2 étant désormais toujours requise, le bouton invite à la
-    // compléter plutôt qu'à sauter au résultat final.
-    await user.click(
-      screen.getByRole("button", {
-        name: /compléter la partie administrative/i,
-      }),
-    );
-    expect(
-      screen.getByRole("heading", { name: /^étape \d+ sur \d+$/i }),
-    ).toBeInTheDocument();
+    await user.click(ouvrir(THE_AU_LAIT));
+    expect(await screen.findByText("Commande : thé, lait")).toBeInTheDocument();
 
-    // Et l'on repart d'où l'on vient : la première page du questionnaire
-    // administratif ne rend pas la main, c'est le verrou médical.
-    expect(screen.queryByRole("button", { name: /^précédent$/i })).toBeNull();
-  }, 40_000);
-
-  it("ouvre une seed de Partie 1 sur la page de résultat médical", async () => {
-    const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} />);
-
-    await ouvrirGalerie(user);
-    const seed = seedParId("prescripteur-ambulance");
-    // La galerie est chargée à la demande (import dynamique) : d'où le `find`.
-    await user.click(
-      await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
-    );
-
-    // Page Résultat 1 : le transport retenu est celui qu'annonce la seed, sans
-    // avoir répondu à une seule question.
-    expect(
-      await screen.findByRole("heading", {
-        name: /le transport le plus adapté à votre état de santé/i,
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/le transport le plus adapté à votre état de santé/i),
-    ).toHaveTextContent("ambulance");
-    expect(
-      screen.queryByRole("group", {
-        name: /^concernant son déplacement, le patient/i,
-      }),
-    ).toBeNull();
+    await user.click(bouton("Précédent"));
+    await question(ACCOMPAGNEMENTS);
+    expect(caseACocher("Du lait")).toBeChecked();
   });
 
-  it("ouvre une seed de Partie 2 sur la page de résultat final", async () => {
-    const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} />);
+  it("une seed arrêtée en chemin ouvre la première page sans réponse", async () => {
+    const user = await ouvrirLaGalerie();
 
-    await ouvrirGalerie(user);
-    const seed = seedParId("secretariat-accord-prealable-distance");
-    await user.click(
-      await screen.findByRole("button", { name: `Ouvrir : ${seed.libelle}` }),
-    );
+    await user.click(ouvrir(ARRETEE_EN_CHEMIN));
 
-    expect(
-      await screen.findByRole(
-        "heading",
-        { name: /Document à imprimer/i },
-        { timeout: 10_000 },
-      ),
-    ).toBeInTheDocument();
-    // Ce cas relève du S3139 : pas de CERFA de prescription proposé.
-    expect(
-      screen.queryByRole("button", {
-        name: /Télécharger la prescription pré-remplie/i,
-      }),
-    ).toBeNull();
-  });
-
-  it("est aussi accessible depuis le début du parcours, et sait revenir", async () => {
-    const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} />);
-    await seRattacherProduit(user);
-
-    await user.click(screen.getByRole("button", GALERIE));
-    expect(
-      await screen.findByRole("heading", { name: "Galerie de seeds" }),
-    ).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Retour" }));
-    expect(
-      await screen.findByRole("group", {
-        name: /^concernant son déplacement, le patient/i,
-      }),
-    ).toBeInTheDocument();
+    await question(ACCOMPAGNEMENTS);
+    expect(caseACocher("Du lait")).not.toBeChecked();
+    expect(bouton("Précédent")).toBeInTheDocument();
   });
 });

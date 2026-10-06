@@ -1,215 +1,164 @@
-// Rend un champ de page du questionnaire selon sa variante `element`.
+// Rend une question du parcours selon sa forme : choix unique, choix multiple,
+// nombre, texte ou date.
 
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
+import { ChoixMultiple } from "./ChoixMultiple";
 import type {
-  EvaluatedFormElement,
-  EvaluatedNumberInput,
-  EvaluatedRadioGroup,
-  EvaluatedStringInput,
-  FormPageElementProp,
-} from "@publicodes/forms";
-import type { Precision } from "../precision-medicale";
-import { bornesDeSaisie } from "./bornes-de-saisie";
-import { formeDeSaisie } from "./formes-de-saisie";
-import { libelleDeReponse } from "./libelle-de-reponse";
+  ChoixUnique,
+  Question,
+  Reponse,
+  SaisieNombre,
+  SaisieTexte,
+} from "./question";
 
 type Props = {
-  champ: EvaluatedFormElement & FormPageElementProp;
-  onChange: (valeur: unknown) => void;
-  /** Ce qui ne va pas dans la saisie, affiché sous le champ (`saisie-a-corriger.ts`). */
+  question: Question;
+  reponse: Reponse | undefined;
+  /** `undefined` retire la réponse : un champ vidé n'est plus répondu. */
+  onChange: (reponse: Reponse | undefined) => void;
+  /** Ce qui ne va pas dans la saisie, affiché sous le champ. */
   erreur?: string;
-  /** Suggestions et longueur d'une précision médicale (`precision-medicale.ts`). */
-  precision?: Precision;
+  /** Le champ prend le focus à l'ouverture de la page. */
+  focus?: boolean;
 };
 
-// Le `champ` est passé déjà restreint à chaque sous-composant : c'est le
+// La `question` est passée déjà restreinte à chaque sous-composant : c'est le
 // `switch` ci-dessous qui porte le narrowing de l'union, pas les composants.
-export function ChampDeFormulaire({
-  champ,
-  onChange,
-  erreur,
-  precision,
-}: Props) {
-  if (champ.hidden || !champ.applicable) return null;
-
+export function ChampDeFormulaire({ question, ...props }: Props) {
   return (
     <div className="fr-form-group" style={{ marginBottom: "1.5rem" }}>
-      {champ.element === "RadioGroup" && (
-        <ChoixRadio champ={champ} onChange={onChange} />
-      )}
-      {champ.element === "input" && champ.type === "number" && (
-        <SaisieNombre champ={champ} onChange={onChange} erreur={erreur} />
-      )}
-      {champ.element === "input" && champ.type === "text" && (
-        <SaisieTexte
-          champ={champ}
-          onChange={onChange}
-          erreur={erreur}
-          precision={precision}
-        />
-      )}
+      {rendre(question, props)}
     </div>
   );
 }
 
 // ---- implémentation ----
 
-type ChampProps<T> = {
-  champ: T & FormPageElementProp;
-  onChange: Props["onChange"];
-};
+type ChampProps<Q> = Omit<Props, "question"> & { question: Q };
 
-function ChoixRadio({ champ, onChange }: ChampProps<EvaluatedRadioGroup>) {
+function rendre(question: Question, props: Omit<Props, "question">) {
+  switch (question.forme) {
+    case "choix unique":
+      return <ChoixRadio question={question} {...props} />;
+    case "choix multiple":
+      return <ChoixMultiple question={question} {...props} />;
+    case "nombre":
+      return <SaisieDeNombre question={question} {...props} />;
+    default:
+      return <SaisieDeTexte question={question} {...props} />;
+  }
+}
+
+function ChoixRadio({
+  question,
+  reponse,
+  onChange,
+  focus,
+}: ChampProps<ChoixUnique>) {
   return (
     <RadioButtons
-      id={`fieldset-${champ.id}`}
-      name={champ.id}
-      legend={champ.label}
-      hintText={champ.description}
+      id={`fieldset-${question.id}`}
+      name={question.id}
+      legend={question.libelle}
+      hintText={question.aide}
       // Variante « riche » DSFR : chaque option est une carte bordée, avec
       // fond gris + curseur pointeur au survol. Le picto (`fr-radio-rich__img`)
-      // est facultatif — la bordure et le survol sont portés par le label —,
-      // on l'omet donc. `classes.inputGroup` ajoute la classe à chaque groupe
-      // (le composant ne pose `fr-radio-rich` de lui-même que si une option
-      // fournit une `illustration`). Incompatible avec `small`.
+      // est facultatif, on l'omet donc. `classes.inputGroup` ajoute la classe à
+      // chaque groupe (le composant ne pose `fr-radio-rich` de lui-même que si
+      // une option fournit une `illustration`). Incompatible avec `small`.
       // `legend` porte la question elle-même, mise en avant en `fr-text--lead`.
       classes={{ inputGroup: "fr-radio-rich", legend: "fr-text--lead" }}
-      disabled={champ.disabled}
-      options={champ.options.map((opt) => ({
-        label: libelleDeReponse(opt.label),
+      options={question.options.map((option, rang) => ({
+        label: option.libelle,
         nativeInputProps: {
-          value: String(opt.value),
-          checked: (champ.value as unknown) === opt.value,
-          onChange: () => onChange(opt.value),
-          autoFocus: champ.autofocus && champ.value === undefined,
+          value: option.valeur,
+          checked: reponse === option.valeur,
+          onChange: () => onChange(option.valeur),
+          autoFocus: focus && rang === 0,
         },
       }))}
     />
   );
 }
 
-// Les bornes viennent du contrat d'interface, jamais d'ici : le nombre de
-// transports exige un entier d'au moins 1, la fréquence mensuelle d'une
-// permission en accepte cinq au plus. Les écrire en dur ferait accepter à l'écran
-// ce que le modèle rejette ensuite.
-//
 // Une erreur s'affiche sous la saisie sans la toucher : la valeur reste celle
-// tapée, à corriger par le prescripteur. Le champ reste alors modifiable. Sans
-// ça, `@publicodes/forms` le désactiverait : la garde du modèle à « non »
-// rend la saisie inutile aux cibles, donc désactivée, donc impossible à
-// corriger.
-function SaisieNombre({
-  champ,
+// tapée, à corriger par le prescripteur.
+function SaisieDeNombre({
+  question,
+  reponse,
   onChange,
   erreur,
-}: ChampProps<EvaluatedNumberInput> & Pick<Props, "erreur">) {
-  const { min, max, pas } = bornesDeSaisie(champ.id);
+  focus,
+}: ChampProps<SaisieNombre>) {
   return (
     <Input
-      label={champ.label}
+      label={question.libelle}
       state={erreur ? "error" : "default"}
       stateRelatedMessage={erreur}
-      hintText={champ.description}
-      disabled={champ.disabled && !erreur}
+      hintText={question.aide}
       classes={{ label: "fr-text--lead" }}
       style={{ maxWidth: "16rem" }}
       addon={
-        champ.unit ? (
+        question.unite ? (
           <span className="fr-label" style={{ whiteSpace: "nowrap" }}>
-            {champ.unit}
+            {question.unite}
           </span>
         ) : undefined
       }
       nativeInputProps={{
-        id: champ.id,
-        name: champ.id,
+        id: question.id,
+        name: question.id,
         type: "number",
-        min,
-        max,
-        step: pas,
-        value: champ.value ?? champ.defaultValue ?? "",
-        onChange: (e) => onChange(Number(e.target.value)),
-        autoFocus: champ.autofocus,
+        min: question.min,
+        max: question.max,
+        value: typeof reponse === "number" ? reponse : "",
+        onChange: (e) => onChange(nombreSaisi(e.target.value)),
+        autoFocus: focus,
       }}
     />
   );
 }
 
-// Les saisies libres : les douze champs d'adresse, les précisions en texte, et
-// les six dates de la v9.7. Le modèle les déclare toutes en `type: texte` — il ne
-// connaît pas la date —, et c'est le contrat d'interface qui distingue les
-// calendaires (`formes-de-saisie.ts`). Sans cette distinction, le prescripteur
-// taperait une date à la main, dans un format que l'application aurait à deviner
-// pour en tirer une durée ou un rang de jour.
-//
-// Le modèle ne vérifie ni ne normalise rien : ni les adresses, ni les dates. Un
-// `<input type="date">` garantit au moins le format ISO que le calcul attend.
-//
-// Comme pour un nombre, une saisie en erreur reste modifiable, même quand
-// `@publicodes/forms` la juge inutile aux cibles et la désactive.
-function SaisieTexte({
-  champ,
+// Un champ vidé rend une chaîne vide : ce n'est pas zéro, c'est une absence.
+function nombreSaisi(saisie: string): number | undefined {
+  return saisie.trim() === "" ? undefined : Number(saisie);
+}
+
+// Un `<input type="date">` garantit le format ISO, que l'application n'a alors
+// pas à deviner pour en tirer une durée ou un rang de jour.
+function SaisieDeTexte({
+  question,
+  reponse,
   onChange,
   erreur,
-  precision,
-}: ChampProps<EvaluatedStringInput> & Pick<Props, "erreur" | "precision">) {
-  const suggestions = precision?.suggestions ?? [];
-  const idDesSuggestions =
-    suggestions.length > 0 ? `${champ.id}-suggestions` : undefined;
+  focus,
+}: ChampProps<SaisieTexte>) {
+  const type = TYPE_HTML[question.forme];
   return (
-    <>
-      <Input
-        label={champ.label}
-        hintText={champ.description}
-        disabled={champ.disabled && !erreur}
-        state={erreur ? "error" : "default"}
-        stateRelatedMessage={erreur}
-        classes={{ label: "fr-text--lead" }}
-        style={
-          typeHtml(champ.id) === "text" ? undefined : { maxWidth: "16rem" }
-        }
-        nativeInputProps={{
-          id: champ.id,
-          name: champ.id,
-          type: typeHtml(champ.id),
-          value: champ.value ?? "",
-          onChange: (e) => onChange(e.target.value),
-          autoFocus: champ.autofocus,
-          list: idDesSuggestions,
-          maxLength: precision?.longueurMax,
-        }}
-      />
-      <Suggestions id={idDesSuggestions} suggestions={suggestions} />
-    </>
+    <Input
+      label={question.libelle}
+      hintText={question.aide}
+      state={erreur ? "error" : "default"}
+      stateRelatedMessage={erreur}
+      classes={{ label: "fr-text--lead" }}
+      style={type === "text" ? undefined : { maxWidth: "16rem" }}
+      nativeInputProps={{
+        id: question.id,
+        name: question.id,
+        type,
+        value: typeof reponse === "string" ? reponse : "",
+        onChange: (e) => onChange(e.target.value || undefined),
+        autoFocus: focus,
+      }}
+    />
   );
 }
 
-// Des propositions, jamais une réponse : le navigateur les offre sous la
-// saisie, et rien n'est présélectionné.
-function Suggestions({
-  id,
-  suggestions,
-}: {
-  id: string | undefined;
-  suggestions: readonly string[];
-}) {
-  if (!id) return null;
-  return (
-    <datalist id={id}>
-      {suggestions.map((suggestion) => (
-        <option key={suggestion} value={suggestion} />
-      ))}
-    </datalist>
-  );
-}
-
-// Le type HTML d'une saisie libre. `datetime-local` et non `datetime` : c'est le
-// seul des deux que les navigateurs rendent, et il donne une heure locale — celle
-// de l'établissement, qui est bien ce qu'on demande.
-function typeHtml(id: string): "text" | "date" | "datetime-local" {
-  const forme = formeDeSaisie(id);
-  if (forme === "date") return "date";
-  if (forme === "datetime") return "datetime-local";
-  return "text";
-}
+// `datetime-local` et non `datetime` : c'est le seul des deux que les
+// navigateurs rendent, et il donne une heure locale.
+const TYPE_HTML = {
+  texte: "text",
+  date: "date",
+  "date et heure": "datetime-local",
+} as const;

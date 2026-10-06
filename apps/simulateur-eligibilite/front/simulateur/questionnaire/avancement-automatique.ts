@@ -1,7 +1,7 @@
-// L'avancement automatique du questionnaire (contrat d'interface 2.0.0).
+// L'avancement automatique du questionnaire.
 //
 // Une page qui n'est faite que de choix uniques avance seule 200 ms après avoir
-// été répondue, sans que l'utilisateur ait à valider — le délai lui laisse voir
+// été répondue, sans que l'utilisateur ait à valider : le délai lui laisse voir
 // sa réponse se cocher. Le bouton « Suivant » disparaît alors : lui laisser un
 // bouton de validation contredirait le geste qu'on attend.
 //
@@ -9,12 +9,10 @@
 // faute de quoi un « Précédent » renverrait aussitôt d'où l'on vient. Modifier
 // la réponse relance l'avancement automatique. Peu importe d'où vient le
 // retour : le « Précédent » d'une page garde le parcours monté, celui d'une page
-// de résultat le remonte — une page déjà répondue à l'ouverture est donc, elle
+// de résultat le remonte. Une page déjà répondue à l'ouverture est donc, elle
 // aussi, une page où l'on revient.
 
 import { useEffect, useRef, useState } from "react";
-import { mosaiqueDe } from "./mosaique";
-import type { Champ } from "./passation";
 
 export type AvancementAutomatique = {
   /** La page avancera d'elle-même : le bouton « Suivant » n'a pas à s'afficher. */
@@ -24,7 +22,7 @@ export type AvancementAutomatique = {
 };
 
 export function useAvancementAutomatique(
-  page: number,
+  page: string,
   eligible: boolean,
   questionsEnAttente: boolean,
   avancer: () => void,
@@ -50,18 +48,6 @@ export function useAvancementAutomatique(
   return { avancerSeul, aLaSaisie: () => setRendreLaMain(false) };
 }
 
-/**
- * Le contrat d'interface réserve l'avancement automatique aux questions à choix
- * unique et aux oui/non. Une mosaïque, un nombre ou une saisie libre gardent
- * leur bouton — et il suffit d'un seul sur la page pour que toute la page le
- * garde : on n'avance pas une page à moitié remplie.
- */
-export function pageAChoixUnique(champs: readonly Champ[]): boolean {
-  const posees = champs.filter((c) => c.applicable !== false && !c.hidden);
-  return (
-    posees.length > 0 &&
-    posees.every((c) => !mosaiqueDe(c.id) && c.element === "RadioGroup")
-  );
-}
+// ---- implémentation ----
 
 const DELAI_MS = 200;
