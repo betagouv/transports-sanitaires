@@ -52,16 +52,16 @@ ne dépend d'aucun gabarit :
 
 | Fichier | Ce qu'il porte |
 |---|---|
-| `remplir-cerfa.ts` | l'écriture dans un AcroForm : textes, cases et leurs états d'export, refus de tronquer |
-| `mesure-de-la-zone.ts` | un texte tient-il dans son champ, et à quelle taille |
-| `debordement-du-texte.ts` | l'erreur levée quand il ne tient pas |
-| `remplissage.ts` | la forme d'un tableau de remplissage : un champ, une ligne |
+| `fill-cerfa.ts` | l'écriture dans un AcroForm : textes, cases et leurs états d'export, refus de tronquer |
+| `text-fit.ts` | un texte tient-il dans son champ, et à quelle taille |
+| `text-overflow.ts` | l'erreur levée quand il ne tient pas |
+| `field-mapping.ts` | la forme d'un tableau de remplissage : un champ, une ligne |
 | `dates.ts` | une date sur un champ peigné |
 
 Un formulaire rempli porte des données de santé nominatives. Il se génère **dans le
 navigateur uniquement**, et ce dossier n'adresse jamais `/api`.
 
-*Gardé par* `tests/cerfa/remplissage.test.ts`, sur un formulaire fabriqué, et par
+*Gardé par* `tests/cerfa/fill-cerfa.test.ts`, sur un formulaire fabriqué, et par
 `tests/architecture.test.ts`.
 
 ## Les trois racines de runtime
@@ -160,8 +160,8 @@ d'une version à l'autre.
   un référentiel injecté.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
-Réutilise les helpers de `tests/` : `se-rattacher.ts`, `simulateur/parcours.tsx`,
-`cerfa/formulaire-de-test.ts`, `rattachement/serveur-de-test.ts`.
+Réutilise les helpers de `tests/` : `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
+`cerfa/test-form.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
 [`front/seeds/catalogue.ts`](front/seeds/catalogue.ts),

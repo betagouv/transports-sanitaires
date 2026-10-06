@@ -325,14 +325,14 @@ export function documentPour(cas: CasFinal): Document {
 
 ```
 ✅ OK : coupé par sujet, chaque nom dit une capacité
-cerfa/remplissage.ts       ce qu'est un tableau de remplissage
+cerfa/field-mapping.ts    ce qu'est un tableau de remplissage
 cerfa/lieux-du-trajet.ts   les adresses, aplaties sur une ligne
 ```
 
 ```
 ❌ KO : coupé là où ça débordait
-cerfa/remplissage.ts
-cerfa/remplissage-suite.ts
+cerfa/field-mapping.ts
+cerfa/field-mapping-suite.ts
 ```
 
 *Gardé par* `tests/architecture.test.ts › taille du code › aucun fichier ne

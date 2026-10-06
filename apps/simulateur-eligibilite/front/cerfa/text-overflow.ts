@@ -4,14 +4,14 @@
 // Le message ne cite pas le texte : ce peut être une donnée de santé.
 
 /** Un texte mesuré, trop long pour le champ qui devait le recevoir. */
-export class DebordementDuTexte extends Error {
-  readonly champ: string;
-  readonly texte: string;
+export class TextOverflowError extends Error {
+  readonly field: string;
+  readonly text: string;
 
-  constructor(champ: string, texte: string) {
-    super(`Le texte ne tient pas dans le champ « ${champ} ».`);
-    this.name = "DebordementDuTexte";
-    this.champ = champ;
-    this.texte = texte;
+  constructor(field: string, text: string) {
+    super(`Le texte ne tient pas dans le champ « ${field} ».`);
+    this.name = "TextOverflowError";
+    this.field = field;
+    this.text = text;
   }
 }
