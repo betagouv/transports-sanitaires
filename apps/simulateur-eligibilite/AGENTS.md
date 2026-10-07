@@ -8,23 +8,29 @@
 Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 
 - React 19 + Vite + DSFR (`@codegouvfr/react-dsfr`) ;
-- un questionnaire **déclaré par l'application** (`front/simulateur/questionnaire/`).
+- un questionnaire **déclaré par l'application** (`front/socle/questionnaire-engine/`).
 
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 n'est pas intégrée. Il n'y a ni règles publicodes, ni page de résultat métier,
 ni CERFA téléchargeable. Le simulateur déroule un **questionnaire factice**
-(`front/simulateur/fake-questionnaire.ts`), qui ne décide rien. Le
+(`front/model/fake-questionnaire.ts`), qui ne décide rien. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
+
+Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version
+du modèle : rattachement, parcours, moteur de questionnaire, analytics, seeds,
+outils PDF, developer tools. `front/model/` porte la version : aujourd'hui le
+questionnaire factice et le catalogue des seeds. Le modèle n'importe le socle que
+par `front/socle/index.ts`.
 
 Le parcours commence par un **écran de rattachement
 obligatoire** : établissement et service, sans identifier la personne
-(`front/rattachement/`, référentiel Grist). Le tout est servi par
+(`front/socle/rattachement/`, référentiel Grist). Le tout est servi par
 un **backend Node/Express** (`server/` : le front et `/api/*`) déployé sur
 **Scalingo**. Ce n'est pas un site statique.
 
 ## Le questionnaire
 
-Trois fichiers portent la mécanique, dans `front/simulateur/questionnaire/` :
+Trois fichiers portent la mécanique, dans `front/socle/questionnaire-engine/` :
 
 | Fichier | Ce qu'il porte |
 |---|---|
@@ -41,13 +47,13 @@ Quatre règles à tenir en ajoutant une question :
   `questionnaire.ts`, pas dans le champ.
 - **Le verrou est un montage, pas un drapeau.** Ce qui vient après le verrou est un
   second `QuestionnaireForm`, qui reçoit `lockedAnswers` et ne repose rien
-  (`front/simulateur/Simulateur.tsx`).
+  (`front/socle/simulateur/Simulateur.tsx`).
 
-*Gardé par* `tests/simulateur/`.
+*Gardé par* `tests/socle/simulateur/`.
 
 ## Le socle PDF
 
-`front/cerfa/` ne porte plus aucun formulaire. Il garde ce qui
+`front/socle/cerfa/` ne porte plus aucun formulaire. Il garde ce qui
 ne dépend d'aucun gabarit :
 
 | Fichier | Ce qu'il porte |
@@ -61,7 +67,7 @@ ne dépend d'aucun gabarit :
 Un formulaire rempli porte des données de santé nominatives. Il se génère **dans le
 navigateur uniquement**, et ce dossier n'adresse jamais `/api`.
 
-*Gardé par* `tests/cerfa/fill-cerfa.test.ts`, sur un formulaire fabriqué, et par
+*Gardé par* `tests/socle/cerfa/fill-cerfa.test.ts`, sur un formulaire fabriqué, et par
 `tests/architecture.test.ts`.
 
 ## Les trois racines de runtime
@@ -127,7 +133,7 @@ Ils sont **exécutables**, dans
 - les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité (sans objet tant que
-  `regles/` est vide) ;
+  `front/model/rules/` est vide) ;
 - les limites de 30 et 300 lignes.
 
 **Ne les recopie pas ici.** Lis le fichier. Lis surtout le message d'échec avant
@@ -160,11 +166,11 @@ d'une version à l'autre.
   un référentiel injecté.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
-Réutilise les helpers de `tests/` : `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
+Réutilise les helpers de `tests/socle/` : `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
 `cerfa/test-form.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
-[`front/seeds/catalogue.ts`](front/seeds/catalogue.ts),
+[`front/model/seeds-catalogue.ts`](front/model/seeds-catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
 *avec leurs sorties attendues*. Il est vide tant que le modèle suivant n'est pas
 intégré. Les tests de l'écran des seeds écrivent leurs propres seeds, sur le parcours
@@ -172,11 +178,11 @@ factice.
 
 ## Les developer tools
 
-L'écran des seeds (`front/seeds/`) et les **traces de debug** sont les deux
+L'écran des seeds (`front/socle/seeds/`) et les **traces de debug** sont les deux
 developer tools. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
-  référentiel, `front/developerTools/unlock.ts`) ;
+  référentiel, `front/socle/developerTools/unlock.ts`) ;
 - le même moment : ils sont atteints **après** le rattachement.
 
 Pas de conditionnement sur `import.meta.env.DEV`.
@@ -184,7 +190,7 @@ Pas de conditionnement sur `import.meta.env.DEV`.
 Le simulateur ne connaît pas l'écran des seeds. C'est `App.tsx` qui lui passe du contenu
 déjà composé (`developerToolsPanel`).
 
-La trace de debug vit aussi dans `front/developerTools/` (`DebugTrace.tsx`). Elle
+La trace de debug vit aussi dans `front/socle/developerTools/` (`DebugTrace.tsx`). Elle
 lit l'état vivant du parcours, qu'`App` n'a pas sous la main : `App` passe donc au
 simulateur le composant lui-même (`DebugTrace`), et chaque écran lui donne son
 état à afficher. Sans composant passé, aucune trace n'est rendue.

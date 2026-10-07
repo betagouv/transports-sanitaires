@@ -20,6 +20,14 @@ import {
 const commencePar = (prefixe: string) => (cible: string) =>
   cible.startsWith(prefixe);
 
+// Ce qui pose les questions et décide : le parcours, le moteur de
+// questionnaire et le modèle.
+const SIMULATEUR = [
+  "front/socle/simulateur",
+  "front/socle/questionnaire-engine",
+  "front/model",
+];
+
 describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
     expect(
@@ -54,7 +62,7 @@ describe("frontières de runtime", () => {
 describe("invariants métier", () => {
   it("le simulateur ignore qui prescrit", () => {
     expect(
-      franchissements(["front/simulateur"], commencePar("front/rattachement/")),
+      franchissements(SIMULATEUR, commencePar("front/socle/rattachement/")),
       "Le moteur d'éligibilité raisonne sur une situation médicale, jamais " +
         "sur une identité (docs/knowledge/adr/identification.md). L'analytics, " +
         "lui, est admis : il lit le rattachement en session de son côté, sans " +
@@ -65,10 +73,10 @@ describe("invariants métier", () => {
   it("les seeds et les developer tools se greffent sur le simulateur, jamais l'inverse", () => {
     expect(
       franchissements(
-        ["front/simulateur"],
+        SIMULATEUR,
         (cible) =>
-          cible.startsWith("front/developerTools/") ||
-          cible.startsWith("front/seeds/"),
+          cible.startsWith("front/socle/developerTools/") ||
+          cible.startsWith("front/socle/seeds/"),
       ),
       "L'écran des seeds rejoue des seeds dans la décision du simulateur : les " +
         "seeds et les developer tools sont bâtis **sur** le socle. Le socle, " +
@@ -78,7 +86,7 @@ describe("invariants métier", () => {
   });
 
   it("le CERFA n'adresse jamais le backend", () => {
-    const fautifs = sources("front/cerfa").filter((f) =>
+    const fautifs = sources("front/socle/cerfa").filter((f) =>
       texteDe(f).includes("/api"),
     );
     expect(
@@ -101,7 +109,7 @@ describe("invariants métier", () => {
     ].filter((terme) => regles.includes(terme));
     expect(
       interdits,
-      "Ni identification, ni analytics dans `regles/*.publicodes` : le moteur " +
+      "Ni identification, ni analytics dans `front/model/rules/*.publicodes` : le moteur " +
         "reste une transcription de la réglementation, rejouable hors de " +
         "l'application.",
     ).toEqual([]);
@@ -130,7 +138,7 @@ describe("taille du code", () => {
   });
 
   it("aucun fichier ne dépasse 300 lignes", () => {
-    const EXEMPTES = ["front/seeds/catalogue.ts"];
+    const EXEMPTES = ["front/model/seeds-catalogue.ts"];
     const trop = sources("front", "server", "shared", "scripts", "tests")
       .filter((fichier) => !EXEMPTES.includes(fichier))
       .map((fichier) => ({ fichier, lignes: lignesDe(fichier) }))
@@ -165,12 +173,12 @@ describe("chaîne d'outillage", () => {
   });
 });
 
-// Le texte de toutes les règles livrées. Vide quand `regles/` n'existe pas.
+// Le texte de toutes les règles livrées. Vide quand `front/model/rules/` n'existe pas.
 function reglesPubliees(): string {
-  const dossier = join(racine, "regles");
+  const dossier = join(racine, "front", "model", "rules");
   if (!existsSync(dossier)) return "";
   return readdirSync(dossier)
     .filter((fichier) => fichier.endsWith(".publicodes"))
-    .map((fichier) => texteDe(`regles/${fichier}`))
+    .map((fichier) => texteDe(`front/model/rules/${fichier}`))
     .join("\n");
 }

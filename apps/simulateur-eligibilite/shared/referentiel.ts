@@ -10,7 +10,7 @@ export type Service = { id: string; libelle: string };
  * L'accès au référentiel passe par cette interface (§5 de
  * docs/knowledge/adr/identification.md). On peut ainsi changer de source sans
  * toucher aux composants. Le front utilise le client HTTP
- * `front/rattachement/referentiel-http.ts`, vers le backend Grist.
+ * `front/socle/rattachement/referentiel-http.ts`, vers le backend Grist.
  */
 export interface Referentiel {
   listerEtablissements(): Promise<Etablissement[]>;
@@ -82,7 +82,7 @@ const SERVICES: SnapshotService[] = [
   { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
   { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
   // Le service du produit : il déverrouille les developer tools. C'est le
-  // service Grist `Id2 = 4` en production (voir front/developerTools/unlock.ts).
+  // service Grist `Id2 = 4` en production (voir front/socle/developerTools/unlock.ts).
   {
     id: "s_transport_sanitaire",
     etabId: "e_liberal_cnam",

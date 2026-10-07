@@ -71,7 +71,7 @@ snapshot factice et le client HTTP du front n'écrivent jamais.
 
 ```bash
 # Route et enrichissement, sans Grist (double en mémoire)
-pnpm --filter simulateur-eligibilite exec vitest run tests/rattachement/enrichissement.test.ts
+pnpm --filter simulateur-eligibilite exec vitest run tests/socle/rattachement/enrichissement.test.ts
 
 # Contre le vrai Grist : crée de vraies lignes, à purger à la main côté admin
 GRIST_ECRITURE_TEST=1 GRIST_API_KEY=… pnpm --filter simulateur-eligibilite exec vitest run grist-ecriture

@@ -59,7 +59,7 @@ Contraintes :
   c'est-à-dire pour l'accès Grist (cf. ADR-5).
 
 **Invariant** : le rattachement ne doit jamais entrer dans le moteur `publicodes`
-(`regles/regles.publicodes`), qui ne contient que la logique métier d'éligibilité. Des
+(`front/model/rules/regles.publicodes`), qui ne contient que la logique métier d'éligibilité. Des
 règles `identification . *` y avaient été mises à tort ; elles ont été retirées.
 
 ## 2. Décisions (ADR)
@@ -179,7 +179,7 @@ modèle et §6 pour l'accès.
 
 ### ADR-6 - Le moteur publicodes reste hors périmètre rattachement
 
-**Décision.** `apps/simulateur-eligibilite/regles/regles.publicodes` n'est pas modifié.
+**Décision.** `apps/simulateur-eligibilite/front/model/rules/regles.publicodes` n'est pas modifié.
 Le rattachement, comme l'analytics, vit en dehors du moteur.
 
 ## 3. Architecture cible
@@ -344,5 +344,5 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 ## 9. Vérification
 
 ```bash
-pnpm --filter simulateur-eligibilite exec vitest run tests/rattachement tests/app/rattachement-obligatoire.test.tsx
+pnpm --filter simulateur-eligibilite exec vitest run tests/socle/rattachement tests/socle/app/rattachement-obligatoire.test.tsx
 ```

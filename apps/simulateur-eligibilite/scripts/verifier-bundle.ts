@@ -52,7 +52,7 @@ function interdits(): Array<[marqueur: string, quoi: string]> {
  */
 function premiereSeed(): string | undefined {
   const catalogue = readFileSync(
-    resolve(dist(), "../../front/seeds/catalogue.ts"),
+    resolve(dist(), "../../front/model/seeds-catalogue.ts"),
     "utf-8",
   );
   return catalogue.match(/id:\s*"([^"]+)"/)?.[1];

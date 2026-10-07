@@ -91,7 +91,7 @@ posé — `PORT=quatre-mille` ou une `GRIST_DOC_URL` qui n'est pas une URL arrê
 démarrage de la même manière, plutôt que d'échouer plus tard et ailleurs. Une variable
 posée mais vide (`GRIST_API_KEY=` dans un `.env` recopié) compte pour absente. Les autres
 variables ont un défaut documenté ci-dessus : elles ne bloquent jamais le démarrage.
-*Gardé par* [`tests/serveur/configuration.test.ts`](tests/serveur/configuration.test.ts).
+*Gardé par* [`tests/socle/serveur/configuration.test.ts`](tests/socle/serveur/configuration.test.ts).
 
 ## Structure (feature-first)
 
@@ -158,7 +158,7 @@ Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré 
 l'application**. Une page liste ses questions, une question dit quand elle se pose
 (`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le questionnaire factice (`front/simulateur/fake-questionnaire.ts`) pose trois questions sans
+Le questionnaire factice (`front/model/fake-questionnaire.ts`) pose trois questions sans
 rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
 parcours réel reprendra :
 
@@ -170,7 +170,7 @@ parcours réel reprendra :
 | Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `Simulateur.tsx` |
 | Stepper | Il compte des parties, jamais des pages. | `questionnaire/QuestionnaireForm.tsx` |
 
-*Gardé par* `tests/simulateur/`.
+*Gardé par* `tests/socle/simulateur/`.
 
 ## Déployer
 

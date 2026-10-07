@@ -131,7 +131,7 @@ explicite.~~
 ### ADR-4 - Référentiel figé des noms d'évènement, jamais composés
 
 **Décision.** Le nom de chaque évènement Matomo est une valeur fixe d'un
-référentiel unique (`front/analytics/evenements.ts`, `NomEvenement`), jamais
+référentiel unique (`front/socle/analytics/evenements.ts`, `NomEvenement`), jamais
 composé à la volée par concaténation de chaîne. Ce module n'interprète aucune
 donnée métier — ni l'outil, ni le statut d'un résultat, ni le formulaire d'un
 CERFA : c'est l'appelant qui choisit l'entrée à émettre, via
@@ -225,7 +225,7 @@ Matomo n'a pas de commande pour anonymiser l'IP : c'est un réglage de l'instanc
 Événements `trackEvent` émis par le traceur, en catégorie `simulateur`, portant l'id
 Grist du service en Nom, ou `autre` pour un rattachement dégradé. ~~Ce nom était absent
 si le parcours avait démarré sans rattachement pseudonymisé (API indisponible).~~ Le nom d'action est une valeur fixe du référentiel
-`NomEvenement` (`front/analytics/evenements.ts`, ADR-4) — jamais composé à
+`NomEvenement` (`front/socle/analytics/evenements.ts`, ADR-4) — jamais composé à
 l'exécution.
 
 **Parcours** (~~un jeu par outil, `prescripteur:…` / `secretariat:…`~~, un seul
@@ -274,7 +274,7 @@ Retiré le 2026-10-06 avec le téléchargement des trois CERFA.
 
 ## 6. Découpage en incréments (analytics)
 
-1. **Matomo funnel.** ✅ **Fait** (`front/analytics/`, site 275,
+1. **Matomo funnel.** ✅ **Fait** (`front/socle/analytics/`, site 275,
    `https://stats.beta.gouv.fr/`). Le traceur est instrumenté dans le simulateur,
    avec le référentiel d'événements de l'ADR-4. Il est amorcé au boot en cookieless
    (`disableCookies`), et lit le service en session à l'émission de chaque
@@ -307,5 +307,5 @@ Prérequis : l'écran de rattachement fournit le service (cf.
 ## 8. Vérification
 
 ```bash
-pnpm --filter simulateur-eligibilite exec vitest run tests/analytics tests/cms
+pnpm --filter simulateur-eligibilite exec vitest run tests/socle/analytics tests/socle/cms
 ```
