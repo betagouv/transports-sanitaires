@@ -27,6 +27,9 @@ const PARCOURS = ["front/socle/simulateur", "front/socle/questionnaire-engine"];
 // d'entrée : le type d'une seed, que le catalogue lit à la source.
 const OUVERT_AU_MODELE = ["front/socle", "front/socle/seeds/seed"];
 
+// Le seul fichier par lequel les tests du socle prennent un modèle.
+const MODELE_DE_TEST = "tests/socle/modele-de-test.ts";
+
 describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
     expect(
@@ -80,6 +83,22 @@ describe("le socle et le modèle", () => {
         "plus profond lie le modèle à un détail du socle, qui ne peut plus " +
         "changer sans le casser. S'il manque quelque chose, ajoute-le au " +
         "point d'entrée.",
+    ).toEqual([]);
+  });
+});
+
+describe("les tests et le modèle", () => {
+  it("les tests du socle ne prennent le modèle que par un seul fichier", () => {
+    const autres = franchissements(
+      ["tests/socle"],
+      commencePar("front/model"),
+    ).filter((couple) => !couple.startsWith(`${MODELE_DE_TEST} →`));
+    expect(
+      autres,
+      "Les tests du socle tournent sur un modèle qu'on leur injecte. Ils le " +
+        `prennent tous dans \`${MODELE_DE_TEST}\` : changer de modèle de ` +
+        "test ne touche alors qu'un fichier. Ce qui vérifie le modèle livré " +
+        "lui-même va dans `tests/model/`.",
     ).toEqual([]);
   });
 });

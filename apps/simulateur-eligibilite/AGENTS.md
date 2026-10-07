@@ -172,6 +172,10 @@ d'une version à l'autre.
   un référentiel injecté.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
+Les tests ont deux dossiers. `tests/socle/` éprouve le socle sur un modèle qu'on
+lui injecte. `tests/model/` vérifie le modèle livré : `conformite.test.ts` y
+contrôle ce que le socle suppose de n'importe quel modèle.
+
 Réutilise les helpers de `tests/socle/` : `modele-de-test.ts` (le modèle que les
 tests injectent), `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
 `cerfa/test-form.ts`, `rattachement/serveur-de-test.ts`.
