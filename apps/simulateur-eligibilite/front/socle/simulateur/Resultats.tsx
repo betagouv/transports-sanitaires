@@ -3,18 +3,12 @@
 // sont ici.
 
 import type { ComponentType, ReactNode } from "react";
-import { type Model, type Preconisation, preconisationOf } from "../model";
+import { type Model, preconisationOf } from "../model";
 import type { DebugTraceProps } from "../questionnaire-engine/QuestionnaireForm";
-import {
-  type Answers,
-  askedPages,
-  pagesOf,
-} from "../questionnaire-engine/question";
+import { askedPages, pagesOf } from "../questionnaire-engine/question";
 import type { QuestionnaireState } from "../questionnaire-engine/questionnaire";
 import { Stepper } from "../questionnaire-engine/Stepper";
-
-/** Ce que le verrou fige : les réponses d'avant, et leur préconisation. */
-export type Locked = { answers: Answers; preconisation: Preconisation };
+import type { Locked } from "./start";
 
 type Props = {
   model: Model;

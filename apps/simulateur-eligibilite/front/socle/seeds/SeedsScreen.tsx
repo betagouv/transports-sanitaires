@@ -4,7 +4,7 @@
 // ni le catalogue ni le tableau (`scripts/verifier-bundle.ts` le vérifie).
 
 import { lazy, Suspense, useEffect, useState } from "react";
-import { type Model, preconisationOf } from "../model";
+import type { Model } from "../model";
 import type { Seed } from "./seed";
 
 type Props = {
@@ -19,12 +19,7 @@ export function SeedsScreen({ model, onOpen, onBack }: Props) {
   if (!seeds) return null;
   return (
     <Suspense fallback={null}>
-      <Seeds
-        seeds={seeds}
-        preconise={(answers) => preconisationOf(model, answers).cibles}
-        onOpen={onOpen}
-        onBack={onBack}
-      />
+      <Seeds seeds={seeds} model={model} onOpen={onOpen} onBack={onBack} />
     </Suspense>
   );
 }

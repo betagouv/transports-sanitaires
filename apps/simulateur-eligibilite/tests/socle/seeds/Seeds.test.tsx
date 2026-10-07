@@ -1,7 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { preconisationOf } from "../../../front/socle/model";
-import type { Answers } from "../../../front/socle/questionnaire-engine/question";
 import { Seeds } from "../../../front/socle/seeds/Seeds";
 import type { Seed } from "../../../front/socle/seeds/seed";
 import { modeleDeTest } from "../modele-de-test";
@@ -11,6 +9,7 @@ import {
   caseACocher,
   ouvrirLeSimulateur,
   question,
+  sansBouton,
 } from "../simulateur/questionnaire";
 
 // L'écran des seeds liste les seeds reçues, dit si la préconisation confirme leurs
@@ -37,20 +36,22 @@ const ARRETEE_EN_CHEMIN: Seed = {
   id: "arretee-en-chemin",
   label: "Questionnaire : les accompagnements",
   description: "S'arrête avant la deuxième question.",
-  landing: "questionnaire",
   answers: { boisson: "cafe" },
   expected: {},
 };
 
-const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN];
-
-// L'écran rendu seul : la préconisation du modèle de test, et aucune action.
-const SANS_ACTION = {
-  preconise: (answers: Answers) =>
-    preconisationOf(modeleDeTest, answers).cibles,
-  onOpen: () => {},
-  onBack: () => {},
+const DEUX_TASSES: Seed = {
+  id: "deux-tasses",
+  label: "Commande complétée : deux thés au lait",
+  description: "Répond aussi à la question d'après le verrou.",
+  answers: { boisson: "the", accompagnements: ["lait"], quantite: 2 },
+  expected: { commande: "thé, lait" },
 };
+
+const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN, DEUX_TASSES];
+
+// L'écran rendu seul : le modèle de test, et aucune action.
+const SANS_ACTION = { model: modeleDeTest, onOpen: () => {}, onBack: () => {} };
 
 const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.label}`);
 
@@ -64,14 +65,14 @@ async function ouvrirLesSeeds() {
 const ECRAN_SEEDS = { name: "Seeds" } as const;
 
 describe("écran des seeds", () => {
-  it("range les seeds selon l'écran sur lequel elles atterrissent", () => {
+  it("range les seeds selon l'écran où leurs réponses mènent", () => {
     render(<Seeds seeds={SEEDS} {...SANS_ACTION} />);
 
     const [resultat, questionnaire] = screen.getAllByRole("table") as [
       HTMLElement,
       HTMLElement,
     ];
-    expect(within(resultat).getAllByRole("button")).toHaveLength(2);
+    expect(within(resultat).getAllByRole("button")).toHaveLength(3);
     expect(within(questionnaire).getAllByRole("button")).toHaveLength(1);
   });
 
@@ -84,7 +85,7 @@ describe("écran des seeds", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("écart")).toBeInTheDocument();
-    expect(screen.getAllByText("conforme")).toHaveLength(2);
+    expect(screen.getAllByText("conforme")).toHaveLength(3);
   });
 
   it("annonce un catalogue vide plutôt que des tableaux sans ligne", () => {
@@ -105,6 +106,19 @@ describe("ouverture d'une seed", () => {
     await user.click(bouton("Précédent"));
     await question(ACCOMPAGNEMENTS);
     expect(caseACocher("Du lait")).toBeChecked();
+  });
+
+  it("une seed qui répond après le verrou ouvre le second résultat, verrou franchi", async () => {
+    const user = await ouvrirLesSeeds();
+
+    await user.click(ouvrir(DEUX_TASSES));
+    expect(
+      await screen.findByText("Commande : thé, lait, 2 tasses"),
+    ).toBeInTheDocument();
+
+    await user.click(bouton("Précédent"));
+    expect(screen.getByRole("spinbutton")).toHaveValue(2);
+    expect(sansBouton("Précédent")).toBe(true);
   });
 
   it("une seed arrêtée en chemin ouvre la première page sans réponse", async () => {

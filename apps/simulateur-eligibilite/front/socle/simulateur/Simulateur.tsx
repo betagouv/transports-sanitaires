@@ -11,17 +11,15 @@ import {
   type DebugTraceProps,
   QuestionnaireForm,
 } from "../questionnaire-engine/QuestionnaireForm";
-import { type Answers, pagesOf } from "../questionnaire-engine/question";
-import type { QuestionnaireState } from "../questionnaire-engine/questionnaire";
-import { stateAfterAnswers } from "../questionnaire-engine/questionnaire";
-import { CerfaResultat, FirstResultat, type Locked } from "./Resultats";
+import type { Answers } from "../questionnaire-engine/question";
+import { CerfaResultat, FirstResultat } from "./Resultats";
+import { type Screen, startingScreen } from "./start";
 
 type Props = {
   /** La version du modèle que le parcours déroule. */
   model: Model;
   onNewSimulation: () => void;
-  // Seed : pré-remplit le questionnaire. Complète, elle ouvre le résultat ;
-  // sinon, la première page qu'elle laisse sans réponse.
+  // Seed : pré-remplit le parcours, qui s'ouvre là où ses réponses mènent.
   seedAnswers?: Answers | null;
   // L'encadré des developer tools, rendu tel quel sous le questionnaire. `App`
   // le compose. Absent hors du service produit.
@@ -63,14 +61,6 @@ export function Simulateur({
 
 // ---- implémentation ----
 
-// `previousState` est le questionnaire derrière un résultat : « Précédent » le
-// rouvre. Après le verrou, il n'y a plus rien à rouvrir avant lui.
-type Screen =
-  | { name: "questionnaire"; resume?: QuestionnaireState }
-  | { name: "resultat"; previousState: QuestionnaireState }
-  | { name: "complement"; locked: Locked; resume?: QuestionnaireState }
-  | { name: "cerfa"; locked: Locked; previousState: QuestionnaireState };
-
 type ScreenProps<Name extends Screen["name"]> = {
   model: Model;
   screen: Extract<Screen, { name: Name }>;
@@ -78,19 +68,6 @@ type ScreenProps<Name extends Screen["name"]> = {
   DebugTrace?: ComponentType<DebugTraceProps>;
   onRestart: () => void;
 };
-
-// Une seed n'est qu'un pré-remplissage. À réponses égales, l'application se
-// comporte comme avec un utilisateur, « Précédent » compris.
-function startingScreen(model: Model, seedAnswers: Answers | null): Screen {
-  if (!seedAnswers) return { name: "questionnaire" };
-  const { complete, ...state } = stateAfterAnswers(
-    pagesOf(model.transportAndEligibility.parts),
-    seedAnswers,
-  );
-  return complete
-    ? { name: "resultat", previousState: state }
-    : { name: "questionnaire", resume: state };
-}
 
 // Le stepper annonce une partie de plus que celles-ci : tant que rien n'est
 // décidé, le cerfa reste possible.

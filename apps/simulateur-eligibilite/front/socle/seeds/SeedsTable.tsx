@@ -3,7 +3,12 @@
 
 import type { Seed, SeedEvaluation } from "./seed";
 
-export type SeedRow = { seed: Seed; evaluation: SeedEvaluation };
+export type SeedRow = {
+  seed: Seed;
+  evaluation: SeedEvaluation;
+  /** Ses réponses mènent-elles à un résultat, plutôt qu'à une page ? */
+  opensOnResultat: boolean;
+};
 
 // Le titre de section est la légende du tableau. Le DSFR la rend visible
 // (`.fr-table caption`) et annulerait un `fr-sr-only`.

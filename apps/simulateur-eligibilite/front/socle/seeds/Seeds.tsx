@@ -5,14 +5,15 @@
 // s'arrêtent dans le questionnaire.
 
 import { Container } from "../app/Container";
-import type { Answers, AnyCibles } from "../questionnaire-engine/question";
+import { type Model, preconisationOf } from "../model";
+import { startingScreen } from "../simulateur/start";
 import { type SeedRow, SeedsTable } from "./SeedsTable";
-import { evaluateSeed, opensQuestionnaire, type Seed } from "./seed";
+import { evaluateSeed, type Seed } from "./seed";
 
 type Props = {
   seeds: readonly Seed[];
-  /** Les cibles que le modèle préconise pour des réponses. */
-  preconise: (answers: Answers) => AnyCibles;
+  /** Le modèle dont on rejoue les seeds. */
+  model: Model;
   onOpen: (seed: Seed) => void;
   onBack: () => void;
 };
@@ -21,29 +22,26 @@ const SECTIONS: ReadonlyArray<{
   key: string;
   title: string;
   subtitle: string;
-  keeps: (seed: Seed) => boolean;
+  keeps: (row: SeedRow) => boolean;
 }> = [
   {
-    key: "result",
-    title: "Page de résultat",
+    key: "resultat",
+    title: "Résultat",
     subtitle:
       "Situations complètes, ouvertes sur leur résultat. « Précédent » y rouvre le questionnaire.",
-    keeps: (seed) => !opensQuestionnaire(seed),
+    keeps: ({ opensOnResultat }) => opensOnResultat,
   },
   {
     key: "questionnaire",
     title: "Questionnaire, là où la seed s'arrête",
     subtitle:
-      "Situations volontairement incomplètes, ouvertes sur la première page sans réponse. Elles n'annoncent aucun attendu.",
-    keeps: opensQuestionnaire,
+      "Situations incomplètes, ouvertes sur la première page sans réponse. Elles n'annoncent aucun attendu.",
+    keeps: ({ opensOnResultat }) => !opensOnResultat,
   },
 ];
 
-export function Seeds({ seeds, preconise, onOpen, onBack }: Props) {
-  const rows = seeds.map((seed) => ({
-    seed,
-    evaluation: evaluateSeed(preconise, seed),
-  }));
+export function Seeds({ seeds, model, onOpen, onBack }: Props) {
+  const rows = seeds.map((seed) => rowOf(model, seed));
 
   return (
     <Container>
@@ -55,7 +53,7 @@ export function Seeds({ seeds, preconise, onOpen, onBack }: Props) {
       {rows.length === 0 ? (
         <EmptyCatalogue />
       ) : (
-        <CatalogueByLanding rows={rows} onOpen={onOpen} />
+        <CatalogueByScreen rows={rows} onOpen={onOpen} />
       )}
       <button
         type="button"
@@ -78,9 +76,23 @@ function EmptyCatalogue() {
   );
 }
 
-// Le catalogue est groupé par écran d'atterrissage. On distingue ainsi une seed
+// Ce que le tableau montre d'une seed : ce que le modèle en préconise, et
+// l'écran où ses réponses mènent. Le parcours le déduit, la seed ne le dit pas.
+function rowOf(model: Model, seed: Seed): SeedRow {
+  const screen = startingScreen(model, seed.answers).name;
+  return {
+    seed,
+    evaluation: evaluateSeed(
+      (answers) => preconisationOf(model, answers).cibles,
+      seed,
+    ),
+    opensOnResultat: screen === "resultat" || screen === "cerfa",
+  };
+}
+
+// Le catalogue est groupé par écran d'ouverture. On distingue ainsi une seed
 // complète d'une seed qui s'arrête en chemin.
-function CatalogueByLanding({
+function CatalogueByScreen({
   rows,
   onOpen,
 }: {
@@ -109,7 +121,7 @@ function CatalogueByLanding({
         <SeedsTable
           key={section.key}
           section={section}
-          rows={rows.filter(({ seed }) => section.keeps(seed))}
+          rows={rows.filter(section.keeps)}
           onOpen={onOpen}
         />
       ))}
