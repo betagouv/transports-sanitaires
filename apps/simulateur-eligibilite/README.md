@@ -109,30 +109,33 @@ server/                  le backend Node, barrière de sécurité : les secrets 
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
-  app/                   le choix de l'écran affiché, la navigation entre les écrans,
+  model/                 ce qui change avec une version du modèle : aujourd'hui le
+                         questionnaire factice et le catalogue des seeds (vide)
+  socle/                 ce qui ne dépend d'aucune version. `index.ts` est ce que le
+                         modèle a le droit d'en importer
+    app/                 le choix de l'écran affiché, la navigation entre les écrans,
                          le conteneur de page, le pied de page
-  rattachement/          LA feature de l'écran de rattachement, miroir de server/rattachement/ :
+    rattachement/        LA feature de l'écran de rattachement, miroir de server/rattachement/ :
                          le formulaire à révélation progressive, les deux clients de
                          l'API, le rattachement en mémoire de session (ADR-4)
-  simulateur/            le montage du parcours (questionnaire, résultat, verrou,
-                         complément) et le questionnaire factice qu'il déroule
-    questionnaire/       ce qu'est une question et une page, l'état d'un parcours et
-                         son brouillon, l'invalidation des réponses dépendantes,
+    simulateur/          le parcours : questionnaire, résultat, verrou, complément
+    questionnaire-engine/  le moteur de questionnaire : ce qu'est une question, une
+                         page et une partie, l'état d'un questionnaire et son
+                         brouillon, l'invalidation des réponses dépendantes,
                          l'avancement automatique, le champ qui rend une question,
                          ce qui part vers l'analytics
-  ui/                    les champs de formulaire, bâtis sur le DSFR et sans rien
+    ui/                  les champs de formulaire, bâtis sur le DSFR et sans rien
                          savoir du questionnaire : TextField, SelectField,
                          RadioField, CheckboxField, NumberField, DateField
-  developerTools/        ce qui est réservé au service produit : son encadré, la
+    developerTools/      ce qui est réservé au service produit : son encadré, la
                          trace de debug du parcours et de ses résultats, et le
                          déverrouillage, garde commune à l'écran des seeds et aux traces
-  seeds/                 ce qu'est une seed, le catalogue (vide), son écran. Elles se
-                         greffent sur le simulateur, jamais l'inverse : c'est App.tsx
-                         qui compose.
-  cerfa/                 le socle de remplissage d'un PDF : l'écriture dans un
+    seeds/               ce qu'est une seed et son écran. Elles se greffent sur le
+                         simulateur, jamais l'inverse : c'est App.tsx qui compose.
+    cerfa/               le socle de remplissage d'un PDF : l'écriture dans un
                          AcroForm et ses pièges, la mesure d'un texte dans son champ,
                          la forme d'un tableau de remplissage. Aucun gabarit.
-  analytics/             le vocabulaire mesuré, seul import du reste, son transport
+    analytics/           le vocabulaire mesuré, seul import du reste, son transport
                          vers Matomo, et le choix de l'utilisateur transmis par le CMS
 cms/                     le script à coller dans Sites Conformes : l'opt-out du pied de
                          page, qui répond au traceur de l'iframe (voir « Intégrer dans
@@ -164,11 +167,11 @@ parcours réel reprendra :
 
 | Comportement | Ce qu'il fait | Où |
 | --- | --- | --- |
-| Avancement automatique | Une page faite de choix uniques avance seule 200 ms après la réponse, sans bouton « Suivant ». Au retour, le bouton reprend la main ; changer la réponse avance aussitôt. | `questionnaire/auto-advance.ts` |
-| Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire/questionnaire.ts` |
-| Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire/page-commit.ts` |
-| Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `Simulateur.tsx` |
-| Stepper | Il compte des parties, jamais des pages. | `questionnaire/QuestionnaireForm.tsx` |
+| Avancement automatique | Une page faite de choix uniques avance seule 200 ms après la réponse, sans bouton « Suivant ». Au retour, le bouton reprend la main ; changer la réponse avance aussitôt. | `questionnaire-engine/auto-advance.ts` |
+| Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire-engine/questionnaire.ts` |
+| Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire-engine/page-commit.ts` |
+| Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `simulateur/Simulateur.tsx` |
+| Stepper | Il compte des parties, jamais des pages. | `questionnaire-engine/QuestionnaireForm.tsx` |
 
 *Gardé par* `tests/socle/simulateur/`.
 

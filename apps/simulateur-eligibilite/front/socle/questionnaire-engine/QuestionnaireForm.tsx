@@ -3,13 +3,22 @@
 
 import type { ComponentType } from "react";
 import { QuestionField } from "./QuestionField";
-import { type Answers, errorOf } from "./question";
+import {
+  type Answers,
+  errorOf,
+  pagesOf,
+  type QuestionnairePart,
+} from "./question";
 import type { Questionnaire, QuestionnaireOptions } from "./questionnaire";
 import { useQuestionnaire } from "./questionnaire";
 
-type Props = QuestionnaireOptions & {
-  // Nombre de parties que le stepper annonce. Il compte des parties, pas des
-  // pages : une question de plus ne décale pas le stepper.
+type Props = Omit<QuestionnaireOptions, "pages"> & {
+  // Les parties de ce questionnaire, dans l'ordre.
+  parts: readonly QuestionnairePart[];
+  // Le nombre de parties déjà passées avant ce questionnaire.
+  partsBefore?: number;
+  // Nombre de parties que le stepper annonce, tous questionnaires confondus. Il
+  // compte des parties, pas des pages : une question de plus ne le décale pas.
   partCount: number;
   // Libellé du bouton de la dernière page.
   endLabel: string;
@@ -33,16 +42,19 @@ export type DebugTraceProps = {
 };
 
 export function QuestionnaireForm({
+  parts,
+  partsBefore = 0,
   partCount,
   endLabel,
   DebugTrace,
   ...options
 }: Props) {
-  const questionnaire = useQuestionnaire(options);
+  const questionnaire = useQuestionnaire({ ...options, pages: pagesOf(parts) });
+  const part = parts.findIndex((p) => p.pages.includes(questionnaire.page));
 
   return (
     <>
-      <Stepper part={questionnaire.page.part} total={partCount} />
+      <Stepper part={partsBefore + part + 1} total={partCount} />
       <form
         onSubmit={(e) => {
           e.preventDefault();

@@ -34,7 +34,7 @@ Trois fichiers portent la mécanique, dans `front/socle/questionnaire-engine/` :
 
 | Fichier | Ce qu'il porte |
 |---|---|
-| `question.ts` | ce qu'est une question, une page, une réponse |
+| `question.ts` | ce qu'est une question, une page, une partie, une réponse |
 | `questionnaire.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
 | `page-commit.ts` | ce que deviennent les réponses quand une page est validée, et ce que ça efface |
 

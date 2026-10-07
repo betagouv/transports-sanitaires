@@ -52,10 +52,22 @@ export type Question = SingleChoice | MultipleChoice | NumberInput | TextInput;
 
 export type Page = {
   readonly id: string;
-  /** Rang de la partie du questionnaire que le stepper affiche, à partir de 1. */
-  readonly part: number;
   readonly questions: readonly Question[];
 };
+
+/**
+ * Une partie du questionnaire : ses pages, dans l'ordre. Le stepper compte les
+ * parties, pas les pages.
+ */
+export type QuestionnairePart = {
+  readonly id: string;
+  readonly pages: readonly Page[];
+};
+
+/** Les pages de ces parties, dans l'ordre du questionnaire. */
+export function pagesOf(parts: readonly QuestionnairePart[]): Page[] {
+  return parts.flatMap((part) => part.pages);
+}
 
 /** Les questions de la page qui se posent, vu les réponses. */
 export function askedQuestions(page: Page, answers: Answers): Question[] {

@@ -7,15 +7,18 @@
 import { type ComponentType, type ReactNode, useState } from "react";
 import {
   decide,
-  PAGES_AFTER_LOCK,
-  PAGES_BEFORE_LOCK,
-  PART_COUNT,
+  PARTS_AFTER_LOCK,
+  PARTS_BEFORE_LOCK,
 } from "../../model/fake-questionnaire";
 import {
   type DebugTraceProps,
   QuestionnaireForm,
 } from "../questionnaire-engine/QuestionnaireForm";
-import { type Answers, askedPages } from "../questionnaire-engine/question";
+import {
+  type Answers,
+  askedPages,
+  pagesOf,
+} from "../questionnaire-engine/question";
 import type { QuestionnaireState } from "../questionnaire-engine/questionnaire";
 import { stateAfterAnswers } from "../questionnaire-engine/questionnaire";
 
@@ -104,7 +107,7 @@ function InitialQuestionnaire({
         </p>
       </div>
       <QuestionnaireForm
-        pages={PAGES_BEFORE_LOCK}
+        parts={PARTS_BEFORE_LOCK}
         partCount={PART_COUNT}
         initialState={screen.resume}
         tracked
@@ -163,7 +166,8 @@ function Complement({ screen, goTo, DebugTrace }: ScreenProps<"complement">) {
     <>
       <h1 className="fr-h3">Compléter la commande</h1>
       <QuestionnaireForm
-        pages={PAGES_AFTER_LOCK}
+        parts={PARTS_AFTER_LOCK}
+        partsBefore={PARTS_BEFORE_LOCK.length}
         partCount={PART_COUNT}
         lockedAnswers={locked}
         initialState={screen.resume}
@@ -235,4 +239,6 @@ function SecondaryButton({
   );
 }
 
-const ALL_PAGES = [...PAGES_BEFORE_LOCK, ...PAGES_AFTER_LOCK];
+const PAGES_BEFORE_LOCK = pagesOf(PARTS_BEFORE_LOCK);
+const ALL_PAGES = [...PAGES_BEFORE_LOCK, ...pagesOf(PARTS_AFTER_LOCK)];
+const PART_COUNT = PARTS_BEFORE_LOCK.length + PARTS_AFTER_LOCK.length;

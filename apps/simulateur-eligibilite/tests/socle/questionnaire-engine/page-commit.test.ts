@@ -17,7 +17,6 @@ const texte = (id: string, dependsOn?: string[]): Question => ({
 
 const page = (question: Question): Page => ({
   id: question.id,
-  part: 1,
   questions: [question],
 });
 
