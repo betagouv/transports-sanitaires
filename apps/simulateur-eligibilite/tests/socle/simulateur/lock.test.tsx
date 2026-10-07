@@ -31,6 +31,28 @@ describe("avant le verrou", () => {
     expect(caseACocher("Du lait")).toBeChecked();
   });
 
+  it("le résultat garde le stepper sur sa partie", async () => {
+    const user = await ouvrirLeSimulateur();
+    await allerAuResultat(user);
+
+    expect(
+      screen.getByRole("heading", { name: "Étape 1 sur 2" }),
+    ).toBeInTheDocument();
+  });
+
+  it("sans rien à compléter, le résultat est le dernier écran", async () => {
+    const user = await ouvrirLeSimulateur();
+    await question(BOISSON);
+
+    await user.click(radio("Rien"));
+
+    expect(await screen.findByText("Commande : aucune")).toBeInTheDocument();
+    expect(sansBouton("Compléter la commande")).toBe(true);
+    expect(
+      screen.getByRole("heading", { name: "Étape 1 sur 1" }),
+    ).toBeInTheDocument();
+  });
+
   it("une réponse corrigée change le résultat", async () => {
     const user = await ouvrirLeSimulateur();
     await allerAuResultat(user);
@@ -81,6 +103,9 @@ describe("après le verrou", () => {
     await user.click(bouton("Terminer"));
     expect(
       await screen.findByText("Commande : thé, lait, 2 tasses"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Étape 2 sur 2" }),
     ).toBeInTheDocument();
 
     await user.click(bouton("Précédent"));

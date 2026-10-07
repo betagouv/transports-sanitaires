@@ -1,5 +1,5 @@
 // Le tableau des seeds : une seed par ligne. Ce qu'elle pose, ce qu'elle attend,
-// ce que la décision en dit, et un bouton pour l'ouvrir.
+// ce que la préconisation en dit, et un bouton pour l'ouvrir.
 
 import type { Seed, SeedEvaluation } from "./seed";
 
@@ -56,7 +56,7 @@ function Row({
     <tr>
       <SeedIdentity seed={seed} />
       <td>
-        <ExpectedOutputs seed={seed} />
+        <ExpectedCibles seed={seed} />
       </td>
       <td>
         <Status evaluation={evaluation} />
@@ -106,12 +106,12 @@ function SeedIdentity({ seed }: { seed: Seed }) {
   );
 }
 
-function ExpectedOutputs({ seed }: { seed: Seed }) {
+function ExpectedCibles({ seed }: { seed: Seed }) {
   return (
     <ul className="fr-text--xs" style={{ margin: 0, paddingLeft: "1rem" }}>
-      {Object.entries(seed.expected).map(([output, value]) => (
-        <li key={output}>
-          {output} : <strong>{String(value)}</strong>
+      {Object.entries(seed.expected).map(([cible, value]) => (
+        <li key={cible}>
+          {cible} : <strong>{String(value)}</strong>
         </li>
       ))}
     </ul>
@@ -133,8 +133,8 @@ function Status({ evaluation }: Pick<SeedRow, "evaluation">) {
           style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}
         >
           {evaluation.mismatches.map((mismatch) => (
-            <li key={mismatch.output}>
-              {mismatch.output} : {String(mismatch.actual)}
+            <li key={mismatch.cible}>
+              {mismatch.cible} : {String(mismatch.actual)}
             </li>
           ))}
         </ul>

@@ -110,9 +110,11 @@ server/                  le backend Node, barrière de sécurité : les secrets 
 front/                   le front, bundlé par Vite
   Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
   model/                 ce qui change avec une version du modèle : aujourd'hui le
-                         questionnaire factice et le catalogue des seeds (vide)
-  socle/                 ce qui ne dépend d'aucune version. `index.ts` est ce que le
-                         modèle a le droit d'en importer
+                         modèle factice. Ses déclarations (questions, faits, cibles),
+                         son questionnaire, sa préconisation, ses deux résultats et
+                         le catalogue des seeds (vide)
+  socle/                 ce qui ne dépend d'aucune version. `model.ts` est le contrat
+                         qu'un modèle remplit, `index.ts` ce qu'il a le droit d'importer
     app/                 le choix de l'écran affiché, la navigation entre les écrans,
                          le conteneur de page, le pied de page
     rattachement/        LA feature de l'écran de rattachement, miroir de server/rattachement/ :
@@ -158,10 +160,10 @@ a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 | le mode test des règles (labo) | |
 
 Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré par
-l'application**. Une page liste ses questions, une question dit quand elle se pose
-(`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
+le modèle**. Une partie liste ses pages, une page ses questions, une question dit
+quand elle se pose (`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le questionnaire factice (`front/model/fake-questionnaire.ts`) pose trois questions sans
+Le questionnaire factice (`front/model/questionnaire.ts`) pose trois questions sans
 rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
 parcours réel reprendra :
 
@@ -171,7 +173,8 @@ parcours réel reprendra :
 | Brouillon | Une saisie ne compte qu'une fois la page validée. « Précédent » abandonne le brouillon. | `questionnaire-engine/questionnaire.ts` |
 | Invalidation | Une réponse changée efface les réponses qui en dépendent, et elles seules. | `questionnaire-engine/page-commit.ts` |
 | Verrou | Au résultat, « Précédent » rouvre le questionnaire. L'action principale verrouille : le complément est un second parcours, qui ne repose aucune question d'avant et n'a pas de « Précédent » sur sa première page. | `simulateur/Simulateur.tsx` |
-| Stepper | Il compte des parties, jamais des pages. | `questionnaire-engine/QuestionnaireForm.tsx` |
+| Stepper | Il compte des parties, jamais des pages. Les résultats l'affichent aussi. | `questionnaire-engine/Stepper.tsx` |
+| Résultat sans suite | Quand la préconisation ne donne aucun cerfa, le premier résultat est le dernier écran : pas de bouton pour verrouiller, et le stepper s'arrête sur lui. | `simulateur/Resultats.tsx` |
 
 *Gardé par* `tests/socle/simulateur/`.
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { AutoAdvance } from "./auto-advance";
 import { useAutoAdvance } from "./auto-advance";
 import { commitPage } from "./page-commit";
-import type { Answer, Answers, Page, Question } from "./question";
+import type { Answer, Answers, AnyCibles, Page, Question } from "./question";
 import { askedPages, askedQuestions, isAnswered } from "./question";
 import type { QuestionnaireTracking } from "./questionnaire-tracking";
 import { useQuestionnaireTracking } from "./questionnaire-tracking";
@@ -22,6 +22,9 @@ export type QuestionnaireOptions = {
   // Les réponses acquises avant ce questionnaire. Ses pages ne les reposent
   // pas : les conditions les lisent, rien ne les change. C'est le verrou.
   lockedAnswers?: Answers;
+  // Les cibles figées au verrou. Les conditions des pages les lisent : une
+  // question peut dépendre de la préconisation.
+  cibles?: AnyCibles;
   // La reprise d'un questionnaire déjà mené, au retour d'une page de résultat.
   // Il rouvre sur sa page, réponses intactes, sans réémettre son début.
   initialState?: QuestionnaireState;
@@ -60,7 +63,7 @@ export type Questionnaire = View &
 
 export function useQuestionnaire(options: QuestionnaireOptions): Questionnaire {
   const [state, setState] = useState<State>(() => startingState(options));
-  const view = read(options.pages, state);
+  const view = read(options, state);
   const tracking = useQuestionnaireTracking(
     view.pages.indexOf(view.page) + 1,
     options.tracked,
@@ -84,10 +87,11 @@ export function useQuestionnaire(options: QuestionnaireOptions): Questionnaire {
 export function stateAfterAnswers(
   pages: readonly Page[],
   answers: Answers,
+  cibles?: AnyCibles,
 ): QuestionnaireState & { complete: boolean } {
-  const asked = askedPages(pages, answers);
+  const asked = askedPages(pages, answers, cibles);
   const pending = asked.find((page) =>
-    askedQuestions(page, answers).some(
+    askedQuestions(page, answers, cibles).some(
       (question) => !isAnswered(question, answers[question.id]),
     ),
   );
@@ -100,6 +104,9 @@ export function stateAfterAnswers(
 
 type State = QuestionnaireState & { readonly draft: Answers };
 
+// Ce qui dit quelles pages se posent : la liste, et les cibles s'il y en a.
+type Source = Pick<QuestionnaireOptions, "pages" | "cibles">;
+
 type Context = {
   state: State;
   setState: (state: State) => void;
@@ -111,7 +118,8 @@ type Context = {
 function startingState(options: QuestionnaireOptions): State {
   const answers = options.initialState?.answers ?? options.lockedAnswers;
   const start =
-    options.initialState ?? stateAfterAnswers(options.pages, answers ?? {});
+    options.initialState ??
+    stateAfterAnswers(options.pages, answers ?? {}, options.cibles);
   const page = options.pages.find((p) => p.id === start.page);
   if (!page) throw new Error(`Page inconnue : « ${start.page} ».`);
   return onPage(page, start.answers);
@@ -129,11 +137,12 @@ function onPage(page: Page, answers: Answers): State {
   return { answers, page: page.id, draft };
 }
 
-function read(all: readonly Page[], state: State): View {
-  const pages = askedPages(all, state.answers);
+function read(options: Source, state: State): View {
+  const { pages: all, cibles } = options;
+  const pages = askedPages(all, state.answers, cibles);
   const page = pages.find((p) => p.id === state.page);
   if (!page) throw new Error(`La page « ${state.page} » ne se pose plus.`);
-  const questions = askedQuestions(page, visibleAnswers(state));
+  const questions = askedQuestions(page, visibleAnswers(state), cibles);
   const hasPendingQuestions = questions.some(
     (question) => !isAnswered(question, state.draft[question.id]),
   );
@@ -147,7 +156,8 @@ function read(all: readonly Page[], state: State): View {
     hasPendingQuestions,
     isLast:
       !hasPendingQuestions &&
-      nextPage(all, page, committedAnswers(all, state, page)) === undefined,
+      nextPage(options, page, committedAnswers(options, state, page)) ===
+        undefined,
   };
 }
 
@@ -161,19 +171,21 @@ function visibleAnswers(state: State): Answers {
 // Les réponses du questionnaire, la page courante validée. Une question que la
 // page ne pose plus n'y laisse pas de réponse.
 function committedAnswers(
-  all: readonly Page[],
+  { pages, cibles }: Source,
   state: State,
   page: Page,
 ): Answers {
-  const asked = askedQuestions(page, visibleAnswers(state)).map((q) => q.id);
+  const asked = askedQuestions(page, visibleAnswers(state), cibles).map(
+    (q) => q.id,
+  );
   const inputs = Object.fromEntries(
     Object.entries(state.draft).filter(([id]) => asked.includes(id)),
   );
-  return commitPage(all, state.answers, page, inputs);
+  return commitPage(pages, state.answers, page, inputs);
 }
 
-function nextPage(all: readonly Page[], page: Page, answers: Answers) {
-  const pages = askedPages(all, answers);
+function nextPage(source: Source, page: Page, answers: Answers) {
+  const pages = askedPages(source.pages, answers, source.cibles);
   return pages[pages.findIndex((p) => p.id === page.id) + 1];
 }
 
@@ -190,8 +202,8 @@ function actions({
     next: () => {
       // Le bouton est déjà désactivé, ceci couvre une soumission au clavier.
       if (view.hasPendingQuestions) return;
-      const answers = committedAnswers(options.pages, state, view.page);
-      const following = nextPage(options.pages, view.page, answers);
+      const answers = committedAnswers(options, state, view.page);
+      const following = nextPage(options, view.page, answers);
       if (!following) {
         tracking.questionnaireCompleted();
         return options.onComplete(answers, { answers, page: view.page.id });

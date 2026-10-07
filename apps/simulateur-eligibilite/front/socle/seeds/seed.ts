@@ -1,12 +1,13 @@
 // Ce qu'est une seed : des réponses, et ce qu'on en attend.
 //
-// La même définition sert aux tests, qui comparent la décision aux attendus, et
-// à l'écran des seeds, qui permet de l'ouvrir.
+// La même définition sert aux tests, qui comparent la préconisation aux
+// attendus, et à l'écran des seeds, qui permet de l'ouvrir.
 
-import type { Answers } from "../questionnaire-engine/question";
-
-/** Ce que rend la décision : des sorties nommées. */
-type Outputs = Readonly<Record<string, unknown>>;
+import type {
+  Answers,
+  AnyCibles,
+  AnyQuestions,
+} from "../questionnaire-engine/question";
 
 /**
  * Où l'écran des seeds dépose l'utilisateur.
@@ -21,7 +22,10 @@ type Outputs = Readonly<Record<string, unknown>>;
  */
 type Landing = "result" | "questionnaire";
 
-export type Seed = {
+export type Seed<
+  Questions extends AnyQuestions = AnyQuestions,
+  Cibles extends AnyCibles = AnyCibles,
+> = {
   /** Identifiant stable, en kebab-case, cité par les tests et la doc. */
   readonly id: string;
   /** Libellé de l'écran des seeds : l'écran d'atterrissage, puis ce qu'on y voit. */
@@ -31,9 +35,9 @@ export type Seed = {
   /** Résultat, qui est le défaut, ou questionnaire. Voir `Landing`. */
   readonly landing?: Landing;
   /** Les réponses données, par identifiant de question. */
-  readonly answers: Answers;
-  /** Les sorties attendues. Partiel : on n'annonce que ce qui la caractérise. */
-  readonly expected: Outputs;
+  readonly answers: Answers<Questions>;
+  /** Les cibles attendues. Partiel : on n'annonce que ce qui la caractérise. */
+  readonly expected: Partial<Cibles>;
 };
 
 /** La seed s'arrête-t-elle en chemin, pour ouvrir le questionnaire ? */
@@ -42,35 +46,31 @@ export function opensQuestionnaire(seed: Seed): boolean {
 }
 
 type SeedMismatch = {
-  readonly output: string;
+  readonly cible: string;
   readonly expected: unknown;
   readonly actual: unknown;
 };
 
 export type SeedEvaluation = {
-  /** Ce que la décision rend pour cette seed. */
-  readonly outputs: Outputs;
-  /** Attendus démentis par la décision. Une liste vide veut dire seed conforme. */
+  /** Ce que la préconisation rend pour cette seed. */
+  readonly cibles: AnyCibles;
+  /** Attendus démentis. Une liste vide veut dire seed conforme. */
   readonly mismatches: readonly SeedMismatch[];
 };
 
 /**
- * Évalue une seed et compare la décision à ses attendus.
+ * Évalue une seed et compare ses cibles à ses attendus.
  *
- * La décision est passée en paramètre : une seed ne sait pas comment le
- * simulateur décide, seulement ce qu'elle en attend.
+ * Le calcul est passé en paramètre : une seed ne sait pas comment le modèle
+ * préconise, seulement ce qu'elle en attend.
  */
 export function evaluateSeed(
-  decide: (answers: Answers) => Outputs,
+  preconise: (answers: Answers) => AnyCibles,
   seed: Seed,
 ): SeedEvaluation {
-  const outputs = decide(seed.answers);
+  const cibles = preconise(seed.answers);
   const mismatches = Object.entries(seed.expected)
-    .filter(([output, expected]) => outputs[output] !== expected)
-    .map(([output, expected]) => ({
-      output,
-      expected,
-      actual: outputs[output],
-    }));
-  return { outputs, mismatches };
+    .filter(([cible, expected]) => cibles[cible] !== expected)
+    .map(([cible, expected]) => ({ cible, expected, actual: cibles[cible] }));
+  return { cibles, mismatches };
 }

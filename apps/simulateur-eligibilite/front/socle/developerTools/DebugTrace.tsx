@@ -1,6 +1,6 @@
 // La trace de debug du simulateur : les pages parcourues et les réponses.
 // Sous le questionnaire, elle ajoute le brouillon de la page. Sous un résultat,
-// les sorties décidées.
+// les faits et les cibles de la préconisation.
 //
 // C'est un developer tool, réservé au service qui les déverrouille (`unlock.ts`).
 // Le simulateur ne l'importe pas : `App` la lui passe.
@@ -18,8 +18,9 @@ export function DebugTrace(props: DebugTraceProps) {
           <ValueList title="Brouillon de la page" values={props.draft} />
         )}
         <ValueList title="Réponses validées" values={props.answers} />
-        {props.outputs && (
-          <ValueList title="Sorties décidées" values={props.outputs} />
+        {props.faits && <ValueList title="Faits" values={props.faits} />}
+        {props.cibles && (
+          <ValueList title="Cibles décidées" values={props.cibles} />
         )}
       </div>
     </details>

@@ -1,18 +1,18 @@
 // Le contenu de l'écran des seeds, réservé au service n° 4.
 //
-// Il rejoue chaque seed dans la décision et signale les écarts. Il range les
+// Il rejoue chaque seed dans la préconisation et signale les écarts. Il range les
 // seeds en deux sections : celles qui ouvrent un résultat, et celles qui
 // s'arrêtent dans le questionnaire.
 
-import { decide } from "../../model/fake-questionnaire";
-import { SEEDS } from "../../model/seeds-catalogue";
 import { Container } from "../app/Container";
+import type { Answers, AnyCibles } from "../questionnaire-engine/question";
 import { type SeedRow, SeedsTable } from "./SeedsTable";
 import { evaluateSeed, opensQuestionnaire, type Seed } from "./seed";
 
 type Props = {
-  /** Injectable pour les tests (défaut = le catalogue). */
-  seeds?: readonly Seed[];
+  seeds: readonly Seed[];
+  /** Les cibles que le modèle préconise pour des réponses. */
+  preconise: (answers: Answers) => AnyCibles;
   onOpen: (seed: Seed) => void;
   onBack: () => void;
 };
@@ -39,10 +39,10 @@ const SECTIONS: ReadonlyArray<{
   },
 ];
 
-export function Seeds({ seeds = SEEDS, onOpen, onBack }: Props) {
+export function Seeds({ seeds, preconise, onOpen, onBack }: Props) {
   const rows = seeds.map((seed) => ({
     seed,
-    evaluation: evaluateSeed(decide, seed),
+    evaluation: evaluateSeed(preconise, seed),
   }));
 
   return (
@@ -99,7 +99,7 @@ function CatalogueByLanding({
       >
         <p>
           {mismatching.length === 0
-            ? "La décision confirme les attendus des seeds."
+            ? "La préconisation confirme les attendus des seeds."
             : `${mismatching.length} seed(s) en écart avec leurs attendus : ${mismatching
                 .map(({ seed }) => seed.label)
                 .join(", ")}.`}

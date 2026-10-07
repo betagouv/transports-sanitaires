@@ -5,12 +5,14 @@ import type { ComponentType } from "react";
 import { QuestionField } from "./QuestionField";
 import {
   type Answers,
+  type AnyCibles,
   errorOf,
   pagesOf,
   type QuestionnairePart,
 } from "./question";
 import type { Questionnaire, QuestionnaireOptions } from "./questionnaire";
 import { useQuestionnaire } from "./questionnaire";
+import { Stepper } from "./Stepper";
 
 type Props = Omit<QuestionnaireOptions, "pages"> & {
   // Les parties de ce questionnaire, dans l'ordre.
@@ -37,8 +39,9 @@ export type DebugTraceProps = {
   /** Le brouillon de la page ouverte. */
   draft?: Answers;
   answers: Answers;
-  /** Ce que la décision a rendu, sur une page de résultat. */
-  outputs?: Readonly<Record<string, unknown>>;
+  /** Ce que la préconisation a calculé, sur un résultat. */
+  faits?: Readonly<Record<string, unknown>>;
+  cibles?: AnyCibles;
 };
 
 export function QuestionnaireForm({
@@ -54,6 +57,7 @@ export function QuestionnaireForm({
 
   return (
     <>
+      <h1 className="fr-h3">{parts[part]?.title}</h1>
       <Stepper part={partsBefore + part + 1} total={partCount} />
       <form
         onSubmit={(e) => {
@@ -95,28 +99,6 @@ function QuestionFields({ questionnaire }: { questionnaire: Questionnaire }) {
       onChange={(answer) => questionnaire.answer(question.id, answer)}
     />
   ));
-}
-
-function Stepper({ part, total }: { part: number; total: number }) {
-  return (
-    <div className="fr-stepper" style={{ marginBottom: "2rem" }}>
-      <h2 className="fr-stepper__title">
-        <span className="fr-stepper__state">
-          Étape {part} sur {total}
-        </span>
-      </h2>
-      <div
-        className="fr-stepper__steps"
-        data-fr-current-step={part}
-        data-fr-steps={total}
-      />
-      {/* L'avancement automatique change d'écran sans clic : le lecteur d'écran
-          doit l'annoncer, sans quoi le changement passe inaperçu. */}
-      <p className="fr-sr-only" aria-live="polite">
-        Étape {part} sur {total}
-      </p>
-    </div>
-  );
 }
 
 function NavigationButtons({

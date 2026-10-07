@@ -1,7 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { preconisationOf } from "../../../front/socle/model";
+import type { Answers } from "../../../front/socle/questionnaire-engine/question";
 import { Seeds } from "../../../front/socle/seeds/Seeds";
 import type { Seed } from "../../../front/socle/seeds/seed";
+import { modeleDeTest } from "../modele-de-test";
 import {
   ACCOMPAGNEMENTS,
   bouton,
@@ -10,7 +13,7 @@ import {
   question,
 } from "../simulateur/questionnaire";
 
-// L'écran des seeds liste les seeds reçues, dit si la décision confirme leurs
+// L'écran des seeds liste les seeds reçues, dit si la préconisation confirme leurs
 // attendus, et ouvre l'écran correspondant. Le catalogue est vide : les seeds
 // sont écrites ici, sur le questionnaire factice.
 
@@ -41,6 +44,14 @@ const ARRETEE_EN_CHEMIN: Seed = {
 
 const SEEDS = [THE_AU_LAIT, ATTENDU_DEMENTI, ARRETEE_EN_CHEMIN];
 
+// L'écran rendu seul : la préconisation du modèle de test, et aucune action.
+const SANS_ACTION = {
+  preconise: (answers: Answers) =>
+    preconisationOf(modeleDeTest, answers).cibles,
+  onOpen: () => {},
+  onBack: () => {},
+};
+
 const ouvrir = (seed: Seed) => bouton(`Ouvrir : ${seed.label}`);
 
 async function ouvrirLesSeeds() {
@@ -54,7 +65,7 @@ const ECRAN_SEEDS = { name: "Seeds" } as const;
 
 describe("écran des seeds", () => {
   it("range les seeds selon l'écran sur lequel elles atterrissent", () => {
-    render(<Seeds seeds={SEEDS} onOpen={() => {}} onBack={() => {}} />);
+    render(<Seeds seeds={SEEDS} {...SANS_ACTION} />);
 
     const [resultat, questionnaire] = screen.getAllByRole("table") as [
       HTMLElement,
@@ -65,7 +76,7 @@ describe("écran des seeds", () => {
   });
 
   it("dit quelles seeds la décision dément", () => {
-    render(<Seeds seeds={SEEDS} onOpen={() => {}} onBack={() => {}} />);
+    render(<Seeds seeds={SEEDS} {...SANS_ACTION} />);
 
     expect(
       screen.getByText(
@@ -77,7 +88,7 @@ describe("écran des seeds", () => {
   });
 
   it("annonce un catalogue vide plutôt que des tableaux sans ligne", () => {
-    render(<Seeds seeds={[]} onOpen={() => {}} onBack={() => {}} />);
+    render(<Seeds seeds={[]} {...SANS_ACTION} />);
 
     expect(screen.getByText(/^Le catalogue est vide/)).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();

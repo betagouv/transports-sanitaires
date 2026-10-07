@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { App } from "../../../front/socle/app/App";
 import { Footer } from "../../../front/socle/app/Footer";
 import { snapshotReferentiel } from "../../../shared/referentiel";
+import { modeleDeTest } from "../modele-de-test";
 import { seRattacher } from "../se-rattacher";
 
 // Le pied de page affiche la version et le commit. Vite fige ces deux valeurs à
@@ -51,7 +52,7 @@ describe("pied de page", () => {
 
   it("accompagne le simulateur, pas l'écran de rattachement", async () => {
     const user = userEvent.setup();
-    render(<App referentiel={snapshotReferentiel} />);
+    render(<App model={modeleDeTest} referentiel={snapshotReferentiel} />);
 
     // Le rattachement n'est pas le produit : rien ne l'encombre.
     expect(screen.queryByRole("contentinfo")).toBeNull();

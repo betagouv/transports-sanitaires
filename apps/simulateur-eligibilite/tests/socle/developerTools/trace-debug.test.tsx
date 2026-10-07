@@ -8,8 +8,8 @@ import {
 } from "../simulateur/questionnaire";
 
 // La trace de debug est un developer tool. Elle s'ouvre sur tous les
-// environnements, pour le seul service n° 4. Elle montre le chemin parcouru et
-// les réponses données.
+// environnements, pour le seul service n° 4. Elle montre le chemin parcouru,
+// les réponses données, puis les faits et les cibles de la préconisation.
 //
 // Les tests passent par `App` : ils gardent le câblage, du service choisi au
 // rattachement jusqu'au `DebugTrace` des écrans.
@@ -36,5 +36,7 @@ describe("traces de debug", () => {
 
     expect(screen.getByText(TRACE_RESULTAT)).toBeInTheDocument();
     expect(screen.getByText('"thé, lait"')).toBeInTheDocument();
+    expect(screen.getByText("Faits :")).toBeInTheDocument();
+    expect(screen.getByText('"thé"')).toBeInTheDocument();
   });
 });

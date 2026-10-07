@@ -20,13 +20,12 @@ import {
 const commencePar = (prefixe: string) => (cible: string) =>
   cible.startsWith(prefixe);
 
-// Ce qui pose les questions et décide : le parcours, le moteur de
-// questionnaire et le modèle.
-const SIMULATEUR = [
-  "front/socle/simulateur",
-  "front/socle/questionnaire-engine",
-  "front/model",
-];
+// Ce qui pose les questions : le parcours et le moteur de questionnaire.
+const PARCOURS = ["front/socle/simulateur", "front/socle/questionnaire-engine"];
+
+// Ce que le modèle a le droit d'importer du socle, en plus de son point
+// d'entrée : le type d'une seed, que le catalogue lit à la source.
+const OUVERT_AU_MODELE = ["front/socle", "front/socle/seeds/seed"];
 
 describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
@@ -59,10 +58,39 @@ describe("frontières de runtime", () => {
   });
 });
 
+describe("le socle et le modèle", () => {
+  it("le socle n'importe rien du modèle", () => {
+    expect(
+      franchissements(["front/socle"], commencePar("front/model")),
+      "Le socle ne dépend d'aucune version du modèle : il reçoit le sien en " +
+        "prop, depuis `front/Main.tsx`. Un import direct lierait le parcours, " +
+        "les seeds ou les developer tools au questionnaire du moment, et " +
+        "livrer un nouveau modèle obligerait à toucher au socle.",
+    ).toEqual([]);
+  });
+
+  it("le modèle n'importe du socle que son point d'entrée", () => {
+    expect(
+      franchissements(
+        ["front/model"],
+        (cible) =>
+          cible.startsWith("front/socle") && !OUVERT_AU_MODELE.includes(cible),
+      ),
+      "`front/socle/index.ts` dit ce que le socle promet au modèle. Un import " +
+        "plus profond lie le modèle à un détail du socle, qui ne peut plus " +
+        "changer sans le casser. S'il manque quelque chose, ajoute-le au " +
+        "point d'entrée.",
+    ).toEqual([]);
+  });
+});
+
 describe("invariants métier", () => {
   it("le simulateur ignore qui prescrit", () => {
     expect(
-      franchissements(SIMULATEUR, commencePar("front/socle/rattachement/")),
+      franchissements(
+        [...PARCOURS, "front/model"],
+        commencePar("front/socle/rattachement/"),
+      ),
       "Le moteur d'éligibilité raisonne sur une situation médicale, jamais " +
         "sur une identité (docs/knowledge/adr/identification.md). L'analytics, " +
         "lui, est admis : il lit le rattachement en session de son côté, sans " +
@@ -73,7 +101,7 @@ describe("invariants métier", () => {
   it("les seeds et les developer tools se greffent sur le simulateur, jamais l'inverse", () => {
     expect(
       franchissements(
-        SIMULATEUR,
+        PARCOURS,
         (cible) =>
           cible.startsWith("front/socle/developerTools/") ||
           cible.startsWith("front/socle/seeds/"),

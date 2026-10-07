@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { App } from "../../../front/socle/app/App";
 import type { Seed } from "../../../front/socle/seeds/seed";
 import { snapshotReferentiel } from "../../../shared/referentiel";
+import { modeleDeTest } from "../modele-de-test";
 import { seRattacher, seRattacherProduit } from "../se-rattacher";
 
 type User = ReturnType<typeof userEvent.setup>;
@@ -17,13 +18,18 @@ export async function ouvrirLeSimulateur(
   const user = userEvent.setup();
   render(
     <App
+      model={modeleAvec(options.seeds)}
       referentiel={snapshotReferentiel}
       declarer={() => {}}
-      seeds={options.seeds}
     />,
   );
   await (options.produit ? seRattacherProduit(user) : seRattacher(user));
   return user;
+}
+
+// Le modèle de test, avec ces seeds à la place de son catalogue.
+function modeleAvec(seeds?: readonly Seed[]) {
+  return seeds ? { ...modeleDeTest, seeds: async () => seeds } : modeleDeTest;
 }
 
 export const BOISSON = { name: /^quelle boisson souhaitez-vous/i };

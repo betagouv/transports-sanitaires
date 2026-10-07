@@ -3,30 +3,55 @@
 // Ce fichier est le seul du module dans le bundle initial. Il ne doit importer
 // ni le catalogue ni le tableau (`scripts/verifier-bundle.ts` le vérifie).
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { type Model, preconisationOf } from "../model";
 import type { Seed } from "./seed";
 
 type Props = {
-  /** Injectable pour les tests (défaut = le catalogue). */
-  seeds?: readonly Seed[];
+  /** Le modèle dont on rejoue les seeds. */
+  model: Model;
   onOpen: (seed: Seed) => void;
   onBack: () => void;
 };
 
-export function SeedsScreen(props: Props) {
+export function SeedsScreen({ model, onOpen, onBack }: Props) {
+  const seeds = useCatalogue(model);
+  if (!seeds) return null;
   return (
     <Suspense fallback={null}>
-      <Seeds {...props} />
+      <Seeds
+        seeds={seeds}
+        preconise={(answers) => preconisationOf(model, answers).cibles}
+        onOpen={onOpen}
+        onBack={onBack}
+      />
     </Suspense>
   );
 }
 
 // ---- implémentation ----
 
-// Chargé à la demande : le catalogue et son tableau restent hors du bundle
-// initial. Seul le service produit y accède.
+// Chargé à la demande : le tableau reste hors du bundle initial. Seul le service
+// produit y accède.
 const Seeds = lazy(() =>
   import("./Seeds").then((m) => ({
     default: m.Seeds,
   })),
 );
+
+// Le catalogue du modèle, demandé à l'ouverture de l'écran. `undefined` tant
+// qu'il n'est pas arrivé.
+function useCatalogue(model: Model): readonly Seed[] | undefined {
+  const [seeds, setSeeds] = useState<readonly Seed[]>();
+  useEffect(() => {
+    let active = true;
+    model.seeds().then((catalogue) => {
+      // L'écran a pu être quitté entre-temps.
+      if (active) setSeeds(catalogue);
+    });
+    return () => {
+      active = false;
+    };
+  }, [model]);
+  return seeds;
+}

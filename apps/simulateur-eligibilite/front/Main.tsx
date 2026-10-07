@@ -1,15 +1,13 @@
-// Point d'entrée du navigateur : démarre le traceur, puis monte l'app React.
+// Point d'entrée du navigateur : démarre le traceur, puis monte l'app React
+// sur le modèle. C'est le seul fichier qui importe à la fois le socle et le
+// modèle.
 
 import { startReactDsfr } from "@codegouvfr/react-dsfr/spa";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./socle/app/App";
 import "./socle/app/dsfr-overrides.css";
-import {
-  chargerMatomo,
-  configDepuisEnv,
-  initAnalytics,
-} from "./socle/analytics/matomo";
+import { model } from "./model";
+import { App, chargerMatomo, configDepuisEnv, initAnalytics } from "./socle";
 
 startReactDsfr({ defaultColorScheme: "system" });
 
@@ -23,6 +21,6 @@ if (!racine) throw new Error("Élément #root absent de index.html.");
 
 createRoot(racine).render(
   <StrictMode>
-    <App />
+    <App model={model} />
   </StrictMode>,
 );

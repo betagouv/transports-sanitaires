@@ -7,9 +7,9 @@
 import type { ComponentProps } from "react";
 import { DebugTrace } from "../developerTools/DebugTrace";
 import { DeveloperTools, ToolButton } from "../developerTools/DeveloperTools";
+import type { Model } from "../model";
 import { RattachementScreen } from "../rattachement/RattachementScreen";
 import { SeedsScreen } from "../seeds/SeedsScreen";
-import type { Seed } from "../seeds/seed";
 import { SimulateurScreen } from "../simulateur/SimulateurScreen";
 import type { Navigation } from "./navigation";
 import { useNavigation } from "./navigation";
@@ -19,11 +19,11 @@ type Props = Pick<
   ComponentProps<typeof RattachementScreen>,
   "referentiel" | "declarer"
 > & {
-  /** Les seeds à afficher. Par défaut, le catalogue, chargé à la demande. */
-  seeds?: readonly Seed[];
+  /** La version du modèle que l'app déroule. `Main` la fournit. */
+  model: Model;
 };
 
-export function App({ referentiel, declarer, seeds }: Props = {}) {
+export function App({ model, referentiel, declarer }: Props) {
   const navigation = useNavigation();
 
   return (
@@ -37,7 +37,7 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
       )}
       {navigation.screen === "seeds" && (
         <SeedsScreen
-          seeds={seeds}
+          model={model}
           onOpen={navigation.openSeed}
           onBack={navigation.closeTool}
         />
@@ -45,6 +45,7 @@ export function App({ referentiel, declarer, seeds }: Props = {}) {
       {navigation.screen === "simulateur" && (
         <SimulateurScreen
           key={navigation.simulationNumber}
+          model={model}
           seedAnswers={navigation.seedAnswers}
           onNewSimulation={navigation.restart}
           developerToolsPanel={developerToolsPanel(navigation)}

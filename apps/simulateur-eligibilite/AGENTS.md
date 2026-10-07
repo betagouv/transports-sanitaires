@@ -13,14 +13,20 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 n'est pas intégrée. Il n'y a ni règles publicodes, ni page de résultat métier,
 ni CERFA téléchargeable. Le simulateur déroule un **questionnaire factice**
-(`front/model/fake-questionnaire.ts`), qui ne décide rien. Le
+(`front/model/`), qui ne décide rien. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version
 du modèle : rattachement, parcours, moteur de questionnaire, analytics, seeds,
 outils PDF, developer tools. `front/model/` porte la version : aujourd'hui le
-questionnaire factice et le catalogue des seeds. Le modèle n'importe le socle que
-par `front/socle/index.ts`.
+modèle factice.
+
+Le socle ne connaît le modèle que par un contrat, `Model` (`front/socle/model.ts`) :
+des parties de questionnaire, ce qui calcule la préconisation (des réponses aux
+faits, des faits aux cibles), et deux résultats. `front/Main.tsx` est le seul
+fichier qui importe les deux et passe le modèle à `App`. Le socle n'importe rien
+de `front/model/`, et le modèle n'importe du socle que `front/socle/index.ts`.
+`tests/architecture.test.ts` garde ces deux règles.
 
 Le parcours commence par un **écran de rattachement
 obligatoire** : établissement et service, sans identifier la personne
@@ -166,13 +172,14 @@ d'une version à l'autre.
   un référentiel injecté.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
-Réutilise les helpers de `tests/socle/` : `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
+Réutilise les helpers de `tests/socle/` : `modele-de-test.ts` (le modèle que les
+tests injectent), `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
 `cerfa/test-form.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
 [`front/model/seeds-catalogue.ts`](front/model/seeds-catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
-*avec leurs sorties attendues*. Il est vide tant que le modèle suivant n'est pas
+*avec leurs cibles attendues*. Il est vide tant que le modèle suivant n'est pas
 intégré. Les tests de l'écran des seeds écrivent leurs propres seeds, sur le parcours
 factice.
 
