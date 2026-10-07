@@ -16,6 +16,7 @@ Tous affectés à l'éditeur et rattachés au Sprint 06.
 | Retour différent de l'aller : deux segments à qualifier et à comparer, sans notion de segment dans le YAML ni dans le socle. Notre suggestion : ne pas le proposer, et renvoyer vers une seconde simulation. | « v10 : retour différent de l'aller, deux segments à qualifier dans une même simulation », priorité haute | 09, 10 |
 | Équipement bariatrique : le catalogue demande de bloquer P1, sans dire quels modes sont incompatibles ni quel message afficher. | « v10 : la règle de blocage pour l'équipement bariatrique n'est pas écrite », priorité moyenne | 09, 10 |
 | Adresse hors de France : comment le prescripteur signale l'étranger. Notre suggestion : une case « Adresse hors de France ». | « v10 : comment saisir une adresse hors de France », priorité basse | 09, 10 |
+| Adresse incompatible avec la distance (Q3.2) : le livrable demande de bloquer le PDF, ce qui suppose un calcul d'itinéraire. Notre suggestion : rappeler la tranche déclarée sur la page des adresses, sans bloquer. | « v10 : bloquer le PDF pour une adresse incompatible avec la distance demande un calcul d'itinéraire », priorité moyenne | 09 |
 
 ## En cours chez l'éditeur, sans ticket
 
@@ -29,7 +30,7 @@ Tous affectés à l'éditeur et rattachés au Sprint 06.
 
 | Sujet | Le problème | Priorité suggérée | Chantier |
 |---|---|---|---|
-| Trois demandes qu'un programme ne sait pas tenir | 1. Rejeter un texte libre « contradictoire » en Q3.4 et Q3.5 : on ne détecte pas une contradiction dans du texte libre. 2. Vérifier le « format postal local » d'une adresse hors de France, pays par pays. 3. Bloquer le PDF pour une adresse « clairement incompatible » avec le lieu ou la tranche de distance (Q3.2), sans déduire un seuil routier d'une distance à vol d'oiseau : il faudrait un calcul d'itinéraire. Nous ne les implémentons pas. | moyenne | 09 |
+| Deux demandes qu'un programme ne sait pas tenir | 1. Rejeter un texte libre « contradictoire » en Q3.4 et Q3.5 : on ne détecte pas une contradiction dans du texte libre. 2. Vérifier le « format postal local » d'une adresse hors de France, pays par pays. Nous ne les implémentons pas. Signalées à l'éditeur par message. | moyenne | 09 |
 | Texte trop long | Le livrable demande une reformulation à valider puis le blocage du PDF. Nous débordons, sans jamais bloquer (D-61, D-63). | moyenne | 09 |
 | Référence du mapping | La page Notion « Mapping documents » dit que le Google Sheet fait foi. Le README du package désigne `mapping_documents.json` et ne cite pas le Sheet. Nous suivons le package (D-72). Le Sheet est-il encore maintenu, et synchronisé avec la v10 ? | basse | 10 |
 
