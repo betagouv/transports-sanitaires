@@ -34,7 +34,7 @@ export function PrescriptionPreremplie() {
 // ---- implémentation ----
 
 // Une question obligatoire sans réponse ne donne aucune issue. Le questionnaire
-// s'arrête aujourd'hui avant P1 : c'est toujours le cas.
+// s'arrête aujourd'hui avant P2 : c'est toujours le cas.
 function SansIssue() {
   return (
     <p>
