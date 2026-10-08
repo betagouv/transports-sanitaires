@@ -16,3 +16,4 @@ export type {
   Answers,
   QuestionnairePart,
 } from "./questionnaire-engine/question";
+export { areAnswered } from "./questionnaire-engine/question";

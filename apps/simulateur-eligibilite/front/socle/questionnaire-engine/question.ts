@@ -176,6 +176,19 @@ export function isAnswered(question: Question, answer: Answer | undefined) {
   return offered !== undefined && errorOf(question, offered) === undefined;
 }
 
+/** Toutes les questions qui se posent dans ces pages ont-elles leur réponse ? */
+export function areAnswered(
+  pages: readonly Page[],
+  answers: Answers,
+  cibles?: AnyCibles,
+): boolean {
+  return pages.every((page) =>
+    askedQuestions(page, answers, cibles).every((question) =>
+      isAnswered(question, answers[question.id]),
+    ),
+  );
+}
+
 /**
  * Ce qui ne va pas dans une saisie, à afficher sous le champ. `undefined`
  * quand elle convient, ou quand il n'y a encore rien à corriger.
