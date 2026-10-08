@@ -12,9 +12,10 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 est en cours d'intégration (`docs/tasks/PLAN.md`). `front/model/` porte son
-noyau : les règles publicodes de l'éditeur, les déclarations des faits et des
-cibles, et la première question. Il n'y a encore ni page de résultat métier, ni
-CERFA téléchargeable. Le
+noyau et ses deux premières parties : les règles publicodes de l'éditeur, les
+déclarations des faits et des cibles, P0 et P1 (Q0.1 à Q1.4) et les faits du
+mode de transport. Il n'y a encore ni P2, ni page de résultat métier, ni CERFA
+téléchargeable. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version

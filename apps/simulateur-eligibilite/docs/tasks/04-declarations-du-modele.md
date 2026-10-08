@@ -6,7 +6,7 @@ nom mal écrit ne compile pas, et un nom absent des règles fait rougir un test.
 
 **Blocked by:** 01 (les noms), 03 (les génériques).
 
-**Status:** les faits et les cibles de la v10 sont déclarés en listes `as const`, et comparés à `rules/` par `tests/model/declarations.test.ts`. Restent les questions (une seule déclarée, Q0.1), les 6 cibles de la preuve Q2.1 et les cibles documentaires.
+**Status:** les faits et les cibles de la v10 sont déclarés en listes `as const`, et comparés à `rules/` par `tests/model/declarations.test.ts`. Les questions de P0 et P1 sont déclarées (Q0.1 à Q1.4). Restent les questions de P2 et P3, les 6 cibles de la preuve Q2.1 et les cibles documentaires.
 
 ## Décisions prises
 

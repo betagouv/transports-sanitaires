@@ -22,7 +22,7 @@ ouvertes. On les traite un par un, dans l'ordre du tableau.
 | [07](07-seeds.md) | Seeds | fait | une seed par cas d'oracle, quand l'éditeur le livre en réponses |
 | [08](08-tests-et-factice.md) | Tests et factice | fait | rien |
 | [09](09-capacites-du-socle-pour-la-v10.md) | Capacités du socle pour la v10 | cadré | tout à coder |
-| [10](10-integration-de-la-v10.md) | Intégration de la v10 | étape 1 codée | les étapes 2 à 7 ; les étapes 3 et 4 attendent l'éditeur |
+| [10](10-integration-de-la-v10.md) | Intégration de la v10 | étapes 1 et 2 codées | les étapes 3 à 7 ; les étapes 3 et 4 attendent l'éditeur |
 
 ## Commits
 

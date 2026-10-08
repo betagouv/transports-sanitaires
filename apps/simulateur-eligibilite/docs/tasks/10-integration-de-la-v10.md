@@ -6,7 +6,7 @@ préconisation et télécharge son cerfa.
 
 **Blocked by:** 02 à 09.
 
-**Status:** étape 1 codée. Sept étapes (D-69). Les étapes 3 et 4 attendent l'éditeur.
+**Status:** étapes 1 et 2 codées. Sept étapes (D-69). Les étapes 3 et 4 attendent l'éditeur.
 
 ## Décisions prises
 
@@ -164,6 +164,37 @@ Trois choses à savoir :
 
 Non fait à l'étape 1 : le script local qui compare nos déclarations au package
 (D-70). Il prend son sens avec le dictionnaire des cibles et le mapping.
+
+## Ce que l'étape 2 a livré
+
+- P0 et P1 sont posées : Q0.1 en cartes radio, puis Q1.1 à Q1.4, libellés
+  repris du catalogue.
+- Leurs réponses donnent les 11 faits directs du mode de transport
+  (`front/model/mode-de-transport.ts`), et `fait_p1_complete`, que le socle
+  calcule sur les pages de P1 (`areAnswered`).
+- Les règles rendent le mode. `tests/model/mode-de-transport.test.ts` le
+  vérifie des réponses au mode, pour les cinq modes.
+- Trois capacités du chantier 09 sont entrées dans le socle : l'explication
+  d'une option, l'option qui dépend des réponses, le libellé qui dépend des
+  réponses.
+
+Quatre choses à savoir :
+
+- **L'équipement bariatrique ne bloque rien.** La case de Q1.3 est posée et
+  gardée dans les réponses. Elle ne donne aucun fait et ne bloque pas P1 : la
+  règle attend l'éditeur.
+- **Le transport partagé se propose selon le mode que les règles calculent**,
+  TAP ou TPMR, pas selon une condition réécrite dans le questionnaire.
+- **La phrase de Q1.4 est la nôtre.** Le catalogue demande que le libellé
+  précise « en toute autonomie » ou « avec l'aide d'un proche », sans donner
+  la phrase. À faire relire par l'éditeur.
+- **Le résultat ne change pas.** P2 n'est pas posée : `fait_p2_complete` reste
+  à « non », et R2 dit que le questionnaire n'est pas complet. Le mode se lit
+  dans la trace de debug. Le stepper annonce trois parties, jusqu'à P2.
+
+`preconisation.ts` ne porte plus que le passage des réponses aux faits. Le
+moteur publicodes est dans `evaluation-des-regles.ts`, que le questionnaire lit
+aussi pour connaître le mode.
 
 ## Problèmes restants
 
