@@ -34,6 +34,9 @@ fichier qui importe les deux. Il charge le modèle à la demande, pendant l'écr
 de rattachement, et passe sa promesse à `App` : publicodes et les règles restent
 hors du chunk d'entrée. Le socle n'importe rien
 de `front/model/`, et le modèle n'importe du socle que `front/socle/index.ts`.
+Une exception : le moteur de décision, `front/socle/decision-engine/publicodes.ts`,
+que le modèle prend à la source. C'est le seul fichier qui importe publicodes
+(D-76).
 `tests/architecture.test.ts` garde ces deux règles.
 
 Le parcours commence par un **écran de rattachement
@@ -147,6 +150,7 @@ Ils sont **exécutables**, dans
 - les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité ;
+- publicodes, que seul le moteur de décision du socle importe ;
 - le modèle livré, que seul `tests/model/` importe ;
 - les limites de 30 et 300 lignes.
 

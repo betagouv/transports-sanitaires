@@ -193,8 +193,9 @@ Quatre choses à savoir :
   dans la trace de debug. Le stepper annonce trois parties, jusqu'à P2.
 
 `preconisation.ts` ne porte plus que le passage des réponses aux faits. Le
-moteur publicodes est dans `evaluation-des-regles.ts`, que le questionnaire lit
-aussi pour connaître le mode.
+moteur publicodes est dans le socle (`decision-engine/publicodes.ts`, D-76).
+`evaluation-des-regles.ts` lui donne les règles et les cibles du modèle, et le
+questionnaire le lit aussi pour connaître le mode.
 
 ## Problèmes restants
 

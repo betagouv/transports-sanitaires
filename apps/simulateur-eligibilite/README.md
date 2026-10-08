@@ -129,6 +129,9 @@ front/                   le front, bundlé par Vite
                          brouillon, l'invalidation des réponses dépendantes,
                          l'avancement automatique, le champ qui rend une question,
                          ce qui part vers l'analytics
+    decision-engine/     le moteur de décision : des faits aux cibles, par les règles
+                         publicodes qu'un modèle lui donne. Le seul fichier qui
+                         importe publicodes, pris par le modèle hors de `index.ts`
     ui/                  les champs de formulaire, bâtis sur le DSFR et sans rien
                          savoir du questionnaire : TextField, SelectField,
                          RadioField, CheckboxField, NumberField, DateField
