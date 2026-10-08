@@ -1,11 +1,13 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
+import { parse } from "yaml";
 
 export default defineConfig({
   base: "./",
-  plugins: [react()],
+  plugins: [react(), reglesPublicodes()],
   // Ce que le pied de page affiche pour qu'un utilisateur puisse dire *quelle*
   // application il regarde : la version livrée et le commit déployé. Figés à
   // la construction : le navigateur n'a aucun moyen de les découvrir.
@@ -23,6 +25,23 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
   },
 });
+
+// Les règles du modèle sont livrées en YAML (`front/model/rules/*.publicodes`).
+// Elles sont converties en objet ici, à la compilation : le navigateur reçoit
+// du JavaScript, et aucun analyseur YAML ne part dans le bundle. Vitest passe
+// par la même conversion.
+function reglesPublicodes(): Plugin {
+  return {
+    name: "regles-publicodes",
+    transform(yaml, id) {
+      if (!id.endsWith(".publicodes")) return null;
+      return {
+        code: `export const rules = ${JSON.stringify(parse(yaml))};`,
+        map: null,
+      };
+    },
+  };
+}
 
 // La version livrée est celle que `package.json` déclare : c'est elle que porte
 // le tag `simulateur-eligibilite@<version>`, donc la release vers laquelle le

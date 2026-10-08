@@ -1,7 +1,8 @@
-// Les questions du modèle factice, et le type de la réponse de chacune.
+// Les questions du modèle, sous l'identifiant que l'éditeur leur donne, et le
+// type de la réponse de chacune. Une option se répond par son numéro dans le
+// catalogue de l'éditeur.
 
 export type Questions = {
-  boisson: "the" | "cafe" | "rien";
-  accompagnements: readonly ("lait" | "sucre" | "aucun")[];
-  quantite: number;
+  /** Quel est votre besoin ? */
+  "Q0.1": "1" | "2";
 };

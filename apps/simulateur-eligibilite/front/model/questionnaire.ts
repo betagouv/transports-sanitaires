@@ -1,49 +1,30 @@
-// Le questionnaire factice : trois questions sans rapport avec le transport
-// sanitaire.
-//
-// Il garde sous test la mécanique du questionnaire : avancement automatique,
-// retour, brouillon, effacement des réponses dépendantes et verrou.
+// Le questionnaire du modèle : ses parties, dans l'ordre du catalogue de
+// l'éditeur. Les libellés en sont repris mot pour mot.
 
 import type { QuestionnairePart } from "../socle";
 import type { Cibles } from "./declarations/cibles";
 import type { Questions } from "./declarations/questions";
 
-/** Modifiables tant que le résultat n'est pas verrouillé. */
+/** P0 à P2 : modifiables tant que le résultat n'est pas verrouillé. */
 export const PARTS: readonly QuestionnairePart<Questions, undefined>[] = [
   {
-    id: "commande",
-    title: "Questionnaire factice",
+    id: "P0",
+    title: "Mon besoin",
     pages: [
       {
-        id: "boisson",
+        id: "P0/1",
         questions: [
           {
-            id: "boisson",
+            id: "Q0.1",
             kind: "single choice",
-            label: "Quelle boisson souhaitez-vous ?",
+            label: "Quel est votre besoin ?",
             options: [
-              { value: "the", label: "Un thé" },
-              { value: "cafe", label: "Un café" },
-              { value: "rien", label: "Rien" },
+              { value: "1", label: "Vérifier une éligibilité" },
+              {
+                value: "2",
+                label: "Vérifier et prescrire si la situation le permet",
+              },
             ],
-          },
-        ],
-      },
-      {
-        id: "accompagnements",
-        questions: [
-          {
-            id: "accompagnements",
-            kind: "multiple choice",
-            label: "Avec quoi ?",
-            askedIf: (answers) =>
-              answers.boisson !== undefined && answers.boisson !== "rien",
-            dependsOn: ["boisson"],
-            options: [
-              { value: "lait", label: "Du lait" },
-              { value: "sucre", label: "Du sucre" },
-            ],
-            exclusiveOption: { value: "aucun", label: "Rien de plus" },
           },
         ],
       },
@@ -51,22 +32,9 @@ export const PARTS: readonly QuestionnairePart<Questions, undefined>[] = [
   },
 ];
 
-/** Posée après le verrou : elle complète, elle ne décide plus. */
+/** P3, posée après le verrou : elle complète le cerfa, elle ne décide plus. */
 export const COMPLEMENT: QuestionnairePart<Questions, Cibles> = {
-  id: "complement",
-  title: "Compléter la commande",
-  pages: [
-    {
-      id: "quantite",
-      questions: [
-        {
-          id: "quantite",
-          kind: "number",
-          label: "Combien de tasses ?",
-          min: 1,
-          unit: "tasses",
-        },
-      ],
-    },
-  ],
+  id: "P3",
+  title: "Informations permettant de compléter la prescription",
+  pages: [],
 };

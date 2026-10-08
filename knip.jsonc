@@ -31,7 +31,11 @@
         "server/**/*.ts",
         "shared/**/*.ts",
         "scripts/*.ts"
-      ]
+      ],
+      // Le type des règles du modèle. Il est lu par TypeScript à l'import de
+      // `regles.publicodes` (`allowArbitraryExtensions`), un lien que knip ne
+      // suit pas.
+      "ignore": ["front/model/rules/regles.d.publicodes.ts"]
     },
 
     // Chaque étape du pipeline est lançable seule (`pnpm extract`, `staging`,
