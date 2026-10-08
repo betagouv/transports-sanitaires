@@ -1,11 +1,8 @@
-// App Express du simulateur. Ce fichier ne fait que composer : il monte la feature
-// rattachement, référentiel et enrichissement, sous `/api`, puis sert le front
-// construit par Vite en same-origin. Voir l'ADR-5 de
-// docs/knowledge/adr/identification.md.
+// L'app Express. Elle monte l'API du rattachement sous `/api`, puis sert le
+// front construit par Vite.
 //
-// `creerApp` prend le `Referentiel` en paramètre pour rester testable sans mock.
-// Les tests injectent le snapshot ; en production, `server.ts` injecte le choix de
-// `choisirReferentiel`.
+// `creerApp` reçoit le `Referentiel` en paramètre : les tests passent le
+// snapshot, sans mock.
 
 import express, { type Express } from "express";
 import type { Referentiel } from "../shared/referentiel.ts";
@@ -44,10 +41,9 @@ export function creerApp(
 
 // ---- implémentation ----
 
-// L'app est destinée à être embarquée en iframe dans le CMS : la page canonique
-// pour les moteurs est celle du CMS, pas l'URL brute de l'app. L'en-tête est posé
-// sur toutes les réponses, et doublé d'un robots.txt. Cette double protection ne
-// dépend pas du build front.
+// L'app est embarquée en iframe dans le CMS. Pour les moteurs de recherche, la
+// page de référence est celle du CMS. L'en-tête est posé sur toutes les réponses
+// et doublé d'un robots.txt, sans dépendre du build front.
 function interdireIndexation(app: Express) {
   app.use((_req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");

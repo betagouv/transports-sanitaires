@@ -1,31 +1,20 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
+import { parse } from "yaml";
 
 export default defineConfig({
   base: "./",
-  plugins: [react()],
+  plugins: [react(), reglesPublicodes()],
   // Ce que le pied de page affiche pour qu'un utilisateur puisse dire *quelle*
-  // application il regarde : la version livrée, le commit déployé et la version
-  // du modèle de règles. Figés à la construction — le navigateur n'a aucun moyen
-  // de les découvrir.
+  // application il regarde : la version livrée et le commit déployé. Figés à
+  // la construction : le navigateur n'a aucun moyen de les découvrir.
   define: {
     "import.meta.env.VITE_VERSION_APP": JSON.stringify(versionDeLApp()),
     "import.meta.env.VITE_SHA_COMMIT": JSON.stringify(shaDuCommit()),
-    "import.meta.env.VITE_VERSION_REGLES": JSON.stringify(versionDesRegles()),
   },
-  // `pdf-lib` n'est atteint que par import dynamique (`cerfa.ts` charge
-  // `remplir-cerfa.ts`, qui seul l'importe) : le scanner de dépendances de Vite,
-  // qui ne suit que les imports statiques depuis l'entrée, ne le voit pas au
-  // démarrage. Il le découvrait donc au **premier clic** sur « Télécharger la
-  // prescription », relançait le pré-bundling, et l'import en vol échouait sur un
-  // `/node_modules/.vite/deps/pdf-lib.js?v=…` devenu caduc — d'où un « document
-  // impossible à générer » qui n'existait qu'en dev. Le déclarer ici le fait
-  // pré-bundler au lancement du serveur. Sans effet sur la production : ce
-  // réglage ne concerne que le serveur de dev, et le découpage du build (vérifié
-  // par `verifier-bundle`) reste intact.
-  optimizeDeps: { include: ["pdf-lib"] },
   // En dev, l'API (référentiel + contexte) est servie par le backend Express
   // (port 3000) ; Vite proxifie `/api` pour reproduire le same-origin de la prod.
   server: {
@@ -36,6 +25,23 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
   },
 });
+
+// Les règles du modèle sont livrées en YAML (`front/model/rules/*.publicodes`).
+// Elles sont converties en objet ici, à la compilation : le navigateur reçoit
+// du JavaScript, et aucun analyseur YAML ne part dans le bundle. Vitest passe
+// par la même conversion.
+function reglesPublicodes(): Plugin {
+  return {
+    name: "regles-publicodes",
+    transform(yaml, id) {
+      if (!id.endsWith(".publicodes")) return null;
+      return {
+        code: `export const rules = ${JSON.stringify(parse(yaml))};`,
+        map: null,
+      };
+    },
+  };
+}
 
 // La version livrée est celle que `package.json` déclare : c'est elle que porte
 // le tag `simulateur-eligibilite@<version>`, donc la release vers laquelle le
@@ -61,16 +67,5 @@ function shaDuCommit(): string {
     }).trim();
   } catch {
     return "inconnu";
-  }
-}
-
-// Le modèle est livré de l'extérieur et recopié sous un nom fixe : il ne porte
-// donc pas sa version. `regles/VERSION` la porte à côté de lui, et se met à jour
-// avec lui (cf. README, « Le modèle de règles »).
-function versionDesRegles(): string {
-  try {
-    return readFileSync("regles/VERSION", "utf8").trim() || "inconnue";
-  } catch {
-    return "inconnue";
   }
 }

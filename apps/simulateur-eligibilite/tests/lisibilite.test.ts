@@ -1,24 +1,16 @@
 // Les conventions d'écriture, rendues exécutables.
 //
-// Elles étaient jusqu'ici de la prose dans AGENTS.md — et déjà violées : neuf
-// fichiers ouvraient sur un `import` plutôt que sur leur contrat, un helper
-// privé était une flèche déclarée au milieu du fichier, des types de domaine
-// portaient des noms anglais. Une convention que rien ne vérifie se dégrade à
-// la vitesse où elle s'écrit.
-//
-// Comme dans `architecture.test.ts`, chaque règle porte son *pourquoi* dans son
-// message d'échec — c'est là, et nulle part ailleurs, qu'on l'apprend au moment
-// utile.
+// Une convention que rien ne vérifie se dégrade. Comme dans
+// `architecture.test.ts`, chaque règle donne son pourquoi dans son message
+// d'échec.
 
 import { basename } from "node:path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
   astDe,
-  identifiantsDe,
   lignesDe,
   resoudre,
-  segments,
   sources,
   specificateursDe,
   texteDe,
@@ -26,9 +18,9 @@ import {
 
 const RACINES = ["front", "server", "shared", "scripts"];
 const MARQUEUR = "// ---- implémentation ----";
-// Une liste de données se lit d'un seul tenant : elle n'a pas d'implémentation
-// à cacher. Même exemption que pour la limite de 300 lignes.
-const DONNEES = ["front/outils-produit/seeds/catalogue.ts"];
+// Une liste de données se lit d'un seul tenant, sans implémentation à cacher.
+// Même exemption que pour la limite de 300 lignes.
+const DONNEES = ["front/model/seeds-catalogue.ts"];
 
 describe("un fichier se lit comme son contrat", () => {
   it("chaque fichier s'ouvre sur un en-tête", () => {
@@ -90,29 +82,12 @@ describe("un nom dit une intention", () => {
         "appartient à ses appelants.",
     ).toEqual([]);
   });
-
-  it("les identifiants sont en français", () => {
-    const anglicismes = sources(...RACINES).flatMap((fichier) =>
-      identifiantsDe(fichier)
-        .filter(({ nom }) => !TOLERES.has(nom))
-        .filter(({ nom }) => segments(nom).some((s) => ANGLICISMES.has(s)))
-        .map(({ nom, ligne }) => `${fichier}:${ligne} — ${nom}`),
-    );
-    expect(
-      anglicismes,
-      "Le domaine se dit en français : `moteur`, `passation`, `casesRetenues`. " +
-        "L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi " +
-        "(`handleX`, `useX`, `Props`, `track*`, `Engine`, `FormBuilder`) — et " +
-        "c'est l'inscription dans `TOLERES`, ici, qui l'autorise.",
-    ).toEqual([]);
-  });
 });
 
 describe("les extensions d'import suivent le runtime", () => {
-  // Node exécute le TypeScript en effaçant les types : il lui faut le vrai nom
-  // de fichier. Vite, lui, résout. La frontière n'est donc pas un dossier mais
-  // une accessibilité — d'où ce calcul de fermeture transitive plutôt qu'une
-  // liste de chemins qui se périmerait au premier `import()` ajouté.
+  // Node efface les types et exige le vrai nom de fichier. Vite, lui, résout.
+  // La frontière est donc ce que Node peut atteindre, pas un dossier. D'où ce
+  // calcul de proche en proche plutôt qu'une liste de chemins.
   const depuisNode = joignablesDepuisNode();
 
   it("tout ce que Node peut atteindre importe avec l'extension", () => {
@@ -124,17 +99,15 @@ describe("les extensions d'import suivent le runtime", () => {
     expect(
       sans,
       "Ce fichier est atteignable depuis Node (`server/`, `shared/`, " +
-        "`scripts/`, ou la chaîne que `pnpm apercu-cerfa` tire dans " +
+        "`scripts/`, ou ce qu'ils tirent dans " +
         "`front/`). Node ne résout pas les extensions : écris `.ts` / `.tsx`, " +
         "sinon l'import casse à l'exécution — sans que Vite ni `tsc` le voient.",
     ).toEqual([]);
   });
 
   it("le reste du front importe sans extension", () => {
-    // Une cible elle-même joignable depuis Node est tolérée : écrire son
-    // extension anticipe le jour où `apercu-cerfa.ts` la tirera aussi, et ne
-    // coûte rien à Vite. Ce qu'on refuse, c'est le mélange entre fichiers qui
-    // ne verront jamais Node.
+    // Une cible que Node peut atteindre est tolérée : son extension ne coûte
+    // rien à Vite. On refuse le mélange entre fichiers que Node ne verra jamais.
     const avec = sources("front")
       .filter((fichier) => !depuisNode.has(fichier))
       .flatMap((fichier) =>
@@ -155,58 +128,6 @@ describe("les extensions d'import suivent le runtime", () => {
 });
 
 // ---- implémentation ----
-
-// Les noms anglais que le code a réellement portés, plus ceux qui reviennent
-// naturellement sous les doigts. Cette liste croît quand un anglicisme passe
-// entre les mailles — pas quand il devient gênant.
-const ANGLICISMES = new Set([
-  "item",
-  "items",
-  "label",
-  "text",
-  "name",
-  "value",
-  "values",
-  "get",
-  "set",
-  "list",
-  "title",
-  "path",
-  "result",
-  "count",
-  "add",
-  "remove",
-  "update",
-  "delete",
-  "send",
-  "load",
-  "save",
-  "helper",
-  "helpers",
-  "util",
-  "utils",
-  "field",
-  "fields",
-]);
-
-// Ce que nomme une API tierce, et que renommer casserait ou obscurcirait.
-// Toute entrée ici est une dérogation : elle se justifie, elle ne s'ajoute pas
-// pour faire passer le test.
-const TOLERES = new Set([
-  // React / DSFR : la forme des props est imposée par le composant appelé.
-  "Props",
-  // `@publicodes/forms` : le vocabulaire de son modèle de formulaire, qu'on
-  // relaie tel quel plutôt que d'entretenir une table de traduction.
-  "page",
-  "pages",
-  "pageCount",
-  "formState",
-  "setFormState",
-  // Grist : un enregistrement y est un `rowId` et un objet `fields`. Le segment
-  // `row` n'est pas dans la liste noire pour cette raison — il n'apparaît chez
-  // nous que composé avec l'identifiant Grist (`etabRowId`, `serviceRowId`).
-  "fields",
-]);
 
 function aDesFonctionsPrivees(fichier: string): boolean {
   return astDe(fichier).statements.some(
@@ -234,9 +155,8 @@ function fonctionsPriveesEnFleche(fichier: string): string[] {
 }
 
 /**
- * Les fichiers qu'une exécution Node peut atteindre : les trois racines qui lui
- * appartiennent, plus tout ce qu'elles tirent de proche en proche — y compris
- * dans `front/`, via `scripts/apercu-cerfa.ts`.
+ * Les fichiers que Node peut atteindre : ses trois racines, plus tout ce
+ * qu'elles importent de proche en proche, y compris dans `front/`.
  */
 function joignablesDepuisNode(): Set<string> {
   const atteints = new Set(sources("server", "shared", "scripts"));

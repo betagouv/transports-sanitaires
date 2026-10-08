@@ -1,7 +1,7 @@
 # Simulateur d'éligibilité : domaine
 
 Glossaire des termes propres à ce contexte : le parcours de simulation d'éligibilité
-au transport sanitaire, et son écran-porte.
+au transport sanitaire, et son écran de rattachement.
 
 ## Language
 
@@ -12,13 +12,6 @@ organisationnelle déclarative, pas une identité.
 _Avoid_: Identification, identité. Ces mots sont réservés à une éventuelle
 authentification individuelle future (ProConnect, AgentConnect), non implémentée.
 Les employer pour le rattachement laisserait croire qu'une personne est identifiée.
-
-**Prescripteur (outil)**:
-L'un des deux parcours du simulateur, pour le professionnel de santé qui prescrit
-le transport. L'autre est le secrétariat, qui gère la suite administrative.
-_Avoid_: le confondre avec l'ancien prescripteur du référentiel, une personne
-nommée choisie dans une liste. Celui-là a disparu de l'écran-porte ; ce qui reste
-s'appelle l'outil ou le parcours prescripteur, jamais une identité.
 
 **Rattachement dégradé**:
 Le rattachement « Autre / Autre » donné d'office quand le référentiel ne répond pas.

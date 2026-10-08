@@ -78,34 +78,33 @@ porte à ajouter se met dans ce script, jamais dans le YAML.
 `pnpm audit` ne se scope pas à une app : il lit le lock, et le lock est unique
 au dépôt. Il a son job de CI à la racine.
 
-## Français
+## Français et anglais
 
-**Français partout** :
+**Le français** porte tout ce qui se lit comme du texte, et le métier :
 
 - l'interface
 - les noms de règles
-- les tests
-- la documentation
+- les intitulés de tests
+- la documentation et les commentaires
 - les messages de commit
-- **les identifiants**
+- **les identifiants du métier** : `rattachement`, `etablissement`, `service`,
+  `referentiel`, `cerfa`, `seed`, `simulateur`.
 
-L'anglais est réservé à ce qu'une API tierce nomme déjà ainsi :
+**L'anglais** porte le vocabulaire technique des identifiants, celui que
+l'industrie nomme déjà ainsi. Le franciser produit des mots que personne n'emploie.
 
-| Termes tolérés | Source |
+| En anglais | Exemples |
 |---|---|
-| `handleX`, `useX`, `Props` | React |
-| `track*` | Matomo |
-| `label`, `nativeInputProps` | DSFR |
-| `formState`, `pageCount` | `@publicodes/forms` |
-| `fields`, `rowId` | Grist |
-| `Engine` | publicodes |
+| les composants d'interface | `TextField`, `SelectField`, `Stepper`, `Container`, `Footer`, `RattachementForm` |
+| les écrans | `RattachementScreen`, `SeedsScreen`, `SimulateurScreen` |
+| la mécanique du questionnaire | `Questionnaire`, `QuestionnaireState`, `Answer`, `draft`, `lockedAnswers`, `askedIf`, `dependsOn` |
+| la navigation et l'état | `screen`, `goTo`, `restart`, `state` |
+| ce qu'une API tierce nomme | `useX`, `Props`, `track*`, `nativeInputProps`, `rowId` |
 
-Tout le reste est du vocabulaire métier et se lit en français : `moteur`,
-`regles`, `passation`, `casesRetenues`, `rattachementEnSession`.
+Un nom qui mêle les deux garde le terme métier tel quel et met le reste en
+anglais : `RattachementForm`, `SeedsTable`, `seedAnswers`.
 
-*Gardé par* `tests/lisibilite.test.ts › les identifiants sont en français`. Sa
-liste `TOLERES` autorise les exceptions. L'y ajouter est une décision, pas un
-moyen de faire passer le test.
+Aucun test ne garde cette règle : elle se tient à la relecture.
 
 **Une dérogation assumée** : `apps/glossaire-notion` est entièrement en anglais.
 Elle n'a pas de vocabulaire métier propre. C'est un lecteur de base Notion, et la

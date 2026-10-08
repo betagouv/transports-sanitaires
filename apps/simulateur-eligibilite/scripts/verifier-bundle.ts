@@ -1,5 +1,5 @@
-// Garde-fou de découpage du bundle, à passer **après** `vite build` : vérifie que
-// le chunk d'entrée n'embarque pas ce qui doit rester chargé à la demande.
+// Vérifie le découpage du bundle, après `vite build` : le chunk d'entrée ne doit
+// pas contenir ce qui se charge à la demande.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -29,38 +29,36 @@ console.log(
 // ---- implémentation ----
 
 /**
- * Marqueurs cherchés dans le chunk d'entrée, avec ce qu'ils trahissent.
+ * Marqueurs cherchés dans le chunk d'entrée, et ce que chacun révèle.
  *
- * Le CERFA porte des données de santé nominatives : il est généré dans le
- * navigateur, et `pdf-lib` comme le gabarit (767 ko) ne sont chargés qu'au clic,
- * par import dynamique. C'est une intention d'architecture, pas un effet de bord :
- * un `import` statique mal placé la casserait sans que rien n'échoue — le
- * simulateur continuerait de marcher, simplement en faisant télécharger 1,2 Mo à
- * chaque prescripteur, dont beaucoup ne verront jamais de CERFA. Même chose pour
- * la galerie de seeds, réservée au service produit.
+ * `pdf-lib` (~400 ko) ne se charge qu'à la demande, par import dynamique. Un
+ * `import` statique mal placé le ferait télécharger à chaque prescripteur, sans
+ * rien casser. Même chose pour l'écran des seeds, réservé au service produit,
+ * et pour le modèle : ses règles et publicodes se chargent pendant l'écran de
+ * rattachement. Un nom de fait n'existe que dans le modèle.
  */
-function interdits(): ReadonlyArray<[marqueur: string, quoi: string]> {
-  return [
-    ["PDFDocument", "pdf-lib (génération du CERFA)"],
-    [premiereSeed(), "le catalogue de seeds (service produit)"],
+function interdits(): Array<[marqueur: string, quoi: string]> {
+  const marqueurs: Array<[string, string]> = [
+    ["PDFDocument", "pdf-lib (remplissage d'un PDF)"],
+    ["fait_p1_complete", "le modèle (ses règles et publicodes)"],
   ];
+  const seed = premiereSeed();
+  if (seed) marqueurs.push([seed, "le catalogue de seeds (service produit)"]);
+  return marqueurs;
 }
 
 /**
- * Premier identifiant du catalogue de seeds. Marqueur préféré à un libellé
- * d'interface : « Galerie de seeds » est aussi le texte du bouton que rend
- * `App.tsx`, donc légitimement présent dans le chunk d'entrée. Un identifiant de
- * seed, lui, n'existe que dans le catalogue — et le lire ici plutôt que le recopier
- * évite que ce garde-fou ne pointe un jour vers une seed supprimée.
+ * Le premier identifiant du catalogue de seeds, s'il y en a un. Un libellé ne
+ * convient pas comme marqueur : « Seeds » est aussi le texte du bouton d'`App`,
+ * présent à bon droit dans le chunk d'entrée. Un identifiant de seed n'existe
+ * que dans le catalogue. Le lire ici évite de pointer une seed supprimée.
  */
-function premiereSeed(): string {
+function premiereSeed(): string | undefined {
   const catalogue = readFileSync(
-    resolve(dist(), "../../front/outils-produit/seeds/catalogue.ts"),
+    resolve(dist(), "../../front/model/seeds-catalogue.ts"),
     "utf-8",
   );
-  const id = catalogue.match(/id:\s*"([^"]+)"/)?.[1];
-  if (!id) throw new Error("Aucun `id:` trouvé dans le catalogue de seeds.");
-  return id;
+  return catalogue.match(/id:\s*"([^"]+)"/)?.[1];
 }
 
 /** Le chunk d'entrée : celui que `index.html` charge, nommé `index-*.js`. */

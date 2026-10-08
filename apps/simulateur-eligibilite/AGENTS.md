@@ -8,64 +8,80 @@
 Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 
 - React 19 + Vite + DSFR (`@codegouvfr/react-dsfr`) ;
-- le moteur de règles **`publicodes`**, un seul fichier
-  (`regles/regles.publicodes`) ;
-- `@publicodes/forms`, dont le `FormBuilder` engendre le formulaire à partir des
-  règles.
+- un questionnaire **déclaré par l'application** (`front/socle/questionnaire-engine/`).
 
-Le parcours commence par un **écran-porte de rattachement
+**L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
+la v10 est en cours d'intégration (`docs/tasks/PLAN.md`). `front/model/` porte son
+noyau : les règles publicodes de l'éditeur, les déclarations des faits et des
+cibles, et la première question. Il n'y a encore ni page de résultat métier, ni
+CERFA téléchargeable. Le
+[README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
+
+Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version
+du modèle : rattachement, parcours, moteur de questionnaire, analytics, seeds,
+outils PDF, developer tools. `front/model/` porte la version : aujourd'hui la
+v10.
+
+**Les règles ne se corrigent pas ici.** `front/model/rules/regles.publicodes` est
+la recopie exacte du YAML livré, et `rules/VERSION` son numéro. Une anomalie se
+remonte à l'éditeur (`docs/tasks/QUESTIONS-EDITEUR.md`).
+
+Le socle ne connaît le modèle que par un contrat, `Model` (`front/socle/model.ts`) :
+des parties de questionnaire, ce qui calcule la préconisation (des réponses aux
+faits, des faits aux cibles), et deux résultats. `front/Main.tsx` est le seul
+fichier qui importe les deux. Il charge le modèle à la demande, pendant l'écran
+de rattachement, et passe sa promesse à `App` : publicodes et les règles restent
+hors du chunk d'entrée. Le socle n'importe rien
+de `front/model/`, et le modèle n'importe du socle que `front/socle/index.ts`.
+`tests/architecture.test.ts` garde ces deux règles.
+
+Le parcours commence par un **écran de rattachement
 obligatoire** : établissement et service, sans identifier la personne
-(`front/rattachement/`, référentiel Grist). Le tout est servi par
+(`front/socle/rattachement/`, référentiel Grist). Le tout est servi par
 un **backend Node/Express** (`server/` : le front et `/api/*`) déployé sur
 **Scalingo**. Ce n'est pas un site statique.
 
-## Le CERFA
+## Le questionnaire
 
-À la fin du parcours, `front/outils-produit/beta/cerfa/` remplit les CERFA
-officiels (AcroForm, `pdf-lib`) **dans le navigateur uniquement**. Ces
-formulaires portent des données de santé nominatives. Aucun document rempli ne
-doit atteindre le backend.
+Trois fichiers portent la mécanique, dans `front/socle/questionnaire-engine/` :
 
-Un sous-dossier par formulaire, gabarit compris :
-
-| Dossier | Formulaire |
+| Fichier | Ce qu'il porte |
 |---|---|
-| `pmt/` | prescription médicale de transport (n° 11574\*07, réf. S3138g) |
-| `dap/` | demande d'accord préalable (n° 11575\*08, réf. S3139h) |
-| `s3141/` | prescription pour permission de sortie des moins de 20 ans (n° 16184\*01, réf. S3141) |
+| `question.ts` | ce qu'est une question, une page, une partie, une réponse |
+| `questionnaire.ts` | l'état d'un parcours : page ouverte, brouillon, navigation |
+| `page-commit.ts` | ce que deviennent les réponses quand une page est validée, et ce que ça efface |
 
-Ce qu'ils partagent est d'un cran au-dessus, dans `cerfa/` : l'écriture dans le
-PDF, la lecture du modèle, la forme d'un tableau.
+Quatre règles à tenir en ajoutant une question :
 
-**Chaque champ du PDF est une clé du tableau de remplissage**, et sa valeur une
-fonction des réponses de la simulation. Tous les champs y sont, y compris ceux
-qu'on ne déduit pas : leur ligne dit alors qui les remplira, et pourquoi. Un test
-confronte chaque tableau à son gabarit, donc aucun champ ne peut être oublié ni
-inventé. C'est volontairement coûteux : le moteur est relu champ par champ. C'est
-aussi volontairement lisible : une case du formulaire se comprend en lisant sa
-ligne.
+- **Une condition d'affichage s'écrit dans `askedIf`.** Jamais dans un composant.
+- **Une dépendance se déclare dans `dependsOn`.** Sans elle, la réponse survit au
+  changement de celle dont elle dépend.
+- **Une saisie ne compte qu'une fois la page validée.** Le brouillon vit dans
+  `questionnaire.ts`, pas dans le champ.
+- **Le verrou est un montage, pas un drapeau.** Ce qui vient après le verrou est un
+  second `QuestionnaireForm`, qui reçoit `lockedAnswers` et ne repose rien
+  (`front/socle/simulateur/Simulateur.tsx`).
 
-Les tableaux de remplissage nomment des **ids du mapping documentaire** : le
-référentiel du porteur. Pour chaque case des trois Cerfa, il nomme la règle qui
-la décide. La correspondance id vers règle vit dans
-`front/simulateur/secretariat/` — `case-de-formulaire.ts` à sa racine,
-`rubriques/rubriques-*.ts` pour la transcription elle-même —, pas dans
-`cerfa/`.
+*Gardé par* `tests/socle/simulateur/`.
 
-C'est la même transcription que lit la checklist du Bloc 3. `mapping.ts` la relit
-pour le pré-remplissage. Voir
-[`socle-du-mapping-documentaire.md`](docs/knowledge/domain/socle-du-mapping-documentaire.md).
+## Le socle PDF
 
-Le dossier est sous `beta/` à cause de son bouton de téléchargement, pas de sa
-nature. Il reste réservé aux outils produit tant que le pré-remplissage n'est pas
-éprouvé.
+`front/socle/cerfa/` ne porte plus aucun formulaire. Il garde ce qui
+ne dépend d'aucun gabarit :
 
-La zone « éléments d'ordre médical » du PMT et de la DAP (`elements-medicaux/`)
-se compose selon le contrat EM-2 de l'éditeur et se mesure dans la police et la
-géométrie réelles du gabarit. Le texte reste entier dans la rubrique, sans
-annexe. S'il déborde, aucun PDF ne sort : le prescripteur révise le texte à
-l'écran, puis il est remesuré. Voir
-[`composer-les-elements-medicaux.md`](docs/knowledge/domain/composer-les-elements-medicaux.md).
+| Fichier | Ce qu'il porte |
+|---|---|
+| `fill-cerfa.ts` | l'écriture dans un AcroForm : textes, cases et leurs états d'export, refus de tronquer |
+| `text-fit.ts` | un texte tient-il dans son champ, et à quelle taille |
+| `text-overflow.ts` | l'erreur levée quand il ne tient pas |
+| `field-mapping.ts` | la forme d'un tableau de remplissage : un champ, une ligne |
+| `dates.ts` | une date sur un champ peigné |
+
+Un formulaire rempli porte des données de santé nominatives. Il se génère **dans le
+navigateur uniquement**, et ce dossier n'adresse jamais `/api`.
+
+*Gardé par* `tests/socle/cerfa/fill-cerfa.test.ts`, sur un formulaire fabriqué, et par
+`tests/architecture.test.ts`.
 
 ## Les trois racines de runtime
 
@@ -91,20 +107,18 @@ personne, ses tests le chargent comme texte.
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `pnpm verifier` | **À passer avant de dire que c'est fait.** lint → typecheck → knip → validation des règles → tests → build (+ vérification de bundle). Exactement ce que lance la CI. |
+| `pnpm verifier` | **À passer avant de dire que c'est fait.** lint → typecheck → knip → tests → build (+ vérification de bundle). Exactement ce que lance la CI. |
 | `pnpm dev:front` | Serveur Vite, <http://localhost:5173> (proxy `/api` → `:3000`) |
 | `pnpm dev:server` | Backend Express, <http://localhost:3000> |
 | `pnpm start` | Serveur de production (`node server/server.ts`) |
-| `pnpm valider-regles` | Syntaxe YAML puis compilation publicodes |
-| `pnpm apercu-cerfa` | Engendre un CERFA de contrôle. C'est aussi ce qui casse quand une extension d'import manque. |
 | `pnpm lint:fix` | Applique tous les correctifs sûrs de Biome |
 
 `pnpm build` enchaîne trois étapes :
 
 1. `tsc -b` sur les quatre projets : front, node, serveur, tests ;
 2. Vite ;
-3. `verifier-bundle` : `pdf-lib` et le catalogue de seeds doivent rester hors du
-   chunk d'entrée.
+3. `verifier-bundle` : `pdf-lib`, le modèle et le catalogue de seeds doivent
+   rester hors du chunk d'entrée.
 
 Si tu remplaces un `import()` par un import statique, c'est l'étape 3 qui te le
 dit.
@@ -116,8 +130,8 @@ dit.
 qu'elle apporte s'écrit dans [`CHANGELOG.md`](CHANGELOG.md), sous la forme d'un
 TL;DR puis d'une ligne par commit, groupée par type.
 
-Le pied de page du simulateur affiche trois valeurs : cette version, le commit
-déployé et la version du modèle de règles. Voir le [README](README.md) § « Savoir
+Le pied de page du simulateur affiche deux valeurs : cette version et le commit
+déployé. Voir le [README](README.md) § « Savoir
 ce qui tourne ».
 
 La marche à suivre est dans le skill `livrer-une-version`.
@@ -129,54 +143,16 @@ Ils sont **exécutables**, dans
 
 - les frontières entre `front/`, `server/` et `shared/` ;
 - le simulateur, qui ignore qui prescrit ;
-- les outils produit, greffés sur le simulateur et jamais l'inverse ;
-- le CERFA, qui n'adresse jamais `/api` ;
+- les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
+- le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité ;
+- le modèle livré, que seul `tests/model/` importe ;
 - les limites de 30 et 300 lignes.
 
 **Ne les recopie pas ici.** Lis le fichier. Lis surtout le message d'échec avant
 de contourner une règle : il dit ce qu'elle protège.
 
-## Publicodes
-
-Le modèle est **livré de l'extérieur** et intégré par recopie. La marche à suivre
-d'une montée de version est dans le skill `implement-publicodes-version`.
-
-**La syntaxe.**
-
-| Élément | Forme |
-|---|---|
-| séparateur de clé | ` . ` |
-| valeur d'`une possibilité` | entre quotes : `"'valeur'"` |
-| booléen | `oui` / `non` |
-
-Une situation passée au moteur doit employer les clés exactes. Une clé inconnue
-lève.
-
-**Les noms de règles passent par le contrat.**
-[`front/simulateur/contrat-regles-publicodes.ts`](front/simulateur/contrat-regles-publicodes.ts)
-liste toutes les clés que le code a le droit de nommer. Les types `Cible` et
-`CleDeRegle` font rejeter le reste par TypeScript, à trois endroits :
-
-- dans un littéral de situation,
-- dans un tableau `cibles`,
-- dans un appel à `texte()` / `vrai()`.
-
-On lit une règle avec ces deux helpers, **jamais** avec un `engine.evaluate("…")`
-nu. Ajouter une clé au contrat est ce qui en autorise l'usage, et
-`tests/regles-front.test.ts` confronte le contrat au modèle.
-
-**Les questions à choix multiple** s'encodent en `mosaique` : N règles booléennes
-plus une règle parente inerte qui porte la métadonnée, consommée par
-`front/simulateur/questionnaire/mosaique.ts`. Le format exact est dans
-[`docs/knowledge/domain/formalisation-mosaique-choix-multiple.md`](docs/knowledge/domain/formalisation-mosaique-choix-multiple.md).
-
 ## Pièges
-
-**`@publicodes/forms` + StrictMode.** `goToNextPage` et `handleInputChange`
-**mutent** leur argument. N'utilise pas la forme `setState(prev => …)` avec eux :
-passe le `formState` courant directement. Les tests rendent sans StrictMode, ils
-ne l'attraperont pas.
 
 **Extensions d'import.** Il en faut une (`.ts`) partout où Node peut atteindre le
 fichier, et nulle part ailleurs dans `front/`.
@@ -184,7 +160,7 @@ fichier, et nulle part ailleurs dans `front/`.
 | Emplacement | Extension |
 |---|---|
 | `server/`, `shared/`, `scripts/` | `.ts` |
-| la chaîne que `scripts/apercu-cerfa.ts` tire dans `front/` | `.ts` |
+| ce qu'un script tire dans `front/` | `.ts` |
 | le reste de `front/` | aucune |
 
 Node ne résout pas les extensions, Vite si. Ce n'est pas une affaire de dossier
@@ -198,46 +174,45 @@ d'une version à l'autre.
 
 **Sans mock.**
 
-- Les tests de moteur pilotent le vrai `publicodes`.
 - Les tests d'interface passent Testing Library sur le vrai `<App />`.
 - Les tests serveur font de vraies requêtes HTTP sur une app Express montée sur
   un référentiel injecté.
+- Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
-Réutilise les helpers de `tests/` : `porte.ts`, `simulateur/moteur.ts`,
-`simulateur/parcours.ts`, `rattachement/serveur-de-test.ts`.
+Les tests ont deux dossiers. `tests/socle/` éprouve le socle sur un modèle qu'on
+lui injecte : le factice, écrit dans `tests/socle/fixtures/modele-factice/`.
+`tests/model/` vérifie le modèle livré :
+
+- `conformite.test.ts` contrôle ce que le socle suppose de n'importe quel modèle ;
+- `declarations.test.ts` compare les faits et les cibles déclarés aux règles ;
+- `oracle.test.ts` rejoue les cas de référence de l'éditeur, en faits.
+
+Réutilise les helpers de `tests/socle/` : `modele-de-test.ts` (le modèle que les
+tests injectent), `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
+`cerfa/test-form.ts`, `rattachement/serveur-de-test.ts`.
 
 **Une situation de référence va dans
-[`front/outils-produit/seeds/catalogue.ts`](front/outils-produit/seeds/catalogue.ts),
+[`front/model/seeds-catalogue.ts`](front/model/seeds-catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
-*avec leurs cibles attendues*. Elles s'écrivent en publicodes nu, pour rester
-lisibles par Node. Le catalogue sert trois usages :
+*avec leurs cibles attendues*. Il est vide tant que l'éditeur n'a pas livré son
+oracle en réponses. Les tests de l'écran des seeds écrivent leurs propres seeds, sur
+le parcours factice.
 
-- la matrice de non-régression métier le rejoue ;
-- la galerie de seeds le parcourt ;
-- `pnpm apercu-cerfa` l'utilise.
+## Les developer tools
 
-## Les outils produit
-
-La galerie de seeds, le **labo** de règles et les **traces de debug** sont les
-trois outils produit. Ils partagent :
+L'écran des seeds (`front/socle/seeds/`) et les **traces de debug** sont les deux
+developer tools. Ils partagent :
 
 - la même garde d'accès **sur tous les environnements** (service n° 4 du
-  référentiel, `front/outils-produit/deverrouillage.ts`) ;
+  référentiel, `front/socle/developerTools/unlock.ts`) ;
 - le même moment : ils sont atteints **après** le rattachement.
-
-La galerie et le labo partagent en plus le même panneau. Les traces n'y sont pas :
-elles se lisent sous l'écran qu'elles décrivent, pas dans un encadré d'entrées.
 
 Pas de conditionnement sur `import.meta.env.DEV`.
 
-Le simulateur ne connaît ni la galerie ni le labo. C'est `App.tsx` qui lui passe
-du contenu déjà composé (`panneauOutilsProduit`, `documentTelechargeable`). Une
-seule exception,
-assertée nommément pour qu'elle ne puisse pas en engendrer une deuxième en
-silence : `moteur.ts` demande à `labo/labo.ts` quelles règles charger.
+Le simulateur ne connaît pas l'écran des seeds. C'est `App.tsx` qui lui passe du contenu
+déjà composé (`developerToolsPanel`).
 
-Les traces, elles, vivent dans le simulateur : elles lisent l'état vivant du
-parcours, qu'`App` n'a pas sous la main. Ce n'est donc pas un contenu composé qui
-descend, mais le booléen `traceDebug`, jusqu'au prop obligatoire `autorisee` des
-deux composants de trace. Obligatoire pour qu'aucun appelant ne puisse en rendre
-une sans avoir dit à qui elle s'ouvre.
+La trace de debug vit aussi dans `front/socle/developerTools/` (`DebugTrace.tsx`). Elle
+lit l'état vivant du parcours, qu'`App` n'a pas sous la main : `App` passe donc au
+simulateur le composant lui-même (`DebugTrace`), et chaque écran lui donne son
+état à afficher. Sans composant passé, aucune trace n'est rendue.

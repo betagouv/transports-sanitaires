@@ -1,16 +1,11 @@
 // Les invariants d'architecture, rendus exécutables.
 //
-// AGENTS.md et `docs/knowledge/adr/` énoncent des règles que rien ne vérifiait :
-// « les secrets restent au serveur », « le CERFA n'atteint jamais le backend »,
-// « l'identification reste hors du moteur d'éligibilité ». Une prose ne bloque
-// personne — ce fichier, si.
+// AGENTS.md et `docs/knowledge/adr/` énoncent des règles. Ce fichier les vérifie.
 //
-// Chaque règle porte son *pourquoi* dans son message d'échec : qui la casse doit
-// apprendre ici ce qu'elle protège, sans avoir à relire la documentation. C'est
-// le second argument d'`expect`, pas un commentaire — un commentaire ne s'affiche
-// pas quand le test rougit.
+// Chaque règle donne son pourquoi dans son message d'échec, le second argument
+// d'`expect`. Un commentaire ne s'affiche pas quand le test rougit.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -24,6 +19,18 @@ import {
 
 const commencePar = (prefixe: string) => (cible: string) =>
   cible.startsWith(prefixe);
+
+// Ce qui pose les questions : le parcours et le moteur de questionnaire.
+const PARCOURS = ["front/socle/simulateur", "front/socle/questionnaire-engine"];
+
+// Ce que le modèle a le droit d'importer du socle, en plus de son point
+// d'entrée : le type d'une seed, que le catalogue lit à la source.
+const OUVERT_AU_MODELE = ["front/socle", "front/socle/seeds/seed"];
+
+// Le seul fichier par lequel les tests du socle prennent leur modèle, et le
+// dossier où ce modèle est écrit.
+const MODELE_DE_TEST = "tests/socle/modele-de-test.ts";
+const MODELE_FACTICE = "tests/socle/fixtures/modele-factice";
 
 describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
@@ -56,10 +63,70 @@ describe("frontières de runtime", () => {
   });
 });
 
+describe("le socle et le modèle", () => {
+  it("le socle n'importe rien du modèle", () => {
+    expect(
+      franchissements(["front/socle"], commencePar("front/model")),
+      "Le socle ne dépend d'aucune version du modèle : il reçoit le sien en " +
+        "prop, depuis `front/Main.tsx`. Un import direct lierait le parcours, " +
+        "les seeds ou les developer tools au questionnaire du moment, et " +
+        "livrer un nouveau modèle obligerait à toucher au socle.",
+    ).toEqual([]);
+  });
+
+  it("le modèle n'importe du socle que son point d'entrée", () => {
+    expect(
+      franchissements(
+        ["front/model"],
+        (cible) =>
+          cible.startsWith("front/socle") && !OUVERT_AU_MODELE.includes(cible),
+      ),
+      "`front/socle/index.ts` dit ce que le socle promet au modèle. Un import " +
+        "plus profond lie le modèle à un détail du socle, qui ne peut plus " +
+        "changer sans le casser. S'il manque quelque chose, ajoute-le au " +
+        "point d'entrée.",
+    ).toEqual([]);
+  });
+});
+
+describe("les tests et le modèle", () => {
+  it("seuls les tests du modèle importent le modèle livré", () => {
+    const autres = franchissements(
+      ["tests"],
+      commencePar("front/model"),
+    ).filter((couple) => !couple.startsWith("tests/model/"));
+    expect(
+      autres,
+      "Les tests du socle tournent sur un modèle factice, écrit pour eux : " +
+        "ils ne changent pas quand l'éditeur livre une version. Ce qui " +
+        "vérifie le modèle livré va dans `tests/model/`.",
+    ).toEqual([]);
+  });
+
+  it("les tests du socle ne prennent leur modèle que par un seul fichier", () => {
+    const autres = franchissements(
+      ["tests"],
+      commencePar(MODELE_FACTICE),
+    ).filter(
+      (couple) =>
+        !couple.startsWith(`${MODELE_DE_TEST} →`) &&
+        !couple.startsWith(`${MODELE_FACTICE}/`),
+    );
+    expect(
+      autres,
+      `Les tests du socle prennent tous leur modèle dans \`${MODELE_DE_TEST}\` : ` +
+        "changer de modèle de test ne touche alors qu'un fichier.",
+    ).toEqual([]);
+  });
+});
+
 describe("invariants métier", () => {
   it("le simulateur ignore qui prescrit", () => {
     expect(
-      franchissements(["front/simulateur"], commencePar("front/rattachement/")),
+      franchissements(
+        [...PARCOURS, "front/model"],
+        commencePar("front/socle/rattachement/"),
+      ),
       "Le moteur d'éligibilité raisonne sur une situation médicale, jamais " +
         "sur une identité (docs/knowledge/adr/identification.md). L'analytics, " +
         "lui, est admis : il lit le rattachement en session de son côté, sans " +
@@ -67,29 +134,23 @@ describe("invariants métier", () => {
     ).toEqual([]);
   });
 
-  it("les outils produit se greffent sur le simulateur, jamais l'inverse", () => {
-    // Une exception, assumée : `moteur.ts` consulte `labo/labo.ts` pour savoir
-    // s'il doit charger des règles de test. Choisir quelles règles charger est
-    // une affaire de moteur, et l'inverser demanderait de le sortir de son
-    // singleton de module. Elle est nommée ici, donc elle ne peut pas s'étendre
-    // en silence.
-    const EXCEPTION =
-      "front/simulateur/moteur.ts → front/outils-produit/labo/labo";
+  it("les seeds et les developer tools se greffent sur le simulateur, jamais l'inverse", () => {
     expect(
       franchissements(
-        ["front/simulateur"],
-        commencePar("front/outils-produit/"),
+        PARCOURS,
+        (cible) =>
+          cible.startsWith("front/socle/developerTools/") ||
+          cible.startsWith("front/socle/seeds/"),
       ),
-      "La galerie rejoue des seeds dans le moteur, le labo remplace ses " +
-        "règles, le CERFA lit une situation : les outils produit sont bâtis " +
-        "**sur** le socle. Le socle, lui, n'a pas à les connaître — il reçoit " +
-        "d'`App` du contenu déjà composé (`panneauOutilsProduit`, " +
-        "`documentTelechargeable`). Fais de même plutôt que d'importer.",
-    ).toEqual([EXCEPTION]);
+      "L'écran des seeds rejoue des seeds dans la décision du simulateur : les " +
+        "seeds et les developer tools sont bâtis **sur** le socle. Le socle, " +
+        "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
+        "composé (`developerToolsPanel`). Fais de même plutôt que d'importer.",
+    ).toEqual([]);
   });
 
   it("le CERFA n'adresse jamais le backend", () => {
-    const fautifs = sources("front/outils-produit/beta/cerfa").filter((f) =>
+    const fautifs = sources("front/socle/cerfa").filter((f) =>
       texteDe(f).includes("/api"),
     );
     expect(
@@ -101,7 +162,7 @@ describe("invariants métier", () => {
   });
 
   it("les règles publicodes ne portent que de l'éligibilité", () => {
-    const regles = texteDe("regles/regles.publicodes").toLowerCase();
+    const regles = reglesPubliees().toLowerCase();
     const interdits = [
       "prescripteur . nom",
       "prescripteur . prenom",
@@ -112,19 +173,16 @@ describe("invariants métier", () => {
     ].filter((terme) => regles.includes(terme));
     expect(
       interdits,
-      "Ni identification, ni analytics dans `regles.publicodes` : le moteur " +
+      "Ni identification, ni analytics dans `front/model/rules/*.publicodes` : le moteur " +
         "reste une transcription de la réglementation, rejouable hors de " +
         "l'application.",
     ).toEqual([]);
   });
 });
 
-// Biome porte les mêmes deux limites (`noExcessiveLinesPerFunction`,
-// `noExcessiveLinesPerFile`), mais il compte des lignes **logiques** : un bloc
-// de texte JSX ou une chaîne multiligne y vaut une seule ligne. Un composant de
-// 450 lignes réelles n'en pèse que 178 pour lui. Biome reste utile — il signale
-// dans l'éditeur, et tout ce qu'il refuse échoue aussi ici — mais c'est ce
-// fichier qui fait foi, en lignes réelles.
+// Biome a les mêmes deux limites, mais il compte des lignes logiques : un bloc
+// JSX ou une chaîne multiligne y vaut une seule ligne. Il reste utile dans
+// l'éditeur. Ce fichier fait foi, en lignes réelles.
 describe("taille du code", () => {
   it("aucune fonction ne dépasse 30 lignes", () => {
     const trop = sources("front", "server", "shared", "scripts").flatMap(
@@ -144,7 +202,7 @@ describe("taille du code", () => {
   });
 
   it("aucun fichier ne dépasse 300 lignes", () => {
-    const EXEMPTES = ["front/outils-produit/seeds/catalogue.ts"];
+    const EXEMPTES = ["front/model/seeds-catalogue.ts"];
     const trop = sources("front", "server", "shared", "scripts", "tests")
       .filter((fichier) => !EXEMPTES.includes(fichier))
       .map((fichier) => ({ fichier, lignes: lignesDe(fichier) }))
@@ -178,3 +236,13 @@ describe("chaîne d'outillage", () => {
     ).toBe(true);
   });
 });
+
+// Le texte de toutes les règles livrées. Vide quand `front/model/rules/` n'existe pas.
+function reglesPubliees(): string {
+  const dossier = join(racine, "front", "model", "rules");
+  if (!existsSync(dossier)) return "";
+  return readdirSync(dossier)
+    .filter((fichier) => fichier.endsWith(".publicodes"))
+    .map((fichier) => texteDe(`front/model/rules/${fichier}`))
+    .join("\n");
+}

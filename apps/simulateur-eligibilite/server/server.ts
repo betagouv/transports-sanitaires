@@ -1,8 +1,5 @@
-// Point d'entrée du serveur (production / dev) du simulateur : sert le front
-// (build Vite) et l'API référentiel/rattachement en same-origin.
-//
-// Il ne lit plus l'environnement lui-même : `configuration.ts` le fait, et refuse
-// de rendre une configuration incomplète en production.
+// Point d'entrée du serveur : il sert le front et l'API. La configuration est
+// lue par `configuration.ts`.
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,9 +19,9 @@ app.listen(configuration.port, () => {
 
 // ---- implémentation ----
 
-// Une variable manquante en production est une erreur d'exploitation, pas un bug
-// à déboguer : on sort sur le message, sans trace de pile, avec un code non nul
-// pour que la plateforme voie l'échec du déploiement.
+// Une variable manquante en production est une erreur d'exploitation. On sort
+// sur le message, sans trace de pile, avec un code non nul : la plateforme voit
+// l'échec du déploiement.
 function configurationOuArret(): Configuration {
   try {
     return lireConfiguration();

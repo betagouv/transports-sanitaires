@@ -1,4 +1,4 @@
-# Architecture : Rattachement à l'écran-porte (~~identification du prescripteur~~)
+# Architecture : Rattachement à un établissement et un service (~~identification du prescripteur~~)
 
 > Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-30
 >
@@ -9,7 +9,7 @@
 > [CONTEXT.md](../CONTEXT.md).
 >
 > **Mise à jour 2026-09-29, release officielle, rattachement sans identité.**
-> L'écran-porte ne demande plus **qui** réalise la simulation : plus de liste de
+> L'écran de rattachement ne demande plus **qui** réalise la simulation : plus de liste de
 > prescripteurs, plus de nom ni de prénom saisis. Il ne reste que l'établissement et
 > le service. Cela **révise** l'ADR-3 (on ne déclare plus son identité), l'ADR-4 (plus
 > de pseudonymisation : sans personne à masquer, le HMAC n'avait plus d'objet, et les
@@ -26,7 +26,7 @@
 > **Mise à jour 2026-07-08, fusion des apps.** L'identification et le simulateur ont un
 > temps été conçus comme **deux apps séparées** : une SPA d'identification en iframe, une
 > redirection top-level vers le simulateur statique, et le contexte passé en fragment
-> `#ctx`. Ils sont désormais **une seule app**, où l'identification est un **écran-porte**
+> `#ctx`. Ils sont désormais **une seule app**, où l'identification est un **écran de rattachement**
 > en amont du simulateur. Cela **réverse** l'ADR-1 (app dédiée), l'ADR-4 (contexte en
 > fragment d'URL) et l'invariant « simulateur 100 % statique » de l'ADR-5. Deux raisons :
 > l'intégration Sites Conformes est plus simple avec **un seul iframe**, sans navigation
@@ -59,20 +59,20 @@ Contraintes :
   c'est-à-dire pour l'accès Grist (cf. ADR-5).
 
 **Invariant** : le rattachement ne doit jamais entrer dans le moteur `publicodes`
-(`regles/regles.publicodes`), qui ne contient que la logique métier d'éligibilité. Des
+(`front/model/rules/regles.publicodes`), qui ne contient que la logique métier d'éligibilité. Des
 règles `identification . *` y avaient été mises à tort ; elles ont été retirées.
 
 ## 2. Décisions (ADR)
 
-### ADR-1 - Rattachement intégré en écran-porte (~~app dédiée~~)
+### ADR-1 - Rattachement intégré en écran de rattachement (~~app dédiée~~)
 
-**Décision (révisée 2026-07-08).** Le rattachement est un **écran-porte** au sein de
+**Décision (révisée 2026-07-08).** Le rattachement est un **écran de rattachement** au sein de
 l'app simulateur : tant que l'établissement et le service ne sont pas validés, le
 formulaire n'est pas rendu. ~~Créer une SPA statique `apps/identification` dédiée.~~
 
 **Pourquoi.** Une app séparée imposait un passage de contexte inter-app par fragment
 d'URL et une navigation top-level hors iframe. Surtout, elle n'empêchait pas d'atteindre
-le simulateur sans identification, son URL étant publique. Un écran-porte dans l'app rend
+le simulateur sans identification, son URL étant publique. Un écran de rattachement dans l'app rend
 l'étape obligatoire pour de bon, et simplifie l'intégration : un seul iframe, un seul
 déployable. Le rattachement reste isolé du moteur (ADR-6) et derrière l'interface
 `Referentiel`, donc une migration FINESS reste possible sans toucher le simulateur.
@@ -179,7 +179,7 @@ modèle et §6 pour l'accès.
 
 ### ADR-6 - Le moteur publicodes reste hors périmètre rattachement
 
-**Décision.** `apps/simulateur-eligibilite/regles/regles.publicodes` n'est pas modifié.
+**Décision.** `apps/simulateur-eligibilite/front/model/rules/regles.publicodes` n'est pas modifié.
 Le rattachement, comme l'analytics, vit en dehors du moteur.
 
 ## 3. Architecture cible
@@ -188,7 +188,7 @@ Le rattachement, comme l'analytics, vit en dehors du moteur.
 flowchart TB
     cms["CMS « Sites Conformes »<br/>(origine tierce) — page d'atterrissage"]
     subgraph scalingo["App simulateur — Scalingo (ADR-5)"]
-        front["Front React (DSFR)<br/>Écran-porte de rattachement (établissement, service)<br/>→ puis simulateur (publicodes)"]
+        front["Front React (DSFR)<br/>Écran de rattachement (établissement, service)<br/>→ puis simulateur (publicodes)"]
         api["Backend Node/Express<br/>sert le front + API référentiel + POST /api/rattachement<br/>détient la clé Grist"]
         analytics["Traceur analytics<br/>(cookieless — voir analytics.md)"]
     end
@@ -313,7 +313,7 @@ a été lu le 2026-09-30 (commit `bb64754`). Restent :
 2. **Backend référentiel + Grist.** ✅ Fait : API référentiel et refs pseudonymisées en
    same-origin, `GRIST_API_KEY` en variable d'env.
 3. **Fusion dans le simulateur.** ✅ **Fait (2026-07-08)**. L'identification est un
-   écran-porte obligatoire dans `apps/simulateur-eligibilite`, le backend (référentiel et
+   écran de rattachement obligatoire dans `apps/simulateur-eligibilite`, le backend (référentiel et
    identité pseudonymisée) a été déplacé dans cette app, l'identité vit en mémoire et non
    plus dans un fragment, `apps/identification` est supprimée et le workflow GitHub Pages
    retiré. *Reste : le déploiement Scalingo effectif.*
@@ -321,7 +321,7 @@ a été lu le 2026-09-30 (commit `bb64754`). Restent :
    (R-1). Le `postMessage` ne sert qu'à l'opt-out de la mesure d'audience.
 5. **(futur) Migration FINESS.** Une nouvelle implémentation derrière l'interface
    référentiel (§5). ~~Migration RPPS~~ : sans objet depuis le retrait du prescripteur.
-6. **Retrait de l'identification individuelle.** ✅ **Fait (2026-09-29)**. L'écran-porte
+6. **Retrait de l'identification individuelle.** ✅ **Fait (2026-09-29)**. L'écran de rattachement
    ne demande plus que l'établissement et le service, la pseudonymisation et son secret
    disparaissent, l'app ne lit ni n'écrit plus la table des prescripteurs, un
    rattachement dégradé couvre la panne du référentiel, et le vocabulaire du code
@@ -344,5 +344,5 @@ Le funnel analytics est un incrément traité dans [analytics.md](./analytics.md
 ## 9. Vérification
 
 ```bash
-pnpm --filter simulateur-eligibilite exec vitest run tests/rattachement tests/app/Gate.test.tsx
+pnpm --filter simulateur-eligibilite exec vitest run tests/socle/rattachement tests/socle/app/rattachement-obligatoire.test.tsx
 ```

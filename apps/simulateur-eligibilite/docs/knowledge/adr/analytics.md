@@ -1,10 +1,17 @@
 # Architecture : Analytics de parcours
 
-> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-09-30
+> Statut : **décidé (release officielle)** · Dernière mise à jour : 2026-10-06
 >
 > Suivi analytique du parcours dans le simulateur d'éligibilité.
-> Repose sur le rattachement établissement/service fourni par l'écran-porte :
+> Repose sur le rattachement établissement/service fourni par l'écran de rattachement :
 > voir [identification.md](./identification.md).
+>
+> **Mise à jour 2026-10-06, vidage avant la v10.** Les événements de résultat et de
+> téléchargement de CERFA sont retirés avec le modèle v9 qui les définissait, et les
+> noms d'action perdent leur préfixe d'outil (`prescripteur:`, `secretariat:`) : il
+> n'y a plus qu'un parcours. Il reste les quatre événements de parcours (§4). Les
+> séries Matomo antérieures portent les anciens noms et ne se raccordent pas aux
+> nouvelles. Les événements de résultat reviendront avec la v10.
 >
 > **Mise à jour 2026-09-30, opt-out dans le pied de page du CMS.** L'exemption CNIL
 > demande d'informer l'utilisateur et de le laisser s'opposer à la mesure. L'opt-out
@@ -124,7 +131,7 @@ explicite.~~
 ### ADR-4 - Référentiel figé des noms d'évènement, jamais composés
 
 **Décision.** Le nom de chaque évènement Matomo est une valeur fixe d'un
-référentiel unique (`front/analytics/evenements.ts`, `NomEvenement`), jamais
+référentiel unique (`front/socle/analytics/evenements.ts`, `NomEvenement`), jamais
 composé à la volée par concaténation de chaîne. Ce module n'interprète aucune
 donnée métier — ni l'outil, ni le statut d'un résultat, ni le formulaire d'un
 CERFA : c'est l'appelant qui choisit l'entrée à émettre, via
@@ -218,54 +225,29 @@ Matomo n'a pas de commande pour anonymiser l'IP : c'est un réglage de l'instanc
 Événements `trackEvent` émis par le traceur, en catégorie `simulateur`, portant l'id
 Grist du service en Nom, ou `autre` pour un rattachement dégradé. ~~Ce nom était absent
 si le parcours avait démarré sans rattachement pseudonymisé (API indisponible).~~ Le nom d'action est une valeur fixe du référentiel
-`NomEvenement` (`front/analytics/evenements.ts`, ADR-4) — jamais composé à
+`NomEvenement` (`front/socle/analytics/evenements.ts`, ADR-4) — jamais composé à
 l'exécution.
 
-**Parcours**, un jeu par outil (`prescripteur:…` / `secretariat:…`) :
+**Parcours** (~~un jeu par outil, `prescripteur:…` / `secretariat:…`~~, un seul
+jeu depuis le 2026-10-06) :
 
 | Action | Valeur | Moment du parcours |
 |---|---|---|
 | `simulation_start` | — | ouverture du simulateur, début du formulaire |
-| `simulation_step` | `stepIndex` | passage à l'étape suivante |
+| `simulation_step` | `stepIndex` | passage à la page suivante |
 | `simulation_complete` | — | affichage de la page de résultat |
 | `simulation_abandon` | `lastStep` | départ (onglet quitté) sans avoir atteint le résultat |
 
-**Résultat** (`secretariat:resultat:<slug>`), un slug par valeur de
-`cible_cas_final` — traduction dans `Secretariat.tsx` :
+Le complément posé après le verrou du résultat n'émet rien.
 
-| Slug | Phrase `cible_cas_final` |
-|---|---|
-| `transport_charge_etablissement` | transport à la charge de l'établissement |
-| `permission_sans_motif_medical` | permission de sortie sans motif médical |
-| `convocation_ou_avis_audience` | convocation ou avis d'audience |
-| `orientation_caisse_accord_prealable` | orientation vers la caisse pour accord préalable |
-| `non_eligible_am` | non éligible à une prise en charge par l'Assurance Maladie |
-| `prescription_s3141` | prescription S3141 |
-| `demande_accord_prealable` | demande d'accord préalable |
-| `prescription_medicale_transport` | prescription médicale de transport |
-| `indetermine` | règle inapplicable (`sinon: non`) — ne devrait pas survenir en usage normal |
+~~**Résultat** (`secretariat:resultat:<slug>`), un slug par valeur de
+`cible_cas_final`.~~ Retiré le 2026-10-06 avec le modèle v9.
 
-**Résultat** (`prescripteur:resultat:<slug>`), un slug par valeur de
-`cible_resultat_medical` — traduction dans `Prescripteur.tsx` :
+~~**Résultat** (`prescripteur:resultat:<slug>`), un slug par valeur de
+`cible_resultat_medical`.~~ Retiré le 2026-10-06 avec le modèle v9.
 
-| Slug | Phrase `cible_resultat_medical` |
-|---|---|
-| `vp` | véhicule personnel |
-| `tp_terrestre` | transport en commun terrestre |
-| `ambulance` | ambulance |
-| `vp_ou_tp` | véhicule personnel ou transport en commun |
-| `vsl_ou_taxi` | VSL (Véhicule Sanitaire Léger) ou taxi conventionné |
-| `vsl_ou_tpmr_ou_taxi_tpmr` | VSL (Véhicule Sanitaire Léger) TPMR (…) ou taxi conventionné TPMR (…) |
-| `indetermine` | règle inapplicable (`sinon: non`) — ne devrait pas survenir en usage normal |
-
-**CERFA** (`secretariat:cerfa_telecharge:<formulaire>`), un par document,
-émis uniquement par le secrétariat (seul outil qui expose le téléchargement) :
-
-| Formulaire | Document |
-|---|---|
-| `prescription-medicale-transport` | prescription médicale de transport (PMT) |
-| `demande-accord-prealable` | demande d'accord préalable (DAP) |
-| `prescription-permission-sortie` | prescription pour permission de sortie (S3141) |
+~~**CERFA** (`secretariat:cerfa_telecharge:<formulaire>`), un par document.~~
+Retiré le 2026-10-06 avec le téléchargement des trois CERFA.
 
 - **Interdits** : les réponses détaillées du formulaire, toute PII, toute donnée
   patient.
@@ -292,7 +274,7 @@ l'exécution.
 
 ## 6. Découpage en incréments (analytics)
 
-1. **Matomo funnel.** ✅ **Fait** (`front/analytics/`, site 275,
+1. **Matomo funnel.** ✅ **Fait** (`front/socle/analytics/`, site 275,
    `https://stats.beta.gouv.fr/`). Le traceur est instrumenté dans le simulateur,
    avec le référentiel d'événements de l'ADR-4. Il est amorcé au boot en cookieless
    (`disableCookies`), et lit le service en session à l'émission de chaque
@@ -308,7 +290,7 @@ l'exécution.
    testé. *Reste : coller le script dans Sites Conformes avec l'origine réelle du
    simulateur, publier le texte d'information (R-12).*
 
-Prérequis : l'écran-porte fournit le service (cf.
+Prérequis : l'écran de rattachement fournit le service (cf.
 [identification.md](./identification.md), incréments 1–2 et 6).
 
 ## 7. Risques & validations en attente
@@ -325,5 +307,5 @@ Prérequis : l'écran-porte fournit le service (cf.
 ## 8. Vérification
 
 ```bash
-pnpm --filter simulateur-eligibilite exec vitest run tests/analytics tests/cms
+pnpm --filter simulateur-eligibilite exec vitest run tests/socle/analytics tests/socle/cms
 ```

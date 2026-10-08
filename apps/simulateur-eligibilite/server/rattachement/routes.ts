@@ -1,10 +1,5 @@
-// Router de la feature **rattachement** (backend) : lecture du référentiel
-// (établissement, service) et réception du rattachement saisi, qui peut l'enrichir.
-// Monté sous `/api` par `server/app.ts`. Voir docs/knowledge/adr/identification.md,
-// ADR-5.
-//
-// Prend le `Referentiel` en paramètre pour rester testable sans mock (les tests
-// injectent le snapshot).
+// Les routes du rattachement, montées sous `/api` : lire le référentiel, et
+// recevoir un rattachement saisi.
 
 import express, { type Request, type Response, type Router } from "express";
 import {
@@ -30,8 +25,8 @@ export function rattachementRoutes(referentiel: Referentiel): Router {
 
 // ---- implémentation ----
 
-// Reçoit le rattachement saisi pour en tirer ce qui manque au référentiel. Rien à
-// renvoyer : le front a déjà tout ce qu'il lui faut, et n'attend pas la réponse.
+// Reçoit le rattachement saisi pour compléter le référentiel. Rien à renvoyer :
+// le front n'attend pas la réponse.
 function rattacher(referentiel: Referentiel) {
   return async (req: Request, res: Response) => {
     const saisie = (req.body ?? {}) as RattachementSaisi;
@@ -56,9 +51,8 @@ function servicesDe(referentiel: Referentiel) {
   };
 }
 
-// Alimente le référentiel avec l'éventuel service saisi sous « Autre ».
-// **Best-effort** : un échec d'écriture ne doit jamais bloquer l'accès au
-// simulateur (dégradation gracieuse). Voir
+// Ajoute au référentiel le service saisi sous « Autre », s'il y en a un. Un
+// échec d'écriture ne bloque jamais l'accès au simulateur. Voir
 // docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
 async function enrichir(referentiel: Referentiel, saisie: RattachementSaisi) {
   try {

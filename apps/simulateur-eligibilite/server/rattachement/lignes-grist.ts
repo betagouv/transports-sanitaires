@@ -1,8 +1,7 @@
-// Lire et écrire des lignes dans un doc Grist, via son API REST.
+// Lit et écrit des lignes dans un doc Grist, par son API REST.
 //
-// Ce module détient la clé d'API : il vit côté serveur uniquement, jamais dans
-// le navigateur. Il ne connaît rien du modèle métier — les noms de tables et de
-// colonnes lui sont passés par l'appelant (cf. `referentiel-grist.ts`).
+// Ce module détient la clé d'API : il reste côté serveur. Il ne connaît pas le
+// métier. Les noms de tables et de colonnes lui sont passés.
 
 export type DocGrist = {
   /** Base API du doc, ex. https://…/api/docs/<docId> */
@@ -51,8 +50,8 @@ export async function creerLigne(
   return id;
 }
 
-// Valeur de cellule ramenée à du texte : Grist renvoie aussi bien des nombres
-// que des chaînes selon le type de colonne.
+// La valeur d'une cellule, en texte. Grist renvoie des nombres ou des chaînes
+// selon le type de colonne.
 export function texte(valeur: unknown): string {
   return typeof valeur === "string"
     ? valeur.trim()

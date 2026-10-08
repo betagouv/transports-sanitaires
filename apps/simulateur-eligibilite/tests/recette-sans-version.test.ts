@@ -1,16 +1,17 @@
-// Un test qui passe vaut pour le modèle en cours, quel que soit son numéro.
-// Ni le nom d'un fichier de test ni ses `describe`/`it` ne portent donc la
-// version du modèle : l'intégration d'une version met les attendus à jour,
-// elle ne renomme rien. Voir le skill `implement-publicodes-version`.
+// Un test et un fichier du modèle valent pour le modèle en cours, quel que soit
+// son numéro. Ni un nom de fichier, ni un `describe`, ni un `it` ne portent la
+// version du modèle. Intégrer une version met les contenus et les attendus à
+// jour, sans rien renommer. Voir le skill `implement-publicodes-version`.
 //
-// Les identifiants du livrable (`CONV971-*`, `RETOURS972-*`, `V973-*`) gardent
-// la leur : c'est leur nom chez l'éditeur, et un désaccord remonte sous ce nom.
+// Les identifiants du livrable gardent leur numéro : c'est leur nom chez
+// l'éditeur.
 
-import { basename } from "node:path";
+import { readdirSync } from "node:fs";
+import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { sources, texteDe } from "./inspection-des-sources";
+import { racine, sources, texteDe } from "./inspection-des-sources";
 
-describe("la recette ne porte pas la version du modèle", () => {
+describe("ni la recette ni le modèle ne portent de version", () => {
   it("aucun fichier de test n'a de version dans son nom", () => {
     const fautifs = sources("tests").filter((fichier) =>
       VERSION_DANS_UN_NOM.test(basename(fichier)),
@@ -20,6 +21,19 @@ describe("la recette ne porte pas la version du modèle", () => {
       "Un fichier de test vaut pour le modèle en cours : `livrable.ts`, et non " +
         "`livrable-v9-7-3.ts`. Le renommer à chaque version brouille " +
         "l'historique sans rien vérifier de plus.",
+    ).toEqual([]);
+  });
+
+  it("aucun fichier du modèle n'a de version dans son nom", () => {
+    const fautifs = fichiersDe("front/model").filter((fichier) =>
+      VERSION_DANS_UN_NOM.test(basename(fichier)),
+    );
+    expect(
+      fautifs,
+      "`front/model/` est le modèle en cours : `rules/regles.publicodes`, et " +
+        "non `rules/regles-v10.publicodes`. Livrer une version remplace des " +
+        "contenus. Renommer les fichiers casserait les imports et " +
+        "l'historique pour dire ce que le CHANGELOG dit déjà.",
     ).toEqual([]);
   });
 
@@ -40,11 +54,20 @@ describe("la recette ne porte pas la version du modèle", () => {
 
 // ---- implémentation ----
 
-const VERSION_DANS_UN_NOM = /-v\d+(-\d+)+\b/;
+// Un séparateur, « v », puis un numéro : `-v9-7-3`, `.v10.0.0`, `-v10`.
+const VERSION_DANS_UN_NOM = /[-._]v\d+([-.]\d+)*(?=[-._]|$)/;
 const VERSION_DANS_UN_TITRE = /\bv\d+\.\d+/;
 const TITRE =
   /\b(?:describe|it|test)(?:\.each\((?:[^()]|\([^()]*\))*\))?\(\s*(["'`])((?:(?!\1).)*)\1/gs;
 
 function titresDe(texte: string): string[] {
   return [...texte.matchAll(TITRE)].map((trouve) => trouve[2] ?? "");
+}
+
+// Tous les fichiers d'un dossier, quelle que soit leur extension : les règles
+// du modèle ne sont pas du TypeScript.
+function fichiersDe(dossier: string): string[] {
+  return readdirSync(join(racine, dossier), { recursive: true }).map(
+    (fichier) => `${dossier}/${String(fichier)}`,
+  );
 }

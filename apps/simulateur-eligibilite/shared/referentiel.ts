@@ -1,5 +1,5 @@
-// Le référentiel établissement / service : son interface, et le jeu de données
-// factices qui sert de défaut quand aucune source réelle n'est branchée.
+// Le référentiel établissement / service : son interface, et des données
+// factices pour le développement et les tests.
 
 import type { RattachementSaisi } from "./rattachement-saisi.ts";
 
@@ -7,27 +7,25 @@ export type Etablissement = { id: string; libelle: string };
 export type Service = { id: string; libelle: string };
 
 /**
- * L'accès est masqué derrière cette interface, décrite au §5 de
- * docs/knowledge/adr/identification.md, pour pouvoir substituer la source sans
- * toucher les composants consommateurs. C'est aujourd'hui le client HTTP
- * same-origin `front/rattachement/referentiel-http.ts` vers le backend Grist, et
- * demain peut-être FINESS.
+ * L'accès au référentiel passe par cette interface (§5 de
+ * docs/knowledge/adr/identification.md). On peut ainsi changer de source sans
+ * toucher aux composants. Le front utilise le client HTTP
+ * `front/socle/rattachement/referentiel-http.ts`, vers le backend Grist.
  */
 export interface Referentiel {
   listerEtablissements(): Promise<Etablissement[]>;
   listerServices(etabId: string): Promise<Service[]>;
   /**
-   * Enrichit le référentiel avec le service saisi sous « Autre ». C'est
-   * optionnel : seule la source Grist l'implémente, le client HTTP du front
-   * n'écrivant jamais. Voir
+   * Ajoute au référentiel le service saisi sous « Autre ». Optionnel : seule la
+   * source Grist l'implémente, le client HTTP du front n'écrit jamais. Voir
    * docs/knowledge/domain/enrichissement-referentiel-rattachement.md.
    */
   enrichirDepuisSaisie?(saisie: RattachementSaisi): Promise<void>;
 }
 
 /**
- * Données factices, sans aucune PII réelle. Elles servent de défaut en dev et dans
- * les tests, côté front comme côté backend, quand il n'y a pas de clé Grist.
+ * Données factices, sans donnée personnelle. Défaut en dev et dans les tests,
+ * au front comme au backend, quand il n'y a pas de clé Grist.
  */
 export const snapshotReferentiel: Referentiel = {
   async listerEtablissements() {
@@ -48,14 +46,13 @@ const ETABLISSEMENTS: Etablissement[] = [
   { id: "e_chu_grenoble", libelle: "CHU Grenoble Alpes" },
   { id: "e_ch_chambery", libelle: "Centre hospitalier de Chambéry" },
   { id: "e_clinique_belledonne", libelle: "Clinique Belledonne" },
-  // Établissement « fourre-tout » du référentiel pour les prescripteurs sans
-  // établissement de rattachement : ils le sélectionnent puis renseignent leur
-  // service (ou « Autre »).
+  // L'établissement fourre-tout, pour les prescripteurs sans établissement. Ils
+  // le sélectionnent, puis choisissent leur service (ou « Autre »).
   { id: "e_liberal_cnam", libelle: "Libéral / CNAM / CPAM / Autre" },
 ];
 
-// Chaque établissement possède une entrée « Autre » (service / unité non listé) :
-// c'est un service du référentiel comme les autres.
+// Chaque établissement a une entrée « Autre » (service non listé). C'est un
+// service du référentiel comme les autres.
 const SERVICES: SnapshotService[] = [
   { id: "s_grenoble_cardio", etabId: "e_chu_grenoble", libelle: "Cardiologie" },
   {
@@ -84,8 +81,8 @@ const SERVICES: SnapshotService[] = [
   },
   { id: "s_liberal", etabId: "e_liberal_cnam", libelle: "Libéral" },
   { id: "s_cnam_cpam", etabId: "e_liberal_cnam", libelle: "CNAM / CPAM" },
-  // Service dédié au produit : déverrouille le « mode test des règles » (labo).
-  // Correspond au service Grist `Id2 = 4` en production (cf. front/outils-produit/labo/labo.ts).
+  // Le service du produit : il déverrouille les developer tools. C'est le
+  // service Grist `Id2 = 4` en production (voir front/socle/developerTools/unlock.ts).
   {
     id: "s_transport_sanitaire",
     etabId: "e_liberal_cnam",

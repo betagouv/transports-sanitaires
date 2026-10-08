@@ -26,7 +26,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # lint → typecheck → knip → validation des règles → tests → build
+      # lint → typecheck → knip → tests → build
       # (+ vérification de bundle en `postbuild`).
       - run: pnpm --filter simulateur-eligibilite verifier
 
@@ -68,8 +68,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Ce qui part en production : bloquant. Le simulateur parse du YAML fourni
-      # par l'utilisateur (mode labo), la chaîne de dépendances n'est pas décorative.
+      # Ce qui part en production : bloquant.
       - run: pnpm audit --prod --audit-level high
       # La chaîne de build : signalé, non bloquant. Une alerte sur un paquet
       # transitif de Vite ne doit pas coincer une correction sans rapport.
