@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 import type { Cibles } from "../../front/model/declarations/cibles";
 import { AUCUN_FAIT, type Faits } from "../../front/model/declarations/faits";
-import { cibles } from "../../front/model/preconisation";
+import { cibles } from "../../front/model/evaluation-des-regles";
 
 type Changements = Partial<Faits>;
 type Issue = Cibles["cible_issue_id"];

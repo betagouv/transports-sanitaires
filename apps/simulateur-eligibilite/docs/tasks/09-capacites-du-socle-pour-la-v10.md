@@ -6,7 +6,7 @@ au contrat `Model`.
 
 **Blocked by:** 06 (le parcours).
 
-**Status:** cadré. Rien n'est codé. Restent deux attentes côté éditeur et le détail de l'adresse.
+**Status:** trois capacités de saisie codées, celles que P0 et P1 demandent. Restent les autres, deux attentes côté éditeur et le détail de l'adresse.
 
 ## Décisions prises
 
@@ -75,7 +75,7 @@ questions, puis confronté au socle.
 
 | Capacité | Demandée par | Écart | Poids |
 |---|---|---|---|
-| Cartes radio | Q0.1 | Une option n'a pas d'explication. Ajouter une description et le rendu DSFR. | petit |
+| ~~Cartes radio~~ | Q0.1 | Fait : une option porte une `description`, rendue sous son libellé. | fait |
 | Liste déroulante | Q3.2, Q3.3 | `SelectField` existe, aucun `kind` ne le rend. | petit |
 | Question facultative | complément d'adresse, commentaire de Q3.4, case de Q2.3.2 | Toute question affichée est obligatoire. | petit |
 | Entier strict | Q3.1 | `number` accepte les décimales. | petit |
@@ -83,8 +83,8 @@ questions, puis confronté au socle.
 | Valeur déjà connue, en lecture seule | 17 questions : Q2.1, Q2.1.f, Q2.1.k, Q2.2.1, Q2.2.3, Q2.3.2, Q2.3.4, Q2.5, Q2.6, Q2.11, Q2.13, Q2.14, Q3.2, Q3.3, Q3.4, Q3.7, Q3.8 | Une page ne contient que des questions. Voir « Ce que l'éditeur fixe ». | moyen |
 | Validation croisée | Q3.1 contre Q2.3.3, début avant fin, code postal selon le pays, extrémité contre le segment verrouillé | `errorOf` ne voit qu'une réponse. | moyen |
 | Adresse, type du socle (D-60) | Q3.2, Q3.3, Q3.8 | Aucun type. La réponse devient un objet. | moyen |
-| Options qui dépendent des réponses | Q1.3 (option 6), Q2.2.1, Q2.6, Q2.13, Q3.2, Q3.3 : « ne proposer que les situations compatibles et encore inconnues » | Les options d'une question sont une liste fixe. | moyen |
-| Libellé qui dépend des réponses | Q1.4 (« en toute autonomie » ou « avec l'aide d'un proche »), Q2.2.1 (libellé de « Aucune ») | Le libellé d'une question et d'une option est un texte fixe. | petit |
+| ~~Options qui dépendent des réponses~~ | Q1.3 (option 6), Q2.2.1, Q2.6, Q2.13, Q3.2, Q3.3 : « ne proposer que les situations compatibles et encore inconnues » | Fait : `offeredIf` sur une option. Une réponse perd l'option qui ne se propose plus. | fait |
+| Libellé qui dépend des réponses | Q1.4 (« en toute autonomie » ou « avec l'aide d'un proche »), Q2.2.1 (libellé de « Aucune ») | Fait pour une question : `labelFrom`. Le libellé d'une option reste un texte fixe. | petit |
 | Liste filtrable (D-65) | Q2.1.c, Q2.1.d | Rien. Une vingtaine d'options embarquées, filtrées sur le libellé et les synonymes, accessible au clavier, avec « je ne trouve pas ». Aucun chargement à la demande. | moyen |
 
 ### Ce que l'éditeur fixe sur la lecture seule et l'adresse

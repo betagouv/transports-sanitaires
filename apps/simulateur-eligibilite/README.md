@@ -129,6 +129,9 @@ front/                   le front, bundlé par Vite
                          brouillon, l'invalidation des réponses dépendantes,
                          l'avancement automatique, le champ qui rend une question,
                          ce qui part vers l'analytics
+    decision-engine/     le moteur de décision : des faits aux cibles, par les règles
+                         publicodes qu'un modèle lui donne. Le seul fichier qui
+                         importe publicodes, pris par le modèle hors de `index.ts`
     ui/                  les champs de formulaire, bâtis sur le DSFR et sans rien
                          savoir du questionnaire : TextField, SelectField,
                          RadioField, CheckboxField, NumberField, DateField
@@ -174,7 +177,10 @@ De la v10, le dépôt porte aujourd'hui le noyau :
 - les déclarations de ses 58 faits et de ses 44 cibles, comparées aux règles par
   `tests/model/declarations.test.ts` ;
 - son oracle, les cas D01 à D25, rejoué en faits par `tests/model/oracle.test.ts` ;
-- sa première question, Q0.1. Aucune question ne donne encore de fait.
+- ses deux premières parties, P0 et P1 : Q0.1 à Q1.4. Leurs réponses donnent
+  les faits du mode de transport, et les règles en tirent le mode
+  (`tests/model/mode-de-transport.test.ts`). P2 n'est pas posée : le résultat
+  dit encore que le questionnaire n'est pas complet.
 
 Le questionnaire factice (`tests/socle/fixtures/modele-factice/`) pose trois
 questions sans rapport avec le transport sanitaire. Les tests du socle tournent

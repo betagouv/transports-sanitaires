@@ -24,8 +24,14 @@ const commencePar = (prefixe: string) => (cible: string) =>
 const PARCOURS = ["front/socle/simulateur", "front/socle/questionnaire-engine"];
 
 // Ce que le modèle a le droit d'importer du socle, en plus de son point
-// d'entrée : le type d'une seed, que le catalogue lit à la source.
-const OUVERT_AU_MODELE = ["front/socle", "front/socle/seeds/seed"];
+// d'entrée : le type d'une seed, que le catalogue lit à la source, et le moteur
+// de décision, qui amènerait publicodes dans le chunk d'entrée s'il passait par
+// le point d'entrée.
+const OUVERT_AU_MODELE = [
+  "front/socle",
+  "front/socle/seeds/seed",
+  "front/socle/decision-engine/publicodes",
+];
 
 // Le seul fichier par lequel les tests du socle prennent leur modèle, et le
 // dossier où ce modèle est écrit.
@@ -146,6 +152,21 @@ describe("invariants métier", () => {
         "seeds et les developer tools sont bâtis **sur** le socle. Le socle, " +
         "lui, n'a pas à les connaître : il reçoit d'`App` du contenu déjà " +
         "composé (`developerToolsPanel`). Fais de même plutôt que d'importer.",
+    ).toEqual([]);
+  });
+
+  it("seul le moteur de décision importe publicodes", () => {
+    const fautifs = sources("front").filter(
+      (f) =>
+        !f.startsWith("front/socle/decision-engine/") &&
+        /^import (?!type ).*from "publicodes";$/m.test(texteDe(f)),
+    );
+    expect(
+      fautifs,
+      "publicodes est l'outil du socle pour décider, derrière un seul " +
+        "fichier : `front/socle/decision-engine/publicodes.ts`. Le reste du " +
+        "socle et le modèle passent par lui. Un autre import lie du code au " +
+        "moteur, et rend son remplacement plus cher.",
     ).toEqual([]);
   });
 

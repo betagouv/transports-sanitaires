@@ -3,7 +3,7 @@
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import type { ChangeEvent, ComponentProps } from "react";
 
-type Option = { value: string; label: string };
+type Option = { value: string; label: string; description?: string };
 
 type Props = {
   id: string;
@@ -44,6 +44,7 @@ function checkboxes(props: Props): DsfrCheckbox[] {
     : props.options;
   return options.map((option) => ({
     label: option.label,
+    hintText: option.description,
     nativeInputProps: {
       name: `${props.id}-${option.value}`,
       checked: props.values.includes(option.value),

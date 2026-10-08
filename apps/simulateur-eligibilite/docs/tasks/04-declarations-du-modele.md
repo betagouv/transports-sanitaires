@@ -6,7 +6,7 @@ nom mal écrit ne compile pas, et un nom absent des règles fait rougir un test.
 
 **Blocked by:** 01 (les noms), 03 (les génériques).
 
-**Status:** les faits et les cibles de la v10 sont déclarés en listes `as const`, et comparés à `rules/` par `tests/model/declarations.test.ts`. Restent les questions (une seule déclarée, Q0.1), les 6 cibles de la preuve Q2.1 et les cibles documentaires.
+**Status:** les faits et les cibles de la v10 sont déclarés en listes `as const`, et comparés à `rules/` par `tests/model/declarations.test.ts`. Les questions de P0 et P1 sont déclarées (Q0.1 à Q1.4). Restent les questions de P2 et P3, les 6 cibles de la preuve Q2.1 et les cibles documentaires.
 
 ## Décisions prises
 
@@ -14,6 +14,10 @@ nom mal écrit ne compile pas, et un nom absent des règles fait rougir un test.
   la place d'un `Record<string, unknown>`.
 - **D-39** Elles vivent dans `front/model/declarations/` : `questions.ts`,
   `faits.ts`, `cibles.ts`.
+- **D-75** Une option se répond par un slug : son numéro dans le catalogue,
+  puis ce qu'elle veut dire (`"8_BRANCARDAGE"`). `OPTIONS` les déclare une
+  fois avec leurs libellés : le type des réponses et les options du
+  questionnaire en découlent.
 - **D-40** Les questions portent les identifiants de l'éditeur : `Q1.1`,
   `Q2.3.4`.
 - **D-41** Elles sont écrites à la main. Un test compare les faits et les

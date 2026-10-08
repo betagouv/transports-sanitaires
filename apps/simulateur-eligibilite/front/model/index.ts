@@ -6,7 +6,8 @@ import { defineModel } from "../socle";
 import type { Cibles } from "./declarations/cibles";
 import type { Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
-import { cibles, faits } from "./preconisation";
+import { cibles } from "./evaluation-des-regles";
+import { faits } from "./preconisation";
 import { COMPLEMENT, PARTS } from "./questionnaire";
 import { Eligibilite, PrescriptionPreremplie } from "./Resultats";
 

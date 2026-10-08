@@ -6,7 +6,11 @@ type Props = {
   id: string;
   label: string;
   hint?: string;
-  options: ReadonlyArray<{ value: string; label: string }>;
+  options: ReadonlyArray<{
+    value: string;
+    label: string;
+    description?: string;
+  }>;
   value: string | undefined;
   onChange: (value: string) => void;
   /** La première option prend le focus à l'affichage. */
@@ -32,6 +36,7 @@ export function RadioField(props: Props) {
       }}
       options={props.options.map((option, index) => ({
         label: option.label,
+        hintText: option.description,
         nativeInputProps: {
           value: option.value,
           checked: props.value === option.value,

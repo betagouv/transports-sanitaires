@@ -12,9 +12,10 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
 la v10 est en cours d'intégration (`docs/tasks/PLAN.md`). `front/model/` porte son
-noyau : les règles publicodes de l'éditeur, les déclarations des faits et des
-cibles, et la première question. Il n'y a encore ni page de résultat métier, ni
-CERFA téléchargeable. Le
+noyau et ses deux premières parties : les règles publicodes de l'éditeur, les
+déclarations des faits et des cibles, P0 et P1 (Q0.1 à Q1.4) et les faits du
+mode de transport. Il n'y a encore ni P2, ni page de résultat métier, ni CERFA
+téléchargeable. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version
@@ -33,6 +34,9 @@ fichier qui importe les deux. Il charge le modèle à la demande, pendant l'écr
 de rattachement, et passe sa promesse à `App` : publicodes et les règles restent
 hors du chunk d'entrée. Le socle n'importe rien
 de `front/model/`, et le modèle n'importe du socle que `front/socle/index.ts`.
+Une exception : le moteur de décision, `front/socle/decision-engine/publicodes.ts`,
+que le modèle prend à la source. C'est le seul fichier qui importe publicodes
+(D-76).
 `tests/architecture.test.ts` garde ces deux règles.
 
 Le parcours commence par un **écran de rattachement
@@ -146,6 +150,7 @@ Ils sont **exécutables**, dans
 - les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
 - les règles publicodes, qui ne portent que de l'éligibilité ;
+- publicodes, que seul le moteur de décision du socle importe ;
 - le modèle livré, que seul `tests/model/` importe ;
 - les limites de 30 et 300 lignes.
 
