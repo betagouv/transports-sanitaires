@@ -18,7 +18,12 @@ export type Answers<Questions extends AnyQuestions = AnyQuestions> = Readonly<
 /** Les cibles d'un modèle : ce que sa préconisation rend. */
 export type AnyCibles = Readonly<Record<string, unknown>>;
 
-type Option = { readonly value: string; readonly label: string };
+type Option = {
+  readonly value: string;
+  readonly label: string;
+  /** Ce que l'option veut dire, rendu sous son libellé. */
+  readonly description?: string;
+};
 
 type Common<Questions extends AnyQuestions, Cibles> = {
   readonly id: keyof Questions & string;
