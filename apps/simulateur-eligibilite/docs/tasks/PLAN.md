@@ -16,13 +16,13 @@ ouvertes. On les traite un par un, dans l'ordre du tableau.
 | [01](01-vocabulaire.md) | Vocabulaire | arbitré | reporter dans `CONTEXT.md` |
 | [02](02-structure-des-dossiers.md) | Structure des dossiers | fait | rien |
 | [03](03-contrat-model.md) | Contrat `Model` | écrit | quatre champs pas encore lus par le socle |
-| [04](04-declarations-du-modele.md) | Déclarations du modèle | fait pour le factice | celles de la v10 |
+| [04](04-declarations-du-modele.md) | Déclarations du modèle | faits et cibles de la v10 déclarés | les questions, les 6 cibles de la preuve Q2.1, les cibles documentaires |
 | [05](05-questionnaire-en-parties.md) | Questionnaire en parties | fait | rien |
 | [06](06-parcours-et-resultats.md) | Parcours et résultats | fait, hors PDF | impression, production du PDF |
-| [07](07-seeds.md) | Seeds | fait | une seed par cas d'oracle, avec la v10 |
-| [08](08-tests-et-factice.md) | Tests et factice | fait | migrer le factice dans `tests/socle/fixtures/`, avec la v10 |
+| [07](07-seeds.md) | Seeds | fait | une seed par cas d'oracle, quand l'éditeur le livre en réponses |
+| [08](08-tests-et-factice.md) | Tests et factice | fait | rien |
 | [09](09-capacites-du-socle-pour-la-v10.md) | Capacités du socle pour la v10 | cadré | tout à coder |
-| [10](10-integration-de-la-v10.md) | Intégration de la v10 | cadré, rien de codé | tout ; les étapes 3 et 4 attendent l'éditeur |
+| [10](10-integration-de-la-v10.md) | Intégration de la v10 | étape 1 codée | les étapes 2 à 7 ; les étapes 3 et 4 attendent l'éditeur |
 
 ## Commits
 

@@ -27,8 +27,10 @@ const PARCOURS = ["front/socle/simulateur", "front/socle/questionnaire-engine"];
 // d'entrée : le type d'une seed, que le catalogue lit à la source.
 const OUVERT_AU_MODELE = ["front/socle", "front/socle/seeds/seed"];
 
-// Le seul fichier par lequel les tests du socle prennent un modèle.
+// Le seul fichier par lequel les tests du socle prennent leur modèle, et le
+// dossier où ce modèle est écrit.
 const MODELE_DE_TEST = "tests/socle/modele-de-test.ts";
+const MODELE_FACTICE = "tests/socle/fixtures/modele-factice";
 
 describe("frontières de runtime", () => {
   it("le front n'importe rien du serveur", () => {
@@ -88,17 +90,32 @@ describe("le socle et le modèle", () => {
 });
 
 describe("les tests et le modèle", () => {
-  it("les tests du socle ne prennent le modèle que par un seul fichier", () => {
+  it("seuls les tests du modèle importent le modèle livré", () => {
     const autres = franchissements(
-      ["tests/socle"],
+      ["tests"],
       commencePar("front/model"),
-    ).filter((couple) => !couple.startsWith(`${MODELE_DE_TEST} →`));
+    ).filter((couple) => !couple.startsWith("tests/model/"));
     expect(
       autres,
-      "Les tests du socle tournent sur un modèle qu'on leur injecte. Ils le " +
-        `prennent tous dans \`${MODELE_DE_TEST}\` : changer de modèle de ` +
-        "test ne touche alors qu'un fichier. Ce qui vérifie le modèle livré " +
-        "lui-même va dans `tests/model/`.",
+      "Les tests du socle tournent sur un modèle factice, écrit pour eux : " +
+        "ils ne changent pas quand l'éditeur livre une version. Ce qui " +
+        "vérifie le modèle livré va dans `tests/model/`.",
+    ).toEqual([]);
+  });
+
+  it("les tests du socle ne prennent leur modèle que par un seul fichier", () => {
+    const autres = franchissements(
+      ["tests"],
+      commencePar(MODELE_FACTICE),
+    ).filter(
+      (couple) =>
+        !couple.startsWith(`${MODELE_DE_TEST} →`) &&
+        !couple.startsWith(`${MODELE_FACTICE}/`),
+    );
+    expect(
+      autres,
+      `Les tests du socle prennent tous leur modèle dans \`${MODELE_DE_TEST}\` : ` +
+        "changer de modèle de test ne touche alors qu'un fichier.",
     ).toEqual([]);
   });
 });

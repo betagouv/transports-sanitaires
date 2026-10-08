@@ -6,7 +6,7 @@ préconisation et télécharge son cerfa.
 
 **Blocked by:** 02 à 09.
 
-**Status:** cadré, rien de codé. Sept étapes (D-69). Les étapes 3 et 4 attendent l'éditeur.
+**Status:** étape 1 codée. Sept étapes (D-69). Les étapes 3 et 4 attendent l'éditeur.
 
 ## Décisions prises
 
@@ -142,6 +142,29 @@ Ce que cela implique, après classement des 58 faits
 
 Les capacités du chantier 09 entrent juste avant l'étape qui les demande.
 
+## Ce que l'étape 1 a livré
+
+- Le factice a migré dans `tests/socle/fixtures/modele-factice/` (D-52).
+- `front/model/rules/` porte le YAML recopié (`regles.publicodes`) et `VERSION`.
+- `publicodes` est figé en 1.10.1. Un plugin de `vite.config.ts` convertit le
+  YAML en objet à la compilation. `Main` charge le modèle à la demande, et
+  `App` l'attend après le rattachement (D-71). `verifier-bundle` le surveille.
+- Les 58 faits et les 44 cibles sont déclarés, et comparés aux règles.
+- L'oracle passe en faits : D01 à D25, et les frontières du test de l'éditeur.
+
+Trois choses à savoir :
+
+- **Q0.1 est déjà posée.** Un questionnaire sans page ne se monte pas : le
+  modèle ouvre donc sur P0, en choix unique simple. L'explication de chaque
+  option attend les cartes radio (chantier 09).
+- **Aucune réponse ne donne de fait.** `preconisation.faits` rend tous les
+  faits à « non ». R2 dit donc toujours que le questionnaire n'est pas complet.
+- **`textFrom` a quitté `front/socle/index.ts`**, faute d'appelant dans le
+  modèle. Il y revient avec le mapping, à l'étape 6.
+
+Non fait à l'étape 1 : le script local qui compare nos déclarations au package
+(D-70). Il prend son sens avec le dictionnaire des cibles et le mapping.
+
 ## Problèmes restants
 
 ### En attente d'une réponse de l'éditeur
@@ -189,8 +212,9 @@ Les capacités du chantier 09 entrent juste avant l'étape qui les demande.
 
 ## Critères d'acceptation
 
-- [ ] Le factice a migré dans `tests/socle/fixtures/` (D-52), et la garde
+- [x] Le factice a migré dans `tests/socle/fixtures/` (D-52), et la garde
       « seuls les tests du modèle importent le modèle » est écrite.
-- [ ] Les 25 cas de l'oracle passent, et chacun a sa seed (D-57).
+- [ ] Les 25 cas de l'oracle passent, et chacun a sa seed (D-57). Les cas
+      passent en faits ; les seeds attendent l'oracle en réponses.
 - [ ] Aucun fichier de `front/socle/` n'a été modifié pour un besoin propre à
       la v10 hors des capacités du chantier 09.

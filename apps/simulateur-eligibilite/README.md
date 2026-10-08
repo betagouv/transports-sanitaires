@@ -6,8 +6,9 @@ en conséquence. Le parcours débute par un rattachement obligatoire à un étab
 à un service, sans identifier la personne.
 
 > **L'app est entre deux modèles.** Le modèle d'éligibilité v9 et tout ce qui en
-> dépendait ont été retirés, et la v10 n'est pas encore intégrée. Le simulateur déroule
-> un **questionnaire factice** de trois questions, qui ne décide rien. Voir
+> dépendait ont été retirés, et l'intégration de la v10 commence. Ses règles
+> calculent déjà la préconisation, mais le questionnaire s'arrête à sa première
+> question : aucune issue n'est encore rendue. Voir
 > [« Entre deux modèles »](#entre-deux-modèles).
 
 ## Fonctionnement
@@ -109,10 +110,12 @@ server/                  le backend Node, barrière de sécurité : les secrets 
                          référentiel, qu'elle lit et complète
 front/                   le front, bundlé par Vite
   Main.tsx               le point d'entrée du navigateur : monte l'app, amorce le traceur
-  model/                 ce qui change avec une version du modèle : aujourd'hui le
-                         modèle factice. Ses déclarations (questions, faits, cibles),
-                         son questionnaire, sa préconisation, ses deux résultats et
-                         le catalogue des seeds (vide)
+  model/                 ce qui change avec une version du modèle : aujourd'hui la
+                         v10, en cours d'intégration. Ses règles publicodes
+                         (`rules/`, recopiées du livrable, avec leur `VERSION`), ses
+                         déclarations (questions, faits, cibles), son questionnaire,
+                         sa préconisation, ses deux résultats et le catalogue des
+                         seeds (vide). Chargé à la demande, pendant le rattachement
   socle/                 ce qui ne dépend d'aucune version. `model.ts` est le contrat
                          qu'un modèle remplit, `index.ts` ce qu'il a le droit d'importer
     app/                 le choix de l'écran affiché, la navigation entre les écrans,
@@ -151,10 +154,10 @@ a donc été vidée de ce qui dépendait de la v9, sur la branche `v10`.
 
 | Retiré | Conservé |
 | --- | --- |
-| les règles publicodes, leur validation, la version du modèle au pied de page | l'interface DSFR |
+| la validation des règles publicodes, la version du modèle au pied de page | l'interface DSFR |
 | le questionnaire engendré par `@publicodes/forms` | l'écran de rattachement et son backend |
 | les parcours prescripteur et secrétariat, leurs pages de résultat | la mesure d'audience Matomo, réduite aux événements de parcours |
-| les tests métier et la recette du livrable | le comportement de navigation, sur un questionnaire factice |
+| les tests métier et la recette de la v9 | le comportement de navigation, sur un questionnaire factice |
 | le contenu du catalogue de seeds | ce qu'est une seed, l'écran des seeds, les traces de debug |
 | les trois CERFA : gabarits, tableaux de remplissage, téléchargement | le socle de remplissage d'un PDF |
 | le mode test des règles (labo) | |
@@ -163,9 +166,20 @@ Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré 
 le modèle**. Une partie liste ses pages, une page ses questions, une question dit
 quand elle se pose (`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le questionnaire factice (`front/model/questionnaire.ts`) pose trois questions sans
-rapport avec le transport sanitaire. Il sert à tenir en vie, et sous test, ce que le
-parcours réel reprendra :
+De la v10, le dépôt porte aujourd'hui le noyau :
+
+- les règles de l'éditeur, recopiées telles quelles dans
+  `front/model/rules/regles.publicodes`. Vite les convertit en objet à la
+  compilation : aucun analyseur YAML ne part dans le navigateur ;
+- les déclarations de ses 58 faits et de ses 44 cibles, comparées aux règles par
+  `tests/model/declarations.test.ts` ;
+- son oracle, les cas D01 à D25, rejoué en faits par `tests/model/oracle.test.ts` ;
+- sa première question, Q0.1. Aucune question ne donne encore de fait.
+
+Le questionnaire factice (`tests/socle/fixtures/modele-factice/`) pose trois
+questions sans rapport avec le transport sanitaire. Les tests du socle tournent
+sur lui : ils ne changent pas quand l'éditeur livre une version. Il tient sous
+test ce que le parcours réel reprend :
 
 | Comportement | Ce qu'il fait | Où |
 | --- | --- | --- |

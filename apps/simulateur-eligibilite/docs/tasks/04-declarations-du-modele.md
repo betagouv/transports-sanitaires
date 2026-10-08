@@ -6,7 +6,7 @@ nom mal écrit ne compile pas, et un nom absent des règles fait rougir un test.
 
 **Blocked by:** 01 (les noms), 03 (les génériques).
 
-**Status:** fait pour le factice, en types seuls (`front/model/declarations/`). Les listes `as const` et le test contre `rules/` viennent avec la v10.
+**Status:** les faits et les cibles de la v10 sont déclarés en listes `as const`, et comparés à `rules/` par `tests/model/declarations.test.ts`. Restent les questions (une seule déclarée, Q0.1), les 6 cibles de la preuve Q2.1 et les cibles documentaires.
 
 ## Décisions prises
 
@@ -55,4 +55,6 @@ Aucune.
 
 - [ ] `Model<Questions, Faits, Cibles>` est typé par les déclarations.
 - [ ] Un identifiant inconnu ne compile pas.
-- [ ] Le test de correspondance avec `rules/` passe.
+- [x] Le test de correspondance avec `rules/` passe : 58 faits, 44 cibles, et
+      les constantes des six cibles énumérées (issue, mode, support, financeur,
+      statut du soin, code de raison).

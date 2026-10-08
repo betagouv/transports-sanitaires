@@ -11,20 +11,27 @@ Le simulateur d'éligibilité au transport sanitaire. Sa pile :
 - un questionnaire **déclaré par l'application** (`front/socle/questionnaire-engine/`).
 
 **L'app est entre deux modèles.** Le modèle v9 et ce qui en dépendait sont retirés,
-la v10 n'est pas intégrée. Il n'y a ni règles publicodes, ni page de résultat métier,
-ni CERFA téléchargeable. Le simulateur déroule un **questionnaire factice**
-(`front/model/`), qui ne décide rien. Le
+la v10 est en cours d'intégration (`docs/tasks/PLAN.md`). `front/model/` porte son
+noyau : les règles publicodes de l'éditeur, les déclarations des faits et des
+cibles, et la première question. Il n'y a encore ni page de résultat métier, ni
+CERFA téléchargeable. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version
 du modèle : rattachement, parcours, moteur de questionnaire, analytics, seeds,
-outils PDF, developer tools. `front/model/` porte la version : aujourd'hui le
-modèle factice.
+outils PDF, developer tools. `front/model/` porte la version : aujourd'hui la
+v10.
+
+**Les règles ne se corrigent pas ici.** `front/model/rules/regles.publicodes` est
+la recopie exacte du YAML livré, et `rules/VERSION` son numéro. Une anomalie se
+remonte à l'éditeur (`docs/tasks/QUESTIONS-EDITEUR.md`).
 
 Le socle ne connaît le modèle que par un contrat, `Model` (`front/socle/model.ts`) :
 des parties de questionnaire, ce qui calcule la préconisation (des réponses aux
 faits, des faits aux cibles), et deux résultats. `front/Main.tsx` est le seul
-fichier qui importe les deux et passe le modèle à `App`. Le socle n'importe rien
+fichier qui importe les deux. Il charge le modèle à la demande, pendant l'écran
+de rattachement, et passe sa promesse à `App` : publicodes et les règles restent
+hors du chunk d'entrée. Le socle n'importe rien
 de `front/model/`, et le modèle n'importe du socle que `front/socle/index.ts`.
 `tests/architecture.test.ts` garde ces deux règles.
 
@@ -110,8 +117,8 @@ personne, ses tests le chargent comme texte.
 
 1. `tsc -b` sur les quatre projets : front, node, serveur, tests ;
 2. Vite ;
-3. `verifier-bundle` : `pdf-lib` et le catalogue de seeds doivent rester hors du
-   chunk d'entrée.
+3. `verifier-bundle` : `pdf-lib`, le modèle et le catalogue de seeds doivent
+   rester hors du chunk d'entrée.
 
 Si tu remplaces un `import()` par un import statique, c'est l'étape 3 qui te le
 dit.
@@ -138,8 +145,8 @@ Ils sont **exécutables**, dans
 - le simulateur, qui ignore qui prescrit ;
 - les seeds et les developer tools, greffés sur le simulateur et jamais l'inverse ;
 - le socle PDF, qui n'adresse jamais `/api` ;
-- les règles publicodes, qui ne portent que de l'éligibilité (sans objet tant que
-  `front/model/rules/` est vide) ;
+- les règles publicodes, qui ne portent que de l'éligibilité ;
+- le modèle livré, que seul `tests/model/` importe ;
 - les limites de 30 et 300 lignes.
 
 **Ne les recopie pas ici.** Lis le fichier. Lis surtout le message d'échec avant
@@ -173,8 +180,12 @@ d'une version à l'autre.
 - Les tests du socle PDF remplissent un vrai PDF, fabriqué par `pdf-lib`.
 
 Les tests ont deux dossiers. `tests/socle/` éprouve le socle sur un modèle qu'on
-lui injecte. `tests/model/` vérifie le modèle livré : `conformite.test.ts` y
-contrôle ce que le socle suppose de n'importe quel modèle.
+lui injecte : le factice, écrit dans `tests/socle/fixtures/modele-factice/`.
+`tests/model/` vérifie le modèle livré :
+
+- `conformite.test.ts` contrôle ce que le socle suppose de n'importe quel modèle ;
+- `declarations.test.ts` compare les faits et les cibles déclarés aux règles ;
+- `oracle.test.ts` rejoue les cas de référence de l'éditeur, en faits.
 
 Réutilise les helpers de `tests/socle/` : `modele-de-test.ts` (le modèle que les
 tests injectent), `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
@@ -183,9 +194,9 @@ tests injectent), `se-rattacher.ts`, `simulateur/questionnaire.tsx`,
 **Une situation de référence va dans
 [`front/model/seeds-catalogue.ts`](front/model/seeds-catalogue.ts),
 pas dans un fichier de test.** C'est un catalogue unique de situations nommées,
-*avec leurs cibles attendues*. Il est vide tant que le modèle suivant n'est pas
-intégré. Les tests de l'écran des seeds écrivent leurs propres seeds, sur le parcours
-factice.
+*avec leurs cibles attendues*. Il est vide tant que l'éditeur n'a pas livré son
+oracle en réponses. Les tests de l'écran des seeds écrivent leurs propres seeds, sur
+le parcours factice.
 
 ## Les developer tools
 

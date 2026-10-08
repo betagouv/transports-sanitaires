@@ -1,0 +1,430 @@
+# Règles de décision Publicode. Les faits sont normalisés depuis Q0–Q2.
+# L'application fournit explicitement oui/non pour les faits applicables ;
+# elle ne transmet jamais un positif de nomenclature sans preuve officielle.
+fait_p1_complete:
+  titre: Réponses médicales validées
+fait_p2_complete:
+  titre: Réponses administratives validées
+fait_autonomie_professionnel:
+  titre: Intervention d'un professionnel nécessaire
+fait_critere_allonge:
+  titre: Position allongée ou demi-assise
+fait_critere_brancard:
+  titre: Brancardage ou portage
+fait_critere_surveillance:
+  titre: Surveillance qualifiée constante
+fait_critere_oxygene:
+  titre: Oxygène pendant le transport
+fait_critere_asepsie:
+  titre: Asepsie rigoureuse
+fait_critere_fauteuil:
+  titre: Fauteuil sans transfert
+fait_critere_tap:
+  titre: Autre critère de transport assis professionnel
+fait_partage_incompatible:
+  titre: État incompatible avec le transport partagé
+fait_accompagnant:
+  titre: Présence nécessaire d'un proche accompagnant
+fait_prefere_transport_commun:
+  titre: Préférence transports en commun si mode non professionnel
+fait_source_officielle_active:
+  titre: Source de prestation officielle active
+fait_correspondance_univoque:
+  titre: Correspondance du libellé univoque
+fait_conditions_soin_verifiees:
+  titre: Toutes les conditions de la prestation vérifiées
+fait_regime_verifie:
+  titre: Régime applicable vérifié
+fait_exclusion_soin_prouvee:
+  titre: Exclusion du soin prouvée par une source
+fait_evenement_sans_soin:
+  titre: Fondement autonome sans soin associé
+fait_hospitalisation:
+  titre: Hospitalisation ou séance assimilée établie
+fait_atmp_lie:
+  titre: AT ou MP en lien direct
+fait_ald_liee:
+  titre: Soin en lien avec ALD et déficience
+fait_ald_base_3:
+  titre: Base ALD du 3° vérifiée
+fait_ald_base_4_mineur:
+  titre: Base du 4° pour mineur vérifiée
+fait_motif_camsp:
+  titre: Soin CAMSP ou CMPP qualifié
+fait_motif_samsah:
+  titre: Soins SAMSAH qualifiés
+fait_motif_pension:
+  titre: Soins de pension militaire qualifiés
+fait_distance_plus_50:
+  titre: Chaque trajet de la série dépasse 50 km
+fait_distance_plus_150:
+  titre: Trajet aller dépasse 150 km
+fait_nombre_transports:
+  titre: Nombre de transports dans la période
+  type: nombre
+fait_meme_type_soins:
+  titre: Même type de soins
+fait_dans_deux_mois:
+  titre: Transports dans les deux mois du premier
+fait_avion_bateau_ligne:
+  titre: Avion ou bateau de ligne régulière
+fait_dap_camsp:
+  titre: DAP propre au CAMSP ou CMPP requise
+fait_centre_reference_destination:
+  titre: Le centre de référence est la destination réelle
+fait_appel_centre15:
+  titre: Appel effectif au SAMU-Centre 15
+fait_dap_maternite:
+  titre: Dispositif Engagement maternité qualifié avec DAP
+fait_urgence_attestee:
+  titre: Urgence attestée par le médecin prescripteur
+fait_urgence_repondue:
+  titre: Question d'urgence DAP répondue
+fait_transfert_article80:
+  titre: Transfert pendant hospitalisation relevant potentiellement de l'article 80
+fait_exception_article80_admission_sans_sejour:
+  titre: Admission dans le nouvel établissement sans prestation initiale
+fait_exception_article80_air_mer:
+  titre: Segment aérien ou maritime relevant de l'exception
+fait_exception_article80_had_intercurrent:
+  titre: HAD, prestation hors soins liés à la HAD
+fait_exception_article80_usld:
+  titre: USLD hors même implantation
+fait_exception_article80_ehpad:
+  titre: EHPAD hors même implantation
+fait_exception_article80_radiotherapie:
+  titre: Transfert provisoire pour radiothérapie en libéral ou centre de santé
+fait_exception_article80_dialyse_domicile:
+  titre: Patient pratiquant la dialyse à domicile
+fait_exception_article80_admission_had:
+  titre: Retour à domicile pour admission en HAD
+fait_centre15_interetablissements:
+  titre: Centre 15 hors SMUR entre établissements, sous-cas provisoire
+fait_htnm_hors_maternite:
+  titre: Segment HTNM hors Engagement maternité
+fait_htnm_segment_verifie:
+  titre: Règle exacte du segment HTNM vérifiée
+fait_permission:
+  titre: Permission temporaire
+fait_permission_mineur_admissible:
+  titre: Permission moins de 20 ans répondant à R.322-10-8
+fait_permission_charge_patient:
+  titre: Permission à charge du patient prouvée
+fait_convocation:
+  titre: Convocation ou appareillage relevant de R.322-10 2°
+fait_seconde_branche_incompatible:
+  titre: Segments impossibles à couvrir par une seule issue et un seul document
+fait_preuve_ald_inconnue_decisive:
+  titre: Base ALD décisive impossible à vérifier
+fait_couverture_inconnue_decisive:
+  titre: Code indication ou régime décisif non vérifiable
+
+cible_mode_ambulance:
+  une de ces conditions:
+    - fait_critere_allonge
+    - fait_critere_brancard
+    - fait_critere_surveillance
+    - fait_critere_oxygene
+    - fait_critere_asepsie
+cible_mode_coherent:
+  une de ces conditions:
+    - fait_autonomie_professionnel = non
+    - cible_mode_ambulance
+    - fait_critere_fauteuil
+    - fait_critere_tap
+cible_mode_id:
+  valeur:
+    variations:
+      - si: cible_mode_ambulance
+        alors: "'AMBULANCE'"
+      - si: fait_critere_fauteuil
+        alors: "'TPMR'"
+      - si:
+          toutes ces conditions:
+            - fait_autonomie_professionnel
+            - une de ces conditions:
+                - fait_critere_tap
+                - fait_critere_fauteuil
+        alors: "'TAP'"
+      - si: fait_prefere_transport_commun
+        alors: "'TRANSPORT_COMMUN'"
+      - sinon: "'VEHICULE_PERSONNEL'"
+  applicable si: fait_p1_complete
+cible_care_status:
+  valeur:
+    variations:
+      - si: fait_evenement_sans_soin
+        alors: "'SANS_OBJET_SOIN'"
+      - si: fait_exclusion_soin_prouvee
+        alors: "'NON_COUVERTE_PROUVEE'"
+      - si:
+          toutes ces conditions:
+            - fait_source_officielle_active
+            - fait_correspondance_univoque
+            - fait_conditions_soin_verifiees
+            - fait_regime_verifie
+        alors: "'COUVERTE'"
+      - sinon: "'INDETERMINEE'"
+  applicable si: fait_p2_complete
+cible_ald_qualifiante:
+  toutes ces conditions:
+    - fait_ald_liee
+    - une de ces conditions:
+        - fait_ald_base_3
+        - fait_ald_base_4_mineur
+cible_serie:
+  toutes ces conditions:
+    - fait_nombre_transports >= 4
+    - fait_distance_plus_50
+    - fait_meme_type_soins
+    - fait_dans_deux_mois
+cible_exception_article80:
+  une de ces conditions:
+    - fait_exception_article80_admission_sans_sejour
+    - fait_exception_article80_air_mer
+    - fait_exception_article80_had_intercurrent
+    - fait_exception_article80_usld
+    - fait_exception_article80_ehpad
+    - fait_exception_article80_radiotherapie
+    - fait_exception_article80_dialyse_domicile
+    - fait_exception_article80_admission_had
+cible_motif_transport:
+  une de ces conditions:
+    - cible_mode_ambulance
+    - fait_hospitalisation
+    - fait_atmp_lie
+    - cible_ald_qualifiante
+    - cible_serie
+    - fait_distance_plus_150
+    - fait_motif_camsp
+    - fait_motif_samsah
+    - fait_motif_pension
+    - fait_dap_maternite
+    - fait_convocation
+    - fait_permission_mineur_admissible
+cible_dap_motif_longue_distance:
+  toutes ces conditions:
+    - fait_distance_plus_150
+    - fait_atmp_lie = non
+cible_dap_motif_serie:
+  toutes ces conditions:
+    - cible_serie
+    - fait_atmp_lie = non
+    - cible_ald_qualifiante = non
+cible_dap_motif_avion_bateau:
+  valeur: fait_avion_bateau_ligne
+cible_dap_motif_camsp_cmpp:
+  valeur: fait_dap_camsp
+cible_dap_motif_engagement_maternite:
+  valeur: fait_dap_maternite
+cible_dap_requise:
+  une de ces conditions:
+    - cible_dap_motif_longue_distance
+    - cible_dap_motif_serie
+    - cible_dap_motif_avion_bateau
+    - cible_dap_motif_camsp_cmpp
+    - cible_dap_motif_engagement_maternite
+cible_dap_fondement_autonome:
+  une de ces conditions:
+    - cible_dap_motif_camsp_cmpp
+    - cible_dap_motif_engagement_maternite
+cible_serie_ald_provisoire:
+  toutes ces conditions:
+    - cible_serie
+    - fait_ald_liee
+    - cible_ald_qualifiante = non
+    - fait_atmp_lie = non
+    - fait_distance_plus_150 = non
+    - fait_avion_bateau_ligne = non
+    - fait_dap_camsp = non
+    - fait_dap_maternite = non
+cible_point_cnam:
+  une de ces conditions:
+    - fait_centre15_interetablissements
+    - cible_serie_ald_provisoire
+    - toutes ces conditions:
+        - fait_htnm_hors_maternite
+        - fait_htnm_segment_verifie = non
+    - toutes ces conditions:
+        - fait_dap_maternite
+        - fait_urgence_attestee
+    - toutes ces conditions:
+        - fait_dap_camsp
+        - fait_urgence_attestee
+cible_question_urgence_requise:
+  valeur: cible_dap_requise
+cible_decision_calculable:
+  toutes ces conditions:
+    - fait_p1_complete
+    - fait_p2_complete
+    - cible_mode_coherent
+    - fait_seconde_branche_incompatible = non
+    - une de ces conditions:
+        - cible_dap_requise = non
+        - fait_urgence_repondue
+cible_issue_id:
+  valeur:
+    variations:
+      - si:
+          une de ces conditions:
+            - cible_point_cnam
+            - fait_preuve_ald_inconnue_decisive
+            - fait_couverture_inconnue_decisive
+        alors: "'ISSUE_CAISSE'"
+      - si:
+          toutes ces conditions:
+            - fait_transfert_article80
+            - cible_exception_article80 = non
+        alors: "'ISSUE_ETABLISSEMENT'"
+      - si: fait_permission_charge_patient
+        alors: "'ISSUE_PERMISSION_PATIENT'"
+      - si:
+          toutes ces conditions:
+            - fait_permission
+            - fait_permission_mineur_admissible
+            - cible_dap_requise = non
+        alors: "'ISSUE_S3141'"
+      - si: cible_care_status = 'INDETERMINEE'
+        alors: "'ISSUE_CAISSE'"
+      - si: cible_care_status = 'NON_COUVERTE_PROUVEE'
+        alors: "'ISSUE_NON_ELIGIBLE'"
+      - si: cible_motif_transport = non
+        alors: "'ISSUE_NON_ELIGIBLE'"
+      - si:
+          toutes ces conditions:
+            - cible_dap_requise
+            - fait_urgence_attestee
+        alors: "'ISSUE_DAP_URGENCE_ATTESTEE'"
+      - si: cible_dap_requise
+        alors: "'ISSUE_DAP_SANS_URGENCE'"
+      - si: fait_convocation
+        alors: "'ISSUE_CONVOCATION'"
+      - sinon: "'ISSUE_PMT'"
+  applicable si: cible_decision_calculable
+cible_support_id:
+  valeur:
+    variations:
+      - si: cible_issue_id = 'ISSUE_PMT'
+        alors: "'S3138g'"
+      - si:
+          une de ces conditions:
+            - cible_issue_id = 'ISSUE_DAP_SANS_URGENCE'
+            - cible_issue_id = 'ISSUE_DAP_URGENCE_ATTESTEE'
+        alors: "'S3139h'"
+      - si: cible_issue_id = 'ISSUE_S3141'
+        alors: "'S3141'"
+      - sinon: "'AUCUN'"
+  applicable si: cible_decision_calculable
+cible_financeur:
+  valeur:
+    variations:
+      - si: cible_issue_id = 'ISSUE_ETABLISSEMENT'
+        alors: "'ETABLISSEMENT'"
+      - si: cible_issue_id = 'ISSUE_PERMISSION_PATIENT'
+        alors: "'PATIENT'"
+      - si:
+          une de ces conditions:
+            - cible_issue_id = 'ISSUE_CAISSE'
+            - cible_issue_id = 'ISSUE_NON_ELIGIBLE'
+        alors: "'NON_CONCLU'"
+      - sinon: "'ASSURANCE_MALADIE'"
+  applicable si: cible_decision_calculable
+cible_urgence_attestee:
+  valeur: fait_urgence_attestee
+  applicable si: cible_dap_requise
+cible_attente_accord:
+  valeur:
+    variations:
+      - si:
+          toutes ces conditions:
+            - cible_dap_requise
+            - fait_urgence_attestee = non
+        alors: oui
+      - si:
+          toutes ces conditions:
+            - cible_dap_requise
+            - fait_urgence_attestee
+            - cible_dap_fondement_autonome = non
+        alors: non
+      - sinon: non
+  applicable si:
+    une de ces conditions:
+      - cible_issue_id = 'ISSUE_DAP_SANS_URGENCE'
+      - cible_issue_id = 'ISSUE_DAP_URGENCE_ATTESTEE'
+cible_reason_code:
+  valeur:
+    variations:
+      - si: fait_centre15_interetablissements
+        alors: "'CNAM_CENTRE15_INTERETABLISSEMENT'"
+      - si: cible_serie_ald_provisoire
+        alors: "'CNAM_ALD_SERIE_DAP'"
+      - si: fait_htnm_hors_maternite
+        alors: "'CNAM_HTNM_HORS_MATERNITE'"
+      - si:
+          toutes ces conditions:
+            - fait_dap_camsp
+            - fait_urgence_attestee
+        alors: "'DAP_AUTONOME_URGENCE_NON_VERIFIEE'"
+      - si:
+          toutes ces conditions:
+            - fait_dap_maternite
+            - fait_urgence_attestee
+        alors: "'CNAM_ENGAGEMENT_MATERNITE_URGENCE'"
+      - si: cible_care_status = 'INDETERMINEE'
+        alors: "'SOINS_NON_VERIFIABLES'"
+      - si: cible_care_status = 'NON_COUVERTE_PROUVEE'
+        alors: "'SOIN_NON_COUVERT_PROUVE'"
+      - si: cible_issue_id = 'ISSUE_ETABLISSEMENT'
+        alors: "'ARTICLE80_ETABLISSEMENT'"
+      - si: cible_issue_id = 'ISSUE_S3141'
+        alors: "'PERMISSION_MINEUR'"
+      - sinon: "'MOTIF_QUALIFIE'"
+  applicable si: cible_decision_calculable
+
+# Projections documentaires depuis les mêmes faits, jamais depuis Q3.
+cible_mode_tap_ou_tpmr:
+  une de ces conditions:
+    - cible_mode_id = 'TAP'
+    - cible_mode_id = 'TPMR'
+cible_mode_individual:
+  valeur: cible_mode_id = 'VEHICULE_PERSONNEL'
+cible_mode_public:
+  valeur: cible_mode_id = 'TRANSPORT_COMMUN'
+cible_ambulance_position_allongee_demi_assise:
+  valeur: fait_critere_allonge
+cible_ambulance_brancardage_portage:
+  valeur: fait_critere_brancard
+cible_ambulance_surveillance_constante:
+  valeur: fait_critere_surveillance
+cible_ambulance_oxygene:
+  valeur: fait_critere_oxygene
+cible_ambulance_isolement_asepsie:
+  valeur: fait_critere_asepsie
+cible_fauteuil_roulant:
+  valeur: fait_critere_fauteuil
+cible_transport_partage_incompatible:
+  valeur: fait_partage_incompatible
+cible_personne_accompagnante:
+  valeur: fait_accompagnant
+cible_ald_juridiquement_qualifiante_3_degres:
+  toutes ces conditions:
+    - fait_ald_liee
+    - fait_ald_base_3
+cible_mineur_ald_non_exonerante_reconnue:
+  toutes ces conditions:
+    - fait_ald_liee
+    - fait_ald_base_4_mineur
+cible_hospitalisation_ou_seances_assimilees:
+  valeur: fait_hospitalisation
+cible_situation_at_mp:
+  valeur: fait_atmp_lie
+cible_situation_pension_militaire:
+  valeur: fait_motif_pension
+cible_centre_reference_destination_reelle:
+  valeur: fait_centre_reference_destination
+cible_urgence_appel15:
+  valeur: fait_appel_centre15
+cible_urgence_autre:
+  toutes ces conditions:
+    - fait_urgence_attestee
+    - fait_appel_centre15 = non
