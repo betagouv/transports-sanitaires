@@ -6,7 +6,12 @@ import type { AutoAdvance } from "./auto-advance";
 import { useAutoAdvance } from "./auto-advance";
 import { commitPage } from "./page-commit";
 import type { Answer, Answers, AnyCibles, Page, Question } from "./question";
-import { askedPages, askedQuestions, isAnswered } from "./question";
+import {
+  askedPages,
+  askedQuestions,
+  isAnswered,
+  offeredAnswer,
+} from "./question";
 import type { QuestionnaireTracking } from "./questionnaire-tracking";
 import { useQuestionnaireTracking } from "./questionnaire-tracking";
 
@@ -169,19 +174,20 @@ function visibleAnswers(state: State): Answers {
 }
 
 // Les réponses du questionnaire, la page courante validée. Une question que la
-// page ne pose plus n'y laisse pas de réponse.
+// page ne pose plus n'y laisse pas de réponse, ni une option qu'elle ne propose
+// plus.
 function committedAnswers(
   { pages, cibles }: Source,
   state: State,
   page: Page,
 ): Answers {
-  const asked = askedQuestions(page, visibleAnswers(state), cibles).map(
-    (q) => q.id,
+  const inputs = askedQuestions(page, visibleAnswers(state), cibles).flatMap(
+    (question) => {
+      const answer = offeredAnswer(question, state.draft[question.id]);
+      return answer === undefined ? [] : [[question.id, answer] as const];
+    },
   );
-  const inputs = Object.fromEntries(
-    Object.entries(state.draft).filter(([id]) => asked.includes(id)),
-  );
-  return commitPage(pages, state.answers, page, inputs);
+  return commitPage(pages, state.answers, page, Object.fromEntries(inputs));
 }
 
 function nextPage(source: Source, page: Page, answers: Answers) {
