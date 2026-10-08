@@ -115,6 +115,7 @@ reste dans le tableau, barrée, avec celle qui la remplace.
 | D-72 | 2026-10-07 | Pour remplir les cerfa de la v10, le package fait foi : `mapping_documents.json` et `COMPLETION_DOCUMENTS.md`. Le Google Sheet de Notion n'est pas suivi. La question de son maintien est posée à l'éditeur. | 10 |
 | D-73 | 2026-10-07 | Aucun mécanisme dans le code pour désactiver les résultats positifs. La v10 reste sur staging pendant la recette, et passe en production d'un bloc quand tous les profils sont validés. | 10 |
 | D-74 | 2026-10-07 | Le rattachement (établissement et service de l'écran-porte) n'est pas le « contexte fiable » du livrable. Les rubriques d'identité du cerfa restent vides : bénéficiaire, assuré, organisme, prescripteur, structure. | 01, 10 |
+| D-75 | 2026-10-08 | Une option se répond par un slug : son numéro dans le catalogue de l'éditeur, puis ce qu'elle veut dire (`"8_BRANCARDAGE"`). Les slugs et leurs libellés se déclarent une fois, dans `declarations/questions.ts` (`OPTIONS`) : le type des réponses et les options du questionnaire en découlent. L'éditeur numérote ses réponses sans en faire des identifiants : il ne les cite que pour Q2.1. Précise D-40. | 04 |
 
 ## Questions ouvertes, par chantier
 

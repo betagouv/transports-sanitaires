@@ -12,6 +12,7 @@ import {
   FAITS_BOOLEENS,
   FAITS_NUMERIQUES,
 } from "../../front/model/declarations/faits";
+import { OPTIONS } from "../../front/model/declarations/questions";
 import { rules } from "../../front/model/rules/regles.publicodes";
 
 type Regle = {
@@ -77,6 +78,32 @@ describe("les cibles déclarées", () => {
         "Le résultat et le cerfa aiguillent sur ces constantes. Une constante " +
           "des règles qui manque ici n'est traitée par personne.",
       ).toEqual(tries(constantesDe(cible)));
+    },
+  );
+});
+
+describe("les options déclarées", () => {
+  it.each(Object.entries(OPTIONS))(
+    "%s numérote ses options comme le catalogue, de 1 en 1",
+    (_, options) => {
+      const slugs = Object.keys(options);
+      expect(
+        slugs.map((slug) => slug.split("_")[0]),
+        "Un slug commence par le numéro de l'option dans le catalogue de " +
+          "l'éditeur, et les options se déclarent dans son ordre : c'est ce " +
+          "qui permet de relire une condition contre le catalogue.",
+      ).toEqual(slugs.map((_, rang) => String(rang + 1)));
+    },
+  );
+
+  it.each(Object.entries(OPTIONS))(
+    "%s nomme chaque option après son numéro",
+    (_, options) => {
+      expect(
+        Object.keys(options).filter((slug) => !/^\d+_[A-Z][A-Z_]*$/.test(slug)),
+        "Le numéro seul ne dit rien à la lecture : le slug le fait suivre " +
+          "de ce que l'option veut dire, en majuscules.",
+      ).toEqual([]);
     },
   );
 });

@@ -38,9 +38,16 @@ const faitsDe = (reponses: Reponses) =>
 const modeDe = (reponses: Reponses) =>
   preconisationOf(model, reponses).cibles.cible_mode_id;
 
-const SEUL: Reponses = { "Q0.1": "1", "Q1.1": "1", "Q1.3": ["7"] };
-const AVEC_UN_PROCHE: Reponses = { ...SEUL, "Q1.1": "2" };
-const AVEC_UN_PROFESSIONNEL: Reponses = { ...SEUL, "Q1.1": "3" };
+const SEUL: Reponses = {
+  "Q0.1": "1_VERIFIER",
+  "Q1.1": "1_SEUL",
+  "Q1.3": ["7_AUCUNE"],
+};
+const AVEC_UN_PROCHE: Reponses = { ...SEUL, "Q1.1": "2_AVEC_UN_PROCHE" };
+const AVEC_UN_PROFESSIONNEL: Reponses = {
+  ...SEUL,
+  "Q1.1": "3_AVEC_UN_PROFESSIONNEL",
+};
 
 describe("les pages de P0 et P1", () => {
   it("un patient autonome saute les critères et dit sa préférence", () => {
@@ -68,21 +75,26 @@ describe("les pages de P0 et P1", () => {
 
 describe("Q1.3, le transport partagé", () => {
   it.each([
-    ["un transport assis professionnel", ["1"]],
-    ["un fauteuil sans transfert", ["6"]],
+    ["un transport assis professionnel", ["1_PAS_AUTONOME"]],
+    ["un fauteuil sans transfert", ["6_FAUTEUIL_SANS_TRANSFERT"]],
   ] as const)("se propose pour %s", (_, criteres) => {
     const reponses = { ...AVEC_UN_PROFESSIONNEL, "Q1.2": criteres };
-    expect(optionsDe("Q1.3", reponses)).toContain("6");
+    expect(optionsDe("Q1.3", reponses)).toContain("6_PARTAGE_INCOMPATIBLE");
   });
 
   it("ne se propose pas quand un critère impose l'ambulance", () => {
-    const reponses = { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["1", "8"] } as const;
-    expect(optionsDe("Q1.3", reponses)).not.toContain("6");
+    const reponses = {
+      ...AVEC_UN_PROFESSIONNEL,
+      "Q1.2": ["1_PAS_AUTONOME", "8_BRANCARDAGE"],
+    } as const;
+    expect(optionsDe("Q1.3", reponses)).not.toContain("6_PARTAGE_INCOMPATIBLE");
   });
 
   it("ne se propose pas à un patient qui se passe de professionnel", () => {
-    expect(optionsDe("Q1.3", SEUL)).not.toContain("6");
-    expect(optionsDe("Q1.3", AVEC_UN_PROCHE)).not.toContain("6");
+    expect(optionsDe("Q1.3", SEUL)).not.toContain("6_PARTAGE_INCOMPATIBLE");
+    expect(optionsDe("Q1.3", AVEC_UN_PROCHE)).not.toContain(
+      "6_PARTAGE_INCOMPATIBLE",
+    );
   });
 });
 
@@ -100,17 +112,17 @@ describe("Q1.4, le libellé", () => {
 
 describe("les faits de P1", () => {
   it.each([
-    ["1", "fait_critere_tap"],
-    ["2", "fait_critere_tap"],
-    ["3", "fait_critere_tap"],
-    ["4", "fait_critere_tap"],
-    ["5", "fait_critere_tap"],
-    ["6", "fait_critere_fauteuil"],
-    ["7", "fait_critere_allonge"],
-    ["8", "fait_critere_brancard"],
-    ["9", "fait_critere_surveillance"],
-    ["10", "fait_critere_oxygene"],
-    ["11", "fait_critere_asepsie"],
+    ["1_PAS_AUTONOME", "fait_critere_tap"],
+    ["2_AIDE_TECHNIQUE", "fait_critere_tap"],
+    ["3_TRANSMISSION_PAR_UN_PROFESSIONNEL", "fait_critere_tap"],
+    ["4_HYGIENE", "fait_critere_tap"],
+    ["5_RISQUE_DE_MALAISE", "fait_critere_tap"],
+    ["6_FAUTEUIL_SANS_TRANSFERT", "fait_critere_fauteuil"],
+    ["7_ALLONGE", "fait_critere_allonge"],
+    ["8_BRANCARDAGE", "fait_critere_brancard"],
+    ["9_SURVEILLANCE", "fait_critere_surveillance"],
+    ["10_OXYGENE", "fait_critere_oxygene"],
+    ["11_ASEPSIE", "fait_critere_asepsie"],
   ] as const)(
     "le critère %s de Q1.2 établit %s, et lui seul",
     (critere, fait) => {
@@ -138,32 +150,44 @@ describe("les faits de P1", () => {
   });
 
   it("le partage incompatible vient de la case de Q1.3", () => {
-    const tap = { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["1"] } as const;
+    const tap = {
+      ...AVEC_UN_PROFESSIONNEL,
+      "Q1.2": ["1_PAS_AUTONOME"],
+    } as const;
     expect(faitsDe(tap).fait_partage_incompatible).toBe(false);
-    expect(faitsDe({ ...tap, "Q1.3": ["6"] }).fait_partage_incompatible).toBe(
-      true,
-    );
+    expect(
+      faitsDe({ ...tap, "Q1.3": ["6_PARTAGE_INCOMPATIBLE"] })
+        .fait_partage_incompatible,
+    ).toBe(true);
   });
 
   it("la préférence pour les transports en commun vient de Q1.4", () => {
     expect(
-      faitsDe({ ...SEUL, "Q1.4": "1" }).fait_prefere_transport_commun,
+      faitsDe({ ...SEUL, "Q1.4": "1_VEHICULE_PERSONNEL" })
+        .fait_prefere_transport_commun,
     ).toBe(false);
     expect(
-      faitsDe({ ...SEUL, "Q1.4": "2" }).fait_prefere_transport_commun,
+      faitsDe({ ...SEUL, "Q1.4": "2_TRANSPORTS_EN_COMMUN" })
+        .fait_prefere_transport_commun,
     ).toBe(true);
   });
 
   it("l'équipement bariatrique n'en établit aucun", () => {
-    const sans = faitsDe({ ...SEUL, "Q1.4": "1" });
-    const avec = faitsDe({ ...SEUL, "Q1.3": ["1"], "Q1.4": "1" });
+    const sans = faitsDe({ ...SEUL, "Q1.4": "1_VEHICULE_PERSONNEL" });
+    const avec = faitsDe({
+      ...SEUL,
+      "Q1.3": ["1_EQUIPEMENT_BARIATRIQUE"],
+      "Q1.4": "1_VEHICULE_PERSONNEL",
+    });
     expect(avec).toEqual(sans);
   });
 });
 
 describe("P1 complète", () => {
   it("l'est quand chaque question posée a sa réponse", () => {
-    expect(faitsDe({ ...SEUL, "Q1.4": "1" }).fait_p1_complete).toBe(true);
+    expect(
+      faitsDe({ ...SEUL, "Q1.4": "1_VEHICULE_PERSONNEL" }).fait_p1_complete,
+    ).toBe(true);
   });
 
   it("ne l'est pas tant que la préférence manque", () => {
@@ -177,7 +201,7 @@ describe("P1 complète", () => {
   it("ne dépend pas de Q0.1 : un besoin n'est pas un fait", () => {
     const { "Q0.1": _besoin, ...sansBesoin } = {
       ...SEUL,
-      "Q1.4": "1",
+      "Q1.4": "1_VEHICULE_PERSONNEL",
     } as const;
     expect(faitsDe(sansBesoin).fait_p1_complete).toBe(true);
   });
@@ -185,17 +209,35 @@ describe("P1 complète", () => {
 
 describe("le mode de transport", () => {
   it.each([
-    ["VEHICULE_PERSONNEL", { ...SEUL, "Q1.4": "1" }],
-    ["TRANSPORT_COMMUN", { ...SEUL, "Q1.4": "2" }],
-    ["VEHICULE_PERSONNEL", { ...AVEC_UN_PROCHE, "Q1.4": "1" }],
-    ["TRANSPORT_COMMUN", { ...AVEC_UN_PROCHE, "Q1.4": "2" }],
-    ["TAP", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["2"] }],
-    ["TPMR", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["2", "6"] }],
-    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["2", "6", "7"] }],
-    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["8"] }],
-    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["9"] }],
-    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["10"] }],
-    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["11"] }],
+    ["VEHICULE_PERSONNEL", { ...SEUL, "Q1.4": "1_VEHICULE_PERSONNEL" }],
+    ["TRANSPORT_COMMUN", { ...SEUL, "Q1.4": "2_TRANSPORTS_EN_COMMUN" }],
+    [
+      "VEHICULE_PERSONNEL",
+      { ...AVEC_UN_PROCHE, "Q1.4": "1_VEHICULE_PERSONNEL" },
+    ],
+    [
+      "TRANSPORT_COMMUN",
+      { ...AVEC_UN_PROCHE, "Q1.4": "2_TRANSPORTS_EN_COMMUN" },
+    ],
+    ["TAP", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["2_AIDE_TECHNIQUE"] }],
+    [
+      "TPMR",
+      {
+        ...AVEC_UN_PROFESSIONNEL,
+        "Q1.2": ["2_AIDE_TECHNIQUE", "6_FAUTEUIL_SANS_TRANSFERT"],
+      },
+    ],
+    [
+      "AMBULANCE",
+      {
+        ...AVEC_UN_PROFESSIONNEL,
+        "Q1.2": ["2_AIDE_TECHNIQUE", "6_FAUTEUIL_SANS_TRANSFERT", "7_ALLONGE"],
+      },
+    ],
+    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["8_BRANCARDAGE"] }],
+    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["9_SURVEILLANCE"] }],
+    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["10_OXYGENE"] }],
+    ["AMBULANCE", { ...AVEC_UN_PROFESSIONNEL, "Q1.2": ["11_ASEPSIE"] }],
   ] as const)("est %s pour %j", (mode, reponses) => {
     expect(modeDe(reponses)).toBe(mode);
   });
