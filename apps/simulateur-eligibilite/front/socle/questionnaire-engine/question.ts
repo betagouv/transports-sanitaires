@@ -36,6 +36,8 @@ type Option<
 type Common<Questions extends AnyQuestions, Cibles> = {
   readonly id: keyof Questions & string;
   readonly label: string;
+  /** Le libellé, quand il dépend des réponses. Absente : `label`. */
+  labelFrom?(answers: Answers<Questions>, cibles: Cibles): string;
   /** Phrase indicative, rendue sous la question. */
   readonly hint?: string;
   /**
@@ -128,7 +130,8 @@ export function pagesOf(parts: readonly QuestionnairePart[]): Page[] {
 
 /**
  * Les questions de la page qui se posent, vu les réponses et les cibles, telles
- * qu'elles se posent : avec les seules options qui se proposent.
+ * qu'elles se posent : sous leur libellé du moment, avec les seules options
+ * qui se proposent.
  */
 export function askedQuestions(
   page: Page,
@@ -137,7 +140,7 @@ export function askedQuestions(
 ): Question[] {
   return page.questions
     .filter((question) => isAsked(question, answers, cibles))
-    .map((question) => withOfferedOptions(question, answers, cibles));
+    .map((question) => asPosed(question, answers, cibles));
 }
 
 /** Les pages qui posent au moins une question, dans l'ordre du questionnaire. */
@@ -198,17 +201,18 @@ function isAsked(question: Question, answers: Answers, cibles?: AnyCibles) {
   return question.askedIf?.(answers, cibles) ?? true;
 }
 
-function withOfferedOptions(
+function asPosed(
   question: Question,
   answers: Answers,
   cibles?: AnyCibles,
 ): Question {
+  const label = question.labelFrom?.(answers, cibles) ?? question.label;
   if (question.kind !== "single choice" && question.kind !== "multiple choice")
-    return question;
+    return { ...question, label };
   const options = question.options.filter(
     (option) => option.offeredIf?.(answers, cibles) ?? true,
   );
-  return { ...question, options };
+  return { ...question, label, options };
 }
 
 // Les valeurs qu'une réponse peut porter, l'option exclusive comprise.
