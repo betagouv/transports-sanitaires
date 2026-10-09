@@ -47,6 +47,13 @@
     "apps/glossaire-notion": {
       "entry": ["tests/**/*.test.{ts,tsx}"],
       "project": ["src/**/*.{ts,tsx}"]
+    },
+
+    // Le lanceur shell de la racine exécute `src/main.ts` : aucun script du
+    // package ne le nomme, knip ne peut donc pas le déduire.
+    "apps/cli": {
+      "entry": ["src/main.ts"],
+      "project": ["src/**/*.ts"]
     }
   }
 }

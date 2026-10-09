@@ -54,9 +54,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter glossaire-notion verifier
 
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # lint → typecheck → knip. Pas de tests : voir apps/cli/AGENTS.md.
+      - run: pnpm --filter cli verifier
+
   # L'audit ne se scope pas : `pnpm audit` lit le lock, et le lock est unique au
-  # dépôt depuis le passage en workspace. Le répéter dans les trois jobs
-  # auditerait trois fois la même chose en laissant croire le contraire. Il a
+  # dépôt depuis le passage en workspace. Le répéter dans chaque job
+  # auditerait plusieurs fois la même chose en laissant croire le contraire. Il a
   # donc son job.
   audit:
     runs-on: ubuntu-latest

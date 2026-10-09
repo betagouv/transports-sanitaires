@@ -1,0 +1,23 @@
+{
+  "name": "cli",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "tsp, le point d'entrée unique du dépôt : actions par app, règles, skills, travail en cours, specs, branches et PR",
+  "scripts": {
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "typecheck": "tsc -b",
+    "verifier": "pnpm lint && pnpm typecheck && pnpm knip",
+    "knip": "knip --directory ../.. --workspace apps/cli"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  // La racine porte sa propre configuration. Biome exige qu'une configuration
+  // imbriquée se déclare telle : sans ça, il voit deux racines et refuse de
+  // tourner.
+  "root": false,
+  "extends": ["../../biome.base.jsonc"],
+  "files": {
+    "includes": ["src/**", "*.json", "*.jsonc", "!**/*.tsbuildinfo"]
+  },
+  "overrides": [
+    {
+      // `noNonNullAssertion` est éteinte pour la même raison que dans
+      // `data-analyzer` : le tsconfig active `noUncheckedIndexedAccess`, qui
+      // rend `cellules[0]` potentiellement `undefined`. C'est la garantie
+      // forte, et on la garde. Le `!` en est le prix, sur une case qu'on vient
+      // de compter.
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -56,6 +56,21 @@ importers:
 
   .: {}
 
+  apps/cli:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.9
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      knip:
+        specifier: 'catalog:'
+        version: 6.32.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   apps/data-analyzer:
     dependencies:
       xlsx:
