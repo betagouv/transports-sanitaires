@@ -39,7 +39,7 @@ export async function moveCommand(invocation: Invocation): Promise<number> {
   const moved = move(root, spec, etat);
   if (!moved) return 1;
   if (etat === "done") unblock(root, spec);
-  print(`${spec.id} : ${spec.etat} → ${etat} (${moved.chemin})`);
+  print(`${spec.id} : ${spec.etat} → ${etat} (${moved.file})`);
   print(await syncAfterMove(root, moved));
   return 0;
 }
@@ -48,23 +48,15 @@ export async function moveCommand(invocation: Invocation): Promise<number> {
 
 /** `git mv` pour un fichier suivi, un simple déplacement sinon. */
 function move(root: string, spec: Spec, etat: Etat): Spec | undefined {
-  const chemin = path.join(
-    spec.tracker,
-    etatDir(etat),
-    path.basename(spec.chemin),
-  );
-  fs.mkdirSync(path.dirname(path.join(root, chemin)), { recursive: true });
-  const tracked = gitSucceeds(root, [
-    "ls-files",
-    "--error-unmatch",
-    spec.chemin,
-  ]);
+  const file = path.join(spec.tracker, etatDir(etat), path.basename(spec.file));
+  fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+  const tracked = gitSucceeds(root, ["ls-files", "--error-unmatch", spec.file]);
   if (!tracked) {
-    fs.renameSync(path.join(root, spec.chemin), path.join(root, chemin));
-  } else if (runProgram("git", ["mv", spec.chemin, chemin], root) !== 0) {
+    fs.renameSync(path.join(root, spec.file), path.join(root, file));
+  } else if (runProgram("git", ["mv", spec.file, file], root) !== 0) {
     return undefined;
   }
-  return { ...spec, etat, chemin };
+  return { ...spec, etat, file };
 }
 
 /** Une spec finie disparaît du champ « bloquée par » de celles qu'elle bloquait. */
@@ -72,7 +64,7 @@ function unblock(root: string, done: Spec): void {
   const name = specName(done);
   for (const spec of listSpecs(root)) {
     if (!spec.bloqueePar.includes(name)) continue;
-    const file = path.join(root, spec.chemin);
+    const file = path.join(root, spec.file);
     const markdown = fs.readFileSync(file, "utf8");
     fs.writeFileSync(file, withoutBlocker(markdown, name));
     print(`${spec.id} : n'est plus bloquée par ${name}`);

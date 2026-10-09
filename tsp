@@ -12,9 +12,14 @@ fi
 
 # Node n'existe pas encore sur une machine neuve : `setup` commence en shell,
 # par mise et le toolchain qu'il épingle.
-if [ "${1:-}" = "setup" ]; then
-  sh "$racine/apps/cli/amorce.sh" "$racine" "$@"
-fi
+# La commande est le premier argument qui n'est pas une option.
+for argument in "$@"; do
+  case "$argument" in
+    -*) continue ;;
+    setup) sh "$racine/apps/cli/amorce.sh" "$racine" "$@" ;;
+  esac
+  break
+done
 
 mise=$(command -v mise || echo "$HOME/.local/bin/mise")
 if [ ! -x "$mise" ]; then
@@ -22,4 +27,6 @@ if [ ! -x "$mise" ]; then
   exit 1
 fi
 
-exec "$mise" exec -C "$racine" -- node "$racine/apps/cli/src/main.ts" "$@"
+# mise exécute depuis la racine : le dossier d'origine part dans TSP_CWD, pour
+# qu'un chemin relatif passé en argument se résolve d'où la commande est tapée.
+TSP_CWD="$PWD" exec "$mise" exec -C "$racine" -- node "$racine/apps/cli/src/main.ts" "$@"

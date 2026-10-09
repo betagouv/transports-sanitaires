@@ -1,6 +1,7 @@
 // Les PR du dépôt : celles qui sont ouvertes, en ouvrir une vers `staging`,
 // suivre celle de la branche courante.
 
+import path from "node:path";
 import { isConventionalSubject } from "./conventional-commits.ts";
 import { git, stagingRef } from "./git.ts";
 import type { Invocation } from "./invocation.ts";
@@ -30,13 +31,19 @@ export function openPullRequests(root: string): PullRequest[] | undefined {
   }));
 }
 
-/** Les branches qui ont eu une PR, même fusionnée ou fermée. Vide si `gh` ne répond pas. */
+/**
+ * Les branches dont la PR est ouverte ou fusionnée. Une PR fermée sans fusion
+ * ne compte pas : sa branche reste un travail sans PR. Vide si `gh` ne répond
+ * pas.
+ */
 export function branchesWithPullRequest(root: string): Set<string> {
   const args = ["pr", "list", "--state", "all", "--limit", "1000"];
-  const result = captureProgram("gh", [...args, "--json", "headRefName"], root);
+  const fields = "headRefName,state";
+  const result = captureProgram("gh", [...args, "--json", fields], root);
   if (result.code !== 0) return new Set();
-  const prs = JSON.parse(result.stdout) as { headRefName: string }[];
-  return new Set(prs.map((pr) => pr.headRefName));
+  const prs = JSON.parse(result.stdout) as GhBranchState[];
+  const kept = prs.filter((pr) => pr.state !== "CLOSED");
+  return new Set(kept.map((pr) => pr.headRefName));
 }
 
 export function renderPullRequests(prs: PullRequest[] | undefined): string {
@@ -68,6 +75,8 @@ type GhPullRequest = {
   url: string;
 };
 
+type GhBranchState = { headRefName: string; state: string };
+
 type Check = {
   name?: string;
   context?: string;
@@ -98,11 +107,17 @@ function openPullRequest(invocation: Invocation): number {
   }
   const pushed = runProgram("git", ["push", "-u", "origin", branch], root);
   if (pushed !== 0) return pushed;
-  const body = options.bodyFile
-    ? ["--body-file", options.bodyFile]
-    : ["--fill"];
   const args = ["pr", "create", "--base", BASE, "--head", branch];
+  const body = bodyArgs(invocation);
   return runProgram("gh", [...args, "--title", title, ...body], root);
+}
+
+/** Le corps vient du fichier donné, sinon des commits. `gh` tourne à la racine : un chemin relatif se résout d'où `tsp` a été tapé. */
+function bodyArgs(invocation: Invocation): string[] {
+  const { cwd, options } = invocation;
+  return options.bodyFile
+    ? ["--body-file", path.resolve(cwd, options.bodyFile)]
+    : ["--fill"];
 }
 
 /** Le sujet du premier commit que la branche ajoute à `staging`. */

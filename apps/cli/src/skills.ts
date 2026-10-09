@@ -16,30 +16,27 @@ export function skillsCommand(invocation: Invocation): number {
 
 // ---- implémentation ----
 
-type Skill = { nom: string; description: string; fichier: string };
+type Skill = { name: string; description: string; file: string };
 
 const DIR = ".claude/skills";
 
 function listSkills(invocation: Invocation): number {
   emit(invocation.options.json, readSkills(invocation.root), (skills) =>
-    columns(skills.map((skill) => [skill.nom, skill.description])),
+    columns(skills.map((skill) => [skill.name, skill.description])),
   );
   return 0;
 }
 
 function showSkill(invocation: Invocation, name: string): number {
   const skills = readSkills(invocation.root);
-  const skill = skills.find((each) => each.nom === name);
+  const skill = skills.find((each) => each.name === name);
   if (!skill) {
-    const noms = skills.map((each) => each.nom).join(", ");
-    printError(`Skill inconnu : « ${name} ». Skills du dépôt : ${noms}.`);
+    const names = skills.map((each) => each.name).join(", ");
+    printError(`Skill inconnu : « ${name} ». Skills du dépôt : ${names}.`);
     return 1;
   }
-  const texte = fs.readFileSync(
-    path.join(invocation.root, skill.fichier),
-    "utf8",
-  );
-  emit(invocation.options.json, { ...skill, texte }, () => texte.trimEnd());
+  const text = fs.readFileSync(path.join(invocation.root, skill.file), "utf8");
+  emit(invocation.options.json, { ...skill, text }, () => text.trimEnd());
   return 0;
 }
 
@@ -50,15 +47,15 @@ function readSkills(root: string): Skill[] {
     .readdirSync(base)
     .sort()
     .map((name) => path.join(DIR, name, "SKILL.md"))
-    .filter((fichier) => fs.existsSync(path.join(root, fichier)))
-    .map((fichier) => readSkill(root, fichier));
+    .filter((file) => fs.existsSync(path.join(root, file)))
+    .map((file) => readSkill(root, file));
 }
 
-function readSkill(root: string, fichier: string): Skill {
-  const meta = frontmatter(fs.readFileSync(path.join(root, fichier), "utf8"));
+function readSkill(root: string, file: string): Skill {
+  const meta = frontmatter(fs.readFileSync(path.join(root, file), "utf8"));
   return {
-    nom: meta.name ?? path.basename(path.dirname(fichier)),
+    name: meta.name ?? path.basename(path.dirname(file)),
     description: meta.description ?? "",
-    fichier,
+    file,
   };
 }

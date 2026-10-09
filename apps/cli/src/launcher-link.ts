@@ -21,15 +21,18 @@ export function isOnPath(): boolean {
 }
 
 /**
- * Pose le lien vers le lanceur de `root`. Un ancien lien est remplacé. Un vrai
- * fichier du même nom est laissé en place : rend alors `false`.
+ * Pose le lien vers le lanceur de `root`, s'il manque ou ne mène plus nulle
+ * part. Un lien qui marche est gardé : `setup` lancé depuis un worktree ne doit
+ * pas détourner le `tsp` de toute la machine vers un dossier éphémère. Rend la
+ * cible du lien, ou rien si un vrai fichier occupe sa place.
  */
-export function linkLauncher(root: string): boolean {
+export function linkLauncher(root: string): string | undefined {
   const link = linkPath();
   const existing = fs.lstatSync(link, { throwIfNoEntry: false });
-  if (existing && !existing.isSymbolicLink()) return false;
+  if (existing && !existing.isSymbolicLink()) return undefined;
+  if (existing && isLinked()) return fs.realpathSync(link);
   if (existing) fs.unlinkSync(link);
   fs.mkdirSync(path.dirname(link), { recursive: true });
   fs.symlinkSync(path.join(root, "tsp"), link);
-  return true;
+  return path.join(root, "tsp");
 }

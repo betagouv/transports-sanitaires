@@ -20,7 +20,7 @@ export async function nextCommand(invocation: Invocation): Promise<number> {
   ];
   const next: Next = {
     specs,
-    ...(await ticketsBeyondSpecs(root, STATUTS, specs)),
+    ...(await ticketsBeyondSpecs(root, STATUTS, all)),
   };
   emit(options.json, next, render);
   return 0;

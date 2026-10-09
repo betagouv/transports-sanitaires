@@ -10,7 +10,7 @@ import {
   type PullRequest,
   renderPullRequests,
 } from "./pull-requests.ts";
-import { listTasks, renderTasks, type Tache } from "./tasks.ts";
+import { listTaches, renderTaches, type Tache } from "./tasks.ts";
 import {
   renderTickets,
   type TicketsView,
@@ -22,13 +22,14 @@ import { listSpecs, renderSpecs, type Spec } from "./trackers.ts";
 export async function wipCommand(invocation: Invocation): Promise<number> {
   const { root, options } = invocation;
   const prs = openPullRequests(root);
-  const specs = listSpecs(root).filter((spec) => spec.etat === "doing");
+  const all = listSpecs(root);
+  const specs = all.filter((spec) => spec.etat === "doing");
   const wip: Wip = {
     prs,
     branches: unmergedBranches(root, branchesWithPullRequest(root)),
-    taches: listTasks(root),
+    taches: listTaches(root),
     specs,
-    ...(await ticketsBeyondSpecs(root, STATUTS, specs)),
+    ...(await ticketsBeyondSpecs(root, STATUTS, all)),
   };
   emit(options.json, wip, render);
   return 0;
@@ -51,7 +52,7 @@ function render(wip: Wip): string {
   return [
     section("PR ouvertes", renderPullRequests(wip.prs)),
     section("Branches sans PR", wip.branches.join("\n")),
-    section("Tâches", renderTasks(wip.taches)),
+    section("Tâches", renderTaches(wip.taches)),
     section("Specs en cours", renderSpecs(wip.specs)),
     section("Tickets Notion", renderTickets(wip)),
   ].join("\n\n");

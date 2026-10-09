@@ -1,5 +1,5 @@
-// Les tickets Notion d'une liste de statuts, sans ceux qu'une spec affichée
-// porte déjà.
+// Les tickets Notion d'une liste de statuts, sans ceux qu'une spec porte déjà :
+// un travail suivi par une spec ne s'affiche que du côté des specs.
 
 import {
   notionAccess,
@@ -39,6 +39,6 @@ export async function ticketsBeyondSpecs(
 export function renderTickets(view: TicketsView): string {
   if (view.notion !== "ok") return `Notion : ${view.notion}`;
   return columns(
-    view.tickets.map((ticket) => [ticket.statut, ticket.titre, ticket.url]),
+    view.tickets.map((ticket) => [ticket.statut, ticket.title, ticket.url]),
   );
 }

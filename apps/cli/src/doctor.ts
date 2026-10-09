@@ -14,18 +14,18 @@ import { missingEnvFiles } from "./settings.ts";
 export function doctorCommand(invocation: Invocation): number {
   const checks = runChecks(invocation.root);
   emit(invocation.options.json, checks, render);
-  return checks.some((check) => check.requis && !check.ok) ? 1 : 0;
+  return checks.some((check) => check.required && !check.ok) ? 1 : 0;
 }
 
 // ---- implémentation ----
 
 type Check = {
-  nom: string;
+  name: string;
   ok: boolean;
   /** Faux pour ce dont l'absence dégrade une commande sans l'empêcher. */
-  requis: boolean;
+  required: boolean;
   detail: string;
-  reparer: string;
+  fix: string;
 };
 
 function runChecks(root: string): Check[] {
@@ -46,11 +46,11 @@ function toolVersion(root: string, tool: string): Check {
   const output = captureProgram(tool, ["--version"], root).stdout;
   const actual = /\d+\.\d+\.\d+/.exec(output)?.[0];
   return {
-    nom: tool,
+    name: tool,
     ok: actual !== undefined && actual === pinned,
-    requis: true,
+    required: true,
     detail: `${actual ?? "absent"}, attendu ${pinned ?? "?"}`,
-    reparer: "tsp setup",
+    fix: "tsp setup",
   };
 }
 
@@ -62,11 +62,11 @@ function pinnedVersion(root: string, tool: string): string | undefined {
 function dependencies(root: string): Check {
   const ok = fs.existsSync(path.join(root, "node_modules/.modules.yaml"));
   return {
-    nom: "dépendances",
+    name: "dépendances",
     ok,
-    requis: true,
+    required: true,
     detail: ok ? "installées" : "node_modules absent",
-    reparer: "tsp install",
+    fix: "tsp install",
   };
 }
 
@@ -74,23 +74,23 @@ function hooks(root: string): Check {
   const args = ["config", "--get", "core.hooksPath"];
   const hooksPath = captureProgram("git", args, root).stdout;
   return {
-    nom: "hooks git",
+    name: "hooks git",
     ok: hooksPath === ".githooks",
-    requis: true,
+    required: true,
     detail: hooksPath === "" ? "non branchés" : hooksPath,
-    reparer: "tsp setup",
+    fix: "tsp setup",
   };
 }
 
 function envFiles(root: string): Check {
   const missing = missingEnvFiles(root);
   return {
-    nom: ".env",
+    name: ".env",
     ok: missing.length === 0,
-    requis: true,
+    required: true,
     detail:
       missing.length === 0 ? "présents" : `absents : ${missing.join(", ")}`,
-    reparer: "tsp setup",
+    fix: "tsp setup",
   };
 }
 
@@ -98,11 +98,11 @@ function launcher(): Check {
   const ok = isLinked() && isOnPath();
   const gap = isLinked() ? "son dossier n'est pas dans le PATH" : "absent";
   return {
-    nom: "lien tsp",
+    name: "lien tsp",
     ok,
-    requis: false,
+    required: false,
     detail: `${linkPath()}${ok ? "" : `, ${gap}`}`,
-    reparer: isLinked()
+    fix: isLinked()
       ? `ajoute ${path.dirname(linkPath())} au PATH`
       : "./tsp setup",
   };
@@ -111,11 +111,11 @@ function launcher(): Check {
 function githubAuth(root: string): Check {
   const ok = captureProgram("gh", ["auth", "status"], root).code === 0;
   return {
-    nom: "GitHub",
+    name: "GitHub",
     ok,
-    requis: false,
+    required: false,
     detail: ok ? "gh authentifié" : "gh non authentifié : wip et pr dégradés",
-    reparer: "gh auth login",
+    fix: "gh auth login",
   };
 }
 
@@ -123,23 +123,23 @@ function notion(root: string): Check {
   const access = notionAccess(root);
   const ok = typeof access !== "string";
   return {
-    nom: "Notion",
+    name: "Notion",
     ok,
-    requis: false,
+    required: false,
     detail: ok
       ? "jeton et base présents"
       : `${access} : wip, next et sync dégradés`,
-    reparer: "renseigne NOTION_TOKEN et NOTION_DATABASE_ID dans .env",
+    fix: "renseigne NOTION_TOKEN et NOTION_DATABASE_ID dans .env",
   };
 }
 
 function render(checks: Check[]): string {
   return columns(
     checks.map((check) => [
-      check.ok ? "✓" : check.requis ? "✗" : "!",
-      check.nom,
+      check.ok ? "✓" : check.required ? "✗" : "!",
+      check.name,
       check.detail,
-      check.ok ? "" : `→ ${check.reparer}`,
+      check.ok ? "" : `→ ${check.fix}`,
     ]),
   );
 }

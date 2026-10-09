@@ -3,7 +3,7 @@
 
 import { setting } from "./settings.ts";
 
-export type Ticket = { id: string; titre: string; statut: string; url: string };
+export type Ticket = { id: string; title: string; statut: string; url: string };
 
 export type Notion = { token: string; database: string; api: string };
 
@@ -11,14 +11,14 @@ export type Notion = { token: string; database: string; api: string };
 export type Block = { kind: "heading" | "paragraph"; text: string };
 
 export type TicketDraft = {
-  titre: string;
+  title: string;
   statut: string;
-  lien: string;
-  corps: Block[];
+  link: string;
+  body: Block[];
 };
 
 /** Ce qu'une mise à jour écrit. Sans statut, celui du ticket ne bouge pas. */
-export type TicketChange = { titre: string; statut?: string; lien: string };
+export type TicketChange = { title: string; statut?: string; link: string };
 
 /** L'accès à Notion, ou ce qui manque dans le `.env` pour l'avoir. */
 export function notionAccess(
@@ -49,7 +49,7 @@ export async function ticketsByStatus(
 ): Promise<Ticket[]> {
   const filter = {
     or: statuts.map((statut) => ({
-      property: STATUS,
+      property: STATUT_PROPERTY,
       status: { equals: statut },
     })),
   };
@@ -77,9 +77,9 @@ export async function createTicket(
     parent: { database_id: notion.database },
     properties: {
       ...properties(draft),
-      [TYPE]: { multi_select: [{ name: "Tech" }] },
+      [TYPE_PROPERTY]: { multi_select: [{ name: "Tech" }] },
     },
-    children: draft.corps.slice(0, MAX_BLOCKS).map(toBlock),
+    children: draft.body.slice(0, MAX_BLOCKS).map(toBlock),
   };
   return toTicket((await call(notion, "POST", "/pages", body)) as Page);
 }
@@ -97,10 +97,10 @@ export async function updateTicket(
 // ---- implémentation ----
 
 /** Les noms des propriétés de `[BDD] Tasks`. */
-const TITLE = "Task";
-const STATUS = "Status P&T";
-const TYPE = "Type";
-const LINK = "URL";
+const TITLE_PROPERTY = "Task";
+const STATUT_PROPERTY = "Status P&T";
+const TYPE_PROPERTY = "Type";
+const LINK_PROPERTY = "URL";
 
 /** Le cycle de vie d'un ticket, dans l'ordre. */
 const STATUTS = [
@@ -148,32 +148,41 @@ async function call(
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const answer = (await response.json()) as { message?: string };
+  const text = await response.text();
   if (!response.ok) {
-    throw new Error(
-      `Notion a répondu ${response.status} : ${answer.message ?? "sans message"}`,
-    );
+    throw new Error(`Notion a répondu ${response.status} : ${reason(text)}`);
   }
-  return answer;
+  return JSON.parse(text);
+}
+
+/** Une erreur de l'API porte un `message`. Une page d'erreur d'un intermédiaire, non. */
+function reason(text: string): string {
+  try {
+    return (JSON.parse(text) as { message?: string }).message ?? text;
+  } catch {
+    return text.slice(0, 200) || "sans message";
+  }
 }
 
 function toTicket(page: Page): Ticket {
-  const titre = (page.properties[TITLE]?.title ?? [])
+  const title = (page.properties[TITLE_PROPERTY]?.title ?? [])
     .map((part) => part.plain_text)
     .join("");
   return {
     id: page.id.replaceAll("-", ""),
-    titre,
-    statut: page.properties[STATUS]?.status?.name ?? "",
+    title,
+    statut: page.properties[STATUT_PROPERTY]?.status?.name ?? "",
     url: page.url,
   };
 }
 
 function properties(change: TicketChange) {
   return {
-    [TITLE]: { title: [text(change.titre)] },
-    [LINK]: { url: change.lien },
-    ...(change.statut ? { [STATUS]: { status: { name: change.statut } } } : {}),
+    [TITLE_PROPERTY]: { title: [text(change.title)] },
+    [LINK_PROPERTY]: { url: change.link },
+    ...(change.statut
+      ? { [STATUT_PROPERTY]: { status: { name: change.statut } } }
+      : {}),
   };
 }
 

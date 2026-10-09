@@ -23,9 +23,9 @@ export function docsCommand(invocation: Invocation): number {
 
 // ---- implémentation ----
 
-type Doc = { portee: string; genre: string; titre: string; chemin: string };
+type Doc = { scope: string; kind: string; title: string; file: string };
 
-const GENRES = ["adr", "domain"];
+const KINDS = ["adr", "domain"];
 
 /** Sans app : la racine et toutes les apps. Avec une app : elle seule. */
 function selectScopes(root: string, alias?: string): Scope[] | undefined {
@@ -35,41 +35,36 @@ function selectScopes(root: string, alias?: string): Scope[] | undefined {
 }
 
 function readDocs(root: string, scope: Scope): Doc[] {
-  return GENRES.flatMap((genre) => {
-    const dir = path.join(scope.dir, "docs/knowledge", genre);
+  return KINDS.flatMap((kind) => {
+    const dir = path.join(scope.dir, "docs/knowledge", kind);
     if (!fs.existsSync(path.join(root, dir))) return [];
     return fs
       .readdirSync(path.join(root, dir))
       .filter((name) => name.endsWith(".md"))
       .sort()
-      .map((name) => readDoc(root, scope, genre, path.join(dir, name)));
+      .map((name) => readDoc(root, scope, kind, path.join(dir, name)));
   });
 }
 
-function readDoc(
-  root: string,
-  scope: Scope,
-  genre: string,
-  chemin: string,
-): Doc {
-  const markdown = fs.readFileSync(path.join(root, chemin), "utf8");
+function readDoc(root: string, scope: Scope, kind: string, file: string): Doc {
+  const markdown = fs.readFileSync(path.join(root, file), "utf8");
   return {
-    portee: scope.name,
-    genre,
-    titre: title(markdown) ?? path.basename(chemin),
-    chemin,
+    scope: scope.name,
+    kind,
+    title: title(markdown) ?? path.basename(file),
+    file,
   };
 }
 
 function render(docs: Doc[]): string {
-  const portees = [...new Set(docs.map((doc) => doc.portee))];
-  if (portees.length === 0) return "Aucun document.";
-  return portees
-    .map((portee) => {
+  const scopeNames = [...new Set(docs.map((doc) => doc.scope))];
+  if (scopeNames.length === 0) return "Aucun document.";
+  return scopeNames
+    .map((scope) => {
       const rows = docs
-        .filter((doc) => doc.portee === portee)
-        .map((doc) => [doc.genre, doc.titre, doc.chemin]);
-      return section(portee, columns(rows));
+        .filter((doc) => doc.scope === scope)
+        .map((doc) => [doc.kind, doc.title, doc.file]);
+      return section(scope, columns(rows));
     })
     .join("\n\n");
 }

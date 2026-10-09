@@ -11,55 +11,59 @@ import { columns, emit, printError } from "./output.ts";
 export function rulesCommand(invocation: Invocation): number {
   const [target] = invocation.args;
   if (target === undefined) return showRecueils(invocation);
-  if (RULE_ID.test(target)) return showRule(invocation, target.toUpperCase());
+  if (REGLE_ID.test(target)) return showRegle(invocation, target.toUpperCase());
   return showRecueil(invocation, target);
 }
 
 // ---- implémentation ----
 
-type Regle = { id: string; titre: string; garde: string };
+type Regle = { id: string; title: string; garde: string };
 
-type Recueil = { nom: string; fichier: string; regles: Regle[] };
+type Recueil = { name: string; file: string; regles: Regle[] };
 
 const DIR = "docs/knowledge/contributing";
 
 /** `regles-git.md` donne `git`, `regles-de-code.md` donne `code`. */
 const RECUEIL_FILE = /^regles-(?:de-)?(.+)\.md$/;
 
-const RULE_ID = /^[a-z]+-\d{3}$/i;
+const REGLE_ID = /^[a-z]+-\d{3}$/i;
 
+/** En JSON, chaque recueil vient avec ses règles : un agent les charge en un appel. */
 function showRecueils(invocation: Invocation): number {
-  const recueils = readRecueils(invocation.root);
-  emit(invocation.options.json, recueils.map(summary), (list) =>
+  emit(invocation.options.json, readRecueils(invocation.root), (recueils) =>
     columns(
-      list.map((each) => [each.nom, `${each.regles} règles`, each.fichier]),
+      recueils.map((each) => [
+        each.name,
+        `${each.regles.length} règles`,
+        each.file,
+      ]),
     ),
   );
   return 0;
 }
 
-function showRecueil(invocation: Invocation, nom: string): number {
+function showRecueil(invocation: Invocation, name: string): number {
   const recueils = readRecueils(invocation.root);
-  const recueil = recueils.find((each) => each.nom === nom);
+  const recueil = recueils.find((each) => each.name === name);
   if (!recueil) {
-    const noms = recueils.map((each) => each.nom).join(", ");
-    printError(`Recueil inconnu : « ${nom} ». Recueils du dépôt : ${noms}.`);
+    const names = recueils.map((each) => each.name).join(", ");
+    printError(`Recueil inconnu : « ${name} ». Recueils du dépôt : ${names}.`);
     return 1;
   }
   emit(invocation.options.json, recueil.regles, (regles) =>
-    columns(regles.map((regle) => [regle.id, regle.titre, regle.garde])),
+    columns(regles.map((regle) => [regle.id, regle.title, regle.garde])),
   );
   return 0;
 }
 
-function showRule(invocation: Invocation, id: string): number {
+function showRegle(invocation: Invocation, id: string): number {
   for (const recueil of readRecueils(invocation.root)) {
-    const texte = ruleText(invocation.root, recueil, id);
-    if (texte === undefined) continue;
+    const text = regleText(invocation.root, recueil, id);
+    if (text === undefined) continue;
     emit(
       invocation.options.json,
-      { id, recueil: recueil.nom, texte },
-      () => texte,
+      { id, recueil: recueil.name, text },
+      () => text,
     );
     return 0;
   }
@@ -67,44 +71,36 @@ function showRule(invocation: Invocation, id: string): number {
   return 1;
 }
 
-function summary(recueil: Recueil) {
-  return {
-    nom: recueil.nom,
-    fichier: recueil.fichier,
-    regles: recueil.regles.length,
-  };
-}
-
 function readRecueils(root: string): Recueil[] {
   return fs
     .readdirSync(path.join(root, DIR))
     .sort()
-    .flatMap((name) => {
-      const nom = RECUEIL_FILE.exec(name)?.[1];
-      return nom ? [readRecueil(root, nom, path.join(DIR, name))] : [];
+    .flatMap((entry) => {
+      const name = RECUEIL_FILE.exec(entry)?.[1];
+      return name ? [readRecueil(root, name, path.join(DIR, entry))] : [];
     });
 }
 
 /** L'index d'un recueil est son premier tableau. Une règle retirée y reste, barrée. */
-function readRecueil(root: string, nom: string, fichier: string): Recueil {
-  const markdown = fs.readFileSync(path.join(root, fichier), "utf8");
+function readRecueil(root: string, name: string, file: string): Recueil {
+  const markdown = fs.readFileSync(path.join(root, file), "utf8");
   const regles = firstTable(markdown)
     .filter((row) => !row[0]?.startsWith("~~"))
     .map((row) => ({
       id: row[0] ?? "",
-      titre: row[1] ?? "",
+      title: row[1] ?? "",
       garde: row[2] ?? "",
     }));
-  return { nom, fichier, regles };
+  return { name, file, regles };
 }
 
 /** Le texte d'une règle va de son titre au séparateur ou au titre suivant. */
-function ruleText(
+function regleText(
   root: string,
   recueil: Recueil,
   id: string,
 ): string | undefined {
-  const markdown = fs.readFileSync(path.join(root, recueil.fichier), "utf8");
+  const markdown = fs.readFileSync(path.join(root, recueil.file), "utf8");
   const lines = markdown.split("\n");
   const start = lines.findIndex((line) => line.startsWith(`### ${id} `));
   if (start === -1) return undefined;

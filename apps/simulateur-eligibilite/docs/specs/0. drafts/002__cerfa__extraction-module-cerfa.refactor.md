@@ -20,11 +20,11 @@ téléchargement plutôt que par sa nature :
 > n'est pas éprouvé.
 
 Contrairement à la galerie de seeds ou au labo — de vrais outils de
-développement/démo —, le remplissage des Cerfa est une capacité produit :
+développement/démo —, le remplissage des Cerfa est une feature produit :
 c'est ce que le prescripteur télécharge à la fin du parcours. Le faire
 cohabiter avec des outils expérimentaux dans la même arborescence brouille la
 distinction que le reste du dépôt entretient ailleurs (`docs/knowledge`
-distingue déjà « outils produit » et capacités du simulateur).
+distingue déjà « outils produit » et features du simulateur).
 
 ## Solution
 

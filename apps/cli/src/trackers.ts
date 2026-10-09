@@ -16,10 +16,10 @@ export type Spec = {
   id: string;
   module: string;
   type: string;
-  titre: string;
+  title: string;
   etat: Etat;
   /** Le fichier, relatif à la racine. */
-  chemin: string;
+  file: string;
   /** Le tracker qui la range, relatif à la racine. */
   tracker: string;
   /** Les specs à finir d'abord, par leur nom de fichier sans extension. */
@@ -38,11 +38,14 @@ export function etatDir(etat: Etat): string {
   return `${ETATS.indexOf(etat)}. ${etat}`;
 }
 
-/** Lit un état tel qu'on le tape : `doing`, `3`, `3. doing`. */
+/** Lit un état tel qu'on le tape : `doing`, `3`, `3. doing`. Rien d'approchant. */
 export function parseEtat(text: string): Etat | undefined {
-  const name = text.replace(/^\d\.?\s*/, "");
-  const byName = ETATS.find((etat) => etat === name);
-  return byName ?? ETATS[Number.parseInt(text, 10)];
+  return ETATS.find(
+    (etat) =>
+      text === etat ||
+      text === String(ETATS.indexOf(etat)) ||
+      text === etatDir(etat),
+  );
 }
 
 export function listSpecs(root: string): Spec[] {
@@ -58,18 +61,12 @@ export function findSpec(root: string, id: string): Spec | undefined {
 
 /** Le nom par lequel une autre spec la cite dans « bloquée par ». */
 export function specName(spec: Spec): string {
-  return path.basename(spec.chemin, ".md");
+  return path.basename(spec.file, ".md");
 }
 
 export function renderSpecs(specs: Spec[]): string {
   return columns(
-    specs.map((spec) => [
-      spec.id,
-      spec.etat,
-      spec.type,
-      spec.titre,
-      spec.chemin,
-    ]),
+    specs.map((spec) => [spec.id, spec.etat, spec.type, spec.title, spec.file]),
   );
 }
 
@@ -95,18 +92,18 @@ function readSpec(
   root: string,
   tracker: string,
   etat: Etat,
-  chemin: string,
+  file: string,
   match: RegExpExecArray,
 ): Spec {
-  const markdown = fs.readFileSync(path.join(root, chemin), "utf8");
+  const markdown = fs.readFileSync(path.join(root, file), "utf8");
   const notion = field(markdown, "notion");
   return {
     id: match[1]!,
     module: match[2]!,
     type: match[3]!,
-    titre: title(markdown) ?? path.basename(chemin),
+    title: title(markdown) ?? path.basename(file),
     etat,
-    chemin,
+    file,
     tracker,
     bloqueePar: blockers(markdown),
     notion: notion?.startsWith("http") ? notion : undefined,

@@ -17,6 +17,8 @@ type Options = {
 export type Invocation = {
   /** La racine du clone dont la CLI s'exécute. */
   root: string;
+  /** Le dossier d'où `tsp` a été tapé : un chemin relatif s'y résout. */
+  cwd: string;
   /** Les arguments positionnels, après le nom de la commande. */
   args: string[];
   /** Ce qui suit `--`, transmis tel quel au script d'une app. */
@@ -43,6 +45,9 @@ export function readInvocation(argv: string[]): {
     name,
     invocation: {
       root: path.resolve(import.meta.dirname, "../../.."),
+      // Le lanceur exécute la CLI depuis la racine : il transmet le dossier
+      // d'origine par l'environnement.
+      cwd: process.env.TSP_CWD ?? process.cwd(),
       args,
       passthrough: cut === -1 ? [] : argv.slice(cut + 1),
       options: {

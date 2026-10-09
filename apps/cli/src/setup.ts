@@ -45,11 +45,12 @@ function createEnvFiles(root: string): void {
 }
 
 function link(root: string): void {
-  if (!linkLauncher(root)) {
+  const target = linkLauncher(root);
+  if (!target) {
     print(`Lien : ${linkPath()} est un fichier, laissé en place`);
     return;
   }
-  print(`Lien : ${linkPath()} → ${path.join(root, "tsp")}`);
+  print(`Lien : ${linkPath()} → ${target}`);
   if (!isOnPath()) {
     print(`Lien : ajoute ${path.dirname(linkPath())} à ton PATH`);
   }

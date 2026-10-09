@@ -19,7 +19,8 @@ Seuls un shell et `git` sont requis. `setup` fait le reste, dans l'ordre :
 3. installe les dépendances ;
 4. branche les hooks git ;
 5. crée les `.env` manquants depuis leurs gabarits ;
-6. pose un lien `~/.local/bin/tsp`, pour appeler `tsp` de partout ;
+6. pose un lien `~/.local/bin/tsp`, pour appeler `tsp` de partout. Un lien qui
+   marche déjà est gardé : `setup` lancé depuis un worktree ne le détourne pas ;
 7. finit par `tsp doctor`.
 
 Il se rejoue sans risque. Un agent passe `--yes` pour ne recevoir aucune
@@ -62,6 +63,7 @@ Transverses :
 | `tsp pr status` | montre l'état de la PR courante et de sa CI |
 
 `tsp help` affiche cette liste. Les commandes de lecture acceptent `--json`.
+`tsp rules --json` rend chaque recueil avec ses règles.
 
 ## Les apps et leurs actions
 
@@ -89,7 +91,7 @@ tsp test simulateur -- tests/cerfa
 | Source | `tsp wip` | `tsp next` |
 |---|---|---|
 | GitHub | les PR ouvertes | |
-| git | les branches locales et distantes non fusionnées dans `staging`, qui n'ont jamais eu de PR | |
+| git | les branches locales et distantes non fusionnées dans `staging`, sans PR ouverte ni fusionnée | |
 | `docs/tasks`, racine et apps | toutes les tâches | |
 | specs, racine et apps | `3. doing` | `2. todo`, puis `1. backlog` |
 | Notion | `Doing Dev`, `Reviewing dev` | `Ready To Dev` |
@@ -143,8 +145,8 @@ tsp pr status
 - `branch` refuse un type hors Conventional Commits.
 - `pr` vise toujours `staging` (GIT-009). Son titre est le sujet du premier
   commit de la branche, ou `--title`. Il doit respecter GIT-003.
-- `--body-file <fichier>` donne le corps de la PR. Sans lui, c'est celui des
-  commits.
+- `--body-file <fichier>` donne le corps de la PR. Un chemin relatif part du
+  dossier courant. Sans lui, le corps est celui des commits.
 - La fusion reste un geste humain sur GitHub.
 
 ## Configuration

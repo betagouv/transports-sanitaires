@@ -83,6 +83,8 @@ hooks, et rend `tsp` appelable de partout.
 
 `tsp help` les liste toutes. Les commandes de lecture acceptent `--json`.
 Sans app, une action passe sur toutes les apps qui la portent, une à la fois.
+`dev` et `start` ne rendent pas la main : ils demandent une app dès que
+plusieurs les portent.
 
 ## Vérifier
 
@@ -128,7 +130,9 @@ Tout le reste est du vocabulaire métier et se lit en français : `moteur`,
 liste `TOLERES` autorise les exceptions. L'y ajouter est une décision, pas un
 moyen de faire passer le test.
 
-**Une dérogation assumée** : `apps/glossaire-notion` est entièrement en anglais.
+**Deux dérogations assumées.** `apps/cli` écrit ses identifiants techniques en
+anglais et garde le français pour le métier (`recueil`, `tache`, `etat`) : voir
+son `AGENTS.md`. Et `apps/glossaire-notion` est entièrement en anglais.
 Elle n'a pas de vocabulaire métier propre. C'est un lecteur de base Notion, et la
 franciser coûterait plus que ça ne clarifierait.
 

@@ -13,8 +13,8 @@ import { etatDir, listSpecs, trackerOf } from "./trackers.ts";
 export function newCommand(invocation: Invocation): number {
   const { root, args, options } = invocation;
   const [module, type, ...words] = args;
-  const titre = words.join(" ");
-  if (!module || !type || titre === "") {
+  const title = words.join(" ");
+  if (!module || !type || title === "") {
     printError("Usage : tsp spec new <module> <type> <titre> [--app <app>].");
     return 1;
   }
@@ -30,20 +30,20 @@ export function newCommand(invocation: Invocation): number {
     return 1;
   }
   const id = nextId(root);
-  const name = `${id}__${module}__${slug(titre)}.${type}.md`;
-  const chemin = path.join(tracker, etatDir("drafts"), name);
-  fs.mkdirSync(path.dirname(path.join(root, chemin)), { recursive: true });
+  const name = `${id}__${module}__${slug(title)}.${type}.md`;
+  const file = path.join(tracker, etatDir("drafts"), name);
+  fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
   fs.writeFileSync(
-    path.join(root, chemin),
-    content(root, tracker, { id, module, type, titre }),
+    path.join(root, file),
+    content(root, tracker, { id, module, type, title }),
   );
-  print(chemin);
+  print(file);
   return 0;
 }
 
 // ---- implémentation ----
 
-type Header = { id: string; module: string; type: string; titre: string };
+type Header = { id: string; module: string; type: string; title: string };
 
 /** Les types que nomme le gabarit de spec. */
 const SPEC_TYPES = ["feat", "fix", "refactor", "tech", "chore", "docs", "test"];
@@ -81,8 +81,8 @@ function nextId(root: string): string {
   return String(highest + 1).padStart(3, "0");
 }
 
-function slug(titre: string): string {
-  return titre
+function slug(title: string): string {
+  return title
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
@@ -92,7 +92,7 @@ function slug(titre: string): string {
 
 function content(root: string, tracker: string, header: Header): string {
   return [
-    `# ${header.titre}`,
+    `# ${header.title}`,
     "",
     "| Champ       | Valeur |",
     "|-------------|--------|",

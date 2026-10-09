@@ -30,17 +30,24 @@ export async function syncCommand(invocation: Invocation): Promise<number> {
     );
     return 1;
   }
-  const specs = args[0] === undefined ? listSpecs(root) : one(root, args[0]);
+  const specs =
+    args[0] === undefined ? listSpecs(root) : specById(root, args[0]);
   if (specs.length === 0) {
     printError(
       `Aucune spec à synchroniser${args[0] ? ` : « ${args[0]} »` : ""}.`,
     );
     return 1;
   }
+  let failures = 0;
   for (const spec of specs) {
-    print(`${spec.id}  ${await syncSpec(root, notion, spec)}`);
+    try {
+      print(`${spec.id}  ${await syncSpec(root, notion, spec)}`);
+    } catch (error) {
+      failures += 1;
+      printError(`${spec.id}  ${(error as Error).message}`);
+    }
   }
-  return 0;
+  return failures === 0 ? 0 : 1;
 }
 
 /** Crée ou met à jour le ticket d'une spec, et dit ce qui a été fait. */
@@ -70,7 +77,7 @@ const STATUT_BY_ETAT: Record<Etat, string | undefined> = {
 /** Les sections de la spec recopiées dans le corps du ticket, à sa création. */
 const COPIED_SECTIONS = ["Problem Statement", "Solution"];
 
-function one(root: string, id: string): Spec[] {
+function specById(root: string, id: string): Spec[] {
   const spec = findSpec(root, id);
   return spec ? [spec] : [];
 }
@@ -81,13 +88,13 @@ async function create(
   spec: Spec,
   statut: string,
 ): Promise<string> {
-  const file = path.join(root, spec.chemin);
+  const file = path.join(root, spec.file);
   const markdown = fs.readFileSync(file, "utf8");
   const ticket = await createTicket(notion, {
-    titre: spec.titre,
+    title: spec.title,
     statut,
-    lien: githubUrl(root, spec.chemin),
-    corps: body(markdown),
+    link: githubUrl(root, spec.file),
+    body: body(markdown),
   });
   fs.writeFileSync(file, withField(markdown, "notion", ticket.url));
   return `ticket créé (${statut}), lien écrit dans la spec : ${ticket.url}`;
@@ -105,8 +112,8 @@ async function refresh(
   const current = await readTicket(notion, id);
   const forward = advances(current.statut, statut);
   await updateTicket(notion, id, {
-    titre: spec.titre,
-    lien: githubUrl(root, spec.chemin),
+    title: spec.title,
+    link: githubUrl(root, spec.file),
     statut: forward ? statut : undefined,
   });
   return forward
@@ -126,9 +133,9 @@ function body(markdown: string): Block[] {
 }
 
 /** L'adresse du fichier sur GitHub, dans `staging` : c'est là que la spec arrive. */
-function githubUrl(root: string, chemin: string): string {
+function githubUrl(root: string, file: string): string {
   const remote = git(root, ["remote", "get-url", "origin"]);
   const repo = /github\.com[:/](.+?)(?:\.git)?$/.exec(remote)?.[1] ?? remote;
-  const file = chemin.split(path.sep).map(encodeURIComponent).join("/");
-  return `https://github.com/${repo}/blob/staging/${file}`;
+  const encoded = file.split(path.sep).map(encodeURIComponent).join("/");
+  return `https://github.com/${repo}/blob/staging/${encoded}`;
 }

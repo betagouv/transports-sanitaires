@@ -16,9 +16,10 @@ import { runProgram } from "./run-program.ts";
 export function actionCommand(action: Action): Command {
   return (invocation) => {
     const [alias] = invocation.args;
-    return alias === undefined
-      ? onEveryApp(action, invocation)
-      : onNamedApp(action, alias, invocation);
+    if (alias !== undefined) return onNamedApp(action, alias, invocation);
+    return action === "install"
+      ? runProgram("pnpm", ["install"], invocation.root)
+      : onEveryApp(action, invocation);
   };
 }
 
@@ -45,9 +46,6 @@ function onNamedApp(
 }
 
 function onEveryApp(action: Action, invocation: Invocation): number {
-  if (action === "install") {
-    return runProgram("pnpm", ["install"], invocation.root);
-  }
   const apps = listApps(invocation.root);
   const carriers = apps.filter((app) => carries(app, action));
   if (LONG_RUNNING.includes(action) && carriers.length > 1) {
