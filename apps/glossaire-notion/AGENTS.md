@@ -13,6 +13,7 @@ dans Notion : une popup, un champ de recherche, un cache local.
   `mode: "cors"` forcé dans `src/notion.ts` : le défaut `no-cors` de la
   bibliothèque casse l'en-tête `Content-Type` dans un vrai navigateur.
 - `pnpm verifier` : lint, typecheck, knip, tests, build.
+- `pnpm dev` reconstruit l'extension à chaque modification : c'est `tsp dev glossaire`.
 - `pnpm zip` engendre l'archive à charger dans le navigateur. **La version se
   tient à la main** dans `package.json` : c'est elle qui nomme l'archive.
 

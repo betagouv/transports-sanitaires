@@ -1,4 +1,4 @@
-# Les trois apps du dépôt. Une seule installation à la racine, un seul
+# Les apps du dépôt. Une seule installation à la racine, un seul
 # `pnpm-lock.yaml`, un magasin de paquets mutualisé.
 packages:
   - "apps/*"
@@ -17,12 +17,12 @@ enablePrePostScripts: true
 # ailleurs**, les apps l'appellent par `catalog:`. C'est ce qui rend impossible
 # le cas qui nous menaçait : deux apps sur deux Biome, ou deux TypeScript, avec
 # un `verifier` qui passe dans l'une et pas dans l'autre. Monter une version se
-# fait sur une ligne, pour les trois apps à la fois.
+# fait sur une ligne, pour toutes les apps à la fois.
 #
 # Une dépendance propre à une app (`express`, `publicodes`, `notion-client`,
 # `xlsx`) n'a rien à faire ici : elle reste dans son `package.json`.
 catalog:
-  # Le socle commun aux trois apps.
+  # Le socle commun aux apps.
   "@biomejs/biome": 2.5.9
   knip: ^6.32.2
   typescript: ^6.0.3

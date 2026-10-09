@@ -50,7 +50,7 @@ publie les marts dans [Grist](#publication-dataviz).
 ## Lancer
 
 ```bash
-pnpm install           # installe les trois apps du dépôt, où qu'on le lance
+pnpm install           # installe les apps du dépôt, où qu'on le lance
 cp mapping.example.json mapping.json   # puis renseigner vos fichiers (voir ci-dessous)
 pnpm etl               # enchaîne les 4 étapes ; régénère build/
 # ou étape par étape :

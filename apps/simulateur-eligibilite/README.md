@@ -58,10 +58,11 @@ permission de sortie des moins de 20 ans (n° 16184\*01).
 | Commande | Ce qu'elle fait |
 | --- | --- |
 | `pnpm verifier` | **La vérification complète** : lint, typecheck, knip, validation des règles, tests, build et sa vérification de bundle. C'est la commande que lance la CI, telle quelle : ce qui passe ici passe là-bas. |
+| `pnpm dev` | Le front et le backend de dev ensemble. C'est ce que lance `tsp dev simulateur`. |
 | `pnpm dev:front` | Le front de dev, sur le port 5173, qui proxifie `/api` vers `:3000` |
 | `pnpm dev:server` | Le backend de dev, sur le port 3000, en `--watch`, qui charge `.env` s'il est présent |
 | `pnpm test` | Vitest. Le smoke Grist est ignoré sans `GRIST_API_KEY`. |
-| `pnpm lint` | Biome : format, tri des imports et lint. `lint:fix` applique les corrections sûres. Le socle est commun aux trois apps, dans `biome.base.jsonc` à la racine. |
+| `pnpm lint` | Biome : format, tri des imports et lint. `lint:fix` applique les corrections sûres. Le socle est commun aux apps du dépôt, dans `biome.base.jsonc` à la racine. |
 | `pnpm knip` | Les exports, fichiers et dépendances que plus personne n'atteint |
 | `pnpm typecheck` | `tsc -b` sur les quatre projets : front, node, serveur et tests |
 | `pnpm valider-regles` | Compile `regles/*.publicodes` et signale les erreurs |
@@ -74,8 +75,9 @@ et 300 lignes, et dans `tests/lisibilite.test.ts`, pour la forme des fichiers, l
 et les extensions d'import. Lis leur message d'échec : chacun dit ce que sa règle
 protège. Ce qu'on attend d'un contributeur est écrit dans [AGENTS.md](AGENTS.md).
 
-Depuis la racine, `mise run dev-simulateur` lance le front et le backend en parallèle, et
-`mise run verifier` passe la vérification sur les trois apps.
+De n'importe où dans le dépôt, `tsp dev simulateur` lance le front et le backend en
+parallèle, et `tsp verifier` passe la vérification sur toutes les apps. Voir
+[`apps/cli`](../cli/README.md).
 
 ## Configuration
 
@@ -284,7 +286,7 @@ Trois fichiers de la racine portent ce déploiement :
 | --- | --- |
 | `package.json` | `packageManager` (la version de pnpm), `engines.node`, et deux scripts d'aiguillage : `build` et `start`, qui délèguent tous deux à cette app par `--filter` |
 | `Procfile` | `web: pnpm --filter simulateur-eligibilite run start` |
-| `pnpm-lock.yaml` | les versions exactes des trois apps |
+| `pnpm-lock.yaml` | les versions exactes de toutes les apps |
 
 Le build installe donc aussi les dépendances de `data-analyzer` et de `glossaire-notion`.
 C'est le prix du lock unique, et il se compte en secondes.

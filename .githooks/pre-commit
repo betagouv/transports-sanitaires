@@ -14,7 +14,7 @@ fi
 case "$branche" in
   main | staging)
     echo "GIT-009 : pas de commit direct sur $branche." >&2
-    echo "  git switch -c <type>/<sujet> staging, puis une PR vers staging." >&2
+    echo "  tsp branch <type>/<sujet>, puis tsp pr." >&2
     echo "Voir docs/knowledge/contributing/regles-git.md." >&2
     exit 1
     ;;

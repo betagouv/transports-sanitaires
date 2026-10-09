@@ -398,7 +398,7 @@ aujourd'hui appelé `deverrouillage.ts`.
 ### QUAL-013 - Ne jamais formater à la main
 
 > Raison : Biome tient le format, l'ordre des imports et le lint, sur le même
-> socle (`biome.base.jsonc`) pour les trois apps. Une mise en forme manuelle est
+> socle (`biome.base.jsonc`) pour toutes les apps. Une mise en forme manuelle est
 > défaite au passage suivant, et le diff porte alors deux changements.
 
 Un hook `PostToolUse` passe Biome sur chaque `.ts` / `.tsx` écrit, dans n'importe
