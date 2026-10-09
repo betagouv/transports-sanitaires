@@ -11,7 +11,7 @@ recueil par domaine**, et non un fichier par règle.
 | Recueil | Préfixe | Ce qu'il couvre |
 |---|---|---|
 | `regles-de-code.md` | `QUAL-` | forme d'un fichier, découpage, noms, exports, suppressions de lint |
-| `regles-git.md` | `GIT-` | branche ou `main`, forme du message, métadonnée d'IA, confidentialité |
+| `regles-git.md` | `GIT-` | branche et PR vers `staging`, forme du message, métadonnée d'IA, confidentialité |
 
 `AGENTS.md` ne porte qu'un pointeur vers les deux. **N'y recopie pas les
 règles** : une copie dérive.

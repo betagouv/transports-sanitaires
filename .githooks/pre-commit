@@ -1,0 +1,21 @@
+#!/bin/sh
+# Garde GIT-009 (docs/knowledge/contributing/regles-git.md).
+# Installé par le `prepare` du package.json racine, qui pointe
+# `core.hooksPath` ici. `git commit --no-verify` le saute.
+
+branche=$(git symbolic-ref --short -q HEAD)
+
+# Une fusion qui conclut un conflit reste permise : c'est ainsi que `staging`
+# rejoint `main`.
+if [ -f "$(git rev-parse --git-path MERGE_HEAD)" ]; then
+  exit 0
+fi
+
+case "$branche" in
+  main | staging)
+    echo "GIT-009 : pas de commit direct sur $branche." >&2
+    echo "  git switch -c <type>/<sujet> staging, puis une PR vers staging." >&2
+    echo "Voir docs/knowledge/contributing/regles-git.md." >&2
+    exit 1
+    ;;
+esac
