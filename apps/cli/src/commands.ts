@@ -128,7 +128,7 @@ const ACROSS: Entry[] = [
   {
     name: "next",
     usage: "next",
-    summary: "montre le travail à prendre",
+    summary: "montre le travail en cours, puis le travail à prendre",
     run: nextCommand,
   },
   {

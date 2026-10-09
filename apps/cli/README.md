@@ -54,7 +54,7 @@ Transverses :
 | `tsp skills <skill>` | affiche un skill |
 | `tsp docs [app]` | liste les ADR et les connaissances métier |
 | `tsp wip` | montre le travail en cours |
-| `tsp next` | montre le travail à prendre |
+| `tsp next` | montre le travail en cours, puis le travail à prendre |
 | `tsp spec new <module> <type> <titre>` | crée une spec avec le prochain id, `--app <app>` pour le tracker d'une app |
 | `tsp spec move <id> <état>` | change une spec d'état |
 | `tsp spec sync [id]` | crée ou met à jour le ticket Notion d'une spec |
@@ -95,6 +95,10 @@ tsp test simulateur -- tests/cerfa
 | `docs/tasks`, racine et apps | toutes les tâches | |
 | specs, racine et apps | `3. doing` | `2. todo`, puis `1. backlog` |
 | Notion | `Doing Dev`, `Reviewing dev` | `Ready To Dev` |
+
+`tsp next` affiche d'abord tout ce qu'affiche `tsp wip`, puis sa propre colonne :
+on ne choisit pas la suite sans voir ce qui est déjà commencé. En JSON, le
+travail en cours est sous la clé `wip`.
 
 Une spec liée à un ticket n'apparaît qu'une fois, du côté des specs.
 
