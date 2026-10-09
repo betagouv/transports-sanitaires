@@ -120,6 +120,7 @@ d'écrire une ligne ou de commiter.**
 |---|---|
 | [`regles-de-code.md`](docs/knowledge/contributing/regles-de-code.md) | les 15 `QUAL-*` : forme d'un fichier, découpage, noms, exports, suppressions de lint |
 | [`regles-git.md`](docs/knowledge/contributing/regles-git.md) | les 7 `GIT-*` : branche et PR vers `staging`, forme du message, métadonnée d'IA, confidentialité |
+| [`ecrire-une-regle.md`](docs/knowledge/contributing/ecrire-une-regle.md) | le format d'une règle, pour en ajouter, modifier ou retirer une |
 
 Chaque règle porte un identifiant, sa raison, un exemple juste, un exemple faux,
 et la garde qui l'applique. **Ne les recopie pas ici.** Cite l'identifiant en
@@ -135,7 +136,7 @@ revue et en commit : « corrige QUAL-006 ».
 | Le mode d'emploi d'une app | son `README.md` |
 | Ce qu'une version apporte | le `CHANGELOG.md` de l'app. Un TL;DR, puis une ligne par commit groupée par type |
 | Une règle pour l'IA | `AGENTS.md`, celui de la racine ou celui de l'app |
-| Une règle de code ou de commit | `docs/knowledge/contributing/`, avec un identifiant, une raison et deux exemples |
+| Une règle de code ou de commit | `docs/knowledge/contributing/`, au format de [`ecrire-une-regle.md`](docs/knowledge/contributing/ecrire-une-regle.md) |
 | Une garde | **un test**, pas une phrase |
 
 Ce que `docs/knowledge/` contient aujourd'hui ne se recopie pas ici : liste les
