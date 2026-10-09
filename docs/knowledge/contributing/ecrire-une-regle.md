@@ -95,7 +95,7 @@ Dans un bloc nu, la glose n'a pas de commentaire où vivre. Elle se colle alors 
 marqueur :
 
 ```
-✅ OK : coupé par sujet, chaque nom dit une capacité
+✅ OK : coupé par sujet, chaque nom dit une feature
 cerfa/remplissage.ts
 cerfa/lieux-du-trajet.ts
 ```

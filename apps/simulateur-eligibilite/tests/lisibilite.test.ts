@@ -84,7 +84,7 @@ describe("un nom dit une intention", () => {
     );
     expect(
       fautifs,
-      "Un fichier est nommé d'après une capacité, pas d'après une catégorie. " +
+      "Un fichier est nommé d'après une feature, pas d'après une catégorie. " +
         "Si le nom a besoin d'`utils`, `helpers`, `commun` ou `acces` pour " +
         "fonctionner, le fichier n'a pas d'intention et son contenu " +
         "appartient à ses appelants.",

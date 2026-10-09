@@ -138,13 +138,13 @@ lieu » qui ne s'affiche plus. Ce que le mode d'emploi reste à porter pour ce
 sujet : le récapitulatif distinguant un fait déduit d'une réponse, et
 l'invalidation des données incompatibles quand le motif change.
 
-## v9.7.3 : un ticket qui suppose une capacité produit qu'on n'a pas
+## v9.7.3 : un ticket qui suppose une feature produit qu'on n'a pas
 
 `TS973-18` (revalider les simulations administratives anciennes) demande de
 persister `Session.exportState()` et de revalider le volet administratif à
 la reprise sous une révision plus récente (`ADM-v9.7.3`). Le ticket et le
 guide (§ 6) supposent une session persistable et reprenable entre deux
-visites : une hypothèse sur les capacités de l'intégrateur, pas seulement
+visites : une hypothèse sur les features de l'intégrateur, pas seulement
 sur publicodes.
 
 Vérifié à l'exécution (grep de `exportState`/`importState`/`localStorage`

@@ -32,7 +32,7 @@ spec ? », et tout ce qui n'y répond pas la brouille — un renvoi barré s'est
 fait lire comme un blocage vivant. L'histoire du blocage, elle, se raconte dans
 les `## Notes`, où elle a la place de dire aussi pourquoi.
 
-Types : `feat` (nouvelle capacité), `fix` (correctif), `refactor` (même
+Types : `feat` (nouvelle feature), `fix` (correctif), `refactor` (même
 comportement, meilleure forme), `tech` (chantier de socle : choix
 d'architecture, intégration d'une source, outillage — pas de valeur
 utilisateur directe, mais débloque d'autres specs), `chore`, `docs`, `test`.
