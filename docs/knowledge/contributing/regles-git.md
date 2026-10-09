@@ -1,78 +1,29 @@
 # Les règles de commit
 
-> Les 8 règles `GIT-*`. Les conventions du dépôt sont dans
+> Les 7 règles `GIT-*`. Les conventions du dépôt sont dans
 > [`../../AGENTS.md`](../../AGENTS.md), les règles de code dans
 > [`regles-de-code.md`](regles-de-code.md).
 
-**8 règles**, mêmes conventions que les `QUAL-*`. Cite l'identifiant plutôt que de
+**7 règles**, mêmes conventions que les `QUAL-*`. Cite l'identifiant plutôt que de
 reformuler la règle.
 
 | Id | Règle | Garde |
 |---|---|---|
-| GIT-001 | Travailler sur `main` par défaut | aucune |
-| GIT-002 | Une branche pour le structurant qu'aucun drapeau ne masque | aucune |
-| GIT-003 | Conventional Commits, scope entre parenthèses | aucune |
+| ~~GIT-001~~ | ~~Travailler sur `main` par défaut~~ | retirée le 2026-10-09, remplacée par GIT-009 |
+| ~~GIT-002~~ | ~~Une branche pour le structurant qu'aucun drapeau ne masque~~ | retirée le 2026-10-09, GIT-009 met tout travail sur une branche |
+| GIT-003 | Conventional Commits, scope entre parenthèses | hook `commit-msg` |
 | GIT-004 | Sujet en français, 3ᵉ personne de l'indicatif présent | aucune |
 | GIT-005 | Corps argumenté : ce qui change, et surtout pourquoi | aucune |
 | GIT-006 | Terminer par l'état de vérification | aucune |
-| GIT-007 | Aucune métadonnée d'IA | aucune |
+| GIT-007 | Aucune métadonnée d'IA | hook `commit-msg` |
 | GIT-008 | Relire le diff et le message avant de commiter sur `data-analyzer` | aucune |
+| GIT-009 | Toujours passer par une branche, fusionnée par PR vers `staging` | hook `pre-commit` |
 
-Aucune de ces règles n'a de garde. GIT-003 et GIT-007 sont pourtant mécanisables
-par un hook `commit-msg`, que le dépôt n'a pas. Les six autres sont du jugement,
-et restent à la relecture.
-
----
-
-### GIT-001 - Travailler sur `main` par défaut
-
-> Raison : une branche coûte une divergence à réconcilier. Le dépôt a un seul
-> auteur, et un feature flag masque presque tout travail en cours. La divergence
-> ne se paie donc presque jamais.
-
-Commiter directement. Pas de branche de fonctionnalité, pas de PR. Le doute se
-tranche vers `main` : si un drapeau *pourrait* masquer le travail, il n'y a pas
-de branche à ouvrir.
-
-**Exemples**
-
-```bash
-# ✅ OK : le travail est masquable, il va sur main
-git commit -m "feat(simulateur): ajoute le bloc Article 80, derrière un drapeau"
-```
-
-```bash
-# ❌ KO : une branche ouverte pour un travail qu'un drapeau masquerait
-git switch -c feat/bloc-article-80
-```
-
-*Aucune garde.* C'est du jugement, pas de la forme.
-
----
-
-### GIT-002 - Une branche pour le structurant qu'aucun drapeau ne masque
-
-> Raison : certains changements touchent l'ossature, au point qu'aucun drapeau ne
-> rendrait le produit livrable à mi-chemin. Les livrer par morceaux casserait le
-> produit entre deux commits.
-
-L'ossature, c'est le modèle de règles, l'enchaînement des écrans, le format d'un
-livrable. Le changement vit alors sur une branche jusqu'à ce qu'il tienne debout,
-puis rejoint `main` d'un bloc.
-
-**Exemples**
-
-```
-✅ OK : le format du livrable change, rien ne le masque à mi-chemin
-la mise à disposition de la PMT au format PDF
-```
-
-```
-❌ KO : un drapeau suffirait, donc pas de branche
-un bloc de résultat en plus, caché tant qu'il n'est pas relu
-```
-
-*Aucune garde.* C'est du jugement, pas de la forme.
+GIT-003 et GIT-007 sont gardées par [`.githooks/commit-msg`](../../../.githooks/commit-msg),
+GIT-009 par [`.githooks/pre-commit`](../../../.githooks/pre-commit). Le `prepare`
+du `package.json` racine les installe à chaque `pnpm install`, en pointant
+`core.hooksPath` sur `.githooks/`. Les quatre autres règles sont du jugement, et
+restent à la relecture.
 
 ---
 
@@ -99,7 +50,8 @@ Mise à jour du journal des versions
 update simulateur
 ```
 
-*Aucune garde.* Un hook `commit-msg` la porterait.
+*Gardé par* `.githooks/commit-msg`. Il laisse passer les sujets que git écrit
+lui-même : `Merge`, `Revert`, `fixup!`, `squash!`.
 
 ---
 
@@ -208,8 +160,10 @@ Co-Authored-By: <un modèle>
 Claude-Session: <une URL de session>
 ```
 
-*Aucune garde.* Un hook `commit-msg` la porterait, et c'est celle qui s'y prête
-le mieux : le motif est fixe.
+*Gardé par* `.githooks/commit-msg`. Il refuse les trailers qui nomment un
+assistant (`Co-Authored-By`, `Claude-Session`), l'adresse `noreply@anthropic.com`,
+les liens de session et les « Generated with ». Un chemin comme `.claude/skills`
+dans le corps passe.
 
 ---
 
@@ -237,3 +191,33 @@ feat(data-analyzer): rattache les GHT de <nom du fournisseur> par mapping manuel
 *Aucune garde.* `gitleaks` scanne les secrets, pas les noms de fournisseurs. La
 liste des fournisseurs ne peut pas vivre dans un dépôt public, ce qui est la
 raison même de la règle.
+
+---
+
+### GIT-009 - Toujours passer par une branche, fusionnée par PR vers `staging`
+
+> Raison : un commit posé sur `main` part en production sans relecture. La PR
+> vers `staging` est le seul endroit où le diff se relit et où la CI tourne avant
+> la fusion.
+
+Tout travail part d'une branche tirée de `staging`, même un correctif d'une
+ligne. Il rejoint `staging` par une PR, puis `main` avec le reste de `staging`.
+On ne commite jamais directement sur `main` ni sur `staging`.
+
+**Exemples**
+
+```bash
+# ✅ OK : une branche tirée de staging, qui finira en PR vers staging
+git switch -c fix/libelle-article-80 staging
+gh pr create --base staging
+```
+
+```bash
+# ❌ KO : le correctif est commité directement sur main
+git switch main
+git commit -m "fix(simulateur): corrige le libellé de l'article 80"
+```
+
+*Gardé par* `.githooks/pre-commit`. Il refuse tout commit sur `main` ou
+`staging`, sauf celui qui conclut une fusion en conflit : c'est ainsi que
+`staging` rejoint `main`.

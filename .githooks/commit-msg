@@ -1,0 +1,44 @@
+#!/bin/sh
+# Garde GIT-003 et GIT-007 (docs/knowledge/contributing/regles-git.md).
+# Installé par le `prepare` du package.json racine, qui pointe
+# `core.hooksPath` ici. `git commit --no-verify` le saute.
+
+message=$(grep -v '^#' "$1")
+sujet=$(printf '%s\n' "$message" | grep -m1 -v '^[[:space:]]*$')
+regles="docs/knowledge/contributing/regles-git.md"
+echec=0
+
+# Les messages que git écrit lui-même ne sont pas des Conventional Commits.
+case "$sujet" in
+  "Merge "* | "Revert \""* | "fixup! "* | "squash! "* | "amend! "*) ;;
+  *)
+    types="feat|fix|docs|refactor|test|chore|build|style|ci|perf|revert"
+    if ! printf '%s\n' "$sujet" | grep -qE "^($types)(\([a-z0-9-]+\))?!?: [^ ]"; then
+      echo "GIT-003 : le sujet n'est pas un Conventional Commit." >&2
+      echo "  attendu : <type>(<scope>): <sujet>, type parmi ${types}" >&2
+      echo "  reçu    : $sujet" >&2
+      echec=1
+    fi
+    ;;
+esac
+
+# Les trailers et mentions que posent les assistants de code. Une simple
+# mention d'outil dans le texte (un chemin `.claude/skills`) reste permise.
+ia="claude|anthropic|copilot|openai|chatgpt|gpt-[0-9]|gemini|cursor|codex"
+fautes=$(printf '%s\n' "$message" | grep -inE \
+  -e "^(co-authored-by|signed-off-by|generated-by|assisted-by):.*($ia)" \
+  -e "^[a-z]*($ia)[a-z]*(-[a-z]+)*:" \
+  -e "claude\.ai/(code|chat)" \
+  -e "noreply@anthropic\.com" \
+  -e "generated (with|by)" \
+  -e "🤖")
+if [ -n "$fautes" ]; then
+  echo "GIT-007 : le message porte une métadonnée d'IA." >&2
+  printf '%s\n' "$fautes" | sed 's/^/  ligne /' >&2
+  echec=1
+fi
+
+if [ "$echec" -ne 0 ]; then
+  echo "Voir $regles." >&2
+fi
+exit "$echec"

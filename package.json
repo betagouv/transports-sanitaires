@@ -7,6 +7,7 @@
     "node": "24.x"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "verifier": "pnpm --recursive --workspace-concurrency=1 run verifier",
     "build": "pnpm --filter simulateur-eligibilite run build",
     "start": "pnpm --filter simulateur-eligibilite run start"
