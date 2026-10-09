@@ -340,7 +340,7 @@ L'origine dit à l'éditeur quelle pièce corriger :
 
 | Origine | Où est le problème | Exemple |
 |---|---|---|
-| `spec` | un ticket, un contrat (`docs/*.md`) ou le contrat d'interface (`*.ui.yaml`) | un ticket suppose une capacité que l'application n'a pas |
+| `spec` | un ticket, un contrat (`docs/*.md`) ou le contrat d'interface (`*.ui.yaml`) | un ticket suppose une feature que l'application n'a pas |
 | `publicodes` | les règles du modèle (`*.publicodes.flat-*.yaml`) | une règle accepte une réponse que le reste du livrable refuse |
 | `app` | notre application, qui s'écarte de la spec ou de publicodes | un écart que notre application assume |
 

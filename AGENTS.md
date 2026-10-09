@@ -35,9 +35,7 @@ Le toolchain vient de `mise` :
 
 - Node 24
 - pnpm
-- `gh`, pour publier la release d'une livraison
-
-`pnpm install` à la racine monte les trois apps.
+- `gh`, pour les PR et la release d'une livraison
 
 Les apps restent **indépendantes de code**. Aucune n'importe une autre. Chacune a
 son `package.json`, son job CI et son `pnpm verifier`. Le workspace mutualise
@@ -65,15 +63,40 @@ aucune app.
 | `apps/simulateur-eligibilite` | Le produit. Simulateur d'éligibilité au transport sanitaire : règles publicodes, front React/DSFR, backend Express, rattachement à un établissement et un service, remplissage du CERFA. |
 | `apps/data-analyzer` | L'ETL qui calcule la part des trajets réalisés via les plateformes. Code public, **données et fournisseurs privés**. |
 | `apps/glossaire-notion` | Une extension de navigateur qui affiche le glossaire tenu dans Notion. |
+| `apps/cli` | `tsp`, le point d'entrée du dépôt. Sans dépendance d'exécution, **sans tests**. |
+
+## `tsp`, le point d'entrée
+
+**Tout geste sur le dépôt passe par `tsp`**, la CLI d'`apps/cli`. Sur une
+machine neuve, `./tsp setup` installe `mise`, le toolchain, les dépendances, les
+hooks, et rend `tsp` appelable de partout.
+
+| Besoin | Commande |
+|---|---|
+| Lancer une action sur une app | `tsp <install\|build\|start\|test\|dev\|verifier> [app]` |
+| Savoir ce qu'une app sait faire | `tsp apps`, `tsp features [app]` |
+| Lire les règles, les skills, la doc | `tsp rules [recueil\|id]`, `tsp skills [skill]`, `tsp docs [app]` |
+| Voir le travail en cours, à prendre | `tsp wip`, `tsp next` |
+| Tenir une spec | `tsp spec new`, `tsp spec move`, `tsp spec sync` |
+| Brancher, proposer | `tsp branch <type>/<sujet>`, `tsp pr`, `tsp pr status` |
+| Diagnostiquer la machine | `tsp doctor` |
+
+`tsp help` les liste toutes. Les commandes de lecture acceptent `--json`.
+Sans app, une action passe sur toutes les apps qui la portent, une à la fois.
+`dev` et `start` ne rendent pas la main : ils demandent une app dès que
+plusieurs les portent.
 
 ## Vérifier
 
-`pnpm verifier`, dans l'app. **C'est la commande à passer avant de dire que c'est
-fait.** La CI lance exactement la même : un `verifier` vert ici l'est là-bas. Une
-porte à ajouter se met dans ce script, jamais dans le YAML.
+`tsp verifier <app>`. **C'est la commande à passer avant de dire que c'est
+fait.** Elle lance le script `verifier` de l'app, et la CI lance exactement le
+même : un `verifier` vert ici l'est là-bas. Une porte à ajouter se met dans ce
+script, jamais dans le YAML.
 
-À la racine, `pnpm verifier` le passe sur les trois apps, une à la fois.
-`mise run verifier` l'appelle.
+`tsp verifier` sans app le passe sur toutes les apps, une à la fois.
+
+La CI et le `Procfile` appellent `pnpm` en direct, pas `tsp` : la production ne
+dépend pas de la CLI.
 
 `pnpm audit` ne se scope pas à une app : il lit le lock, et le lock est unique
 au dépôt. Il a son job de CI à la racine.
@@ -107,7 +130,9 @@ Tout le reste est du vocabulaire métier et se lit en français : `moteur`,
 liste `TOLERES` autorise les exceptions. L'y ajouter est une décision, pas un
 moyen de faire passer le test.
 
-**Une dérogation assumée** : `apps/glossaire-notion` est entièrement en anglais.
+**Deux dérogations assumées.** `apps/cli` écrit ses identifiants techniques en
+anglais et garde le français pour le métier (`recueil`, `tache`, `etat`) : voir
+son `AGENTS.md`. Et `apps/glossaire-notion` est entièrement en anglais.
 Elle n'a pas de vocabulaire métier propre. C'est un lecteur de base Notion, et la
 franciser coûterait plus que ça ne clarifierait.
 
@@ -131,7 +156,8 @@ revue et en commit : « corrige QUAL-006 ».
 | Ce que tu veux écrire | Où ça va |
 |---|---|
 | Une décision d'architecture | `docs/knowledge/adr/` de l'app concernée, ou celui de la racine si la décision traverse plusieurs apps. Format ADR maison, au niveau composant C4, sans détail de fichier |
-| Le cadrage d'un chantier | `docs/specs/` (tracker `0. drafts` → `4. done`), à la racine ou dans l'app |
+| Le cadrage d'un chantier | `docs/specs/` (tracker `0. drafts` → `4. done`), à la racine ou dans l'app. `tsp spec new` la crée, `tsp spec move` la change d'état |
+| Ce qu'une app sait faire | son `docs/knowledge/features.md`, un tableau « feature, ce qu'elle fait » que lit `tsp features` |
 | Une connaissance métier actée | `docs/knowledge/domain/` de l'app concernée, ou celui de la racine si elle traverse plusieurs apps |
 | Le mode d'emploi d'une app | son `README.md` |
 | Ce qu'une version apporte | le `CHANGELOG.md` de l'app. Un TL;DR, puis une ligne par commit groupée par type |

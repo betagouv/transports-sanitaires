@@ -6,6 +6,7 @@
   "scripts": {
     "predev:front": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons",
+    "dev": "pnpm run \"/^dev:/\"",
     "dev:front": "vite",
     "dev:server": "node --watch --env-file-if-exists=.env server/server.ts",
     "build": "tsc -b && vite build",

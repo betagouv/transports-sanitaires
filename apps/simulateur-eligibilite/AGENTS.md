@@ -92,6 +92,7 @@ personne, ses tests le chargent comme texte.
 | Commande | Ce qu'elle fait |
 |---|---|
 | `pnpm verifier` | **À passer avant de dire que c'est fait.** lint → typecheck → knip → validation des règles → tests → build (+ vérification de bundle). Exactement ce que lance la CI. |
+| `pnpm dev` | Front et backend ensemble : c'est `tsp dev simulateur` |
 | `pnpm dev:front` | Serveur Vite, <http://localhost:5173> (proxy `/api` → `:3000`) |
 | `pnpm dev:server` | Backend Express, <http://localhost:3000> |
 | `pnpm start` | Serveur de production (`node server/server.ts`) |

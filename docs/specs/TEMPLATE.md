@@ -6,6 +6,10 @@
 > La spec se déplace de dossier d'état en dossier d'état, en gardant son nom :
 > seul l'état est une arborescence, parce que seul l'état change. Module et type
 > tiennent dans le nom, pour qu'un état se lise d'un coup d'œil.
+>
+> `tsp spec new <module> <type> <titre>` fait la copie, avec le prochain id.
+> `tsp spec move <id> <état>` déplace la spec. `tsp spec sync` écrit le champ
+> `notion`.
 
 | Champ       | Valeur                                      |
 |-------------|---------------------------------------------|
@@ -13,6 +17,7 @@
 | module      | nom du module concerné                      |
 | type        | voir ci-dessous                             |
 | bloquée par | les specs à finir d'abord, ou `—` si aucune |
+| notion      | l'adresse du ticket Notion, ou `—`          |
 
 Les specs bloquantes se listent par leur renvoi complet, séparées par une
 virgule — ex. `[[015__shared__source-de-donnees.tech]],
@@ -27,7 +32,7 @@ spec ? », et tout ce qui n'y répond pas la brouille — un renvoi barré s'est
 fait lire comme un blocage vivant. L'histoire du blocage, elle, se raconte dans
 les `## Notes`, où elle a la place de dire aussi pourquoi.
 
-Types : `feat` (nouvelle capacité), `fix` (correctif), `refactor` (même
+Types : `feat` (nouvelle feature), `fix` (correctif), `refactor` (même
 comportement, meilleure forme), `tech` (chantier de socle : choix
 d'architecture, intégration d'une source, outillage — pas de valeur
 utilisateur directe, mais débloque d'autres specs), `chore`, `docs`, `test`.

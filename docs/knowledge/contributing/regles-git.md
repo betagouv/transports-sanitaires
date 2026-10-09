@@ -208,8 +208,8 @@ On ne commite jamais directement sur `main` ni sur `staging`.
 
 ```bash
 # ✅ OK : une branche tirée de staging, qui finira en PR vers staging
-git switch -c fix/libelle-article-80 staging
-gh pr create --base staging
+tsp branch fix/libelle-article-80
+tsp pr
 ```
 
 ```bash
@@ -220,4 +220,4 @@ git commit -m "fix(simulateur): corrige le libellé de l'article 80"
 
 *Gardé par* `.githooks/pre-commit`. Il refuse tout commit sur `main` ou
 `staging`, sauf celui qui conclut une fusion en conflit : c'est ainsi que
-`staging` rejoint `main`.
+`staging` rejoint `main`. `tsp pr` impose `staging` comme cible.
