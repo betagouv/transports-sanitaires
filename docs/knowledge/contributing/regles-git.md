@@ -11,16 +11,17 @@ reformuler la règle.
 |---|---|---|
 | GIT-001 | Travailler sur `main` par défaut | aucune |
 | GIT-002 | Une branche pour le structurant qu'aucun drapeau ne masque | aucune |
-| GIT-003 | Conventional Commits, scope entre parenthèses | aucune |
+| GIT-003 | Conventional Commits, scope entre parenthèses | hook `commit-msg` |
 | GIT-004 | Sujet en français, 3ᵉ personne de l'indicatif présent | aucune |
 | GIT-005 | Corps argumenté : ce qui change, et surtout pourquoi | aucune |
 | GIT-006 | Terminer par l'état de vérification | aucune |
-| GIT-007 | Aucune métadonnée d'IA | aucune |
+| GIT-007 | Aucune métadonnée d'IA | hook `commit-msg` |
 | GIT-008 | Relire le diff et le message avant de commiter sur `data-analyzer` | aucune |
 
-Aucune de ces règles n'a de garde. GIT-003 et GIT-007 sont pourtant mécanisables
-par un hook `commit-msg`, que le dépôt n'a pas. Les six autres sont du jugement,
-et restent à la relecture.
+GIT-003 et GIT-007 sont gardées par [`.githooks/commit-msg`](../../../.githooks/commit-msg).
+Le `prepare` du `package.json` racine l'installe à chaque `pnpm install`, en
+pointant `core.hooksPath` sur `.githooks/`. Les six autres règles sont du
+jugement, et restent à la relecture.
 
 ---
 
@@ -99,7 +100,8 @@ Mise à jour du journal des versions
 update simulateur
 ```
 
-*Aucune garde.* Un hook `commit-msg` la porterait.
+*Gardé par* `.githooks/commit-msg`. Il laisse passer les sujets que git écrit
+lui-même : `Merge`, `Revert`, `fixup!`, `squash!`.
 
 ---
 
@@ -208,8 +210,10 @@ Co-Authored-By: <un modèle>
 Claude-Session: <une URL de session>
 ```
 
-*Aucune garde.* Un hook `commit-msg` la porterait, et c'est celle qui s'y prête
-le mieux : le motif est fixe.
+*Gardé par* `.githooks/commit-msg`. Il refuse les trailers qui nomment un
+assistant (`Co-Authored-By`, `Claude-Session`), l'adresse `noreply@anthropic.com`,
+les liens de session et les « Generated with ». Un chemin comme `.claude/skills`
+dans le corps passe.
 
 ---
 
