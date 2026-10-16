@@ -36,8 +36,8 @@ type Props = {
 };
 
 // Le verrou ne s'annonce pas à l'écran : l'interface nomme l'action, et le
-// « Précédent » de cette page dit ce qui reste ouvert. Sans cerfa, rien ne suit
-// ce résultat : le stepper s'arrête sur lui.
+// « Précédent » de cette page dit ce qui reste ouvert. Sans action qui
+// verrouille, rien ne suit ce résultat : le stepper s'arrête sur lui.
 export function FirstResultat({
   model,
   state,
@@ -48,21 +48,24 @@ export function FirstResultat({
 }: Props & { onLock: (locked: Locked) => void }) {
   const { answers } = state;
   const preconisation = preconisationOf(model, answers);
-  const { parts, title, Resultat } = model.transportAndEligibility;
-  const hasCerfa = model.cerfa.form(preconisation.cibles) !== null;
+  const { cibles } = preconisation;
+  const { parts, title, Resultat, titleInPrint } =
+    model.transportAndEligibility;
+  const startLabel = startLabelOf(model, cibles);
   const trace = traceOf("résultat", pagesOf(parts), answers, preconisation);
   return (
     <Frame
       title={title}
+      titleInPrint={titleInPrint}
       part={parts.length}
-      total={parts.length + (hasCerfa ? 1 : 0)}
+      total={parts.length + (startLabel === null ? 0 : 1)}
       trace={trace}
       DebugTrace={DebugTrace}
     >
-      <Resultat answers={answers} cibles={preconisation.cibles} />
+      <Resultat answers={answers} cibles={cibles} />
       <FirstActions
-        printLabel={model.transportAndEligibility.printLabel}
-        startLabel={hasCerfa ? model.cerfa.startLabel : undefined}
+        printLabel={model.transportAndEligibility.printLabel(cibles)}
+        startLabel={startLabel}
         onReopen={() => onReopen(state)}
         onLock={() => onLock({ answers, preconisation })}
         onRestart={onRestart}
@@ -113,6 +116,15 @@ export function CerfaResultat({
 
 // ---- implémentation ----
 
+// L'action qui verrouille, si elle a de quoi ouvrir la partie suivante : une
+// page à poser, ou un cerfa à remplir. Un modèle peut donner un libellé sans
+// avoir encore de partie à ouvrir ; le verrou ne mène pas à un écran vide.
+function startLabelOf(model: Model, cibles: AnyCibles): string | null {
+  const { part, form, startLabel } = model.cerfa;
+  const opens = part.pages.length > 0 || form(cibles) !== null;
+  return opens ? startLabel(cibles) : null;
+}
+
 // Le cerfa de la préconisation figée, daté du jour où le complément a été
 // validé. Rien quand elle n'en donne pas.
 function Cerfa({ model, input }: { model: Model; input: CerfaInput }) {
@@ -130,8 +142,8 @@ function Cerfa({ model, input }: { model: Model; input: CerfaInput }) {
 }
 
 // Deux groupes, comme le veut la fiche. L'impression ne verrouille rien : elle
-// reste avec « Précédent ». « Compléter » verrouille, et se tient à part. Rien
-// de ces boutons ne s'imprime.
+// reste avec « Précédent ». « Compléter » verrouille, et se tient à part. Un
+// libellé `null` retire son bouton. Rien de ces boutons ne s'imprime.
 function FirstActions({
   printLabel,
   startLabel,
@@ -139,8 +151,8 @@ function FirstActions({
   onLock,
   onRestart,
 }: {
-  printLabel: string;
-  startLabel?: string;
+  printLabel: string | null;
+  startLabel: string | null;
   onReopen: () => void;
   onLock: () => void;
   onRestart: () => void;
@@ -152,11 +164,13 @@ function FirstActions({
         <SecondaryButton onClick={onRestart}>
           Nouvelle simulation
         </SecondaryButton>
-        <PrimaryButton onClick={() => window.print()}>
-          {printLabel}
-        </PrimaryButton>
+        {printLabel !== null && (
+          <PrimaryButton onClick={() => window.print()}>
+            {printLabel}
+          </PrimaryButton>
+        )}
       </div>
-      {startLabel && (
+      {startLabel !== null && (
         <div className="fr-btns-group fr-btns-group--inline fr-mt-3w">
           <PrimaryButton onClick={onLock}>{startLabel}</PrimaryButton>
         </div>
@@ -186,6 +200,7 @@ function traceOf(
 
 function Frame({
   title,
+  titleInPrint = true,
   part,
   total,
   trace,
@@ -193,6 +208,7 @@ function Frame({
   children,
 }: {
   title: string;
+  titleInPrint?: boolean;
   part: number;
   total: number;
   trace: DebugTraceProps;
@@ -201,7 +217,7 @@ function Frame({
 }) {
   return (
     <>
-      <h1 className="fr-h3">{title}</h1>
+      <h1 className={titleInPrint ? "fr-h3" : "fr-h3 fr-no-print"}>{title}</h1>
       <div className="fr-no-print">
         <Stepper part={part} total={total} />
       </div>

@@ -20,7 +20,9 @@ du transport. Le modèle de l'éditeur (`front/models/eligibilite/`) s'intègre
 oracle sont là, son questionnaire va jusqu'à la fin de P2 (la page de branche). R2 est posée pour les dix issues : les cinq issues sans fiche patient (caisse, établissement,
 permission à la charge du patient, convocation, transport à l'étranger), la
 fiche négative, et les fiches positives de la prescription médicale de
-transport, du S3141 et des deux demandes d'accord préalable.
+transport, du S3141 et des deux demandes d'accord préalable. Les boutons de
+chaque issue sont posés (`boutons-du-resultat.ts`) ; « Compléter » attend P3,
+qui n'a pas encore de page.
 Le [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 
 Le front a deux dossiers. `front/socle/` porte ce qui ne dépend d'aucune version

@@ -49,7 +49,7 @@ export const model = defineModel<Questions, Faits, Cibles>({
     parts: PARTS,
     title: "Résultat",
     Resultat: Commande,
-    printLabel: "Imprimer la commande",
+    printLabel: () => "Imprimer la commande",
   },
   cerfa: {
     part: COMPLEMENT,
@@ -59,7 +59,8 @@ export const model = defineModel<Questions, Faits, Cibles>({
       commande === SANS_COMMANDE ? null : BON_DE_COMMANDE,
     title: "Commande complétée",
     Resultat: CommandeCompletee,
-    startLabel: "Compléter la commande",
+    startLabel: ({ commande }) =>
+      commande === SANS_COMMANDE ? null : "Compléter la commande",
     downloadLabel: "Télécharger le bon de commande",
   },
   seeds: () => import("./seeds-catalogue").then((m) => m.SEEDS),
