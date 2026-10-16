@@ -19,6 +19,7 @@ type Contexte = Questions["Q2.2.1.b"][number];
 /**
  * Le groupe « déjà hospitalisé » se propose-t-il ? Ni une permission déjà
  * indiquée en Q2.1, ni une entrée en hospitalisation ne le laissent (D-98).
+ * Coché, il n'établit pas l'hospitalisation : il inclut la HAD (TS1012-02).
  */
 export function sejourAProposer(validated: Valides): boolean {
   return (
@@ -37,13 +38,6 @@ export function contextesAProposer(validated: Valides): readonly Contexte[] {
   return CONTEXTES.filter((contexte) => !retires.includes(contexte));
 }
 
-/** Q2.1 indique-t-elle déjà une situation de Q2.2.1 ? Son libellé, alors. */
-export function contexteDeQ21(validated: Valides): string | undefined {
-  const motif = validated["Q2.1"]?.answer;
-  if (!motif || !RETIRES_PAR_Q21[motif]) return undefined;
-  return OPTIONS["Q2.1"][motif];
-}
-
 /** Les faits que la page des contextes établit. Absents : rien n'y figure. */
 export function faitsDesContextes(validated: Valides): Partial<Faits> {
   if (answerAbsent(validated["Q2.2.1"]?.answer)) return {};
@@ -58,8 +52,9 @@ export function faitsDesContextes(validated: Valides): Partial<Faits> {
 
 const CONTEXTES = Object.keys(OPTIONS["Q2.2.1.b"]) as Contexte[];
 
-// Les situations que Q2.1 indique déjà. Le groupe « déjà hospitalisé », que la
-// permission retire, se lit dans `sejourAProposer`.
+// Les situations que Q2.1 indique déjà. Elles sont retirées sans rappel
+// (TS1012-01). Le groupe « déjà hospitalisé », que la permission retire, se lit
+// dans `sejourAProposer`.
 const RETIRES_PAR_Q21: Partial<Record<Motif, readonly Contexte[]>> = {
   "10_CAMSP": ["6_CAMSP"],
   "11_PERMISSION": [],
@@ -79,10 +74,6 @@ const FAIT_DU_CONTEXTE: Record<
   "5_HTNM": { fait: "fait_htnm_hors_maternite", positif: false },
   "6_CAMSP": { fait: "fait_motif_camsp", positif: true },
   "7_SAMSAH": { fait: "fait_motif_samsah", positif: true },
-  "8_CENTRE_DE_REFERENCE": {
-    fait: "fait_centre_reference_destination",
-    positif: false,
-  },
   "9_PENSION_MILITAIRE": { fait: "fait_motif_pension", positif: true },
   "10_RETOUR_PENITENTIAIRE": undefined,
   "13_CONVOCATION": { fait: "fait_convocation", positif: false },

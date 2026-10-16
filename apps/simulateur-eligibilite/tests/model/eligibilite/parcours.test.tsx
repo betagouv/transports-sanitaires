@@ -167,7 +167,7 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     await page(Q21);
     await choisir(user, /^Transfert entre établissements/);
     await page(Q221);
-    await cocher(user, /^Aucune de ces situations/);
+    await cocher(user, /^Aucune autre situation/);
     await suivant(user);
     await page(Q231);
     await choisir(user, /^50 km ou moins/);

@@ -61,7 +61,6 @@ const DU_CADRE = [
   "fait_htnm_hors_maternite",
   "fait_motif_camsp",
   "fait_motif_samsah",
-  "fait_centre_reference_destination",
   "fait_motif_pension",
   "fait_convocation",
 ] as const;
@@ -72,16 +71,22 @@ describe("Q2.2.1 « Aucune »", () => {
   it("écarte chaque situation proposée", () => {
     expect(
       valeurs(aucune, [...DU_SEJOUR, ...DU_CADRE, "fait_trajet_etranger"]),
-    ).toEqual(Array(14).fill(false));
+    ).toEqual(Array(13).fill(false));
   });
 
   it("n'établit pas l'hospitalisation, que Q2.2.1 ne demande pas", () => {
     expect(faits(aucune).fait_hospitalisation.value).toBeUndefined();
   });
 
+  it("se lit toujours « autre situation » (TS1012-01)", () => {
+    expect(posee("Q2.2.1", BRANCARD)?.exclusiveOption?.label).toBe(
+      "Aucune autre situation parmi celles proposées.",
+    );
+  });
+
   it("un formulaire vide n'est pas « Aucune »", () => {
     expect(valeurs({ ...BRANCARD, "Q2.2.1": [] }, DU_CADRE)).toEqual(
-      Array(8).fill(undefined),
+      Array(7).fill(undefined),
     );
   });
 });
@@ -94,13 +99,13 @@ describe("l'autre cadre (Q2.2.1.b)", () => {
   });
 
   it("coché, attend sa précision avant d'établir quoi que ce soit", () => {
-    expect(valeurs(cadre([]), DU_CADRE)).toEqual(Array(8).fill(undefined));
+    expect(valeurs(cadre([]), DU_CADRE)).toEqual(Array(7).fill(undefined));
   });
 
   it("met à « oui » la situation cochée, à « non » celles écartées", () => {
     expect(valeurs(cadre(["1_ATMP"]), DU_CADRE)).toEqual([
       true,
-      ...Array(7).fill(false),
+      ...Array(6).fill(false),
     ]);
   });
 
@@ -115,7 +120,6 @@ describe("l'autre cadre (Q2.2.1.b)", () => {
   it.each([
     ["4_MATERNITE_ELOIGNEE", "fait_dap_maternite"],
     ["5_HTNM", "fait_htnm_hors_maternite"],
-    ["8_CENTRE_DE_REFERENCE", "fait_centre_reference_destination"],
     ["13_CONVOCATION", "fait_convocation"],
   ] as const)("%s laisse %s à qualifier dans sa branche", (contexte, fait) => {
     expect(faits(cadre([contexte]))[fait]).toEqual({
@@ -139,7 +143,7 @@ describe("l'autre cadre (Q2.2.1.b)", () => {
       ({ value }) => value === "3_AUTRE_CADRE",
     )?.help;
     expect(aide?.label).toBe("Voir les situations concernées");
-    expect(aide?.items).toHaveLength(9);
+    expect(aide?.items).toHaveLength(8);
   });
 });
 
@@ -206,13 +210,11 @@ describe("ce que Q2.1 indique déjà (D-98)", () => {
     ]);
   });
 
-  it("une permission se rappelle, et « Aucune » dit « autre »", () => {
+  it("une permission se retire sans rappel (TS1012-01)", () => {
     const question = posee("Q2.2.1", avec({ "Q2.1": "11_PERMISSION" }));
-    expect(question?.reminder).toBe(
-      "Déjà indiqué : Permission temporaire pendant l’hospitalisation.",
-    );
-    expect(question?.exclusiveOption?.label).toBe(
-      "Aucune autre situation parmi celles proposées.",
+    expect(question?.reminder).toBeUndefined();
+    expect(faits(avec({ "Q2.1": "11_PERMISSION" })).fait_permission.value).toBe(
+      true,
     );
   });
 
@@ -232,7 +234,7 @@ describe("ce que Q2.1 indique déjà (D-98)", () => {
       "Q2.2.1": ["3_AUTRE_CADRE"],
     } satisfies Reponses;
     const offertes = proposees("Q2.2.1.b", reponses);
-    expect(offertes).toHaveLength(9 - retires.length);
+    expect(offertes).toHaveLength(8 - retires.length);
     for (const retire of retires) expect(offertes).not.toContain(retire);
   });
 
