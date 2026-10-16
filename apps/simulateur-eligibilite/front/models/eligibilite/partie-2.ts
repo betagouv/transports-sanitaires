@@ -1,6 +1,7 @@
 // P2 : l'éligibilité. La prestation (Q2.1), les situations particulières
-// (Q2.2.1), puis le trajet (Q2.3). Les autres pages du catalogue viennent
-// ensuite (issue 63).
+// (Q2.2.1), le trajet (Q2.3), puis le transfert (Q2.5) et les exceptions de
+// l'article 80 (Q2.6), dans `pages-du-transfert.ts`. Les autres pages du
+// catalogue viennent ensuite (issue 63).
 
 import { optionsFrom, type QuestionnairePart } from "../../socle";
 import {
@@ -9,6 +10,7 @@ import {
   sejourAProposer,
 } from "./contextes";
 import { OPTIONS, type Questions } from "./declarations/questions";
+import { PAGE_DES_EXCEPTIONS, PAGE_DU_TRANSFERT } from "./pages-du-transfert";
 import { motifDeP1, plusieursSeances } from "./prestation";
 import { faitsDuTrajet, urgenceAAfficher } from "./trajet";
 
@@ -213,5 +215,11 @@ const PAGE_DU_TRAJET: Page = {
 export const P2: QuestionnairePart<Questions, undefined> = {
   id: "P2",
   title: "Éligibilité",
-  pages: [PAGE_DE_LA_PRESTATION, PAGE_DES_CONTEXTES, PAGE_DU_TRAJET],
+  pages: [
+    PAGE_DE_LA_PRESTATION,
+    PAGE_DES_CONTEXTES,
+    PAGE_DU_TRAJET,
+    PAGE_DU_TRANSFERT,
+    PAGE_DES_EXCEPTIONS,
+  ],
 };

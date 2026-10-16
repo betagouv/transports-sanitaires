@@ -174,6 +174,40 @@ export const OPTIONS = {
     "1_OUI": "Oui.",
     "2_NON": "Non.",
   },
+  /** S’agit-il d’un transfert entre établissements ou d’un autre déplacement pendant l’hospitalisation ? */
+  "Q2.5": {
+    "1_TRANSFERT": "Oui, il s’agit d’un transfert entre établissements.",
+    "2_AUTRE_DEPLACEMENT":
+      "Non, il s’agit d’un autre déplacement pendant l’hospitalisation.",
+  },
+  /** Le type du transfert : l'option 1 du catalogue, posée à part (D-106). */
+  "Q2.6.a": {
+    "1_DEFINITIF": "Définitif (au moins 48 heures).",
+    "2_PROVISOIRE":
+      "Provisoire (moins de 48 heures avec retour dans l’établissement d’origine).",
+  },
+  /**
+   * Quelle situation précise et quelles exceptions s’appliquent à ce
+   * déplacement ? Les options gardent leur numéro du catalogue, où le type est
+   * l'option 1. L'option 4 est la nôtre (D-106).
+   */
+  "Q2.6": {
+    "2_ADMISSION_SANS_SEJOUR":
+      "Admission dans le nouvel établissement sans prestation d’hospitalisation dans le premier.",
+    "3_CENTRE_QUINZE":
+      "Transport sanitaire demandé par le Centre 15, hors SMUR, dans le cadre de l’aide médicale urgente.",
+    "4_AIR_MER": "Trajet aérien ou maritime autre qu’en ligne régulière.",
+    "5_HAD": "Transport prescrit par une HAD hors soins liés à la HAD.",
+    "6_USLD": "Transport depuis/vers USLD hors même implantation géographique.",
+    "7_EHPAD":
+      "Transport depuis/vers EHPAD hors même implantation géographique.",
+    "8_RADIOTHERAPIE":
+      "Transfert <48 heures pour radiothérapie en exercice libéral ou centre de santé.",
+    "9_DIALYSE_A_DOMICILE": "Patient pratiquant la dialyse à domicile.",
+    "10_ADMISSION_HAD":
+      "Patient hospitalisé rentrant à domicile pour une admission en HAD.",
+    "11_AUCUNE": "Aucune de ces exceptions.",
+  },
 } as const;
 
 type Option<Id extends keyof typeof OPTIONS> = keyof (typeof OPTIONS)[Id];
@@ -197,4 +231,7 @@ export type Questions = {
   "Q2.3.2": boolean;
   "Q2.3.3": Option<"Q2.3.3">;
   "Q2.3.4": Option<"Q2.3.4">;
+  "Q2.5": Option<"Q2.5">;
+  "Q2.6.a": Option<"Q2.6.a">;
+  "Q2.6": readonly Option<"Q2.6">[];
 };

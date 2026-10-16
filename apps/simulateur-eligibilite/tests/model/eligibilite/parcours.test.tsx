@@ -20,6 +20,9 @@ const Q21G = /^S’agit-il d’une entrée dans un établissement/;
 const Q221 = /^L’une de ces situations correspond-elle aussi/;
 const Q221B = /^Laquelle ou lesquelles de ces situations/;
 const Q231 = /^Quelle distance parcourra le patient/;
+const Q25 = /^S’agit-il d’un transfert entre établissements/;
+const Q26A = /^Le transfert est-il définitif ou provisoire/;
+const Q26 = /^Quelle situation précise et quelles exceptions/;
 const HOSPITALISE = /^Le patient est déjà hospitalisé pendant ce trajet/;
 
 function afficherLeQuestionnaire() {
@@ -126,5 +129,45 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
 
     await choisir(user, /^Oui, il s’agit du même déplacement/);
     expect(await page(Q221)).toBeInTheDocument();
+  });
+
+  it("pose le type du transfert, puis ses exceptions, après le trajet", async () => {
+    const user = afficherLeQuestionnaire();
+    await choisir(user, /^Vérifier une éligibilité/);
+    await page(Q11);
+    await choisir(user, /^Peut se déplacer seul/);
+    await page(Q13);
+    await cocher(user, /^Aucune de ces situations/);
+    await suivant(user);
+    await page(/^Le patient pouvant réaliser le trajet/);
+    await choisir(user, /^Véhicule personnel/);
+    await page(Q21);
+    await choisir(user, /^Transfert entre établissements/);
+    await page(Q221);
+    await cocher(user, /^Aucune de ces situations/);
+    await suivant(user);
+    await page(Q231);
+    await choisir(user, /^50 km ou moins/);
+    await suivant(user);
+
+    await page(Q25);
+    await choisir(user, /^Oui, il s’agit d’un transfert/);
+    expect(await page(Q26A)).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: Q26 })).toBeNull();
+
+    await choisir(user, /^Définitif/);
+    expect(await page(Q26)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+    expect(
+      screen.getByRole("checkbox", { name: /^Admission dans le nouvel/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: /^Transfert <48/ }),
+    ).toBeNull();
+
+    await cocher(user, /^Aucune de ces exceptions/);
+    expect(
+      await screen.findByRole("button", { name: "Voir le résultat" }),
+    ).toBeEnabled();
   });
 });
