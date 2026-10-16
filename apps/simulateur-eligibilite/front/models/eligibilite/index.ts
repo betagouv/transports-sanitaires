@@ -1,6 +1,7 @@
 // Le modèle de l'éditeur, dont `rules/VERSION` porte le numéro.
 
 import { defineModel } from "../../socle";
+import { libelleDeCompletion, libelleDImpression } from "./boutons-du-resultat";
 import type { Cibles } from "./declarations/cibles";
 import type { Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
@@ -15,7 +16,9 @@ export const model = defineModel<Questions, Faits, Cibles>({
     parts: PARTS,
     title: "Résultat de l’éligibilité",
     Resultat: Eligibilite,
-    printLabel: "Imprimer la fiche patient",
+    printLabel: libelleDImpression,
+    // La fiche patient porte son propre titre : celui du cadre n'y a pas sa place.
+    titleInPrint: false,
   },
   cerfa: {
     part: COMPLEMENT,
@@ -24,7 +27,7 @@ export const model = defineModel<Questions, Faits, Cibles>({
     form: () => null,
     title: "Prescription préremplie prête à imprimer",
     Resultat: PrescriptionPreremplie,
-    startLabel: "Compléter la prescription",
+    startLabel: libelleDeCompletion,
     downloadLabel: "Télécharger et imprimer la prescription pré-remplie",
   },
   seeds: () => import("./seeds-catalogue").then((m) => m.SEEDS),

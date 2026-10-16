@@ -61,7 +61,16 @@ export type Model<
     parts: readonly QuestionnairePart<Questions, undefined>[];
     title: string;
     Resultat: ComponentType<ResultatProps<Questions, Cibles>>;
-    printLabel: string;
+    /**
+     * Le libellé de l'action qui imprime la fiche. `null` : cette préconisation
+     * n'a rien à imprimer, le bouton n'est pas posé. Imprimer ne verrouille rien.
+     */
+    printLabel: (cibles: Cibles) => string | null;
+    /**
+     * Le titre du cadre s'imprime-t-il avec la fiche ? Oui par défaut. Un
+     * modèle dont la fiche porte déjà son titre le retire.
+     */
+    titleInPrint?: boolean;
   };
   /** Le second résultat, après le verrou : le cerfa. */
   cerfa: {
@@ -72,8 +81,12 @@ export type Model<
     ) => BoundCerfa<CerfaInput<Questions, Faits, Cibles>> | null;
     title: string;
     Resultat: ComponentType<ResultatProps<Questions, Cibles>>;
-    /** Le libellé de l'action qui verrouille. */
-    startLabel: string;
+    /**
+     * Le libellé de l'action qui verrouille. `null` : cette préconisation ne
+     * complète rien, le bouton n'est pas posé. Il ne l'est pas non plus tant que
+     * la partie n'a ni page ni cerfa : le verrou n'ouvre pas un écran vide.
+     */
+    startLabel: (cibles: Cibles) => string | null;
     downloadLabel: string;
   };
   /** Le catalogue des seeds, chargé à la demande. */
