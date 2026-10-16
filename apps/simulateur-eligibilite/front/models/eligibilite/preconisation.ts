@@ -1,13 +1,15 @@
 // Des réponses aux faits : ce que les règles de l'éditeur reçoivent.
 //
 // Q0.1 dit un besoin, pas un fait. P1 établit ses faits, et P2 ceux de la
-// prestation et du trajet. Les autres faits de P2 restent absents, et P2 n'est
-// jamais tenue pour complète tant qu'elle n'est pas posée en entier.
+// prestation et du trajet. L'exclusion du transport se constate sans question.
+// Les autres faits de P2 restent absents, et P2 n'est jamais tenue pour
+// complète tant qu'elle n'est pas posée en entier.
 
 import type { Answers } from "../../socle";
 import { areAnswered, type Validated } from "../../socle";
 import { AUCUN_FAIT, type Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
+import { EXCLUSION_DU_TRANSPORT } from "./exclusion-du-transport";
 import { faitsDuMode } from "./mode-de-transport";
 import { faitsDeLaPrestation } from "./prestation";
 import { P1 } from "./questionnaire";
@@ -23,6 +25,7 @@ export function faits(
     ...faitsDuMode(validated),
     ...faitsDuTrajet(validated),
     ...faitsDeLaPrestation(validated),
+    fait_exclusion_transport_prouvee: EXCLUSION_DU_TRANSPORT,
     fait_p1_complete: complete
       ? {
           value: true,

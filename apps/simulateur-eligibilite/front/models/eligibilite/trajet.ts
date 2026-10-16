@@ -9,6 +9,7 @@ import type { Fait } from "../../socle/decision-engine/publicodes";
 import { AUCUN_FAIT, type Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
 import { cible } from "./evaluation-des-regles";
+import { EXCLUSION_DU_TRANSPORT } from "./exclusion-du-transport";
 import { faitsDuMode } from "./mode-de-transport";
 import { faitsDeLaPrestation } from "./prestation";
 
@@ -27,9 +28,9 @@ export function faitsDuTrajet(validated: Valides) {
 /**
  * Q2.3.4 s'affiche-t-elle ? C'est la garde de l'éditeur,
  * `cible_question_urgence_a_afficher`, lue sur ce que P1, la prestation et le
- * trajet ont établi. Les faits des pages suivantes restent absents : la garde
- * ne les lit jamais comme un « non ». Elle vaut `true` même si des faits
- * manquent encore.
+ * trajet ont établi, et sur l'exclusion du transport. Les faits des pages
+ * suivantes restent absents : la garde ne les lit jamais comme un « non ». Elle
+ * vaut `true` même si des faits manquent encore.
  */
 export function urgenceAAfficher(validated: Valides): boolean {
   return (
@@ -41,6 +42,7 @@ export function urgenceAAfficher(validated: Valides): boolean {
         ...faitsDeLaDistance(validated),
         fait_avion_bateau_ligne: avionOuBateau(validated),
         fait_serie_qualifiante: serieQualifiante(validated),
+        fait_exclusion_transport_prouvee: EXCLUSION_DU_TRANSPORT,
       },
       "cible_question_urgence_a_afficher",
     ) === true
