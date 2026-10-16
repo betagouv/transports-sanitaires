@@ -3,7 +3,8 @@
 //
 // Une option se répond par un slug : son numéro dans le catalogue de l'éditeur,
 // puis ce qu'elle veut dire. Le libellé est celui du catalogue, mot pour mot.
-// Les options se déclarent dans l'ordre du catalogue : c'est l'ordre de l'écran.
+// Les options se déclarent dans l'ordre du catalogue : c'est l'ordre de l'écran,
+// sauf quand le catalogue en donne un autre (Q1.3).
 
 /** Les options de chaque question à choix : leur slug, et leur libellé. */
 export const OPTIONS = {
@@ -50,13 +51,15 @@ export const OPTIONS = {
   "Q1.3": {
     "1_FORTE_CORPULENCE": "Présente une forte corpulence (plus de 150 kg).",
     "2_ALD":
-      "Les soins ou examens à l’origine du déplacement sont en lien avec une ALD (Affection de Longue Durée) reconnue pour ce patient par l’Assurance Maladie.",
+      "Les soins ou examens à l’origine du déplacement sont en lien avec une ALD reconnue (prise en charge à 100 % au titre de cette ALD).",
     "3_CHIMIOTHERAPIE": "Ce déplacement concerne une séance de chimiothérapie.",
     "4_RADIOTHERAPIE": "Ce déplacement concerne une séance de radiothérapie.",
     "5_DIALYSE": "Ce déplacement concerne une séance de dialyse en centre.",
     "6_PARTAGE_INCOMPATIBLE":
       "L’état de santé du patient n’est pas compatible avec un transport partagé.",
     "7_AUCUNE": "Aucune de ces situations.",
+    "8_MINEUR_SOINS_CONTINUS":
+      "Le patient a moins de 18 ans et le service médical de l’Assurance Maladie a reconnu qu’il nécessite des soins continus pendant plus de six mois, en lien avec ce déplacement.",
   },
   /** La séance prévue est-elle une séance d’hémodialyse ? */
   "Q1.3.a": {

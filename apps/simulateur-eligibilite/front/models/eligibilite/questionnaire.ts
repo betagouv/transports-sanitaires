@@ -21,6 +21,18 @@ const CRITERES_D_AMBULANCE = [
   "11_ASEPSIE",
 ] as const;
 
+// L'ordre d'écran de Q1.3, que son contrat fixe : le mineur suit l'ALD. Les
+// slugs gardent le numéro du catalogue, et « Aucune » ferme la liste.
+const ORDRE_DES_CAS: readonly string[] = [
+  "1_FORTE_CORPULENCE",
+  "2_ALD",
+  "8_MINEUR_SOINS_CONTINUS",
+  "3_CHIMIOTHERAPIE",
+  "4_RADIOTHERAPIE",
+  "5_DIALYSE",
+  "6_PARTAGE_INCOMPATIBLE",
+] satisfies readonly Questions["Q1.3"][number][];
+
 // Q1.3, et Q1.3.a sur la même page quand une dialyse est cochée. Décocher la
 // dialyse retire Q1.3.a, et sa réponse avec elle.
 const PAGE_DES_CAS_PARTICULIERS: Partie<undefined>["pages"][number] = {
@@ -53,7 +65,12 @@ const PAGE_DES_CAS_PARTICULIERS: Partie<undefined>["pages"][number] = {
             },
           },
         },
-      ).filter((option) => option.value !== "7_AUCUNE"),
+      )
+        .filter((option) => option.value !== "7_AUCUNE")
+        .sort(
+          (a, b) =>
+            ORDRE_DES_CAS.indexOf(a.value) - ORDRE_DES_CAS.indexOf(b.value),
+        ),
       exclusiveOption: {
         value: "7_AUCUNE",
         label: OPTIONS["Q1.3"]["7_AUCUNE"],

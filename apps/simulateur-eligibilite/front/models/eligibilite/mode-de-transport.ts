@@ -125,6 +125,8 @@ function faitsDeQ13(validated: Valides) {
       fait_partage_incompatible: attente,
       fait_bariatrique: attente,
       fait_ald_liee: attente,
+      fait_ald_exonerante_3_ou_4: attente,
+      fait_mineur_soins_prolonges_reconnus: attente,
       fait_situation_soins_qualifiante: attente,
       fait_hospitalisation: attente,
     };
@@ -137,19 +139,48 @@ function faitsDeQ13(validated: Valides) {
   return {
     fait_partage_incompatible: coche("6_PARTAGE_INCOMPATIBLE"),
     fait_bariatrique: coche("1_FORTE_CORPULENCE"),
-    fait_ald_liee: aldLiee(validated, cas),
+    ...faitsDeLAldEtDuMineur(validated, cas),
     fait_situation_soins_qualifiante: seance,
     fait_hospitalisation: seance,
   };
 }
 
-// L'ALD ne vaut que si P1 établit aussi une incapacité de se déplacer : un
-// critère de Q1.2, qui ne se pose qu'avec un professionnel.
-function aldLiee(validated: Valides, cas: Questions["Q1.3"]): Fait {
-  if (!cas.includes("2_ALD")) return non("Q1.3 validée sans « 2_ALD ».");
-  if (validated["Q1.1"]?.answer !== PROFESSIONNEL)
-    return non("Q1.3 : « 2_ALD » coché, sans critère de Q1.2.");
-  return oui("Q1.3 : « 2_ALD » coché, avec un critère de Q1.2.");
+// L'ALD et le mineur en soins continus (CONTRAT_Q13_ALD_MINEUR.json). Cochée,
+// la réponse 2 dit le 100 % ; non cochée, elle ne dit rien du statut de
+// l'ALD, qui reste absent. Le lien de l'ALD, comme la reconnaissance du
+// mineur, demande en plus la preuve clinique de P1.
+function faitsDeLAldEtDuMineur(validated: Valides, cas: Questions["Q1.3"]) {
+  const preuve = preuveClinique(validated);
+  const fondement = (option: (typeof cas)[number]): Fait => {
+    if (!cas.includes(option)) return non(`Q1.3 validée sans « ${option} ».`);
+    return {
+      ...preuve,
+      provenance: `Q1.3 : « ${option} » coché. ${preuve.provenance}`,
+    };
+  };
+  return {
+    fait_ald_liee: fondement("2_ALD"),
+    fait_ald_exonerante_3_ou_4: cas.includes("2_ALD")
+      ? oui("Q1.3 : « 2_ALD » coché, pris en charge à 100 %.")
+      : absent(
+          "Q1.3 validée sans « 2_ALD » : le statut de l'ALD reste inconnu.",
+        ),
+    fait_mineur_soins_prolonges_reconnus: fondement("8_MINEUR_SOINS_CONTINUS"),
+  };
+}
+
+// L'aide nécessaire d'un proche (Q1.1 réponse 2), ou un critère de Q1.2. Le
+// patient qui se déplace seul n'a pas de déficience. Une Q1.2 qui ne se pose
+// pas, après un proche, n'en dit pas l'absence.
+function preuveClinique(validated: Valides): Fait {
+  const qui = validated["Q1.1"]?.answer;
+  if (qui === "2_AVEC_UN_PROCHE")
+    return oui("Q1.1 : l'aide d'un proche est nécessaire.");
+  if (qui === "1_SEUL") return non("Q1.1 : le patient se déplace seul.");
+  const critere = validated["Q1.2"]?.answer?.[0];
+  if (qui === PROFESSIONNEL && critere)
+    return oui(`Q1.2 : « ${critere} » coché.`);
+  return absent("Ni Q1.1 ni Q1.2 n'établissent encore une déficience.");
 }
 
 // Une chimiothérapie, une radiothérapie, ou une hémodialyse confirmée par
