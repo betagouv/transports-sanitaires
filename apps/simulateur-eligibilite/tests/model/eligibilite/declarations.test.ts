@@ -93,10 +93,10 @@ describe("les options déclarées", () => {
     },
   );
 
-  it("Q2.2.1.b garde les numéros des options de Q2.2.1", () => {
+  it("Q2.2.1.b garde les numéros des options de Q2.2.1, sans le 8 (TS1012-03)", () => {
     expect(
       Object.keys(contextes).map((slug) => Number(slug.split("_")[0])),
-    ).toEqual([1, 4, 5, 6, 7, 8, 9, 10, 13]);
+    ).toEqual([1, 4, 5, 6, 7, 9, 10, 13]);
   });
 
   it("Q2.6 numérote ses exceptions à partir de 2, après le type", () => {

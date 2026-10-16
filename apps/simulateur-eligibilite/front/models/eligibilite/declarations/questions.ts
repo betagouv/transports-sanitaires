@@ -125,7 +125,9 @@ export const OPTIONS = {
     "2_ETRANGER":
       "Le départ, l’arrivée ou le lieu de soins concerné se trouve à l’étranger.",
     "3_AUTRE_CADRE": "Une autre situation particulière concerne ce trajet.",
-    "4_AUCUNE": "Aucune de ces situations.",
+    // Le libellé de `CONTRAT_Q221_PROGRESSIF.json` en v10.1.2, toujours, et
+    // non celui du catalogue quand aucun contexte n'est acquis.
+    "4_AUCUNE": "Aucune autre situation parmi celles proposées.",
   },
   /** Ce trajet correspond-il à une permission temporaire de sortie de l’hôpital ? */
   "Q2.2.1.a": {
@@ -135,7 +137,8 @@ export const OPTIONS = {
   },
   /**
    * Laquelle ou lesquelles de ces situations concernent aussi ce trajet ? Les
-   * options gardent leur numéro parmi les treize du catalogue (S1).
+   * options gardent leur numéro parmi les treize du catalogue (S1). Le centre
+   * de référence (8) n'en est plus depuis la v10.1.2 : il se recueille en P3.
    */
   "Q2.2.1.b": {
     "1_ATMP": "À un accident du travail ou à une maladie professionnelle.",
@@ -145,8 +148,6 @@ export const OPTIONS = {
     "6_CAMSP":
       "À des soins dans le cadre d’un CAMSP ou d’un CMPP, y compris une séance en ville organisée dans le parcours de l’enfant.",
     "7_SAMSAH": "À des soins dans un SAMSAH.",
-    "8_CENTRE_DE_REFERENCE":
-      "À une consultation ou à des soins dans un centre de référence pour une maladie rare.",
     "9_PENSION_MILITAIRE":
       "À des soins en rapport avec une pension militaire d’invalidité.",
     "10_RETOUR_PENITENTIAIRE":

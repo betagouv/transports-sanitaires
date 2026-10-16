@@ -6,11 +6,7 @@
 // `pages-de-la-branche.ts`. Q2.4, Q2.9 et Q2.11 n'ont aucun écran.
 
 import { optionsFrom, type QuestionnairePart } from "../../socle";
-import {
-  contexteDeQ21,
-  contextesAProposer,
-  sejourAProposer,
-} from "./contextes";
+import { contextesAProposer, sejourAProposer } from "./contextes";
 import { OPTIONS, type Questions } from "./declarations/questions";
 import { PAGE_DE_LA_BRANCHE } from "./pages-de-la-branche";
 import { PAGE_DE_LA_CONVOCATION } from "./pages-de-la-convocation";
@@ -88,7 +84,8 @@ const PAGE_DE_LA_PRESTATION: Page = {
 
 // Q2.2.1 et ses précisions sur une seule page : la permission (a), l'autre
 // cadre (b) et l'étranger (Q2.2.5), chacune sous le groupe qui l'ouvre. Elle se
-// pose sur tous les parcours, même quand Q2.1 est sautée (D-98).
+// pose sur tous les parcours, même quand Q2.1 est sautée (D-98). Ce que Q2.1
+// indique déjà est retiré, sans rappel (TS1012-01).
 const PAGE_DES_CONTEXTES: Page = {
   id: "P2/contextes",
   questions: [
@@ -97,10 +94,6 @@ const PAGE_DES_CONTEXTES: Page = {
       kind: "multiple choice",
       label:
         "L’une de ces situations correspond-elle aussi au trajet à réaliser ?",
-      reminderFrom: (_answers, _cibles, validated) => {
-        const indique = contexteDeQ21(validated);
-        return indique && `Déjà indiqué : ${indique}`;
-      },
       options: optionsFrom<Questions["Q2.2.1"][number], Questions, undefined>(
         OPTIONS["Q2.2.1"],
         {
@@ -123,10 +116,6 @@ const PAGE_DES_CONTEXTES: Page = {
       exclusiveOption: {
         value: "4_AUCUNE",
         label: OPTIONS["Q2.2.1"]["4_AUCUNE"],
-        labelFrom: (_answers, _cibles, validated) =>
-          contexteDeQ21(validated)
-            ? "Aucune autre situation parmi celles proposées."
-            : OPTIONS["Q2.2.1"]["4_AUCUNE"],
       },
     },
     {
