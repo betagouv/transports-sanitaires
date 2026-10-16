@@ -10,6 +10,7 @@ import { AUCUN_FAIT, type Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
 import { cible } from "./evaluation-des-regles";
 import { faitsDuMode } from "./mode-de-transport";
+import { faitsDeLaPrestation } from "./prestation";
 
 type Valides = Validated<Questions>;
 
@@ -24,23 +25,26 @@ export function faitsDuTrajet(validated: Valides) {
 }
 
 /**
- * Une demande d'accord préalable est-elle possible, vu P1 et le trajet ?
- * `undefined` : on ne le sait pas encore. Q2.3.4 se pose quand elle l'est
- * (D-95), en attendant l'arbitrage de l'éditeur : la règle qu'il destine à
- * cette question attend des faits posés après la page du trajet.
+ * Q2.3.4 s'affiche-t-elle ? C'est la garde de l'éditeur,
+ * `cible_question_urgence_a_afficher`, lue sur ce que P1, la prestation et le
+ * trajet ont établi. Les faits des pages suivantes restent absents : la garde
+ * ne les lit jamais comme un « non ». Elle vaut `true` même si des faits
+ * manquent encore.
  */
-export function dapPossible(validated: Valides): boolean | undefined {
-  const requise = cible(
-    {
-      ...AUCUN_FAIT,
-      ...faitsDuMode(validated),
-      ...faitsDeLaDistance(validated),
-      fait_avion_bateau_ligne: avionOuBateau(validated),
-      fait_serie_qualifiante: serieQualifiante(validated),
-    },
-    "cible_dap_requise",
+export function urgenceAAfficher(validated: Valides): boolean {
+  return (
+    cible(
+      {
+        ...AUCUN_FAIT,
+        ...faitsDuMode(validated),
+        ...faitsDeLaPrestation(validated),
+        ...faitsDeLaDistance(validated),
+        fait_avion_bateau_ligne: avionOuBateau(validated),
+        fait_serie_qualifiante: serieQualifiante(validated),
+      },
+      "cible_question_urgence_a_afficher",
+    ) === true
   );
-  return requise ?? undefined;
 }
 
 // ---- implémentation ----
@@ -97,9 +101,8 @@ function serieQualifiante(validated: Valides): Fait {
   return absent("Q2.3.3 n'est pas encore validée.");
 }
 
-// Q2.3.4 : le médecin atteste-t-il l'urgence ? Sans demande d'accord possible,
-// la question est sans objet : elle vaut « non » répondue, et l'attestation
-// reste absente, faute de réponse.
+// Q2.3.4 : le médecin atteste-t-il l'urgence ? « Oui » comme « Non » disent que
+// la question a eu sa réponse. Non posée, elle laisse les deux faits absents.
 function faitsDeLUrgence(validated: Valides) {
   const reponse = validated["Q2.3.4"]?.answer;
   if (answerPresent(reponse)) {
@@ -109,12 +112,10 @@ function faitsDeLUrgence(validated: Valides) {
       fait_urgence_repondue: oui(source),
     };
   }
-  const sansObjet = dapPossible(validated) === false;
-  const attente = sansObjet
-    ? "Q2.3.4 ne se pose pas : aucune demande d'accord n'est possible."
-    : "Q2.3.4 n'est pas encore validée.";
-  return {
-    fait_urgence_attestee: absent(attente),
-    fait_urgence_repondue: sansObjet ? non(attente) : absent(attente),
-  };
+  const attente = absent(
+    urgenceAAfficher(validated)
+      ? "Q2.3.4 n'est pas encore validée."
+      : "Q2.3.4 ne s'affiche pas : la garde de l'éditeur l'écarte.",
+  );
+  return { fait_urgence_attestee: attente, fait_urgence_repondue: attente };
 }

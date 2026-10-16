@@ -4,7 +4,7 @@
 import { optionsFrom, type QuestionnairePart } from "../../socle";
 import { OPTIONS, type Questions } from "./declarations/questions";
 import { motifDeP1, plusieursSeances } from "./prestation";
-import { dapPossible, faitsDuTrajet } from "./trajet";
+import { faitsDuTrajet, urgenceAAfficher } from "./trajet";
 
 type Page = QuestionnairePart<Questions, undefined>["pages"][number];
 
@@ -72,8 +72,8 @@ const PAGE_DE_LA_PRESTATION: Page = {
 
 // Q2.3 : le trajet évalué, sur une seule page. L'avion ou le bateau est une
 // case seule : décochée, elle répond « non ». La série se révèle sous la
-// distance quand le trajet dépasse 50 km, et l'urgence dès qu'une demande
-// d'accord est possible (D-95).
+// distance quand le trajet dépasse 50 km, et l'urgence quand la garde de
+// l'éditeur le dit (`cible_question_urgence_a_afficher`).
 const PAGE_DU_TRAJET: Page = {
   id: "P2/trajet",
   questions: [
@@ -106,8 +106,7 @@ const PAGE_DU_TRAJET: Page = {
       kind: "single choice",
       label:
         "Le médecin prescripteur atteste-t-il que ce transport est urgent ?",
-      askedIf: (_answers, _cibles, validated) =>
-        dapPossible(validated) === true,
+      askedIf: (_answers, _cibles, validated) => urgenceAAfficher(validated),
       options: optionsFrom(OPTIONS["Q2.3.4"]),
     },
   ],

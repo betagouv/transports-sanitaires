@@ -118,6 +118,7 @@ describe("l'urgence (Q2.3.4)", () => {
     ["« Oui »", { ...SERIE, "Q2.3.4": "1_OUI" }, true, true],
     ["« Non »", { ...SERIE, "Q2.3.4": "2_NON" }, false, true],
     ["une réponse qui attend", SERIE, undefined, undefined],
+    ["un trajet sans demande d'accord", COURT, undefined, undefined],
     [
       "une réponse restée d'un trajet sans demande d'accord",
       { ...COURT, "Q2.3.4": "1_OUI" },
