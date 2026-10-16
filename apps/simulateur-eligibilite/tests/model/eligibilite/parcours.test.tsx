@@ -6,7 +6,7 @@
 // formulaire, avec son brouillon, son avance automatique et ses blocages. Ils
 // sont peu nombreux à dessein : un parcours par mécanisme de P2.
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { model } from "../../../front/models/eligibilite";
@@ -23,6 +23,11 @@ const Q231 = /^Quelle distance parcourra le patient/;
 const Q25 = /^S’agit-il d’un transfert entre établissements/;
 const Q26A = /^Le transfert est-il définitif ou provisoire/;
 const Q26 = /^Quelle situation précise et quelles exceptions/;
+const Q27 = /^Dans quelle tranche d’âge se situe le patient/;
+const Q284 = /^Cette permission a-t-elle été autorisée/;
+const Q284A = /^Quel est le cadre de cette permission/;
+const Q285 = /^La prescription couvre-t-elle plusieurs permissions/;
+const Q286B = /^Le patient restera-t-il âgé de moins de 20 ans/;
 const HOSPITALISE = /^Le patient est déjà hospitalisé pendant ce trajet/;
 
 function afficherLeQuestionnaire() {
@@ -44,6 +49,17 @@ const choisir = (user: ReturnType<typeof userEvent.setup>, reponse: RegExp) =>
   user.click(screen.getByRole("radio", { name: reponse }));
 const cocher = (user: ReturnType<typeof userEvent.setup>, reponse: RegExp) =>
   user.click(screen.getByRole("checkbox", { name: reponse }));
+const champ = (libelle: RegExp) => screen.getByLabelText(libelle);
+const choisirDans = (
+  user: ReturnType<typeof userEvent.setup>,
+  question: RegExp,
+  reponse: RegExp,
+) =>
+  user.click(
+    within(screen.getByRole("group", { name: question })).getByRole("radio", {
+      name: reponse,
+    }),
+  );
 const suivant = (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByRole("button", { name: "Suivant" }));
 
@@ -166,6 +182,58 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     ).toBeNull();
 
     await cocher(user, /^Aucune de ces exceptions/);
+    expect(
+      await screen.findByRole("button", { name: "Voir le résultat" }),
+    ).toBeEnabled();
+  });
+  it("pose la permission du mineur sur une page, et révèle la période quand il y en a plusieurs", async () => {
+    const user = afficherLeQuestionnaire();
+    await choisir(user, /^Vérifier une éligibilité/);
+    await page(Q11);
+    await choisir(user, /^Peut se déplacer seul/);
+    await page(Q13);
+    await cocher(user, /^Aucune de ces situations/);
+    await suivant(user);
+    await page(/^Le patient pouvant réaliser le trajet/);
+    await choisir(user, /^Véhicule personnel/);
+    await page(Q21);
+    await choisir(user, /^Permission temporaire pendant l’hospitalisation/);
+    await page(Q221);
+    await cocher(user, /^Aucune autre situation/);
+    await suivant(user);
+    await page(Q231);
+    await choisir(user, /^50 km ou moins/);
+    await suivant(user);
+
+    await page(Q27);
+    await choisir(user, /^Moins de 16 ans/);
+    await page(Q284);
+    expect(screen.queryByLabelText(/^Quand se termine la période/)).toBeNull();
+
+    await user.type(champ(/^Depuis quelle date/), "2026-10-01");
+    await user.type(champ(/^Quand commence la première/), "2026-10-14T09:00");
+    await user.type(
+      champ(/^Quand se termine cette première/),
+      "2026-10-15T09:00",
+    );
+    await choisirDans(user, Q284, /^Oui\./);
+    await choisirDans(user, Q284A, /^Elle est liée aux soins/);
+    await choisirDans(user, Q285, /^Oui\./);
+
+    expect(champ(/^Quand se termine la période/)).toBeInTheDocument();
+    expect(champ(/^Une permission aller-retour/)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: Q286B })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+
+    await user.type(champ(/^Quand se termine la période/), "2026-12-01");
+    await user.type(champ(/^Une permission aller-retour/), "2");
+    await choisirDans(user, Q286B, /^Non\./);
+    expect(
+      await screen.findByText(/La période doit se terminer avant le vingtième/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+
+    await choisirDans(user, Q286B, /^Oui\./);
     expect(
       await screen.findByRole("button", { name: "Voir le résultat" }),
     ).toBeEnabled();

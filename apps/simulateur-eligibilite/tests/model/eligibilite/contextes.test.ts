@@ -150,10 +150,10 @@ describe("le séjour en cours (Q2.2.1.a)", () => {
     "Q2.2.1.a": permission,
   });
 
-  it("« Oui » établit la permission, sans rien dire du transfert", () => {
+  it("« Oui » établit la permission et écarte le transfert", () => {
     expect(valeurs(sejour("1_OUI"), DU_SEJOUR)).toEqual([
-      undefined,
-      undefined,
+      false,
+      false,
       true,
       undefined,
       undefined,
@@ -194,12 +194,12 @@ describe("ce que Q2.1 indique déjà (D-98)", () => {
     "Q2.2.1": ["4_AUCUNE"],
   });
 
-  it("une permission retire le séjour : ses faits restent absents", () => {
+  it("une permission retire le séjour et écarte le transfert", () => {
     const permission = avec({ "Q2.1": "11_PERMISSION" });
     expect(proposees("Q2.2.1", permission)).not.toContain("1_HOSPITALISATION");
     expect(valeurs(permission, DU_SEJOUR)).toEqual([
-      undefined,
-      undefined,
+      false,
+      false,
       true,
       undefined,
       undefined,
