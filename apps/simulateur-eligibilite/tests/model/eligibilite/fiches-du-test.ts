@@ -3,6 +3,7 @@
 
 import { catalogueResultats } from "../../../front/models/eligibilite/catalogue-resultats";
 import type { Cibles } from "../../../front/models/eligibilite/declarations/cibles";
+import type { Faits } from "../../../front/models/eligibilite/declarations/faits";
 import {
   type IssueAvecFichePositive,
   type TexteDeLaFichePositive,
@@ -13,16 +14,19 @@ import { trace } from "./traces-du-praticien";
 
 export const catalogue = await catalogueResultats();
 export const pmt = catalogue.issues.ISSUE_PMT;
+export const dapSansUrgence = catalogue.issues.ISSUE_DAP_SANS_URGENCE;
+export const dapUrgence = catalogue.issues.ISSUE_DAP_URGENCE_ATTESTEE;
 export const s3141 = catalogue.issues.ISSUE_S3141;
 
 export type Ajouts = {
   readonly criteres?: readonly number[];
   readonly permissionRepeated?: boolean;
   readonly precisions?: Trace["precisions"];
+  readonly faits?: Partial<Faits>;
 };
 
 const tracer = (cibles: Partial<Cibles>, ajouts: Ajouts = {}): Trace => ({
-  ...trace(cibles, {}, ajouts.precisions),
+  ...trace(cibles, ajouts.faits, ajouts.precisions),
   criteres: ajouts.criteres ?? [],
   ...(ajouts.permissionRepeated !== undefined && {
     permissionRepeated: ajouts.permissionRepeated,

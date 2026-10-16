@@ -1,5 +1,6 @@
-// La fiche patient positive (#135) : la prescription médicale de transport et
-// le formulaire S3141. Au-dessus, ce que le prescripteur lit : ce bloc ne
+// La fiche patient positive : la prescription médicale de transport et le
+// formulaire S3141 (#135), puis les deux demandes d'accord préalable (#136).
+// Au-dessus, ce que le prescripteur lit : ce bloc ne
 // s'imprime pas (`fr-no-print`, de DSFR). Seule la fiche, à remettre au
 // patient, s'imprime. Le composant range un `TexteDeLaFichePositive` ; il
 // n'écrit aucun texte de l'éditeur, et n'a aucune illustration.
@@ -22,6 +23,7 @@ export function FichePositive({ texte }: { texte: TexteDeLaFichePositive }) {
         {texte.raison && <p className="fr-text--lead">{texte.raison}</p>}
         <Cartes cartes={texte.cartes} />
         <ConsignesDuPatient consignes={texte.consignes} />
+        {texte.rappel && <Rappel texte={texte.rappel} />}
         <aside aria-labelledby="finance-titre" className="fr-callout">
           <h3 className="fr-callout__title" id="finance-titre">
             {texte.finance.title}
@@ -34,6 +36,15 @@ export function FichePositive({ texte }: { texte: TexteDeLaFichePositive }) {
 }
 
 // ---- implémentation ----
+
+// Le rappel d'attente de l'accord préalable : un encadré sans titre.
+function Rappel({ texte }: { texte: string }) {
+  return (
+    <div className="fr-callout fr-callout--blue-ecume">
+      <p className="fr-callout__text">{texte}</p>
+    </div>
+  );
+}
 
 // Les trois modes de transport ; celui du patient est marqué « Votre
 // situation ».
@@ -72,6 +83,11 @@ function ConsignesDuPatient({ consignes }: { consignes: Consignes }) {
       <h3 className="fr-h5" id="consignes-titre">
         {consignes.introduction}
       </h3>
+      {consignes.complement.map((paragraphe) => (
+        <p key={paragraphe}>
+          <TexteEnrichi texte={paragraphe} />
+        </p>
+      ))}
       <div>
         {consignes.etapes.map((etape) => (
           <div className="fr-mb-2w" key={etape.numero}>

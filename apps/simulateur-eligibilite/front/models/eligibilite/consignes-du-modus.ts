@@ -26,8 +26,16 @@ type Etape = {
   readonly blocs: readonly BlocDeConsigne[];
 };
 
+/** L'introduction d'une issue d'accord préalable : un titre et un sous-titre. */
+export type Introduction = {
+  readonly title: string;
+  readonly subtitle: string;
+};
+
 export type Consignes = {
   readonly introduction: string;
+  /** Les paragraphes du sous-titre de l'introduction, s'il y en a un. */
+  readonly complement: readonly string[];
   readonly etapes: readonly Etape[];
 };
 
@@ -44,12 +52,15 @@ export function modusDuMode(
 /**
  * Les consignes de ce modus. Sans motif administratif, la clause « au titre
  * de … » est retirée de la phrase : rien n'est écrit à la place. Sans badge,
- * la puce des besoins particuliers n'apparaît pas.
+ * la puce des besoins particuliers n'apparaît pas. Le repère `[INTRO]` des
+ * modus d'accord préalable devient le titre de l'introduction, puis son
+ * sous-titre en paragraphes, une seule fois avant la première étape.
  */
 export function consignesDuModus(
   modus: string,
   motif: string | undefined,
   badges: readonly string[],
+  intro?: Introduction,
 ): Consignes {
   const lignes = sansGrasSurPlusieursLignes(avecLeMotif(modus, motif))
     .split("<br>")
@@ -62,7 +73,7 @@ export function consignesDuModus(
     else (etapes.at(-1)?.lignes ?? introduction).push(ligne);
   }
   return {
-    introduction: introduction.join(" "),
+    ...introductionDe(introduction, intro),
     etapes: etapes.map(({ lignes: corps, ...etape }) => ({
       ...etape,
       blocs: blocsDesLignes(corps, badges),
@@ -74,6 +85,7 @@ export function consignesDuModus(
 
 type EtapeEnCours = Omit<Etape, "blocs"> & { lignes: string[] };
 
+const INTRO = "[INTRO]";
 const MOTIF = "[motif_Administratif]";
 const BADGES = "[badges]";
 const CLAUSE_DU_MOTIF = ` au titre de ${MOTIF}`;
@@ -85,6 +97,25 @@ function avecLeMotif(modus: string, motif: string | undefined): string {
   const elision = /^[aeiouyéèh]/i.test(motif);
   const elide = elision ? modus.replaceAll(`de ${MOTIF}`, `d’${motif}`) : modus;
   return elide.replaceAll(MOTIF, motif);
+}
+
+// Les lignes avant la première étape, jointes ; le repère `[INTRO]` prend le
+// titre de l'introduction, et son sous-titre fait le complément.
+function introductionDe(
+  lignes: readonly string[],
+  intro: Introduction | undefined,
+): Pick<Consignes, "introduction" | "complement"> {
+  const repere = lignes.some((ligne) => ligne.trim() === INTRO);
+  if (!intro || !repere)
+    return { introduction: lignes.join(" "), complement: [] };
+  return {
+    introduction: lignes
+      .map((ligne) => (ligne.trim() === INTRO ? intro.title : ligne))
+      .join(" "),
+    complement: intro.subtitle
+      .split("<br>")
+      .filter((ligne) => ligne.trim() !== ""),
+  };
 }
 
 // Le catalogue ferme parfois le gras après un saut de ligne

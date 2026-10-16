@@ -6,6 +6,7 @@
 // jamais par défaut. Le contexte retenu est celui dont les `codes` sont
 // exactement les codes établis. Les mots viennent du catalogue.
 
+import { avecLesAutresTermes } from "./autres-termes-du-lexique";
 import type {
   IssuePositive,
   TexteCode,
@@ -38,6 +39,41 @@ export function motifAdministratif(
   return texte && avecLeLexique(issue, trace, texte);
 }
 
+/**
+ * Ce texte, ses repères remplis : `{cadre_hospitalisation}` et `{lien_atmp}`
+ * se lisent dans le lexique, avec le repli du catalogue pour une précision
+ * que les réponses ne prouvent pas (`H-GENERIQUE`, `ATMP`). Les autres termes
+ * de l'accord préalable viennent de `autres-termes-du-lexique.ts`.
+ */
+export function avecLeLexique(
+  issue: IssuePositive,
+  trace: Trace,
+  texte: string,
+): string {
+  const { hospitalisation, atmp } = issue.lexicon;
+  const cadre = definition(
+    hospitalisation,
+    trace.precisions.hospitalisation,
+    "H-GENERIQUE",
+  );
+  const lien = definition(atmp, trace.precisions.atmp, "ATMP");
+  return avecLesAutresTermes(
+    issue,
+    trace,
+    texte
+      .replaceAll("{cadre_hospitalisation}", cadre)
+      .replaceAll("{lien_atmp}", lien),
+  );
+}
+
+/** Le texte dont les codes sont exactement ceux-ci, sans lexique. */
+export function texteDuCodeExact(
+  textes: readonly TexteCode[],
+  etablis: readonly string[],
+): string | undefined {
+  return textes.find(({ codes }) => memesCodes(codes, etablis))?.text;
+}
+
 // ---- implémentation ----
 
 // Chaque code, et la cible qui le prouve. Le M ne se pose que pour un mineur
@@ -58,7 +94,7 @@ function texteDesCodes(
 ): string | undefined {
   const etablis = codesDeContexte(cibles);
   if (etablis.length === 0) return undefined;
-  return textes.find(({ codes }) => memesCodes(codes, etablis))?.text;
+  return texteDuCodeExact(textes, etablis);
 }
 
 function memesCodes(
@@ -69,26 +105,6 @@ function memesCodes(
     codes.length === etablis.length &&
     etablis.every((code) => codes.includes(code))
   );
-}
-
-// `{cadre_hospitalisation}` et `{lien_atmp}` se lisent dans le lexique. Une
-// précision que les réponses ne prouvent pas prend le repli du catalogue :
-// `H-GENERIQUE` pour l'hospitalisation, `ATMP` pour l'accident ou la maladie.
-function avecLeLexique(
-  issue: IssuePositive,
-  trace: Trace,
-  texte: string,
-): string {
-  const { hospitalisation, atmp } = issue.lexicon;
-  const cadre = definition(
-    hospitalisation,
-    trace.precisions.hospitalisation,
-    "H-GENERIQUE",
-  );
-  const lien = definition(atmp, trace.precisions.atmp, "ATMP");
-  return texte
-    .replaceAll("{cadre_hospitalisation}", cadre)
-    .replaceAll("{lien_atmp}", lien);
 }
 
 function definition(
