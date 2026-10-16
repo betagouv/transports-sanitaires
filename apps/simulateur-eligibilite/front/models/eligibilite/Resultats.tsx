@@ -2,13 +2,16 @@
 // préremplie (R3).
 //
 // Cinq issues n'ont pas de fiche patient : leur texte est celui du praticien
-// (#133). La non-éligibilité a sa fiche patient négative (#134). Les autres
-// montrent, d'ici à leur fiche, ce que les règles ont calculé, sans phrase.
+// (#133). La non-éligibilité a sa fiche patient négative (#134), la
+// prescription médicale de transport et le S3141 leur fiche positive (#135).
+// Les autres montrent, d'ici à leur fiche, ce que les règles ont calculé,
+// sans phrase.
 
 import type { Answers } from "../../socle";
 import type { Cibles } from "./declarations/cibles";
 import type { Questions } from "./declarations/questions";
 import { ResultatNegatif } from "./ResultatNegatif";
+import { ResultatPositif } from "./ResultatPositif";
 import { ResultatPraticien } from "./ResultatPraticien";
 import { estSansFiche } from "./texte-du-praticien";
 
@@ -19,6 +22,9 @@ export function Eligibilite({ answers, cibles }: Props) {
   if (!issue) return <SansIssue />;
   if (issue === "ISSUE_NON_ELIGIBLE") {
     return <ResultatNegatif answers={answers} cibles={cibles} />;
+  }
+  if (issue === "ISSUE_PMT" || issue === "ISSUE_S3141") {
+    return <ResultatPositif answers={answers} cibles={cibles} issue={issue} />;
   }
   if (estSansFiche(issue)) {
     return (

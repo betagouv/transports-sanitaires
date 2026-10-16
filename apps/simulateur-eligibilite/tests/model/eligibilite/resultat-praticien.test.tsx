@@ -103,7 +103,7 @@ describe("la page du transport à l'étranger", () => {
 
 describe("une issue qui aura sa fiche patient", () => {
   it("montre encore ce que les règles ont calculé", async () => {
-    await afficher("issue-pmt");
-    expect(screen.getByText("ISSUE_PMT")).toBeInTheDocument();
+    await afficher("issue-dap-sans-urgence");
+    expect(screen.getByText("ISSUE_DAP_SANS_URGENCE")).toBeInTheDocument();
   });
 });
