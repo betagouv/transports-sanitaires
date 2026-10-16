@@ -11,7 +11,7 @@ type Page = QuestionnairePart<Questions, undefined>["pages"][number];
 // Q2.1 et ses sous-questions f, g et h, sur une seule page. Q2.1 se saute quand
 // P1 prouve déjà un motif de transport ; Q2.1.f se pose quand même, si
 // plusieurs séances sont cochées. La page s'affiche dès que l'une se pose
-// (D-97).
+// (D-102).
 const PAGE_DE_LA_PRESTATION: Page = {
   id: "P2/prestation",
   questions: [

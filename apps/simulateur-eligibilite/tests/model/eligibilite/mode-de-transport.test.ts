@@ -56,7 +56,7 @@ const BRANCARD = avecUnProfessionnel(["8_BRANCARDAGE"]);
 
 describe("les pages de P0 et P1, jusqu'au trajet", () => {
   // Le brancard prouve déjà un motif de transport : la prestation (Q2.1) ne
-  // se pose pas (D-97).
+  // se pose pas (D-102).
   it("un patient autonome saute les critères et dit sa préférence", () => {
     expect(pagesAffichees(SEUL)).toEqual([
       "P0/1",

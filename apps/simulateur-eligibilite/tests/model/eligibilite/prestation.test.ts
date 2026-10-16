@@ -1,5 +1,5 @@
 // La page de la prestation (Q2.1) : ce qui s'y pose, d'après le catalogue de
-// l'éditeur et D-97. Q2.1 se saute quand P1 prouve déjà un motif de transport.
+// l'éditeur et D-102. Q2.1 se saute quand P1 prouve déjà un motif de transport.
 
 import { describe, expect, it } from "vitest";
 import { model } from "../../../front/models/eligibilite";
@@ -44,6 +44,10 @@ describe("Q2.1, le motif du déplacement", () => {
       "une dialyse qui n'est pas une hémodialyse",
       assis(["5_DIALYSE"], { "Q1.3.a": "2_AUTRE_DIALYSE" }),
     ],
+    [
+      "une ALD sans déficience, chez un patient seul",
+      { ...SEUL, "Q1.3": ["2_ALD", "8_MINEUR_SOINS_CONTINUS"] },
+    ],
   ] as const)("se pose pour %s", (_, reponses) => {
     expect(ids(reponses)).toContain("Q2.1");
   });
@@ -58,6 +62,12 @@ describe("Q2.1, le motif du déplacement", () => {
     ],
     ["une chimiothérapie", assis(["3_CHIMIOTHERAPIE"])],
     ["une hémodialyse", assis(["5_DIALYSE"], { "Q1.3.a": "1_OUI" })],
+    ["une ALD à 100 %", assis(["2_ALD"])],
+    [
+      "une ALD à 100 %, avec un proche",
+      { ...SEUL, "Q1.1": "2_AVEC_UN_PROCHE", "Q1.3": ["2_ALD"] },
+    ],
+    ["un mineur en soins continus", assis(["8_MINEUR_SOINS_CONTINUS"])],
   ] as const)("ne se pose pas quand P1 prouve un motif : %s", (_, reponses) => {
     expect(ids(reponses)).not.toContain("Q2.1");
   });

@@ -3,31 +3,28 @@
 //
 // Chaque fait suit `CONTRAT_REPONSES_FAITS.json` et son correctif. Il ne lit que
 // les questions validées. Les sous-questions a à e et i à l, et le régime, ne
-// changent aucune sortie en v10.0.2 : elles ne sont pas posées (D-97).
+// changent aucune sortie : elles ne sont pas posées (D-102).
 
 import { answerAbsent, type Unanswered, type Validated } from "../../socle";
 import type { Fait } from "../../socle/decision-engine/publicodes";
-import type { Faits } from "./declarations/faits";
+import { AUCUN_FAIT, type Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
+import { cible } from "./evaluation-des-regles";
 import { faitsDuMode } from "./mode-de-transport";
 
 type Valides = Validated<Questions>;
 type Motif = Questions["Q2.1"];
 
 /**
- * P1 prouve-t-elle déjà un motif de transport ? Un critère d'ambulance, ou une
- * séance qualifiante. Q2.1 n'est alors pas posée (D-97).
+ * P1 prouve-t-elle déjà un motif de transport ? L'ambulance, une séance
+ * qualifiante, une ALD à 100 % liée au soin, ou le mineur reconnu en soins
+ * continus. Q2.1 n'est alors pas posée (D-102), et son saut ne donne aucun
+ * « non ».
  */
 export function motifDeP1(validated: Valides): boolean {
-  const mode = faitsDuMode(validated);
-  return [
-    mode.fait_critere_allonge,
-    mode.fait_critere_brancard,
-    mode.fait_critere_surveillance,
-    mode.fait_critere_oxygene,
-    mode.fait_critere_asepsie,
-    mode.fait_situation_soins_qualifiante,
-  ].some((fait) => fait.value === true);
+  const mode = { ...AUCUN_FAIT, ...faitsDuMode(validated) };
+  if (mode.fait_situation_soins_qualifiante.value === true) return true;
+  return MOTIFS_DE_P1.some((motif) => cible(mode, motif) === true);
 }
 
 /** Plusieurs séances de familles différentes sont-elles cochées en Q1.3 ? */
@@ -51,6 +48,13 @@ export function faitsDeLaPrestation(validated: Valides) {
 }
 
 // ---- implémentation ----
+
+// Les cibles qui, à la fin de P1, prouvent déjà un motif de transport.
+const MOTIFS_DE_P1 = [
+  "cible_mode_ambulance",
+  "cible_ald_qualifiante",
+  "cible_mineur_soins_prolonges",
+] as const;
 
 const SEANCES = ["3_CHIMIOTHERAPIE", "4_RADIOTHERAPIE", "5_DIALYSE"] as const;
 
