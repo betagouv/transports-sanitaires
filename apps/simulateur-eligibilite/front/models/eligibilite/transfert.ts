@@ -11,6 +11,7 @@ import { answerAbsent, type Validated } from "../../socle";
 import type { Fait } from "../../socle/decision-engine/publicodes";
 import type { Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
+import { sortieVersLaPrison } from "./retour-penitentiaire";
 
 type Valides = Validated<Questions>;
 type Exception = Questions["Q2.6"][number];
@@ -19,11 +20,13 @@ type TypeDuTransfert = Questions["Q2.6.a"];
 /**
  * Q2.5 se pose-t-elle ? Q2.1 dit un transfert, ou Q2.2.1.a écarte la
  * permission : un déplacement pendant l'hospitalisation, au type à préciser.
+ * Une sortie définitive vers la prison n'en est pas un (TS1012-04).
  */
 export function transfertAPoser(validated: Valides): boolean {
   return (
-    validated["Q2.1"]?.answer === "9_TRANSFERT" ||
-    validated["Q2.2.1.a"]?.answer === "2_NON"
+    (validated["Q2.1"]?.answer === "9_TRANSFERT" ||
+      validated["Q2.2.1.a"]?.answer === "2_NON") &&
+    !sortieVersLaPrison(validated)
   );
 }
 

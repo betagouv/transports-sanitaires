@@ -4,6 +4,10 @@
 import { optionsFrom, type QuestionnairePart } from "../../socle";
 import { OPTIONS, type Questions } from "./declarations/questions";
 import {
+  retourPenitentiaireValide,
+  TRANSFERT_VERS_LA_PRISON,
+} from "./retour-penitentiaire";
+import {
   champIOuvert,
   exceptionAProposer,
   transfertAPoser,
@@ -25,6 +29,11 @@ export const PAGE_DU_TRANSFERT: Page = {
         "S’agit-il d’un transfert entre établissements ou d’un autre déplacement pendant l’hospitalisation ?",
       askedIf: (_answers, _cibles, validated) => transfertAPoser(validated),
       options: optionsFrom(OPTIONS["Q2.5"]),
+      inconsistenciesFrom: (answers, _cibles, validated) =>
+        answers["Q2.5"] === "1_TRANSFERT" &&
+        retourPenitentiaireValide(validated)
+          ? [TRANSFERT_VERS_LA_PRISON]
+          : [],
     },
   ],
 };
