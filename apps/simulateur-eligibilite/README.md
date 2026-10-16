@@ -189,8 +189,8 @@ pose la prestation (Q2.1, avec ses sous-questions f, g et h) et le trajet : la
 distance, l'avion ou le bateau, la série et l'urgence (Q2.3.1 à Q2.3.4).
 Le résultat de R2 montre la page du praticien pour cinq issues, la fiche
 patient négative pour `ISSUE_NON_ELIGIBLE` et la fiche patient positive pour
-`ISSUE_PMT` et `ISSUE_S3141` ; les deux issues d'accord préalable attendent
-leur fiche.
+`ISSUE_PMT`, `ISSUE_S3141` et les deux demandes d'accord préalable : les dix
+issues ont leur texte.
 L'avancement
 est dans l'issue 50 du dépôt, les décisions dans
 [`docs/knowledge/adr/journal-des-decisions-v10.md`](docs/knowledge/adr/journal-des-decisions-v10.md).

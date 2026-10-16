@@ -1,7 +1,8 @@
-// Le texte de la fiche patient positive (#135), pour `ISSUE_PMT` et
-// `ISSUE_S3141` : titres, cartes et badges. Des traces écrites à la main : rien
-// n'y est prouvé, sauf ce que le test pose. Les attendus sont recopiés du
-// catalogue de l'éditeur, que l'on ne relit pas ici.
+// Le texte de la fiche patient positive, pour `ISSUE_PMT` et `ISSUE_S3141`
+// (#135) et les deux accords préalables (#136) : titres, cartes et badges. Des
+// traces écrites à la main : rien n'y est prouvé, sauf ce que le test pose.
+// Les attendus sont recopiés du catalogue de l'éditeur, que l'on ne relit pas
+// ici.
 
 import { describe, expect, it } from "vitest";
 import {
@@ -47,7 +48,12 @@ describe("un titre et un modus pour chaque mode que les règles donnent", () => 
     );
   });
 
-  it.each(["ISSUE_PMT", "ISSUE_S3141"] as const)(
+  it.each([
+    "ISSUE_PMT",
+    "ISSUE_S3141",
+    "ISSUE_DAP_SANS_URGENCE",
+    "ISSUE_DAP_URGENCE_ATTESTEE",
+  ] as const)(
     "%s : chaque variante a sa fiche, sans emplacement resté vide",
     (issue) => {
       for (const cibles of variantes) {
@@ -98,6 +104,35 @@ describe("les titres", () => {
     ).toBe(
       "Vous êtes éligible à une prise en charge de votre transport pour une permission de sortie",
     );
+  });
+});
+
+describe("les titres des accords préalables", () => {
+  it("sans urgence : sous réserve de l'accord préalable", () => {
+    expect(fiche(TAP, {}, "ISSUE_DAP_SANS_URGENCE")).toMatchObject({
+      titreDuPatient:
+        "Votre transport sanitaire peut être pris en charge sous réserve de l’accord préalable de l’Assurance Maladie",
+      titreDuPrescripteur:
+        "Le transport sanitaire de votre patient peut être pris en charge sous réserve de l’accord préalable de l’Assurance Maladie",
+    });
+    expect(
+      fiche(
+        { cible_mode_id: "VEHICULE_PERSONNEL" },
+        {},
+        "ISSUE_DAP_SANS_URGENCE",
+      )?.titreDuPatient,
+    ).toBe(
+      "Votre transport peut être pris en charge sous réserve de l’accord préalable de l’Assurance Maladie",
+    );
+  });
+
+  it("avec urgence attestée : pris en charge, sans réserve", () => {
+    expect(fiche(TAP, {}, "ISSUE_DAP_URGENCE_ATTESTEE")).toMatchObject({
+      titreDuPatient:
+        "Votre transport sanitaire peut être pris en charge par l’Assurance Maladie",
+      titreDuPrescripteur:
+        "Le transport sanitaire de votre patient peut être pris en charge par l’Assurance Maladie",
+    });
   });
 });
 
