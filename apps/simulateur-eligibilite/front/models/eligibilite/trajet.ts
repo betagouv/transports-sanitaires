@@ -6,6 +6,7 @@
 
 import { answerAbsent, answerPresent, type Validated } from "../../socle";
 import type { Fait } from "../../socle/decision-engine/publicodes";
+import { faitsDesContextes } from "./contextes";
 import { AUCUN_FAIT, type Faits } from "./declarations/faits";
 import type { Questions } from "./declarations/questions";
 import { cible } from "./evaluation-des-regles";
@@ -27,8 +28,9 @@ export function faitsDuTrajet(validated: Valides) {
 
 /**
  * Q2.3.4 s'affiche-t-elle ? C'est la garde de l'éditeur,
- * `cible_question_urgence_a_afficher`, lue sur ce que P1, la prestation et le
- * trajet ont établi, et sur l'exclusion du transport. Les faits des pages
+ * `cible_question_urgence_a_afficher`, lue sur ce que P1, la prestation, les
+ * situations particulières et le trajet ont établi, et sur l'exclusion du
+ * transport. Les faits des pages
  * suivantes restent absents : la garde ne les lit jamais comme un « non ». Elle
  * vaut `true` même si des faits manquent encore.
  */
@@ -39,6 +41,7 @@ export function urgenceAAfficher(validated: Valides): boolean {
         ...AUCUN_FAIT,
         ...faitsDuMode(validated),
         ...faitsDeLaPrestation(validated),
+        ...faitsDesContextes(validated),
         ...faitsDeLaDistance(validated),
         fait_avion_bateau_ligne: avionOuBateau(validated),
         fait_serie_qualifiante: serieQualifiante(validated),

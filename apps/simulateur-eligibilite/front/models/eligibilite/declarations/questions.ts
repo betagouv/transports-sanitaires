@@ -115,6 +115,49 @@ export const OPTIONS = {
     "2_NON": "Non",
     "3_NE_SAIT_PAS": "Je ne peux pas le préciser",
   },
+  /** L’une de ces situations correspond-elle aussi au trajet à réaliser ? */
+  "Q2.2.1": {
+    "1_HOSPITALISATION":
+      "Le patient est déjà hospitalisé pendant ce trajet, y compris en hospitalisation à domicile (HAD).",
+    "2_ETRANGER":
+      "Le départ, l’arrivée ou le lieu de soins concerné se trouve à l’étranger.",
+    "3_AUTRE_CADRE": "Une autre situation particulière concerne ce trajet.",
+    "4_AUCUNE": "Aucune de ces situations.",
+  },
+  /** Ce trajet correspond-il à une permission temporaire de sortie de l’hôpital ? */
+  "Q2.2.1.a": {
+    "1_OUI": "Oui, il s'agit d'une permission de sortie.",
+    "2_NON":
+      "Non, ce déplacement a lieu pendant l'hospitalisation sans être une permission.",
+  },
+  /**
+   * Laquelle ou lesquelles de ces situations concernent aussi ce trajet ? Les
+   * options gardent leur numéro parmi les treize du catalogue (S1).
+   */
+  "Q2.2.1.b": {
+    "1_ATMP": "À un accident du travail ou à une maladie professionnelle.",
+    "4_MATERNITE_ELOIGNEE": "À un séjour près d’une maternité éloignée.",
+    "5_HTNM":
+      "À un hébergement temporaire non médicalisé en lien avec les soins.",
+    "6_CAMSP":
+      "À des soins dans le cadre d’un CAMSP ou d’un CMPP, y compris une séance en ville organisée dans le parcours de l’enfant.",
+    "7_SAMSAH": "À des soins dans un SAMSAH.",
+    "8_CENTRE_DE_REFERENCE":
+      "À une consultation ou à des soins dans un centre de référence pour une maladie rare.",
+    "9_PENSION_MILITAIRE":
+      "À des soins en rapport avec une pension militaire d’invalidité.",
+    "10_RETOUR_PENITENTIAIRE":
+      "À un retour vers un établissement pénitentiaire.",
+    "13_CONVOCATION":
+      "À une convocation de contrôle, une expertise ou un rendez-vous chez un fournisseur d’appareillage.",
+  },
+  /** Quel lieu lié à ce transport se trouve à l’étranger ? */
+  "Q2.2.5": {
+    "1_DEPART": "Le départ.",
+    "2_ARRIVEE": "L’arrivée.",
+    "3_LIEU_DES_SOINS":
+      "Le lieu des soins, s’il est distinct du départ et de l’arrivée.",
+  },
   /** Quelle distance parcourra le patient pour le trajet dans le sens évalué ? */
   "Q2.3.1": {
     "1_CINQUANTE_KM_OU_MOINS": "50 km ou moins.",
@@ -146,6 +189,10 @@ export type Questions = {
   "Q2.1.f": Option<"Q2.1.f">;
   "Q2.1.g": Option<"Q2.1.g">;
   "Q2.1.h": Option<"Q2.1.h">;
+  "Q2.2.1": readonly Option<"Q2.2.1">[];
+  "Q2.2.1.a": Option<"Q2.2.1.a">;
+  "Q2.2.1.b": readonly Option<"Q2.2.1.b">[];
+  "Q2.2.5": readonly Option<"Q2.2.5">[];
   "Q2.3.1": Option<"Q2.3.1">;
   "Q2.3.2": boolean;
   "Q2.3.3": Option<"Q2.3.3">;

@@ -23,6 +23,7 @@ const SEUL: Reponses = {
   "Q1.3": ["7_AUCUNE"],
   "Q1.4": "1_VEHICULE_PERSONNEL",
   "Q2.1": "1_CONSULTATION",
+  "Q2.2.1": ["4_AUCUNE"],
 };
 
 describe("la page du trajet", () => {
@@ -79,6 +80,7 @@ describe("la page du trajet", () => {
         "Q1.1": "3_AVEC_UN_PROFESSIONNEL",
         "Q1.2": ["8_BRANCARDAGE"],
         "Q1.3": ["7_AUCUNE"],
+        "Q2.2.1": ["4_AUCUNE"],
         "Q2.3.1": "3_PLUS_DE_CENT_CINQUANTE_KM",
         "Q2.3.2": false,
       }),
@@ -91,6 +93,18 @@ describe("la page du trajet", () => {
         ...SEUL,
         "Q2.1": "10_CAMSP",
         "Q2.1.h": "1_OUI",
+        "Q2.3.1": "1_CINQUANTE_KM_OU_MOINS",
+        "Q2.3.2": false,
+      }),
+    ).toContain("Q2.3.4");
+  });
+
+  it("pose l'urgence pour un CAMSP coché en Q2.2.1.b, même à 50 km ou moins", () => {
+    expect(
+      posees({
+        ...SEUL,
+        "Q2.2.1": ["3_AUTRE_CADRE"],
+        "Q2.2.1.b": ["6_CAMSP"],
         "Q2.3.1": "1_CINQUANTE_KM_OU_MOINS",
         "Q2.3.2": false,
       }),

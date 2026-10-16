@@ -1,7 +1,13 @@
-// P2 : l'éligibilité. La prestation (Q2.1), puis le trajet (Q2.3). Les autres
-// pages du catalogue viennent ensuite (issue 63).
+// P2 : l'éligibilité. La prestation (Q2.1), les situations particulières
+// (Q2.2.1), puis le trajet (Q2.3). Les autres pages du catalogue viennent
+// ensuite (issue 63).
 
 import { optionsFrom, type QuestionnairePart } from "../../socle";
+import {
+  contexteDeQ21,
+  contextesAProposer,
+  sejourAProposer,
+} from "./contextes";
 import { OPTIONS, type Questions } from "./declarations/questions";
 import { motifDeP1, plusieursSeances } from "./prestation";
 import { faitsDuTrajet, urgenceAAfficher } from "./trajet";
@@ -70,6 +76,97 @@ const PAGE_DE_LA_PRESTATION: Page = {
   ],
 };
 
+// Q2.2.1 et ses précisions sur une seule page : la permission (a), l'autre
+// cadre (b) et l'étranger (Q2.2.5), chacune sous le groupe qui l'ouvre. Elle se
+// pose sur tous les parcours, même quand Q2.1 est sautée (D-98).
+const PAGE_DES_CONTEXTES: Page = {
+  id: "P2/contextes",
+  questions: [
+    {
+      id: "Q2.2.1",
+      kind: "multiple choice",
+      label:
+        "L’une de ces situations correspond-elle aussi au trajet à réaliser ?",
+      reminderFrom: (_answers, _cibles, validated) => {
+        const indique = contexteDeQ21(validated);
+        return indique && `Déjà indiqué : ${indique}`;
+      },
+      options: optionsFrom<Questions["Q2.2.1"][number], Questions, undefined>(
+        OPTIONS["Q2.2.1"],
+        {
+          "1_HOSPITALISATION": {
+            offeredIf: (_answers, _cibles, validated) =>
+              sejourAProposer(validated),
+          },
+          "3_AUTRE_CADRE": {
+            description:
+              "Accident du travail ou maladie professionnelle, convocation ou appareillage, pension militaire, soins ou hébergement dans un dispositif particulier, retour vers un établissement pénitentiaire.",
+            helpFrom: (_answers, _cibles, validated) => ({
+              label: "Voir les situations concernées",
+              items: contextesAProposer(validated).map(
+                (contexte) => OPTIONS["Q2.2.1.b"][contexte],
+              ),
+            }),
+          },
+        },
+      ).filter((option) => option.value !== "4_AUCUNE"),
+      exclusiveOption: {
+        value: "4_AUCUNE",
+        label: OPTIONS["Q2.2.1"]["4_AUCUNE"],
+        labelFrom: (_answers, _cibles, validated) =>
+          contexteDeQ21(validated)
+            ? "Aucune autre situation parmi celles proposées."
+            : OPTIONS["Q2.2.1"]["4_AUCUNE"],
+      },
+    },
+    {
+      id: "Q2.2.1.a",
+      kind: "single choice",
+      label:
+        "Ce trajet correspond-il à une permission temporaire de sortie de l’hôpital ?",
+      askedIf: (answers) =>
+        answers["Q2.2.1"]?.includes("1_HOSPITALISATION") ?? false,
+      options: optionsFrom(OPTIONS["Q2.2.1.a"]),
+    },
+    {
+      id: "Q2.2.1.b",
+      kind: "multiple choice",
+      label:
+        "Laquelle ou lesquelles de ces situations concernent aussi ce trajet ?",
+      askedIf: (answers) =>
+        answers["Q2.2.1"]?.includes("3_AUTRE_CADRE") ?? false,
+      options: optionsFrom<Questions["Q2.2.1.b"][number], Questions, undefined>(
+        OPTIONS["Q2.2.1.b"],
+      ).map((option) => ({
+        ...option,
+        offeredIf: (_answers, _cibles, validated) =>
+          contextesAProposer(validated).some(
+            (contexte) => contexte === option.value,
+          ),
+      })),
+      incompatibleOptions: [
+        {
+          values: ["4_MATERNITE_ELOIGNEE", "5_HTNM"],
+          explanation:
+            "Un même hébergement relève de l’Engagement maternité ou d’un hébergement temporaire non médicalisé, pas des deux. Pour deux hébergements, faites une simulation par trajet.",
+        },
+        {
+          values: ["6_CAMSP", "7_SAMSAH"],
+          explanation:
+            "Le CAMSP ou le CMPP accueille un enfant, le SAMSAH un adulte : un seul des deux pour un même trajet.",
+        },
+      ],
+    },
+    {
+      id: "Q2.2.5",
+      kind: "multiple choice",
+      label: "Quel lieu lié à ce transport se trouve à l’étranger ?",
+      askedIf: (answers) => answers["Q2.2.1"]?.includes("2_ETRANGER") ?? false,
+      options: optionsFrom(OPTIONS["Q2.2.5"]),
+    },
+  ],
+};
+
 // Q2.3 : le trajet évalué, sur une seule page. L'avion ou le bateau est une
 // case seule : décochée, elle répond « non ». La série se révèle sous la
 // distance quand le trajet dépasse 50 km, et l'urgence quand la garde de
@@ -116,5 +213,5 @@ const PAGE_DU_TRAJET: Page = {
 export const P2: QuestionnairePart<Questions, undefined> = {
   id: "P2",
   title: "Éligibilité",
-  pages: [PAGE_DE_LA_PRESTATION, PAGE_DU_TRAJET],
+  pages: [PAGE_DE_LA_PRESTATION, PAGE_DES_CONTEXTES, PAGE_DU_TRAJET],
 };

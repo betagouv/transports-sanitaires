@@ -17,7 +17,10 @@ const Q13 = /^Avant d’établir le mode de transport/;
 const Q21 = /^Quelle situation médicale ou quel événement/;
 const Q21F = /^Les séances sélectionnées motivent-elles/;
 const Q21G = /^S’agit-il d’une entrée dans un établissement/;
+const Q221 = /^L’une de ces situations correspond-elle aussi/;
+const Q221B = /^Laquelle ou lesquelles de ces situations/;
 const Q231 = /^Quelle distance parcourra le patient/;
+const HOSPITALISE = /^Le patient est déjà hospitalisé pendant ce trajet/;
 
 function afficherLeQuestionnaire() {
   render(
@@ -56,7 +59,7 @@ async function avecUnProfessionnel(
 }
 
 describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
-  it("révèle Q2.1.g sur la page de Q2.1, puis passe au trajet", async () => {
+  it("révèle Q2.1.g sur la page de Q2.1, puis passe aux situations particulières", async () => {
     const user = afficherLeQuestionnaire();
     await choisir(user, /^Vérifier une éligibilité/);
     await page(Q11);
@@ -73,7 +76,8 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     expect(screen.getByRole("group", { name: Q21 })).toBeInTheDocument();
 
     await choisir(user, /^Une entrée dans un établissement de santé/);
-    expect(await page(Q231)).toBeInTheDocument();
+    expect(await page(Q221)).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: HOSPITALISE })).toBeNull();
   });
 
   it("saute Q2.1 quand le brancard prouve le motif", async () => {
@@ -82,8 +86,25 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     await cocher(user, /^Aucune de ces situations/);
     await suivant(user);
 
-    expect(await page(Q231)).toBeInTheDocument();
+    expect(await page(Q221)).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: Q21 })).toBeNull();
+  });
+
+  it("précise l'autre situation sur la page de Q2.2.1, avant le trajet", async () => {
+    const user = afficherLeQuestionnaire();
+    await avecUnProfessionnel(user, [/^Nécessite un brancardage/]);
+    await cocher(user, /^Aucune de ces situations/);
+    await suivant(user);
+    await page(Q221);
+
+    await cocher(user, /^Une autre situation particulière/);
+    expect(await page(Q221B)).toBeInTheDocument();
+    await suivant(user);
+    expect(screen.queryByRole("group", { name: Q231 })).toBeNull();
+
+    await cocher(user, /^À un accident du travail/);
+    await suivant(user);
+    expect(await page(Q231)).toBeInTheDocument();
   });
 
   it("bloque sur Q2.1.f quand les séances ne sont pas le même déplacement", async () => {
@@ -104,6 +125,6 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     expect(screen.queryByRole("group", { name: Q231 })).toBeNull();
 
     await choisir(user, /^Oui, il s’agit du même déplacement/);
-    expect(await page(Q231)).toBeInTheDocument();
+    expect(await page(Q221)).toBeInTheDocument();
   });
 });

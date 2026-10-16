@@ -24,6 +24,7 @@ const BRANCARD: Reponses = {
   "Q1.1": "3_AVEC_UN_PROFESSIONNEL",
   "Q1.2": ["8_BRANCARDAGE"],
   "Q1.3": ["7_AUCUNE"],
+  "Q2.2.1": ["4_AUCUNE"],
 };
 const COURT: Reponses = {
   ...BRANCARD,
