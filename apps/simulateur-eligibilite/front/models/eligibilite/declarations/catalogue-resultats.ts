@@ -133,7 +133,7 @@ export type ScenarioPraticien = {
 };
 
 /** La fiche patient d'un transport qui n'est pas pris en charge. */
-type IssueNegative = {
+export type IssueNegative = {
   readonly type: string;
   readonly title: string;
   readonly prescriberTitle: string;

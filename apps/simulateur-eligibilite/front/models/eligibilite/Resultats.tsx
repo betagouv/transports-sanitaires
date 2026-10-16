@@ -2,12 +2,13 @@
 // préremplie (R3).
 //
 // Cinq issues n'ont pas de fiche patient : leur texte est celui du praticien
-// (#133). Les autres montrent, d'ici à leur fiche, ce que les règles ont
-// calculé, sans phrase.
+// (#133). La non-éligibilité a sa fiche patient négative (#134). Les autres
+// montrent, d'ici à leur fiche, ce que les règles ont calculé, sans phrase.
 
 import type { Answers } from "../../socle";
 import type { Cibles } from "./declarations/cibles";
 import type { Questions } from "./declarations/questions";
+import { ResultatNegatif } from "./ResultatNegatif";
 import { ResultatPraticien } from "./ResultatPraticien";
 import { estSansFiche } from "./texte-du-praticien";
 
@@ -16,6 +17,9 @@ type Props = { answers: Answers<Questions>; cibles: Cibles };
 export function Eligibilite({ answers, cibles }: Props) {
   const issue = cibles.cible_issue_id;
   if (!issue) return <SansIssue />;
+  if (issue === "ISSUE_NON_ELIGIBLE") {
+    return <ResultatNegatif answers={answers} cibles={cibles} />;
+  }
   if (estSansFiche(issue)) {
     return (
       <ResultatPraticien answers={answers} cibles={cibles} issue={issue} />
