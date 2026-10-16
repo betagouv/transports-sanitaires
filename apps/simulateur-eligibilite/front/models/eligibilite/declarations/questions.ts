@@ -6,6 +6,8 @@
 // Les options se déclarent dans l'ordre du catalogue : c'est l'ordre de l'écran,
 // sauf quand le catalogue en donne un autre (Q1.3).
 
+import { OPTIONS_DE_LA_PERMISSION } from "./options-de-la-permission";
+
 /** Les options de chaque question à choix : leur slug, et leur libellé. */
 export const OPTIONS = {
   /** Quel est votre besoin ? */
@@ -208,46 +210,35 @@ export const OPTIONS = {
       "Patient hospitalisé rentrant à domicile pour une admission en HAD.",
     "11_AUCUNE": "Aucune de ces exceptions.",
   },
-  /**
-   * Dans quelle tranche d’âge se situe le patient pendant la période prescrite
-   * et quel est le cadre de la permission ?
-   */
-  "Q2.7": {
-    "1_MOINS_DE_SEIZE_ANS": "Moins de 16 ans.",
-    "2_SEIZE_A_DIX_NEUF_ANS": "De 16 à 19 ans.",
-    "3_ADULTE_AUTORISEE":
-      "20 ans ou plus : permission autorisée, liée aux soins ou à l’organisation de l’établissement.",
-    "4_ADULTE_A_SA_CHARGE":
-      "20 ans ou plus : transport exceptionnel demandé par écrit par le patient, sans fondement médical, pouvant lui être facturé.",
+  ...OPTIONS_DE_LA_PERMISSION,
+  /** Quelle convocation, quel avis d’audience ou quel appareillage motive ce trajet ? */
+  "Q2.10": {
+    "1_CONTROLE_MEDICAL":
+      "Convocation au contrôle médical de l’Assurance Maladie.",
+    "2_EXPERT_JURIDICTION":
+      "Convocation par un médecin-expert ou consultant désigné par une juridiction compétente.",
+    "3_AUDIENCE_CONSULTATION":
+      "Audience de cette juridiction comportant une consultation clinique.",
+    "4_EXPERT_CONTESTATION":
+      "Consultation d’un expert désigné pour une contestation médicale.",
+    "5_COMMISSION_RECOURS":
+      "Convocation d’une commission médicale de recours amiable ou du médecin désigné par elle.",
+    "6_APPAREILLAGE": "Déplacement chez un fournisseur d’appareillage.",
+    "7_AUCUNE": "Aucune de ces situations.",
   },
-  /** La confirmation de l'option 4 de Q2.7, nommée par nous (D-107). */
-  "Q2.7.a": {
-    "1_OUI": "Oui, les conditions de facturation ont été vérifiées.",
-    "2_NON": "Non.",
-    "3_NE_SAIT_PAS": "Je ne peux pas le vérifier.",
+  /** Le fournisseur est-il agréé pour cet appareillage ? (option 6 de Q2.10) */
+  "Q2.10.a": {
+    "1_OUI": "Oui",
+    "2_NON": "Non",
+    "3_NE_PEUX_PAS_VERIFIER": "Je ne peux pas le vérifier",
   },
-  /** L'autorisation de la permission, sous-question de Q2.8 (D-107). */
-  "Q2.8.4": {
-    "1_OUI": "Oui.",
-    "2_NON": "Non.",
-    "3_NE_SAIT_PAS": "Je ne peux pas le vérifier.",
-  },
-  /** Quel est le cadre de cette permission ? */
-  "Q2.8.4.a": {
-    "1_SOINS": "Elle est liée aux soins du patient.",
-    "2_ORGANISATION": "Elle est liée à l’organisation de l’établissement.",
-    "3_DEMANDE_PERSONNELLE":
-      "Elle répond à une demande personnelle du patient.",
-  },
-  /** La prescription couvre-t-elle plusieurs permissions ? */
-  "Q2.8.5": {
-    "1_OUI": "Oui.",
-    "2_NON": "Non.",
-  },
-  /** Le patient restera-t-il âgé de moins de 20 ans durant toute la période ? */
-  "Q2.8.6.b": {
-    "1_OUI": "Oui.",
-    "2_NON": "Non.",
+  /** Quel appareillage est concerné ? (option 6 de Q2.10) */
+  "Q2.10.b": {
+    "1_PROTHESE_OCULAIRE_FACIALE": "Prothèse oculaire ou faciale",
+    "2_PODO_ORTHESE": "Podo-orthèse",
+    "3_ORTHOPROTHESE": "Orthoprothèse",
+    "4_AUTRE": "Un autre appareillage",
+    "5_NE_PEUX_PAS_PRECISER": "Je ne peux pas le préciser",
   },
 } as const;
 
@@ -288,4 +279,7 @@ export type Questions = {
   /** Une permission aller-retour toutes les N semaines. */
   "Q2.8.6.a": number;
   "Q2.8.6.b": Option<"Q2.8.6.b">;
+  "Q2.10": Option<"Q2.10">;
+  "Q2.10.a": Option<"Q2.10.a">;
+  "Q2.10.b": Option<"Q2.10.b">;
 };

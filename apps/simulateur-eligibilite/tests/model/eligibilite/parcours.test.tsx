@@ -6,9 +6,9 @@
 // formulaire, avec son brouillon, son avance automatique et ses blocages. Ils
 // sont peu nombreux à dessein : un parcours par mécanisme de P2.
 
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { model } from "../../../front/models/eligibilite";
 import { QuestionnaireForm } from "../../../front/socle/questionnaire-engine/QuestionnaireForm";
 
@@ -28,16 +28,19 @@ const Q284 = /^Cette permission a-t-elle été autorisée/;
 const Q284A = /^Quel est le cadre de cette permission/;
 const Q285 = /^La prescription couvre-t-elle plusieurs permissions/;
 const Q286B = /^Le patient restera-t-il âgé de moins de 20 ans/;
+const Q210 = /^Quelle convocation, quel avis d’audience/;
+const Q210A = /^Le fournisseur est-il agréé/;
+const Q210B = /^Quel appareillage est concerné/;
 const HOSPITALISE = /^Le patient est déjà hospitalisé pendant ce trajet/;
 
-function afficherLeQuestionnaire() {
+function afficherLeQuestionnaire(onComplete: () => void = () => {}) {
   render(
     <QuestionnaireForm
       parts={model.transportAndEligibility.parts}
       partCount={3}
       endLabel="Voir le résultat"
       tracked={false}
-      onComplete={() => {}}
+      onComplete={onComplete}
     />,
   );
   return userEvent.setup();
@@ -237,5 +240,40 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
     expect(
       await screen.findByRole("button", { name: "Voir le résultat" }),
     ).toBeEnabled();
+  });
+
+  it("pose la convocation après le trajet, et révèle l'agrément et l'appareillage sous l'option 6", async () => {
+    const terminer = vi.fn();
+    const user = afficherLeQuestionnaire(terminer);
+    await choisir(user, /^Vérifier une éligibilité/);
+    await page(Q11);
+    await choisir(user, /^Peut se déplacer seul/);
+    await page(Q13);
+    await cocher(user, /^Aucune de ces situations/);
+    await suivant(user);
+    await page(/^Le patient pouvant réaliser le trajet/);
+    await choisir(user, /^Véhicule personnel/);
+    await page(Q21);
+    await choisir(user, /^Convocation, expertise, audience/);
+    await page(Q221);
+    await cocher(user, /^Aucune autre situation/);
+    await suivant(user);
+    await page(Q231);
+    await choisir(user, /^50 km ou moins/);
+    await suivant(user);
+
+    await page(Q210);
+    expect(screen.queryByRole("group", { name: Q210A })).toBeNull();
+    await choisir(user, /^Déplacement chez un fournisseur d’appareillage/);
+    expect(await page(Q210A)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: Q210B })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Voir le résultat" }),
+    ).toBeNull();
+
+    await choisirDans(user, Q210A, /^Oui$/);
+    await choisirDans(user, Q210B, /^Podo-orthèse$/);
+    // Une page de choix uniques avance d'elle-même : c'est la dernière.
+    await waitFor(() => expect(terminer).toHaveBeenCalledOnce());
   });
 });

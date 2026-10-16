@@ -1,8 +1,9 @@
 // P2 : l'éligibilité. La prestation (Q2.1), les situations particulières
 // (Q2.2.1), le trajet (Q2.3), puis le transfert (Q2.5) et les exceptions de
-// l'article 80 (Q2.6), dans `pages-du-transfert.ts`, et la permission (Q2.7 et
-// Q2.8), dans `pages-de-la-permission.ts`. Les autres pages du catalogue
-// viennent ensuite (issue 63).
+// l'article 80 (Q2.6), dans `pages-du-transfert.ts`, la permission (Q2.7 et
+// Q2.8), dans `pages-de-la-permission.ts`, et la convocation (Q2.10), dans
+// `pages-de-la-convocation.ts`. Les autres pages du catalogue viennent ensuite
+// (issue 63).
 
 import { optionsFrom, type QuestionnairePart } from "../../socle";
 import {
@@ -11,6 +12,7 @@ import {
   sejourAProposer,
 } from "./contextes";
 import { OPTIONS, type Questions } from "./declarations/questions";
+import { PAGE_DE_LA_CONVOCATION } from "./pages-de-la-convocation";
 import {
   PAGE_DE_LA_PERMISSION,
   PAGE_DE_LA_PERMISSION_DU_MINEUR,
@@ -228,5 +230,6 @@ export const P2: QuestionnairePart<Questions, undefined> = {
     PAGE_DES_EXCEPTIONS,
     PAGE_DE_LA_PERMISSION,
     PAGE_DE_LA_PERMISSION_DU_MINEUR,
+    PAGE_DE_LA_CONVOCATION,
   ],
 };
