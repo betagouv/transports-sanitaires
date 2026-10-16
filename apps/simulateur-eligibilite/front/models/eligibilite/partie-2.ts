@@ -16,6 +16,10 @@ import {
 } from "./pages-de-la-permission";
 import { PAGE_DES_EXCEPTIONS, PAGE_DU_TRANSFERT } from "./pages-du-transfert";
 import { motifDeP1, plusieursSeances } from "./prestation";
+import {
+  CIRCUIT_PENITENTIAIRE,
+  mouvementAdministratif,
+} from "./retour-penitentiaire";
 import { faitsDuTrajet, urgenceAAfficher } from "./trajet";
 
 type Page = QuestionnairePart<Questions, undefined>["pages"][number];
@@ -155,6 +159,11 @@ const PAGE_DES_CONTEXTES: Page = {
             "Le CAMSP ou le CMPP accueille un enfant, le SAMSAH un adulte : un seul des deux pour un même trajet.",
         },
       ],
+      // Un mouvement administratif vers la prison n'a aucune issue (TS1012-04).
+      inconsistenciesFrom: (answers, _cibles, validated) =>
+        mouvementAdministratif(answers, validated)
+          ? [CIRCUIT_PENITENTIAIRE]
+          : [],
     },
     {
       id: "Q2.2.5",

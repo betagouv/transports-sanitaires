@@ -64,7 +64,8 @@ const RETIRES_PAR_Q21: Partial<Record<Motif, readonly Contexte[]>> = {
 
 // Le fait de chaque situation de l'autre cadre, et si la cocher le met à
 // « oui ». Les autres attendent la page de leur branche (Q2.10, Q2.13, Q2.14) ;
-// le retour pénitentiaire n'a pas de fait (S3).
+// le retour pénitentiaire n'a pas de fait : il qualifie son circuit
+// (`retour-penitentiaire.ts`).
 const FAIT_DU_CONTEXTE: Record<
   Contexte,
   { fait: keyof Faits; positif: boolean } | undefined
