@@ -21,11 +21,15 @@ export {
   answerAbsent,
   answerPresent,
 } from "./questionnaire-engine/answer-presence";
-export { areAnswered } from "./questionnaire-engine/asked-questions";
+export {
+  areAnswered,
+  validatedQuestions,
+} from "./questionnaire-engine/asked-questions";
 export { optionsFrom } from "./questionnaire-engine/option";
-export type {
-  Answers,
-  QuestionnairePart,
-  Unanswered,
-  Validated,
+export {
+  type Answers,
+  pagesOf,
+  type QuestionnairePart,
+  type Unanswered,
+  type Validated,
 } from "./questionnaire-engine/question";
