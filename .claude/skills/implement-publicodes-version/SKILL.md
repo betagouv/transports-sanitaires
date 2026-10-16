@@ -123,6 +123,18 @@ cd apps/simulateur-eligibilite && pnpm valider-regles
 `tests/app/BandeauVersion.test.tsx` compare les deux. Sans elle, l'app annonce
 une version qu'elle n'exécute pas.
 
+Depuis la v10.1.0, le paquet livre aussi les textes de R2,
+`integration_resultats/catalogue-resultats.json`. Il se recopie tel quel, à
+côté des règles du modèle (D-103) :
+
+```bash
+cp tmp/<version>/integration_resultats/catalogue-resultats.json \
+   apps/simulateur-eligibilite/front/models/eligibilite/rules/
+```
+
+`tests/model/eligibilite/catalogue-resultats.test.ts` échoue si sa version ou
+son empreinte du modèle ne sont pas celles des règles recopiées.
+
 Le compte de règles et de cibles, que le README annonce :
 
 ```bash

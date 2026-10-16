@@ -35,8 +35,9 @@ console.log(
  * `import` statique mal placé le ferait télécharger à chaque prescripteur, sans
  * rien casser. Même chose pour l'écran des seeds, réservé au service produit,
  * et pour les modèles, qui se chargent pendant l'écran de rattachement. L'énoncé
- * d'une question n'existe que dans le modèle de démonstration, et un nom de
- * fait que dans les règles du modèle de l'éditeur.
+ * d'une question n'existe que dans le modèle de démonstration, un nom de fait
+ * que dans les règles du modèle de l'éditeur, et le schéma de ses textes de R2
+ * que dans leur catalogue.
  */
 function interdits(): Array<[marqueur: string, quoi: string]> {
   const marqueurs: Array<[string, string]> = [
@@ -46,6 +47,7 @@ function interdits(): Array<[marqueur: string, quoi: string]> {
       "le modèle de démonstration (son questionnaire)",
     ],
     ["fait_p1_complete", "le modèle de l'éditeur (ses règles et publicodes)"],
+    ["resultats-html-patient/2", "le catalogue des textes de R2"],
   ];
   for (const seed of premieresSeeds())
     marqueurs.push([seed, "un catalogue de seeds (service produit)"]);
