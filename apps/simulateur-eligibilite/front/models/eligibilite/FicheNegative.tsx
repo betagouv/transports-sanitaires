@@ -3,6 +3,8 @@
 // au patient, s'imprime. Le composant range un `TexteDeLaFicheNegative` ; il
 // n'écrit aucun texte de l'éditeur.
 
+import { PourLePrescripteur } from "./PourLePrescripteur";
+import { TexteEnrichi } from "./TexteEnrichi";
 import type { TexteDeLaFicheNegative } from "./texte-de-la-fiche-negative";
 
 type Bloc = TexteDeLaFicheNegative["finance"];
@@ -27,20 +29,6 @@ export function FicheNegative({ texte }: { texte: TexteDeLaFicheNegative }) {
 }
 
 // ---- implémentation ----
-
-// La phrase d'introduction vient de l'aperçu de l'éditeur : le catalogue ne la
-// porte pas.
-function PourLePrescripteur({ titre }: { titre: string }) {
-  return (
-    <section aria-label="Résultat pour le praticien" className="fr-no-print">
-      <h2 className="fr-h3">{titre}</h2>
-      <p>
-        Vous trouverez ci-dessous une fiche explicative officielle de
-        l’Assurance Maladie à remettre à votre patient.
-      </p>
-    </section>
-  );
-}
 
 type CartesProps = { intro: Bloc; cartes: readonly Bloc[] };
 
@@ -101,9 +89,7 @@ function ConseilAld({ texte }: { texte: string }) {
       className="fr-callout fr-callout--yellow-moutarde"
     >
       <p className="fr-callout__text">
-        {enGras(texte).map(({ debut, gras, texte: morceau }) =>
-          gras ? <strong key={debut}>{morceau}</strong> : morceau,
-        )}
+        <TexteEnrichi texte={texte} />
       </p>
     </aside>
   );
@@ -118,15 +104,4 @@ function Finance({ bloc }: { bloc: Bloc }) {
       <p className="fr-callout__text">{bloc.text}</p>
     </aside>
   );
-}
-
-// Le catalogue met en gras avec `**…**`. Chaque morceau garde sa position
-// dans le texte, qui lui sert de clé.
-function enGras(texte: string) {
-  let debut = 0;
-  return texte.split("**").map((morceau, rang) => {
-    const segment = { debut, gras: rang % 2 === 1, texte: morceau };
-    debut += morceau.length + 2;
-    return segment;
-  });
 }

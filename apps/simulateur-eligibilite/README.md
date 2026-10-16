@@ -187,9 +187,10 @@ cibles, et l'oracle de l'éditeur rejoué en faits. Le questionnaire pose P1 :
 ses réponses donnent les faits du mode de transport, à trois états. De P2, il
 pose la prestation (Q2.1, avec ses sous-questions f, g et h) et le trajet : la
 distance, l'avion ou le bateau, la série et l'urgence (Q2.3.1 à Q2.3.4).
-Le résultat de R2 montre la page du praticien pour cinq issues et la fiche
-patient négative pour `ISSUE_NON_ELIGIBLE` ; les autres issues attendent leur
-fiche.
+Le résultat de R2 montre la page du praticien pour cinq issues, la fiche
+patient négative pour `ISSUE_NON_ELIGIBLE` et la fiche patient positive pour
+`ISSUE_PMT` et `ISSUE_S3141` ; les deux issues d'accord préalable attendent
+leur fiche.
 L'avancement
 est dans l'issue 50 du dépôt, les décisions dans
 [`docs/knowledge/adr/journal-des-decisions-v10.md`](docs/knowledge/adr/journal-des-decisions-v10.md).

@@ -51,7 +51,7 @@ type Source = {
 };
 
 /** Un texte, et les codes de contexte qui le choisissent. */
-type TexteCode = {
+export type TexteCode = {
   readonly id: string;
   readonly codes: readonly string[];
   readonly text: string;
@@ -59,7 +59,7 @@ type TexteCode = {
 
 type Texte = { readonly id: string; readonly text: string };
 type Extra = { readonly code: string; readonly text: string };
-type Bloc = { readonly title: string; readonly text: string };
+export type Bloc = { readonly title: string; readonly text: string };
 type Intro = { readonly title: string; readonly subtitle: string };
 
 /** Une carte de mode de transport, et les critères de Q1.2 qui la montrent. */
@@ -74,7 +74,7 @@ type Carte = {
 };
 
 /** La fiche patient d'une issue qui ouvre une prise en charge. */
-type IssuePositive = {
+export type IssuePositive = {
   /** Le titre, par libellé de mode. */
   readonly titles: Readonly<Record<string, string>>;
   readonly prescriberTitles: readonly string[];
