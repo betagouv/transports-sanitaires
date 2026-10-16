@@ -107,24 +107,29 @@ type IssuePositive = {
 };
 
 /** Le résultat praticien : un scénario par situation à confirmer. */
-type IssuePraticien = {
+export type IssuePraticien = {
   readonly type: string;
   readonly title: string;
-  readonly scenarios: readonly {
-    readonly id: string;
-    readonly label: string;
-    readonly intro: string;
-    readonly whyTitle: string;
-    readonly whyText: string;
-    readonly factsReference: string;
-    readonly sourceKeys: readonly string[];
-    readonly reason: string;
-    readonly actions: readonly string[];
-    readonly params: Readonly<Record<string, string | null>>;
-    readonly inactive: boolean;
-    readonly codes: readonly string[];
-    readonly questions: readonly string[];
-  }[];
+  readonly scenarios: readonly ScenarioPraticien[];
+};
+
+/** Un scénario du résultat praticien, et les paramètres qui le choisissent. */
+export type ScenarioPraticien = {
+  readonly id: string;
+  readonly label: string;
+  readonly intro: string;
+  readonly whyTitle: string;
+  readonly whyText: string;
+  readonly factsReference: string;
+  readonly sourceKeys: readonly string[];
+  readonly reason: string;
+  readonly actions: readonly string[];
+  /** Les paramètres du scénario ; `null` : il n'en demande pas la preuve. */
+  readonly params: Readonly<Record<string, string | null>>;
+  /** Un scénario inactif n'est jamais montré. */
+  readonly inactive: boolean;
+  readonly codes: readonly string[];
+  readonly questions: readonly string[];
 };
 
 /** La fiche patient d'un transport qui n'est pas pris en charge. */
@@ -152,7 +157,7 @@ type IssueNegative = {
 };
 
 /** Le transport à l'étranger, que la caisse examine. */
-type IssueEtranger = {
+export type IssueEtranger = {
   readonly type: string;
   readonly title: string;
   readonly intro: string;
