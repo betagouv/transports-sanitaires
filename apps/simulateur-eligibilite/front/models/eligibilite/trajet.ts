@@ -107,11 +107,14 @@ function serieQualifiante(validated: Valides): Fait {
 }
 
 // Q2.3.4 : le médecin atteste-t-il l'urgence ? « Oui » comme « Non » disent que
-// la question a eu sa réponse. Non posée, elle laisse les deux faits absents.
+// la question a eu sa réponse. Q2.12 la reprend sur la page de branche, quand
+// la branche dévoile ce que le trajet masquait. Non posée, elle laisse les deux
+// faits absents.
 function faitsDeLUrgence(validated: Valides) {
-  const reponse = validated["Q2.3.4"]?.answer;
+  const question = validated["Q2.3.4"] ? "Q2.3.4" : "Q2.12";
+  const reponse = validated[question]?.answer;
   if (answerPresent(reponse)) {
-    const source = `Q2.3.4 : « ${reponse} ».`;
+    const source = `${question} : « ${reponse} ».`;
     return {
       fait_urgence_attestee: reponse === "1_OUI" ? oui(source) : non(source),
       fait_urgence_repondue: oui(source),

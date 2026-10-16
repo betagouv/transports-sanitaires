@@ -2,8 +2,8 @@
 // trois parcours creux de `tests/test_cinq_retours_a.mjs` du paquet, sous leur
 // identifiant chez l'éditeur, et `CONTRAT_NEGATIONS_PROUVEES.json`.
 //
-// Le parcours part de nos faits : brancard, 20 km, Q2.2.1 « Aucune ». La fin
-// de P2 (#143) s'y ajoute comme l'éditeur la déduit. Les quinze autres parcours
+// Le parcours part de nos faits : brancard, 20 km, Q2.2.1 « Aucune ». P2 y est
+// complète, par les réponses (D-110). Les quinze autres parcours
 // creux portent sur Q2.2.1, la convocation, l'ALD, la série et l'article 80 :
 // ils arrivent avec leurs questions.
 
@@ -27,13 +27,9 @@ const BRANCARD_20_KM: Answers<Questions> = {
 };
 const nos = preconisationOf(model, BRANCARD_20_KM).faits as Faits;
 
-const P2_COMPLETE = {
-  fait_p2_complete: { value: true, provenance: "Fin de P2." },
-};
 const issue = (exclusion: Fait) =>
   cibles({
     ...nos,
-    ...P2_COMPLETE,
     fait_exclusion_transport_prouvee: exclusion,
   }).cible_issue_id;
 

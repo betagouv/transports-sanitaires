@@ -80,13 +80,19 @@ describe("le CAMSP", () => {
 
 describe("l'hospitalisation", () => {
   it.each([
-    ["une entrée", "1_ENTREE", true],
-    ["une sortie", "2_SORTIE", true],
-    ["une admission en HAD à domicile", "3_ADMISSION_HAD", undefined],
-  ] as const)("%s", (_, sousType, attendu) => {
+    ["une entrée", "1_ENTREE", true, true],
+    ["une sortie", "2_SORTIE", true, true],
+    ["une admission en HAD à domicile", "3_ADMISSION_HAD", undefined, false],
+  ] as const)("%s", (_, sousType, hospitalisation, soins) => {
     const reponses = motif("8_HOSPITALISATION", { "Q2.1.g": sousType });
-    expect(valeur("fait_hospitalisation", reponses)).toBe(attendu);
-    expect(valeur("fait_situation_soins_qualifiante", reponses)).toBe(attendu);
+    expect(valeur("fait_hospitalisation", reponses)).toBe(hospitalisation);
+    expect(valeur("fait_situation_soins_qualifiante", reponses)).toBe(soins);
+  });
+
+  it("une consultation, « déjà hospitalisé » écarté : ni séjour, ni soin qualifiant", () => {
+    const reponses = motif("1_CONSULTATION", { "Q2.2.1": ["4_AUCUNE"] });
+    expect(valeur("fait_hospitalisation", reponses)).toBe(false);
+    expect(valeur("fait_situation_soins_qualifiante", reponses)).toBe(false);
   });
 
   it("garde celle que P1 prouve par une séance", () => {

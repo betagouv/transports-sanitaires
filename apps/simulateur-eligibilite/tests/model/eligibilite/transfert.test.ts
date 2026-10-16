@@ -22,12 +22,9 @@ import {
 
 describe("article80-bilan-complet", () => {
   const bilan = definitif(["11_AUCUNE"]);
-  const fin = { fait_p2_complete: { value: true, provenance: "Fin de P2." } };
 
   it("un transfert définitif sans exception : ISSUE_ETABLISSEMENT", () => {
-    expect(cibles({ ...faits(bilan), ...fin }).cible_issue_id).toBe(
-      "ISSUE_ETABLISSEMENT",
-    );
+    expect(cibles(faits(bilan)).cible_issue_id).toBe("ISSUE_ETABLISSEMENT");
   });
 
   it("établit le transfert, le séjour et le Centre 15 écarté", () => {

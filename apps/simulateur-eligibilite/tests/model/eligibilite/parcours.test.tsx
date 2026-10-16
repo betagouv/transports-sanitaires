@@ -80,6 +80,10 @@ async function avecUnProfessionnel(
   await page(Q13);
 }
 
+// Le parcours du mineur remplit une vingtaine de champs : sous la charge de la
+// suite entière, il dépasse les 5 s par défaut.
+const PARCOURS_LONG = 15_000;
+
 describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
   it("révèle Q2.1.g sur la page de Q2.1, puis passe aux situations particulières", async () => {
     const user = afficherLeQuestionnaire();
@@ -189,58 +193,66 @@ describe("le modèle de l'éditeur, déroulé dans le formulaire", () => {
       await screen.findByRole("button", { name: "Voir le résultat" }),
     ).toBeEnabled();
   });
-  it("pose la permission du mineur sur une page, et révèle la période quand il y en a plusieurs", async () => {
-    const user = afficherLeQuestionnaire();
-    await choisir(user, /^Vérifier une éligibilité/);
-    await page(Q11);
-    await choisir(user, /^Peut se déplacer seul/);
-    await page(Q13);
-    await cocher(user, /^Aucune de ces situations/);
-    await suivant(user);
-    await page(/^Le patient pouvant réaliser le trajet/);
-    await choisir(user, /^Véhicule personnel/);
-    await page(Q21);
-    await choisir(user, /^Permission temporaire pendant l’hospitalisation/);
-    await page(Q221);
-    await cocher(user, /^Aucune autre situation/);
-    await suivant(user);
-    await page(Q231);
-    await choisir(user, /^50 km ou moins/);
-    await suivant(user);
+  it(
+    "pose la permission du mineur sur une page, et révèle la période quand il y en a plusieurs",
+    async () => {
+      const user = afficherLeQuestionnaire();
+      await choisir(user, /^Vérifier une éligibilité/);
+      await page(Q11);
+      await choisir(user, /^Peut se déplacer seul/);
+      await page(Q13);
+      await cocher(user, /^Aucune de ces situations/);
+      await suivant(user);
+      await page(/^Le patient pouvant réaliser le trajet/);
+      await choisir(user, /^Véhicule personnel/);
+      await page(Q21);
+      await choisir(user, /^Permission temporaire pendant l’hospitalisation/);
+      await page(Q221);
+      await cocher(user, /^Aucune autre situation/);
+      await suivant(user);
+      await page(Q231);
+      await choisir(user, /^50 km ou moins/);
+      await suivant(user);
 
-    await page(Q27);
-    await choisir(user, /^Moins de 16 ans/);
-    await page(Q284);
-    expect(screen.queryByLabelText(/^Quand se termine la période/)).toBeNull();
+      await page(Q27);
+      await choisir(user, /^Moins de 16 ans/);
+      await page(Q284);
+      expect(
+        screen.queryByLabelText(/^Quand se termine la période/),
+      ).toBeNull();
 
-    await user.type(champ(/^Depuis quelle date/), "2026-10-01");
-    await user.type(champ(/^Quand commence la première/), "2026-10-14T09:00");
-    await user.type(
-      champ(/^Quand se termine cette première/),
-      "2026-10-15T09:00",
-    );
-    await choisirDans(user, Q284, /^Oui\./);
-    await choisirDans(user, Q284A, /^Elle est liée aux soins/);
-    await choisirDans(user, Q285, /^Oui\./);
+      await user.type(champ(/^Depuis quelle date/), "2026-10-01");
+      await user.type(champ(/^Quand commence la première/), "2026-10-14T09:00");
+      await user.type(
+        champ(/^Quand se termine cette première/),
+        "2026-10-15T09:00",
+      );
+      await choisirDans(user, Q284, /^Oui\./);
+      await choisirDans(user, Q284A, /^Elle est liée aux soins/);
+      await choisirDans(user, Q285, /^Oui\./);
 
-    expect(champ(/^Quand se termine la période/)).toBeInTheDocument();
-    expect(champ(/^Une permission aller-retour/)).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: Q286B })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+      expect(champ(/^Quand se termine la période/)).toBeInTheDocument();
+      expect(champ(/^Une permission aller-retour/)).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: Q286B })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
 
-    await user.type(champ(/^Quand se termine la période/), "2026-12-01");
-    await user.type(champ(/^Une permission aller-retour/), "2");
-    await choisirDans(user, Q286B, /^Non\./);
-    expect(
-      await screen.findByText(/La période doit se terminer avant le vingtième/),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+      await user.type(champ(/^Quand se termine la période/), "2026-12-01");
+      await user.type(champ(/^Une permission aller-retour/), "2");
+      await choisirDans(user, Q286B, /^Non\./);
+      expect(
+        await screen.findByText(
+          /La période doit se terminer avant le vingtième/,
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
 
-    await choisirDans(user, Q286B, /^Oui\./);
-    expect(
-      await screen.findByRole("button", { name: "Voir le résultat" }),
-    ).toBeEnabled();
-  });
+      await choisirDans(user, Q286B, /^Oui\./);
+      expect(
+        await screen.findByRole("button", { name: "Voir le résultat" }),
+      ).toBeEnabled();
+    },
+    PARCOURS_LONG,
+  );
 
   it("pose la convocation après le trajet, et révèle l'agrément et l'appareillage sous l'option 6", async () => {
     const terminer = vi.fn();

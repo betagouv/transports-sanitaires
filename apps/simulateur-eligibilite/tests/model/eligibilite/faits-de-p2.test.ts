@@ -89,7 +89,7 @@ describe("la série (Q2.3.3)", () => {
 });
 
 describe("P2", () => {
-  it("n'est pas tenue pour complète : elle n'est pas posée en entier", () => {
+  it("reste absente tant que ses pages ne sont pas toutes validées (fin-de-p2.test.ts)", () => {
     expect(
       valeur("fait_p2_complete", { ...LONG, "Q2.3.3": "1_OUI" }),
     ).toBeUndefined();

@@ -51,14 +51,7 @@ export const incoherences = (id: keyof Reponses, reponses: Reponses) =>
 export const validee = (id: keyof Reponses, reponses: Reponses) =>
   validatedQuestions(pages, reponses)[id] !== undefined;
 
-/**
- * L'issue des règles. P2 n'est complète qu'avec #143 : on force
- * `fait_p2_complete`. Le transfert et le Centre 15 viennent de la permission.
- */
-export const ciblesDe = (reponses: Reponses) =>
-  cibles({
-    ...faits(reponses),
-    fait_p2_complete: { value: true, provenance: "Fin de P2." },
-  });
+/** Les cibles des règles, sur les faits que les réponses établissent. */
+export const ciblesDe = (reponses: Reponses) => cibles(faits(reponses));
 
 export const issue = (reponses: Reponses) => ciblesDe(reponses).cible_issue_id;

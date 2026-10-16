@@ -44,6 +44,7 @@ export function faitsDeLaPrestation(validated: Valides) {
     fait_evenement_sans_soin: evenementSansSoin(motif),
     fait_motif_camsp: camsp(motif, validated["Q2.1.h"]?.answer),
     ...hospitalisation(validated["Q2.1.g"]?.answer),
+    ...sansSeanceNiSejour(validated),
   } satisfies Partial<Faits>;
 }
 
@@ -121,4 +122,58 @@ function hospitalisation(sousType: Questions["Q2.1.g"] | Unanswered) {
     fait_hospitalisation: sejour,
     fait_situation_soins_qualifiante: sejour,
   };
+}
+
+// Ni séance qualifiante en Q1.3, ni séjour en Q2.1 : le soin ne qualifie pas
+// le transport. Q2.1 est un choix unique : un autre motif écarte
+// l'hospitalisation, et l'admission en HAD (Q2.1.g) n'est pas un séjour
+// (`negation_precise_v1002` de `fait_situation_soins_qualifiante`).
+function sansSeanceNiSejour(validated: Valides): Partial<Faits> {
+  const motif = validated["Q2.1"]?.answer;
+  const sousType = validated["Q2.1.g"]?.answer;
+  if (answerAbsent(motif) || !q13SansSeance(validated)) return {};
+  if (motif === "8_HOSPITALISATION" && sousType !== "3_ADMISSION_HAD")
+    return {};
+  const source =
+    motif === "8_HOSPITALISATION"
+      ? `Q2.1.g : « ${sousType} », pas un séjour ; Q1.3 sans séance.`
+      : `Q2.1 : « ${motif} », pas une hospitalisation ; Q1.3 sans séance.`;
+  return {
+    fait_situation_soins_qualifiante: non(source),
+    ...sansSejourEnCours(validated, motif, source),
+  };
+}
+
+// Une simple consultation, l'HAD à domicile ou un autre motif, sans séjour en
+// cours, ne sont pas une hospitalisation (`non_ou_absence` du contrat). Il faut
+// que Q2.2.1 ait proposé « déjà hospitalisé » et qu'il soit écarté. Le
+// transfert et la permission se qualifient dans leur branche.
+function sansSejourEnCours(
+  validated: Valides,
+  motif: Motif,
+  source: string,
+): Partial<Faits> {
+  if (motif === "9_TRANSFERT" || motif === "11_PERMISSION") return {};
+  const { offered = [], answer = [] } = validated["Q2.2.1"] ?? {};
+  const ecarte =
+    offered.includes("1_HOSPITALISATION") &&
+    !answer.includes("1_HOSPITALISATION");
+  if (!ecarte || answerAbsent(validated["Q2.2.1"]?.answer)) return {};
+  return {
+    fait_hospitalisation: non(
+      `${source} Q2.2.1 : « déjà hospitalisé » écarté.`,
+    ),
+  };
+}
+
+// Q1.3 validée sans séance qualifiante : ni chimiothérapie, ni radiothérapie,
+// ni hémodialyse (Q1.3.a). Une séance cochée, `faitsDuMode` la prouve déjà.
+function q13SansSeance(validated: Valides): boolean {
+  const cas = validated["Q1.3"]?.answer;
+  if (answerAbsent(cas)) return false;
+  return (
+    !cas.includes("3_CHIMIOTHERAPIE") &&
+    !cas.includes("4_RADIOTHERAPIE") &&
+    validated["Q1.3.a"]?.answer !== "1_OUI"
+  );
 }

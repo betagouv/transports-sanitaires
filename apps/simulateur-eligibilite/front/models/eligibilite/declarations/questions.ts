@@ -6,6 +6,7 @@
 // Les options se déclarent dans l'ordre du catalogue : c'est l'ordre de l'écran,
 // sauf quand le catalogue en donne un autre (Q1.3).
 
+import { OPTIONS_DE_LA_BRANCHE } from "./options-de-la-branche";
 import { OPTIONS_DE_LA_PERMISSION } from "./options-de-la-permission";
 
 /** Les options de chaque question à choix : leur slug, et leur libellé. */
@@ -240,6 +241,7 @@ export const OPTIONS = {
     "4_AUTRE": "Un autre appareillage",
     "5_NE_PEUX_PAS_PRECISER": "Je ne peux pas le préciser",
   },
+  ...OPTIONS_DE_LA_BRANCHE,
 } as const;
 
 type Option<Id extends keyof typeof OPTIONS> = keyof (typeof OPTIONS)[Id];
@@ -282,4 +284,8 @@ export type Questions = {
   "Q2.10": Option<"Q2.10">;
   "Q2.10.a": Option<"Q2.10.a">;
   "Q2.10.b": Option<"Q2.10.b">;
+  "Q2.13.depart": Option<"Q2.13.depart">;
+  "Q2.14.1": Option<"Q2.14.1">;
+  "Q2.14.2": Option<"Q2.14.2">;
+  "Q2.12": Option<"Q2.12">;
 };

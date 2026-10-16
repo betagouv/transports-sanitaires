@@ -110,7 +110,7 @@ function groupe(validated: Valides, valeur: Questions["Q2.2.1"][number]) {
 // centre 15 et la permission. Coché, seule Q2.2.1.a dit la permission.
 function faitsDuSejour(validated: Valides): Partial<Faits> {
   const { propose, coche } = groupe(validated, "1_HOSPITALISATION");
-  if (!propose) return {};
+  if (!propose) return faitsDeLEntree(validated);
   if (!coche) {
     const ecarte = non("Q2.2.1 : « déjà hospitalisé » proposé, non coché.");
     return {
@@ -125,6 +125,17 @@ function faitsDuSejour(validated: Valides): Partial<Faits> {
   return reponse === "1_OUI"
     ? { fait_permission: oui(source) }
     : sansPermission(non(source));
+}
+
+// Une entrée en établissement de santé ne se propose pas en séjour (D-98) :
+// aucun séjour n'est en cours, donc aucune permission.
+function faitsDeLEntree(validated: Valides): Partial<Faits> {
+  if (validated["Q2.1.g"]?.answer !== "1_ENTREE") return {};
+  return sansPermission(
+    non(
+      "Q2.1.g : « 1_ENTREE » ; aucun séjour en cours, donc aucune permission.",
+    ),
+  );
 }
 
 // Sans permission, ni sa charge par le patient, ni la règle du mineur.

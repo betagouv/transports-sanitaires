@@ -2,8 +2,8 @@
 // (Q2.2.1), le trajet (Q2.3), puis le transfert (Q2.5) et les exceptions de
 // l'article 80 (Q2.6), dans `pages-du-transfert.ts`, la permission (Q2.7 et
 // Q2.8), dans `pages-de-la-permission.ts`, et la convocation (Q2.10), dans
-// `pages-de-la-convocation.ts`. Les autres pages du catalogue viennent ensuite
-// (issue 63).
+// `pages-de-la-convocation.ts`, puis la branche (Q2.12 à Q2.14), dans
+// `pages-de-la-branche.ts`. Q2.4, Q2.9 et Q2.11 n'ont aucun écran.
 
 import { optionsFrom, type QuestionnairePart } from "../../socle";
 import {
@@ -12,6 +12,7 @@ import {
   sejourAProposer,
 } from "./contextes";
 import { OPTIONS, type Questions } from "./declarations/questions";
+import { PAGE_DE_LA_BRANCHE } from "./pages-de-la-branche";
 import { PAGE_DE_LA_CONVOCATION } from "./pages-de-la-convocation";
 import {
   PAGE_DE_LA_PERMISSION,
@@ -231,5 +232,6 @@ export const P2: QuestionnairePart<Questions, undefined> = {
     PAGE_DE_LA_PERMISSION,
     PAGE_DE_LA_PERMISSION_DU_MINEUR,
     PAGE_DE_LA_CONVOCATION,
+    PAGE_DE_LA_BRANCHE,
   ],
 };
