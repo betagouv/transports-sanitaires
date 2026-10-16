@@ -1,88 +1,31 @@
 // L'oracle de l'éditeur, rejoué contre les règles : les cas D01 à D49, puis
 // les frontières et les faits inconnus que son test du moteur vérifie
-// (`tests/test_publicode_v1002.mjs` du paquet v10.0.2).
+// (`tests/test_publicode_v1002.mjs` du paquet v10.1.1).
 //
-// Les cas sont écrits en faits, comme l'éditeur les livre. Chacun part de faits
-// tous à « non », P1 et P2 complètes, et n'en change que quelques-uns. Un fait
-// changé en `undefined` est absent : il n'est pas transmis aux règles. Les
-// identifiants sont ceux de l'éditeur : un désaccord remonte sous ce nom.
+// Les cas sont écrits en faits, comme l'éditeur les livre
+// (`faits-de-l-oracle.ts`). Les identifiants sont ceux de l'éditeur : un
+// désaccord remonte sous ce nom.
 
 import { describe, expect, it } from "vitest";
 import type { Cibles } from "../../../front/models/eligibilite/declarations/cibles";
-import {
-  FAITS,
-  type Faits,
-} from "../../../front/models/eligibilite/declarations/faits";
 import { cibles } from "../../../front/models/eligibilite/evaluation-des-regles";
-
-type Changements = Partial<Record<keyof Faits, boolean | undefined>>;
-type Issue = NonNullable<Cibles["cible_issue_id"]>;
-
-const ABSENTS = Object.fromEntries(FAITS.map((fait) => [fait, undefined]));
-const TOUS_NON = Object.fromEntries(FAITS.map((fait) => [fait, false]));
-
-// Les faits de ces valeurs, tels que le modèle les transmet.
-const faitsDe = (valeurs: Changements) =>
-  Object.fromEntries(
-    Object.entries(valeurs).map(([fait, value]) => [
-      fait,
-      { value, provenance: "oracle de l'éditeur" },
-    ]),
-  ) as Faits;
-
-const preconiser = (changements: Changements) =>
-  cibles(
-    faitsDe({
-      ...TOUS_NON,
-      fait_p1_complete: true,
-      fait_p2_complete: true,
-      ...changements,
-    }),
-  );
-
-// Aucun profil de code de soin ne prouve à lui seul un motif de transport.
-const SITUATION: Changements = {
-  fait_situation_soins_qualifiante: true,
-  fait_regime_verifie: true,
-};
-const BRANCARD: Changements = { fait_critere_brancard: true };
-const ALD: Changements = {
-  fait_ald_liee: true,
-  fait_ald_exonerante_3_ou_4: true,
-  fait_critere_tap: true,
-  fait_autonomie_professionnel: true,
-};
-const SERIE: Changements = {
-  fait_distance_plus_50: true,
-  fait_serie_qualifiante: true,
-  fait_urgence_repondue: true,
-};
-const LONGUE_DISTANCE: Changements = {
-  fait_distance_plus_150: true,
-  fait_urgence_repondue: true,
-};
-const TRANSFERT: Changements = {
-  fait_transfert_article80: true,
-  fait_hospitalisation: true,
-};
-const MATERNITE: Changements = {
-  fait_evenement_sans_soin: true,
-  fait_dap_maternite: true,
-  fait_urgence_repondue: true,
-};
-const HOSPITALISATION: Changements = {
-  ...SITUATION,
-  fait_hospitalisation: true,
-};
-const URGENCE: Changements = { fait_urgence_attestee: true };
-const CONVOCATION: Changements = {
-  fait_convocation: true,
-  fait_evenement_sans_soin: true,
-};
-const ALD_NON_EXONERANTE: Changements = {
-  ...ALD,
-  fait_ald_exonerante_3_ou_4: false,
-};
+import {
+  ABSENTS,
+  ALD,
+  ALD_NON_EXONERANTE,
+  BRANCARD,
+  type Changements,
+  CONVOCATION,
+  faitsDe,
+  HOSPITALISATION,
+  type Issue,
+  LONGUE_DISTANCE,
+  MATERNITE,
+  preconiser,
+  SERIE,
+  TRANSFERT,
+  URGENCE,
+} from "./faits-de-l-oracle";
 
 const CAS: readonly [id: string, faits: Changements, issue: Issue][] = [
   ["D01", BRANCARD, "ISSUE_PMT"],

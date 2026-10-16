@@ -60,7 +60,9 @@ fait_ald_liee:
 fait_ald_exonerante_3_ou_4:
   titre: ALD ouvrant droit au titre du 3° ou du 4° de L.160-14 vérifiée
 fait_mineur_soins_prolonges_reconnus:
-  titre: Cas spécifique du mineur avec soins continus de plus de six mois reconnus par le service médical
+  titre: Mineur, soins continus de plus de six mois reconnus par le service médical, lien du déplacement et déficience vérifiés
+fait_mineur_soins_prolonges_a_verifier:
+  titre: Situation de soins prolongés du mineur explicitement signalée mais reconnaissance non vérifiable
 fait_motif_camsp:
   titre: Soin CAMSP ou CMPP qualifié
 fait_motif_samsah:
@@ -68,7 +70,7 @@ fait_motif_samsah:
 fait_motif_pension:
   titre: Soins de pension militaire qualifiés
 fait_distance_plus_50:
-  titre: Chaque trajet de la série dépasse 50 km
+  titre: Le trajet actuellement évalué dépasse 50 km, la série étant qualifiée séparément
 fait_distance_plus_150:
   titre: Trajet aller dépasse 150 km
 fait_serie_qualifiante:
@@ -236,8 +238,15 @@ cible_preuve_ald_inconnue_decisive:
         - fait_dap_maternite = non
 cible_reconnaissance_mineur_inconnue_decisive:
   toutes ces conditions:
-    - fait_ald_liee
-    - fait_ald_exonerante_3_ou_4 = non
+    - une de ces conditions:
+        - toutes ces conditions:
+            - est défini: fait_mineur_soins_prolonges_a_verifier
+            - fait_mineur_soins_prolonges_a_verifier
+        # Compatibilité des anciennes traces : l'ancien aiguillage ALD demeure
+        # lisible, sans être requis par la nouvelle entrée directe Q1.3.
+        - toutes ces conditions:
+            - fait_ald_liee
+            - fait_ald_exonerante_3_ou_4 = non
     - est non défini: fait_mineur_soins_prolonges_reconnus
     - cible_autre_motif_hors_mineur = non
 # Les inconnues restantes sont nommées par branche ; pas de drapeau
@@ -258,9 +267,7 @@ cible_ald_qualifiante:
     - fait_ald_liee
     - fait_ald_exonerante_3_ou_4
 cible_mineur_soins_prolonges:
-  toutes ces conditions:
-    - fait_ald_liee
-    - fait_mineur_soins_prolonges_reconnus
+  valeur: fait_mineur_soins_prolonges_reconnus
 cible_serie:
   toutes ces conditions:
     - fait_serie_qualifiante
@@ -327,6 +334,68 @@ cible_point_cnam:
     - toutes ces conditions:
         - cible_dap_motif_camsp_cmpp
         - fait_urgence_attestee
+# Garde d’affichage de Q2.3.4 à sa place dans P2. Les faits des branches
+# futures ne deviennent pas Non : seules leurs valeurs déjà définies peuvent
+# établir une orientation prioritaire qui rend cette question sans objet.
+cible_orientation_sans_urgence_deja_etablie:
+  une de ces conditions:
+    - toutes ces conditions:
+        - est défini: fait_exclusion_transport_prouvee
+        - fait_exclusion_transport_prouvee
+    - toutes ces conditions:
+        - est défini: fait_transfert_article80
+        - fait_transfert_article80
+        - est défini: cible_exception_article80
+        - cible_exception_article80 = non
+    - toutes ces conditions:
+        - est défini: fait_permission_charge_patient
+        - fait_permission_charge_patient
+    - toutes ces conditions:
+        - est défini: fait_centre15_interetablissements
+        - fait_centre15_interetablissements
+    - toutes ces conditions:
+        - est défini: fait_motif_samsah
+        - fait_motif_samsah
+    - toutes ces conditions:
+        - est défini: fait_motif_pension
+        - fait_motif_pension
+    - toutes ces conditions:
+        - est défini: fait_htnm_hors_maternite
+        - fait_htnm_hors_maternite
+        - est défini: fait_htnm_segment_verifie
+        - fait_htnm_segment_verifie = non
+    - toutes ces conditions:
+        - est défini: cible_qualification_soin_decisive_transport
+        - cible_qualification_soin_decisive_transport
+        - est défini: fait_evenement_sans_soin
+        - fait_evenement_sans_soin = non
+        - une de ces conditions:
+            - toutes ces conditions:
+                - est défini: cible_care_status
+                - cible_care_status = 'NON_COUVERTE_PROUVEE'
+            - toutes ces conditions:
+                - est défini: fait_prestation_non_couverte_declaree
+                - fait_prestation_non_couverte_declaree
+            - toutes ces conditions:
+                - est défini: fait_preuve_prestation_absente
+                - fait_preuve_prestation_absente
+    - toutes ces conditions:
+        - est défini: fait_urgence_attestee
+        - fait_urgence_attestee
+        - une de ces conditions:
+            - toutes ces conditions:
+                - est défini: fait_motif_camsp
+                - fait_motif_camsp
+            - toutes ces conditions:
+                - est défini: fait_dap_maternite
+                - fait_dap_maternite
+cible_question_urgence_a_afficher:
+  toutes ces conditions:
+    - cible_dap_requise
+    - cible_mode_coherent
+    - cible_orientation_sans_urgence_deja_etablie = non
+# Contrôle final inchangé : cette cible n’est pas une garde d’affichage.
+# Elle reste consommée par cible_decision_calculable, après qualification P2.
 cible_question_urgence_requise:
   toutes ces conditions:
     - cible_dap_requise
@@ -586,8 +655,12 @@ cible_ald_juridiquement_qualifiante_3_ou_4_degres:
     - fait_ald_exonerante_3_ou_4
 cible_mineur_ald_non_exonerante_reconnue:
   toutes ces conditions:
-    - fait_ald_liee
     - fait_mineur_soins_prolonges_reconnus
+    # Une ALD à 100 % positivement établie conserve sa case propre.
+    # Le dispositif mineur est indépendant d'une déclaration générique d'ALD.
+    - une de ces conditions:
+        - est non défini: cible_ald_qualifiante
+        - cible_ald_qualifiante = non
 cible_hospitalisation_ou_seances_assimilees:
   valeur: fait_hospitalisation
 cible_situation_at_mp:

@@ -38,6 +38,7 @@ export const FAITS = [
   "fait_ald_liee",
   "fait_ald_exonerante_3_ou_4",
   "fait_mineur_soins_prolonges_reconnus",
+  "fait_mineur_soins_prolonges_a_verifier",
   "fait_motif_camsp",
   "fait_motif_samsah",
   "fait_motif_pension",

@@ -16,7 +16,7 @@ décisions dans `docs/knowledge/adr/journal-des-decisions-v10.md`. Il n'y a ni r
 d'éligibilité, ni page de résultat métier, ni CERFA téléchargeable. Le simulateur
 déroule le **modèle de démonstration** (`front/models/fake/`), qui ne décide rien
 du transport. Le modèle de l'éditeur (`front/models/eligibilite/`) s'intègre
-étape par étape, sur la v10.0.2 : ses règles, ses faits, ses cibles et son
+étape par étape, sur la v10.1.1 : ses règles, ses faits, ses cibles et son
 oracle sont là, son questionnaire va jusqu'à la page du trajet de P2. Le
 [README](README.md) § « Entre deux modèles » dit ce qui est parti et ce qui reste.
 

@@ -179,7 +179,7 @@ Le questionnaire n'est plus déduit d'un moteur de règles : il est **déclaré 
 le modèle**. Une partie liste ses pages, une page ses questions, une question dit
 quand elle se pose (`askedIf`) et de quelles réponses elle dépend (`dependsOn`).
 
-Le modèle de l'éditeur s'intègre sur la v10.0.2, dans `front/models/eligibilite/`,
+Le modèle de l'éditeur s'intègre sur la v10.1.1, dans `front/models/eligibilite/`,
 une étape après l'autre. Ses règles sont livrées en YAML : Vite les convertit en
 objet à la compilation (`vite.config.ts`), et aucun analyseur YAML ne part dans
 le navigateur. Le noyau est là : les règles, la déclaration des faits et des

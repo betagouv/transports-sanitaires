@@ -87,6 +87,8 @@ const CIBLES_BOOLEENNES = [
   "cible_dap_requise",
   "cible_dap_fondement_autonome",
   "cible_point_cnam",
+  "cible_orientation_sans_urgence_deja_etablie",
+  "cible_question_urgence_a_afficher",
   "cible_question_urgence_requise",
   "cible_decision_calculable",
   "cible_urgence_attestee",

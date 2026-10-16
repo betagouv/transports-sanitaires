@@ -149,8 +149,8 @@ export const PARTS: readonly Partie<undefined>[] = [
             kind: "single choice",
             label: "Quel est votre besoin ?",
             options: optionsFrom(OPTIONS["Q0.1"], {
-              "1_VERIFIER": { description: "Environ 2 minutes." },
-              "2_VERIFIER_ET_PRESCRIRE": { description: "Environ 4 minutes." },
+              "1_VERIFIER": { description: "Environ 3 minutes." },
+              "2_VERIFIER_ET_PRESCRIRE": { description: "Environ 10 minutes." },
             }),
           },
         ],
